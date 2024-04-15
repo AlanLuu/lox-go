@@ -70,6 +70,18 @@ func (p *Parser) expression() (Expr, error) {
 	return p.equality()
 }
 
+func (p *Parser) expressionStatement() (Stmt, error) {
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
+	if consumeErr != nil {
+		return nil, consumeErr
+	}
+	return Expression{Expression: expr}, nil
+}
+
 func (p *Parser) equality() (Expr, error) {
 	expr, comparisonErr := p.comparison()
 	if comparisonErr != nil {
@@ -124,8 +136,16 @@ func (p *Parser) match(tokenTypes ...token.TokenType) bool {
 	return false
 }
 
-func (p *Parser) Parse() (Expr, error) {
-	return p.expression()
+func (p *Parser) Parse() (list.List[Stmt], error) {
+	statements := list.NewList[Stmt]()
+	for !p.isAtEnd() {
+		statement, err := p.statement()
+		if err != nil {
+			return statements, err
+		}
+		statements.Add(statement)
+	}
+	return statements, nil
 }
 
 func (p *Parser) peek() token.Token {
@@ -158,6 +178,25 @@ func (p *Parser) primary() (Expr, error) {
 		return Grouping{Expression: expr}, nil
 	}
 	return nil, p.error(p.peek(), "Expected expression.")
+}
+
+func (p *Parser) printStatement() (Stmt, error) {
+	value, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after value.")
+	if consumeErr != nil {
+		return nil, consumeErr
+	}
+	return Print{Expression: value}, nil
+}
+
+func (p *Parser) statement() (Stmt, error) {
+	if p.match(token.PRINT) {
+		return p.printStatement()
+	}
+	return p.expressionStatement()
 }
 
 func (p *Parser) synchronize() {

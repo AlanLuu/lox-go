@@ -5,11 +5,16 @@ import (
 )
 
 type Expr interface{}
+type Stmt interface{}
 
 type Binary struct {
 	Left     Expr
 	Operator token.Token
 	Right    Expr
+}
+
+type Expression struct {
+	Expression Expr
 }
 
 type Grouping struct {
@@ -18,6 +23,10 @@ type Grouping struct {
 
 type Literal struct {
 	Value any
+}
+
+type Print struct {
+	Expression Expr
 }
 
 type Unary struct {

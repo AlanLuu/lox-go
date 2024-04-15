@@ -7,13 +7,18 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/token"
 )
 
 type Interpreter struct{}
 
-func (i Interpreter) evaluate(expr Expr) (any, error) {
+func (i Interpreter) evaluate(expr any) (any, error) {
 	switch expr := expr.(type) {
+	case Expression:
+		return i.visitExpressionStmt(expr)
+	case Print:
+		return i.visitPrintingStmt(expr)
 	case Binary:
 		return i.VisitBinaryExpr(expr)
 	case Grouping:
@@ -23,15 +28,17 @@ func (i Interpreter) evaluate(expr Expr) (any, error) {
 	case Unary:
 		return i.VisitUnaryExpr(expr)
 	}
-	return nil, errors.New("critical error: unknown expression type found in AST")
+	return nil, errors.New("critical error: unknown type found in AST")
 }
 
-func (i Interpreter) Interpret(expr Expr) (any, error) {
-	evalObj, evalErr := i.evaluate(expr)
-	if evalErr != nil {
-		return nil, evalErr
+func (i Interpreter) Interpret(statements list.List[Stmt]) error {
+	for _, statement := range statements {
+		_, evalErr := i.evaluate(statement)
+		if evalErr != nil {
+			return evalErr
+		}
 	}
-	return evalObj, nil
+	return nil
 }
 
 func (i Interpreter) isTruthy(obj any) bool {
@@ -46,6 +53,29 @@ func (i Interpreter) isTruthy(obj any) bool {
 		return len(obj) > 0
 	}
 	return true
+}
+
+func printResult(source any) {
+	switch source := source.(type) {
+	case nil:
+		fmt.Println("nil")
+	case float64:
+		if math.IsInf(source, 1) {
+			fmt.Println("Infinity")
+		} else if math.IsInf(source, -1) {
+			fmt.Println("-Infinity")
+		} else {
+			fmt.Println(source)
+		}
+	case string:
+		if len(source) == 0 {
+			fmt.Println("\"\"")
+		} else {
+			fmt.Println(source)
+		}
+	default:
+		fmt.Println(source)
+	}
 }
 
 func runtimeError(theToken token.Token, message string) error {
@@ -217,12 +247,26 @@ func (i Interpreter) VisitBinaryExpr(expr Binary) (any, error) {
 	return nil, runtimeErrorWrapper("operands must be numbers, strings, or booleans")
 }
 
+func (i Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
+	i.evaluate(stmt.Expression)
+	return nil, nil
+}
+
 func (i Interpreter) VisitGroupingExpr(expr Grouping) (any, error) {
 	return i.evaluate(expr.Expression)
 }
 
 func (i Interpreter) VisitLiteralExpr(expr Literal) (any, error) {
 	return expr.Value, nil
+}
+
+func (i Interpreter) visitPrintingStmt(stmt Print) (any, error) {
+	value, evalErr := i.evaluate(stmt.Expression)
+	if evalErr != nil {
+		return nil, evalErr
+	}
+	printResult(value)
+	return nil, nil
 }
 
 func (i Interpreter) VisitUnaryExpr(expr Unary) (any, error) {

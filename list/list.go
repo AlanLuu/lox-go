@@ -50,11 +50,6 @@ func (l *List[T]) Push(t T) {
 
 func (l *List[T]) RemoveIndex(index int) T {
 	data := (*l)[index]
-	// dataLen := len(*l)
-	// for i := index; i < dataLen-1; i++ {
-	// 	(*l)[i] = (*l)[i+1]
-	// }
-	// *l = (*l)[:dataLen-1]
 	*l = append((*l)[:index], (*l)[index+1:]...)
 	return data
 }

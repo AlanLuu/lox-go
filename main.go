@@ -3,9 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
 	"io"
-	"math"
 	"os"
 	"strings"
 
@@ -17,30 +15,7 @@ import (
 
 const PROMPT = ">>> "
 
-func printResult(source any) {
-	switch source := source.(type) {
-	case nil:
-		fmt.Println("nil")
-	case float64:
-		if math.IsInf(source, 1) {
-			fmt.Println("Infinity")
-		} else if math.IsInf(source, -1) {
-			fmt.Println("-Infinity")
-		} else {
-			fmt.Println(source)
-		}
-	case string:
-		if len(source) == 0 {
-			fmt.Println("\"\"")
-		} else {
-			fmt.Println(source)
-		}
-	default:
-		fmt.Println(source)
-	}
-}
-
-func run(source string, scParam *scanner.Scanner) (any, error) {
+func run(source string, scParam *scanner.Scanner) error {
 	var sc *scanner.Scanner
 	if scParam != nil {
 		sc = scParam
@@ -49,22 +24,23 @@ func run(source string, scParam *scanner.Scanner) (any, error) {
 	}
 	scanErr := sc.ScanTokens()
 	if scanErr != nil {
-		return "", scanErr
+		return scanErr
 	}
 
 	parser := ast.NewParser(sc.Tokens)
-	expr, parseErr := parser.Parse()
+	exprList, parseErr := parser.Parse()
+	defer exprList.Clear()
 	if parseErr != nil {
-		return "", parseErr
+		return parseErr
 	}
 
 	interpreter := ast.Interpreter{}
-	value, valueErr := interpreter.Interpret(expr)
+	valueErr := interpreter.Interpret(exprList)
 	if valueErr != nil {
-		return "", valueErr
+		return valueErr
 	}
 
-	return value, nil
+	return nil
 }
 
 func processFile(filePath string) error {
@@ -83,12 +59,11 @@ func processFile(filePath string) error {
 		}
 
 		sc.SetSourceLine(line)
-		result, resultError := run(line, sc)
+		resultError := run(line, sc)
 		if resultError != nil {
 			return resultError
 		}
 
-		printResult(result)
 		sc.ResetForNextLine()
 	}
 	return nil
@@ -115,13 +90,10 @@ func interactiveMode() {
 			continue
 		}
 
-		result, resultError := run(userInput, nil)
+		resultError := run(userInput, nil)
 		if resultError != nil {
 			loxerror.PrintErrorObject(resultError)
-			continue
 		}
-
-		printResult(result)
 	}
 }
 
@@ -131,11 +103,9 @@ func main() {
 	flag.Parse()
 
 	if *exprCLine != "" {
-		result, resultError := run(*exprCLine, nil)
+		resultError := run(*exprCLine, nil)
 		if resultError != nil {
 			loxerror.PrintErrorObject(resultError)
-		} else {
-			printResult(result)
 		}
 	} else if len(args) > 1 {
 		possibleError := processFile(args[1])
