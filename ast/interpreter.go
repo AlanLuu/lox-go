@@ -25,22 +25,24 @@ func NewInterpreter() *Interpreter {
 
 func (i *Interpreter) evaluate(expr any) (any, error) {
 	switch expr := expr.(type) {
+	case Assign:
+		return i.visitAssignExpr(expr)
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
 	case Var:
-		return i.VisitVarStmt(expr)
+		return i.visitVarStmt(expr)
 	case Variable:
-		return i.VisitVariableStmt(expr)
+		return i.visitVariableStmt(expr)
 	case Binary:
-		return i.VisitBinaryExpr(expr)
+		return i.visitBinaryExpr(expr)
 	case Grouping:
-		return i.VisitGroupingExpr(expr)
+		return i.visitGroupingExpr(expr)
 	case Literal:
-		return i.VisitLiteralExpr(expr)
+		return i.visitLiteralExpr(expr)
 	case Unary:
-		return i.VisitUnaryExpr(expr)
+		return i.visitUnaryExpr(expr)
 	}
 	return nil, errors.New("critical error: unknown type found in AST")
 }
@@ -92,7 +94,19 @@ func printResult(source any) {
 	}
 }
 
-func (i *Interpreter) VisitBinaryExpr(expr Binary) (any, error) {
+func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
+	value, valueErr := i.evaluate(expr.Value)
+	if valueErr != nil {
+		return nil, valueErr
+	}
+	assignErr := i.environment.Assign(expr.Name, value)
+	if assignErr != nil {
+		return nil, assignErr
+	}
+	return value, nil
+}
+
+func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	floatIsInt := func(f float64) bool {
 		return f == float64(int64(f))
 	}
@@ -257,15 +271,18 @@ func (i *Interpreter) VisitBinaryExpr(expr Binary) (any, error) {
 }
 
 func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
-	i.evaluate(stmt.Expression)
+	_, err := i.evaluate(stmt.Expression)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
-func (i *Interpreter) VisitGroupingExpr(expr Grouping) (any, error) {
+func (i *Interpreter) visitGroupingExpr(expr Grouping) (any, error) {
 	return i.evaluate(expr.Expression)
 }
 
-func (i *Interpreter) VisitLiteralExpr(expr Literal) (any, error) {
+func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
 	return expr.Value, nil
 }
 
@@ -278,7 +295,7 @@ func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) VisitUnaryExpr(expr Unary) (any, error) {
+func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 	right, evalErr := i.evaluate(expr.Right)
 	if evalErr != nil {
 		return nil, evalErr
@@ -299,7 +316,7 @@ func (i *Interpreter) VisitUnaryExpr(expr Unary) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) VisitVarStmt(stmt Var) (any, error) {
+func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 	var value any
 	var err error
 	if stmt.Initializer != nil {
@@ -312,6 +329,6 @@ func (i *Interpreter) VisitVarStmt(stmt Var) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) VisitVariableStmt(expr Variable) (any, error) {
+func (i *Interpreter) visitVariableStmt(expr Variable) (any, error) {
 	return i.environment.Get(expr.Name)
 }

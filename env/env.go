@@ -15,6 +15,15 @@ func NewEnvironment() *Environment {
 	}
 }
 
+func (e *Environment) Assign(name token.Token, value any) error {
+	_, ok := e.values[name.Lexeme]
+	if ok {
+		e.values[name.Lexeme] = value
+		return nil
+	}
+	return loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
+}
+
 func (e *Environment) Define(name string, value any) {
 	e.values[name] = value
 }

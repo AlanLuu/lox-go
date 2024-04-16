@@ -7,6 +7,11 @@ import (
 type Expr interface{}
 type Stmt interface{}
 
+type Assign struct {
+	Name  token.Token
+	Value Expr
+}
+
 type Binary struct {
 	Left     Expr
 	Operator token.Token

@@ -22,6 +22,28 @@ func (p *Parser) advance() token.Token {
 	return p.previous()
 }
 
+func (p *Parser) assignment() (Expr, error) {
+	expr, exprErr := p.equality()
+	if exprErr != nil {
+		return nil, exprErr
+	}
+
+	if p.match(token.EQUAL) {
+		equals := p.previous()
+		value, valueErr := p.assignment()
+		if valueErr != nil {
+			return nil, valueErr
+		}
+		switch expr := expr.(type) {
+		case Variable:
+			return Assign{Name: expr.Name, Value: value}, nil
+		}
+		return nil, p.error(equals, "Invalid assignment target.")
+	}
+
+	return expr, nil
+}
+
 func (p *Parser) check(tokenType token.TokenType) bool {
 	if p.isAtEnd() {
 		return false
@@ -82,7 +104,7 @@ func (p *Parser) error(theToken token.Token, message string) error {
 }
 
 func (p *Parser) expression() (Expr, error) {
-	return p.equality()
+	return p.assignment()
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
