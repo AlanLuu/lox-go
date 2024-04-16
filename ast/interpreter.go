@@ -27,6 +27,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 	switch expr := expr.(type) {
 	case Assign:
 		return i.visitAssignExpr(expr)
+	case Block:
+		return i.visitBlockStmt(expr)
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case Print:
@@ -268,6 +270,29 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 
 	return nil, runtimeErrorWrapper("operands must be numbers, strings, or booleans")
+}
+
+func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) error {
+	previous := i.environment
+	i.environment = environment
+	defer func() {
+		i.environment = previous
+	}()
+	for _, statement := range statements {
+		_, evalErr := i.evaluate(statement)
+		if evalErr != nil {
+			return evalErr
+		}
+	}
+	return nil
+}
+
+func (i *Interpreter) visitBlockStmt(stmt Block) (any, error) {
+	blockErr := i.executeBlock(stmt.Statements, env.NewEnvironmentEnclosing(i.environment))
+	if blockErr != nil {
+		return nil, blockErr
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {

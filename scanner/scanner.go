@@ -222,6 +222,9 @@ func (sc *Scanner) scanToken() error {
 			addToken(token.SLASH)
 		}
 
+	case '\n':
+		sc.lineNum++
+
 	case ' ':
 	case '\r':
 	case '\t':

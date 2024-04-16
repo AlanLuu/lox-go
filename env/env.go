@@ -6,20 +6,31 @@ import (
 )
 
 type Environment struct {
-	values map[string]any
+	values    map[string]any
+	enclosing *Environment
 }
 
 func NewEnvironment() *Environment {
 	return &Environment{
-		values: make(map[string]any),
+		values:    make(map[string]any),
+		enclosing: nil,
+	}
+}
+
+func NewEnvironmentEnclosing(enclosing *Environment) *Environment {
+	return &Environment{
+		values:    make(map[string]any),
+		enclosing: enclosing,
 	}
 }
 
 func (e *Environment) Assign(name token.Token, value any) error {
-	_, ok := e.values[name.Lexeme]
-	if ok {
-		e.values[name.Lexeme] = value
-		return nil
+	for tempE := e; tempE != nil; tempE = tempE.enclosing {
+		_, ok := tempE.values[name.Lexeme]
+		if ok {
+			tempE.values[name.Lexeme] = value
+			return nil
+		}
 	}
 	return loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
 }
@@ -29,9 +40,11 @@ func (e *Environment) Define(name string, value any) {
 }
 
 func (e *Environment) Get(name token.Token) (any, error) {
-	value, ok := e.values[name.Lexeme]
-	if !ok {
-		return nil, loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
+	for tempE := e; tempE != nil; tempE = tempE.enclosing {
+		value, ok := tempE.values[name.Lexeme]
+		if ok {
+			return value, nil
+		}
 	}
-	return value, nil
+	return nil, loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
 }

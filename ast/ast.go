@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/token"
 )
 
@@ -16,6 +17,10 @@ type Binary struct {
 	Left     Expr
 	Operator token.Token
 	Right    Expr
+}
+
+type Block struct {
+	Statements list.List[Stmt]
 }
 
 type Expression struct {

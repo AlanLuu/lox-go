@@ -44,6 +44,24 @@ func (p *Parser) assignment() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) block() (list.List[Stmt], error) {
+	statements := list.NewList[Stmt]()
+	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		declaration, declarationErr := p.declaration()
+		if declarationErr != nil {
+			statements.Clear()
+			return statements, declarationErr
+		}
+		statements.Add(declaration)
+	}
+	_, consumeErr := p.consume(token.RIGHT_BRACE, "Expected '}' after block.")
+	if consumeErr != nil {
+		statements.Clear()
+		return statements, consumeErr
+	}
+	return statements, nil
+}
+
 func (p *Parser) check(tokenType token.TokenType) bool {
 	if p.isAtEnd() {
 		return false
@@ -234,6 +252,13 @@ func (p *Parser) printStatement() (Stmt, error) {
 func (p *Parser) statement() (Stmt, error) {
 	if p.match(token.PRINT) {
 		return p.printStatement()
+	}
+	if p.match(token.LEFT_BRACE) {
+		blockList, blockErr := p.block()
+		if blockErr != nil {
+			return nil, blockErr
+		}
+		return Block{Statements: blockList}, nil
 	}
 	return p.expressionStatement()
 }

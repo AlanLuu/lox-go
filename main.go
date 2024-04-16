@@ -42,21 +42,25 @@ func processFile(filePath string) error {
 		return openFileError
 	}
 
-	sc := scanner.NewScanner("")
 	textSc := bufio.NewScanner(file)
-	interpreter := ast.NewInterpreter()
-	for textSc.Scan() {
+	textSc.Scan()
+	var program strings.Builder
+	for {
 		line := strings.TrimSpace(textSc.Text())
-		if len(line) != 0 {
-			sc.SetSourceLine(line)
-			resultError := run(sc, interpreter)
-			if resultError != nil {
-				return resultError
-			}
-			sc.ResetForNextLine()
+		program.WriteString(line)
+		if !textSc.Scan() {
+			break
 		}
-		sc.IncreaseLineNum()
+		program.WriteByte('\n')
 	}
+
+	sc := scanner.NewScanner(program.String())
+	interpreter := ast.NewInterpreter()
+	resultError := run(sc, interpreter)
+	if resultError != nil {
+		return resultError
+	}
+
 	return nil
 }
 
