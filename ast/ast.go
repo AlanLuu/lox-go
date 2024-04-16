@@ -33,3 +33,12 @@ type Unary struct {
 	Operator token.Token
 	Right    Expr
 }
+
+type Var struct {
+	Name        token.Token
+	Initializer Expr
+}
+
+type Variable struct {
+	Name token.Token
+}

@@ -7,18 +7,32 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/AlanLuu/lox/env"
 	"github.com/AlanLuu/lox/list"
+	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
 )
 
-type Interpreter struct{}
+type Interpreter struct {
+	environment *env.Environment
+}
 
-func (i Interpreter) evaluate(expr any) (any, error) {
+func NewInterpreter() *Interpreter {
+	return &Interpreter{
+		environment: env.NewEnvironment(),
+	}
+}
+
+func (i *Interpreter) evaluate(expr any) (any, error) {
 	switch expr := expr.(type) {
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
+	case Var:
+		return i.VisitVarStmt(expr)
+	case Variable:
+		return i.VisitVariableStmt(expr)
 	case Binary:
 		return i.VisitBinaryExpr(expr)
 	case Grouping:
@@ -31,7 +45,7 @@ func (i Interpreter) evaluate(expr any) (any, error) {
 	return nil, errors.New("critical error: unknown type found in AST")
 }
 
-func (i Interpreter) Interpret(statements list.List[Stmt]) error {
+func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 	for _, statement := range statements {
 		_, evalErr := i.evaluate(statement)
 		if evalErr != nil {
@@ -41,7 +55,7 @@ func (i Interpreter) Interpret(statements list.List[Stmt]) error {
 	return nil
 }
 
-func (i Interpreter) isTruthy(obj any) bool {
+func (i *Interpreter) isTruthy(obj any) bool {
 	switch obj := obj.(type) {
 	case nil:
 		return false
@@ -78,17 +92,12 @@ func printResult(source any) {
 	}
 }
 
-func runtimeError(theToken token.Token, message string) error {
-	errorStr := message + "\n[line " + fmt.Sprint(theToken.Line) + "]"
-	return errors.New(errorStr)
-}
-
-func (i Interpreter) VisitBinaryExpr(expr Binary) (any, error) {
+func (i *Interpreter) VisitBinaryExpr(expr Binary) (any, error) {
 	floatIsInt := func(f float64) bool {
 		return f == float64(int64(f))
 	}
 	runtimeErrorWrapper := func(message string) error {
-		return runtimeError(expr.Operator, message)
+		return loxerror.RuntimeError(expr.Operator, message)
 	}
 	unknownOpStr := "unknown operator"
 	unknownOp := func() error {
@@ -247,20 +256,20 @@ func (i Interpreter) VisitBinaryExpr(expr Binary) (any, error) {
 	return nil, runtimeErrorWrapper("operands must be numbers, strings, or booleans")
 }
 
-func (i Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
+func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	i.evaluate(stmt.Expression)
 	return nil, nil
 }
 
-func (i Interpreter) VisitGroupingExpr(expr Grouping) (any, error) {
+func (i *Interpreter) VisitGroupingExpr(expr Grouping) (any, error) {
 	return i.evaluate(expr.Expression)
 }
 
-func (i Interpreter) VisitLiteralExpr(expr Literal) (any, error) {
+func (i *Interpreter) VisitLiteralExpr(expr Literal) (any, error) {
 	return expr.Value, nil
 }
 
-func (i Interpreter) visitPrintingStmt(stmt Print) (any, error) {
+func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	value, evalErr := i.evaluate(stmt.Expression)
 	if evalErr != nil {
 		return nil, evalErr
@@ -269,7 +278,7 @@ func (i Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	return nil, nil
 }
 
-func (i Interpreter) VisitUnaryExpr(expr Unary) (any, error) {
+func (i *Interpreter) VisitUnaryExpr(expr Unary) (any, error) {
 	right, evalErr := i.evaluate(expr.Right)
 	if evalErr != nil {
 		return nil, evalErr
@@ -288,4 +297,21 @@ func (i Interpreter) VisitUnaryExpr(expr Unary) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func (i *Interpreter) VisitVarStmt(stmt Var) (any, error) {
+	var value any
+	var err error
+	if stmt.Initializer != nil {
+		value, err = i.evaluate(stmt.Initializer)
+		if err != nil {
+			return nil, err
+		}
+	}
+	i.environment.Define(stmt.Name.Lexeme, value)
+	return nil, nil
+}
+
+func (i *Interpreter) VisitVariableStmt(expr Variable) (any, error) {
+	return i.environment.Get(expr.Name)
 }

@@ -56,6 +56,21 @@ func (p *Parser) consume(tokenType token.TokenType, message string) (token.Token
 	return token.Token{}, p.error(p.peek(), message)
 }
 
+func (p *Parser) declaration() (Stmt, error) {
+	var value Stmt
+	var err error
+	if p.match(token.VAR) {
+		value, err = p.varDeclaration()
+	} else {
+		value, err = p.statement()
+	}
+	if err != nil {
+		p.synchronize()
+		return nil, err
+	}
+	return value, nil
+}
+
 func (p *Parser) error(theToken token.Token, message string) error {
 	var theError error
 	if theToken.TokenType == token.EOF {
@@ -139,7 +154,7 @@ func (p *Parser) match(tokenTypes ...token.TokenType) bool {
 func (p *Parser) Parse() (list.List[Stmt], error) {
 	statements := list.NewList[Stmt]()
 	for !p.isAtEnd() {
-		statement, err := p.statement()
+		statement, err := p.declaration()
 		if err != nil {
 			return statements, err
 		}
@@ -166,6 +181,8 @@ func (p *Parser) primary() (Expr, error) {
 		return Literal{Value: nil}, nil
 	case p.match(token.NUMBER, token.STRING):
 		return Literal{Value: p.previous().Literal}, nil
+	case p.match(token.IDENTIFIER):
+		return Variable{Name: p.previous()}, nil
 	case p.match(token.LEFT_PAREN):
 		expr, expressionErr := p.expression()
 		if expressionErr != nil {
@@ -262,4 +279,27 @@ func (p *Parser) unary() (Expr, error) {
 		}, nil
 	}
 	return p.primary()
+}
+
+func (p *Parser) varDeclaration() (Stmt, error) {
+	name, varConsumeErr := p.consume(token.IDENTIFIER, "Expected variable name.")
+	if varConsumeErr != nil {
+		return nil, varConsumeErr
+	}
+
+	var initializer Expr = nil
+	var initializerErr error = nil
+	if p.match(token.EQUAL) {
+		initializer, initializerErr = p.expression()
+		if initializerErr != nil {
+			return nil, initializerErr
+		}
+	}
+
+	_, semiConsumeErr := p.consume(token.SEMICOLON, "Expected ';' after variable declaration.")
+	if semiConsumeErr != nil {
+		return nil, semiConsumeErr
+	}
+
+	return Var{Name: name, Initializer: initializer}, nil
 }

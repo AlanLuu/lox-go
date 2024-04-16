@@ -15,13 +15,7 @@ import (
 
 const PROMPT = ">>> "
 
-func run(source string, scParam *scanner.Scanner) error {
-	var sc *scanner.Scanner
-	if scParam != nil {
-		sc = scParam
-	} else {
-		sc = scanner.NewScanner(source)
-	}
+func run(sc *scanner.Scanner, interpreter *ast.Interpreter) error {
 	scanErr := sc.ScanTokens()
 	if scanErr != nil {
 		return scanErr
@@ -34,7 +28,6 @@ func run(source string, scParam *scanner.Scanner) error {
 		return parseErr
 	}
 
-	interpreter := ast.Interpreter{}
 	valueErr := interpreter.Interpret(exprList)
 	if valueErr != nil {
 		return valueErr
@@ -51,25 +44,23 @@ func processFile(filePath string) error {
 
 	sc := scanner.NewScanner("")
 	textSc := bufio.NewScanner(file)
+	interpreter := ast.NewInterpreter()
 	for textSc.Scan() {
 		line := strings.TrimSpace(textSc.Text())
+		if len(line) != 0 {
+			sc.SetSourceLine(line)
+			resultError := run(sc, interpreter)
+			if resultError != nil {
+				return resultError
+			}
+			sc.ResetForNextLine()
+		}
 		sc.IncreaseLineNum()
-		if len(line) == 0 {
-			continue
-		}
-
-		sc.SetSourceLine(line)
-		resultError := run(line, sc)
-		if resultError != nil {
-			return resultError
-		}
-
-		sc.ResetForNextLine()
 	}
 	return nil
 }
 
-func interactiveMode() {
+func interactiveMode() int {
 	l, _ := readline.NewEx(&readline.Config{
 		Prompt:          PROMPT,
 		InterruptPrompt: "^C",
@@ -77,6 +68,12 @@ func interactiveMode() {
 	defer l.Close()
 	l.CaptureExitSignal()
 
+	stdinFromTerminal := func() bool {
+		stat, _ := os.Stdin.Stat()
+		return (stat.Mode() & os.ModeCharDevice) != 0
+	}()
+	sc := scanner.NewScanner("")
+	interpreter := ast.NewInterpreter()
 	for {
 		userInput, readError := l.Readline()
 		if readError == readline.ErrInterrupt {
@@ -86,15 +83,23 @@ func interactiveMode() {
 		}
 
 		userInput = strings.TrimSpace(userInput)
-		if len(userInput) == 0 {
-			continue
+		if len(userInput) != 0 {
+			sc.SetSourceLine(userInput)
+			resultError := run(sc, interpreter)
+			if resultError != nil {
+				loxerror.PrintErrorObject(resultError)
+				if !stdinFromTerminal {
+					return 1
+				}
+			}
 		}
 
-		resultError := run(userInput, nil)
-		if resultError != nil {
-			loxerror.PrintErrorObject(resultError)
+		sc.ResetForNextLine()
+		if !stdinFromTerminal {
+			sc.IncreaseLineNum()
 		}
 	}
+	return 0
 }
 
 func main() {
@@ -103,9 +108,11 @@ func main() {
 	flag.Parse()
 
 	if *exprCLine != "" {
-		resultError := run(*exprCLine, nil)
+		sc := scanner.NewScanner(*exprCLine)
+		resultError := run(sc, ast.NewInterpreter())
 		if resultError != nil {
 			loxerror.PrintErrorObject(resultError)
+			os.Exit(1)
 		}
 	} else if len(args) > 1 {
 		possibleError := processFile(args[1])
@@ -114,6 +121,6 @@ func main() {
 			os.Exit(1)
 		}
 	} else {
-		interactiveMode()
+		os.Exit(interactiveMode())
 	}
 }
