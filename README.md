@@ -28,6 +28,8 @@ go build
 - Booleans are treated as numbers when performing arithmetic operations on them
 - Strings can be multiplied by a whole number `n`, which returns a copy of the string repeated `n` times
 - This Lox REPL supports typing in block statements with multiple lines
+- Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
+    - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;`
 
 # Progress
 - Chapter 4 - Scanning (Complete)

@@ -11,6 +11,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 type Interpreter struct {
@@ -296,9 +297,15 @@ func (i *Interpreter) visitBlockStmt(stmt Block) (any, error) {
 }
 
 func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
-	_, err := i.evaluate(stmt.Expression)
+	value, err := i.evaluate(stmt.Expression)
 	if err != nil {
 		return nil, err
+	}
+	if util.StdinFromTerminal() {
+		_, ok := stmt.Expression.(Assign)
+		if !ok {
+			printResult(value)
+		}
 	}
 	return nil, nil
 }

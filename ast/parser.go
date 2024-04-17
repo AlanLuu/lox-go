@@ -4,6 +4,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 type Parser struct {
@@ -130,9 +131,13 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
-	if consumeErr != nil {
-		return nil, consumeErr
+	if _, ok := expr.(Assign); !util.StdinFromTerminal() || ok {
+		_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
+		if consumeErr != nil {
+			return nil, consumeErr
+		}
+	} else {
+		p.consume(token.SEMICOLON, "")
 	}
 	return Expression{Expression: expr}, nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/AlanLuu/lox/ast"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/scanner"
+	"github.com/AlanLuu/lox/util"
 	"github.com/chzyer/readline"
 )
 
@@ -74,10 +75,7 @@ func interactiveMode() int {
 	l.CaptureExitSignal()
 
 	interpreter := ast.NewInterpreter()
-	stdinFromTerminal := func() bool {
-		stat, _ := os.Stdin.Stat()
-		return (stat.Mode() & os.ModeCharDevice) != 0
-	}()
+	stdinFromTerminal := util.StdinFromTerminal()
 	numSpacesIndent := 2
 
 outer:
@@ -145,6 +143,7 @@ func main() {
 	flag.Parse()
 
 	if *exprCLine != "" {
+		os.Stdin.Close()
 		sc := scanner.NewScanner(*exprCLine)
 		resultError := run(sc, ast.NewInterpreter())
 		if resultError != nil {
@@ -152,6 +151,7 @@ func main() {
 			os.Exit(1)
 		}
 	} else if len(args) > 1 {
+		os.Stdin.Close()
 		possibleError := processFile(args[1])
 		if possibleError != nil {
 			loxerror.PrintErrorObject(possibleError)
