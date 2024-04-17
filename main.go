@@ -78,6 +78,7 @@ func interactiveMode() int {
 		stat, _ := os.Stdin.Stat()
 		return (stat.Mode() & os.ModeCharDevice) != 0
 	}()
+	numSpacesIndent := 2
 
 outer:
 	for {
@@ -86,7 +87,8 @@ outer:
 		for {
 			if stdinFromTerminal {
 				if scopeLevel > 0 {
-					l.SetPrompt(NEXT_LINE_PROMPT)
+					indent := strings.Repeat(" ", numSpacesIndent*scopeLevel)
+					l.SetPrompt(NEXT_LINE_PROMPT + indent)
 				} else {
 					l.SetPrompt(PROMPT)
 				}
