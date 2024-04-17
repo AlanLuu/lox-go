@@ -27,6 +27,7 @@ go build
 - Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
 - Booleans are treated as numbers when performing arithmetic operations on them
 - Strings can be multiplied by a whole number `n`, which returns a copy of the string repeated `n` times
+- This Lox REPL supports typing in block statements with multiple lines
 
 # Progress
 - Chapter 4 - Scanning (Complete)

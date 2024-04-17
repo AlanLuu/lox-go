@@ -119,10 +119,6 @@ func (sc *Scanner) handleString() error {
 	return nil
 }
 
-func (sc *Scanner) IncreaseLineNum() {
-	sc.lineNum++
-}
-
 func (sc *Scanner) isAtEnd() bool {
 	return sc.currentIndex >= len(sc.sourceLine)
 }
@@ -259,6 +255,7 @@ func (sc *Scanner) ScanTokens() error {
 			return scanTokenErr
 		}
 	}
+	sc.lineNum--
 	sc.Tokens.Add(token.NewToken(token.EOF, "", nil, sc.lineNum))
 	return nil
 }

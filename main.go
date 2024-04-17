@@ -14,6 +14,7 @@ import (
 )
 
 const PROMPT = ">>> "
+const NEXT_LINE_PROMPT = "... "
 
 func run(sc *scanner.Scanner, interpreter *ast.Interpreter) error {
 	scanErr := sc.ScanTokens()
@@ -72,37 +73,67 @@ func interactiveMode() int {
 	defer l.Close()
 	l.CaptureExitSignal()
 
+	interpreter := ast.NewInterpreter()
 	stdinFromTerminal := func() bool {
 		stat, _ := os.Stdin.Stat()
 		return (stat.Mode() & os.ModeCharDevice) != 0
 	}()
-	sc := scanner.NewScanner("")
-	interpreter := ast.NewInterpreter()
-	for {
-		userInput, readError := l.Readline()
-		if readError == readline.ErrInterrupt {
-			continue
-		} else if readError == io.EOF {
-			break
-		}
 
-		userInput = strings.TrimSpace(userInput)
-		if len(userInput) != 0 {
-			sc.SetSourceLine(userInput)
-			resultError := run(sc, interpreter)
-			if resultError != nil {
-				loxerror.PrintErrorObject(resultError)
-				if !stdinFromTerminal {
-					return 1
+outer:
+	for {
+		var program strings.Builder
+		scopeLevel := 0
+		for {
+			if stdinFromTerminal {
+				if scopeLevel > 0 {
+					l.SetPrompt(NEXT_LINE_PROMPT)
+				} else {
+					l.SetPrompt(PROMPT)
+				}
+			}
+
+			userInput, readError := l.Readline()
+			if readError == readline.ErrInterrupt {
+				continue
+			} else if readError == io.EOF {
+				if stdinFromTerminal {
+					break outer
+				} else {
+					break
+				}
+			}
+
+			if len(userInput) == 0 {
+				if !stdinFromTerminal || scopeLevel > 0 {
+					program.WriteByte('\n')
+				}
+				continue
+			}
+			userInput = strings.TrimSpace(userInput)
+			program.WriteString(userInput)
+			program.WriteByte('\n')
+			if stdinFromTerminal {
+				scopeLevel += (strings.Count(userInput, "{") - strings.Count(userInput, "}"))
+				if scopeLevel <= 0 {
+					break
 				}
 			}
 		}
 
-		sc.ResetForNextLine()
+		sc := scanner.NewScanner(program.String())
+		resultError := run(sc, interpreter)
+		if resultError != nil {
+			loxerror.PrintErrorObject(resultError)
+			if !stdinFromTerminal {
+				return 1
+			}
+		}
+
 		if !stdinFromTerminal {
-			sc.IncreaseLineNum()
+			break
 		}
 	}
+
 	return 0
 }
 
