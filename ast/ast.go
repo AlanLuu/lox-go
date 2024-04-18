@@ -19,6 +19,8 @@ type Binary struct {
 	Right    Expr
 }
 
+type Break struct{}
+
 type Block struct {
 	Statements list.List[Stmt]
 }

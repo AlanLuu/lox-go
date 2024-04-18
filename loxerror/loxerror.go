@@ -19,7 +19,9 @@ func RuntimeError(theToken token.Token, message string) error {
 }
 
 func PrintErrorObject(e error) {
-	fmt.Fprintf(os.Stderr, "%v\n", e.Error())
+	if len(e.Error()) > 0 {
+		fmt.Fprintf(os.Stderr, "%v\n", e.Error())
+	}
 }
 
 func PrintError(line int, where string, message string) {

@@ -11,6 +11,7 @@ import (
 
 var keywords = map[string]token.TokenType{
 	"and":    token.AND,
+	"break":  token.BREAK,
 	"class":  token.CLASS,
 	"else":   token.ELSE,
 	"false":  token.FALSE,

@@ -31,6 +31,7 @@ const (
 	NUMBER
 
 	AND
+	BREAK
 	CLASS
 	ELSE
 	FALSE
@@ -77,6 +78,7 @@ var tokenArr = [...]string{
 	"NUMBER",
 
 	"AND",
+	"BREAK",
 	"CLASS",
 	"ELSE",
 	"FALSE",

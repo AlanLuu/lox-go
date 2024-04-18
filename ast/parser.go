@@ -8,12 +8,13 @@ import (
 )
 
 type Parser struct {
-	tokens  list.List[token.Token]
-	current int
+	tokens    list.List[token.Token]
+	current   int
+	loopDepth int
 }
 
 func NewParser(tokens list.List[token.Token]) *Parser {
-	return &Parser{tokens, 0}
+	return &Parser{tokens, 0, 0}
 }
 
 func (p *Parser) advance() token.Token {
@@ -81,6 +82,18 @@ func (p *Parser) block() (list.List[Stmt], error) {
 		return statements, consumeErr
 	}
 	return statements, nil
+}
+
+func (p *Parser) breakStatement() (Stmt, error) {
+	breakToken := p.previous()
+	if p.loopDepth <= 0 {
+		return nil, p.error(breakToken, "Illegal break statement.")
+	}
+	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after 'break'.")
+	if consumeErr != nil {
+		return nil, consumeErr
+	}
+	return Break{}, nil
 }
 
 func (p *Parser) check(tokenType token.TokenType) bool {
@@ -327,6 +340,9 @@ func (p *Parser) printStatement() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(token.BREAK) {
+		return p.breakStatement()
+	}
 	if p.match(token.IF) {
 		return p.ifStatement()
 	}
@@ -435,6 +451,10 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {
+	p.loopDepth++
+	defer func() {
+		p.loopDepth--
+	}()
 	whileToken := p.previous()
 	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'while'.")
 	if leftParenErr != nil {

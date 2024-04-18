@@ -32,6 +32,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitAssignExpr(expr)
 	case Block:
 		return i.visitBlockStmt(expr)
+	case Break:
+		return expr, errors.New("")
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case If:
@@ -60,8 +62,14 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 
 func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 	for _, statement := range statements {
-		_, evalErr := i.evaluate(statement)
+		value, evalErr := i.evaluate(statement)
 		if evalErr != nil {
+			if value != nil {
+				switch statement.(type) {
+				case While:
+					continue
+				}
+			}
 			return evalErr
 		}
 	}
@@ -84,7 +92,7 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
-func printResult(source any) {
+func printResult(source any, isPrintStmt bool) {
 	switch source := source.(type) {
 	case nil:
 		fmt.Println("nil")
@@ -97,7 +105,7 @@ func printResult(source any) {
 			fmt.Println(source)
 		}
 	case string:
-		if len(source) == 0 {
+		if len(source) == 0 && !isPrintStmt {
 			fmt.Println("\"\"")
 		} else {
 			fmt.Println(source)
@@ -105,6 +113,14 @@ func printResult(source any) {
 	default:
 		fmt.Println(source)
 	}
+}
+
+func printResultExpressionStmt(source any) {
+	printResult(source, false)
+}
+
+func printResultPrintStmt(source any) {
+	printResult(source, true)
 }
 
 func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
@@ -283,24 +299,38 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	return nil, runtimeErrorWrapper("operands must be numbers, strings, or booleans")
 }
 
-func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) error {
+func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {
 	previous := i.environment
 	i.environment = environment
 	defer func() {
 		i.environment = previous
 	}()
 	for _, statement := range statements {
-		_, evalErr := i.evaluate(statement)
+		value, evalErr := i.evaluate(statement)
 		if evalErr != nil {
-			return evalErr
+			if value != nil {
+				switch statement.(type) {
+				case While:
+					continue
+				}
+			}
+			switch value := value.(type) {
+			case Break:
+				return value, evalErr
+			}
+			return nil, evalErr
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (i *Interpreter) visitBlockStmt(stmt Block) (any, error) {
-	blockErr := i.executeBlock(stmt.Statements, env.NewEnvironmentEnclosing(i.environment))
+	value, blockErr := i.executeBlock(stmt.Statements, env.NewEnvironmentEnclosing(i.environment))
 	if blockErr != nil {
+		switch value := value.(type) {
+		case Break:
+			return value, blockErr
+		}
 		return nil, blockErr
 	}
 	return nil, nil
@@ -314,7 +344,7 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	if util.StdinFromTerminal() {
 		_, ok := stmt.Expression.(Assign)
 		if !ok {
-			printResult(value)
+			printResultExpressionStmt(value)
 		}
 	}
 	return nil, nil
@@ -330,13 +360,21 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		return nil, conditionErr
 	}
 	if i.isTruthy(condition) {
-		_, evalErr := i.evaluate(stmt.ThenBranch)
+		value, evalErr := i.evaluate(stmt.ThenBranch)
 		if evalErr != nil {
+			switch value := value.(type) {
+			case Break:
+				return value, evalErr
+			}
 			return nil, evalErr
 		}
 	} else if stmt.ElseBranch != nil {
-		_, evalErr := i.evaluate(stmt.ElseBranch)
+		value, evalErr := i.evaluate(stmt.ElseBranch)
 		if evalErr != nil {
+			switch value := value.(type) {
+			case Break:
+				return value, evalErr
+			}
 			return nil, evalErr
 		}
 	}
@@ -367,7 +405,7 @@ func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	if evalErr != nil {
 		return nil, evalErr
 	}
-	printResult(value)
+	printResultPrintStmt(value)
 	return nil, nil
 }
 
@@ -427,12 +465,15 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 		if loopInterrupted {
 			return nil, loxerror.RuntimeError(stmt.WhileToken, "loop interrupted")
 		}
-		_, evalErr := i.evaluate(stmt.Body)
+		value, evalErr := i.evaluate(stmt.Body)
 		if evalErr != nil {
+			switch value := value.(type) {
+			case Break:
+				return value, evalErr
+			}
 			return nil, evalErr
 		}
 		result, conditionErr = i.evaluate(stmt.Condition)
 	}
-	close(sigChan)
 	return nil, nil
 }
