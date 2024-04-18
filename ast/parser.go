@@ -333,6 +333,9 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(token.PRINT) {
 		return p.printStatement()
 	}
+	if p.match(token.WHILE) {
+		return p.whileStatement()
+	}
 	if p.match(token.LEFT_BRACE) {
 		blockList, blockErr := p.block()
 		if blockErr != nil {
@@ -429,4 +432,24 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 	}
 
 	return Var{Name: name, Initializer: initializer}, nil
+}
+
+func (p *Parser) whileStatement() (Stmt, error) {
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'while'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+	condition, conditionErr := p.expression()
+	if conditionErr != nil {
+		return nil, conditionErr
+	}
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after condition.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+	body, bodyErr := p.statement()
+	if bodyErr != nil {
+		return nil, bodyErr
+	}
+	return While{Condition: condition, Body: body}, nil
 }

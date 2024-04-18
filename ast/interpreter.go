@@ -40,6 +40,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitVarStmt(expr)
 	case Variable:
 		return i.visitVariableStmt(expr)
+	case While:
+		return i.visitWhileStmt(expr)
 	case Binary:
 		return i.visitBinaryExpr(expr)
 	case Grouping:
@@ -403,4 +405,18 @@ func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 
 func (i *Interpreter) visitVariableStmt(expr Variable) (any, error) {
 	return i.environment.Get(expr.Name)
+}
+
+func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
+	for result, conditionErr := i.evaluate(stmt.Condition); conditionErr != nil || i.isTruthy(result); {
+		if conditionErr != nil {
+			return nil, conditionErr
+		}
+		_, evalErr := i.evaluate(stmt.Body)
+		if evalErr != nil {
+			return nil, evalErr
+		}
+		result, conditionErr = i.evaluate(stmt.Condition)
+	}
+	return nil, nil
 }

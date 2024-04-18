@@ -64,3 +64,8 @@ type Var struct {
 type Variable struct {
 	Name token.Token
 }
+
+type While struct {
+	Condition Expr
+	Body      Stmt
+}
