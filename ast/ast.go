@@ -41,6 +41,12 @@ type Literal struct {
 	Value any
 }
 
+type Logical struct {
+	Left     Expr
+	Operator token.Token
+	Right    Expr
+}
+
 type Print struct {
 	Expression Expr
 }

@@ -23,8 +23,28 @@ func (p *Parser) advance() token.Token {
 	return p.previous()
 }
 
-func (p *Parser) assignment() (Expr, error) {
+func (p *Parser) and() (Expr, error) {
 	expr, exprErr := p.equality()
+	if exprErr != nil {
+		return nil, exprErr
+	}
+	for p.match(token.AND) {
+		operator := p.previous()
+		right, equalityErr := p.equality()
+		if equalityErr != nil {
+			return nil, equalityErr
+		}
+		expr = Logical{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
+}
+
+func (p *Parser) assignment() (Expr, error) {
+	expr, exprErr := p.or()
 	if exprErr != nil {
 		return nil, exprErr
 	}
@@ -226,6 +246,26 @@ func (p *Parser) match(tokenTypes ...token.TokenType) bool {
 		}
 	}
 	return false
+}
+
+func (p *Parser) or() (Expr, error) {
+	expr, exprErr := p.and()
+	if exprErr != nil {
+		return nil, exprErr
+	}
+	for p.match(token.OR) {
+		operator := p.previous()
+		right, andErr := p.and()
+		if andErr != nil {
+			return nil, andErr
+		}
+		expr = Logical{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
 }
 
 func (p *Parser) Parse() (list.List[Stmt], error) {

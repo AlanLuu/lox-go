@@ -46,6 +46,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitGroupingExpr(expr)
 	case Literal:
 		return i.visitLiteralExpr(expr)
+	case Logical:
+		return i.visitLogicalExpr(expr)
 	case Unary:
 		return i.visitUnaryExpr(expr)
 	}
@@ -339,6 +341,21 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
 	return expr.Value, nil
+}
+
+func (i *Interpreter) visitLogicalExpr(expr Logical) (any, error) {
+	left, leftErr := i.evaluate(expr.Left)
+	if leftErr != nil {
+		return nil, leftErr
+	}
+	if expr.Operator.TokenType == token.OR {
+		if i.isTruthy(left) {
+			return left, nil
+		}
+	} else if !i.isTruthy(left) {
+		return left, nil
+	}
+	return i.evaluate(expr.Right)
 }
 
 func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
