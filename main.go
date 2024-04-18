@@ -72,7 +72,6 @@ func interactiveMode() int {
 		InterruptPrompt: "^C",
 	})
 	defer l.Close()
-	l.CaptureExitSignal()
 
 	interpreter := ast.NewInterpreter()
 	stdinFromTerminal := util.StdinFromTerminal()

@@ -66,6 +66,7 @@ type Variable struct {
 }
 
 type While struct {
-	Condition Expr
-	Body      Stmt
+	Condition  Expr
+	Body       Stmt
+	WhileToken token.Token
 }

@@ -435,6 +435,7 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {
+	whileToken := p.previous()
 	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'while'.")
 	if leftParenErr != nil {
 		return nil, leftParenErr
@@ -451,5 +452,9 @@ func (p *Parser) whileStatement() (Stmt, error) {
 	if bodyErr != nil {
 		return nil, bodyErr
 	}
-	return While{Condition: condition, Body: body}, nil
+	return While{
+		Condition:  condition,
+		Body:       body,
+		WhileToken: whileToken,
+	}, nil
 }

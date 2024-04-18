@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 
@@ -408,9 +410,22 @@ func (i *Interpreter) visitVariableStmt(expr Variable) (any, error) {
 }
 
 func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
+	loopInterrupted := false
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	go func() {
+		sig := <-sigChan
+		switch sig {
+		case os.Interrupt:
+			loopInterrupted = true
+		}
+	}()
 	for result, conditionErr := i.evaluate(stmt.Condition); conditionErr != nil || i.isTruthy(result); {
 		if conditionErr != nil {
 			return nil, conditionErr
+		}
+		if loopInterrupted {
+			return nil, loxerror.RuntimeError(stmt.WhileToken, "loop interrupted")
 		}
 		_, evalErr := i.evaluate(stmt.Body)
 		if evalErr != nil {
@@ -418,5 +433,6 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 		}
 		result, conditionErr = i.evaluate(stmt.Condition)
 	}
+	close(sigChan)
 	return nil, nil
 }
