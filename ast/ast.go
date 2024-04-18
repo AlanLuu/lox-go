@@ -31,6 +31,12 @@ type Grouping struct {
 	Expression Expr
 }
 
+type If struct {
+	Condition  Expr
+	ThenBranch Stmt
+	ElseBranch Stmt
+}
+
 type Literal struct {
 	Value any
 }

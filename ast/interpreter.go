@@ -32,6 +32,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitBlockStmt(expr)
 	case Expression:
 		return i.visitExpressionStmt(expr)
+	case If:
+		return i.visitIfStmt(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
 	case Var:
@@ -68,6 +70,8 @@ func (i *Interpreter) isTruthy(obj any) bool {
 		return obj
 	case int64:
 		return obj != 0
+	case float64:
+		return obj != 0.0
 	case string:
 		return len(obj) > 0
 	}
@@ -312,6 +316,25 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 
 func (i *Interpreter) visitGroupingExpr(expr Grouping) (any, error) {
 	return i.evaluate(expr.Expression)
+}
+
+func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
+	condition, conditionErr := i.evaluate(stmt.Condition)
+	if conditionErr != nil {
+		return nil, conditionErr
+	}
+	if i.isTruthy(condition) {
+		_, evalErr := i.evaluate(stmt.ThenBranch)
+		if evalErr != nil {
+			return nil, evalErr
+		}
+	} else if stmt.ElseBranch != nil {
+		_, evalErr := i.evaluate(stmt.ElseBranch)
+		if evalErr != nil {
+			return nil, evalErr
+		}
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {

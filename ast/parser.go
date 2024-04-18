@@ -182,6 +182,38 @@ func (p *Parser) factor() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) ifStatement() (Stmt, error) {
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'if'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+	condition, conditionErr := p.expression()
+	if conditionErr != nil {
+		return nil, conditionErr
+	}
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after if condition.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+	thenBranch, thenBranchErr := p.statement()
+	if thenBranchErr != nil {
+		return nil, thenBranchErr
+	}
+	var elseBranch Stmt
+	if p.match(token.ELSE) {
+		var elseBranchErr error
+		elseBranch, elseBranchErr = p.statement()
+		if elseBranchErr != nil {
+			return nil, elseBranchErr
+		}
+	}
+	return If{
+		Condition:  condition,
+		ThenBranch: thenBranch,
+		ElseBranch: elseBranch,
+	}, nil
+}
+
 func (p *Parser) isAtEnd() bool {
 	return p.peek().TokenType == token.EOF
 }
@@ -255,6 +287,9 @@ func (p *Parser) printStatement() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(token.IF) {
+		return p.ifStatement()
+	}
 	if p.match(token.PRINT) {
 		return p.printStatement()
 	}
