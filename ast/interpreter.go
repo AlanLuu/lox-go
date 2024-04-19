@@ -34,6 +34,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitBlockStmt(expr)
 	case Break:
 		return expr, errors.New("")
+	case Continue:
+		return expr, errors.New("")
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case For:
@@ -317,7 +319,7 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 				}
 			}
 			switch value := value.(type) {
-			case Break:
+			case Break, Continue:
 				return value, evalErr
 			}
 			return nil, evalErr
@@ -330,7 +332,7 @@ func (i *Interpreter) visitBlockStmt(stmt Block) (any, error) {
 	value, blockErr := i.executeBlock(stmt.Statements, env.NewEnvironmentEnclosing(i.environment))
 	if blockErr != nil {
 		switch value := value.(type) {
-		case Break:
+		case Break, Continue:
 			return value, blockErr
 		}
 		return nil, blockErr
@@ -390,8 +392,10 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				switch value := value.(type) {
 				case Break:
 					return value, evalErr
+				case Continue:
+				default:
+					return nil, evalErr
 				}
-				return nil, evalErr
 			}
 			if stmt.Increment != nil {
 				_, incrementErr := i.evaluate(stmt.Increment)
@@ -411,8 +415,10 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				switch value := value.(type) {
 				case Break:
 					return value, evalErr
+				case Continue:
+				default:
+					return nil, evalErr
 				}
-				return nil, evalErr
 			}
 			if stmt.Increment != nil {
 				_, incrementErr := i.evaluate(stmt.Increment)
@@ -438,7 +444,7 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		value, evalErr := i.evaluate(stmt.ThenBranch)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break:
+			case Break, Continue:
 				return value, evalErr
 			}
 			return nil, evalErr
@@ -447,7 +453,7 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		value, evalErr := i.evaluate(stmt.ElseBranch)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break:
+			case Break, Continue:
 				return value, evalErr
 			}
 			return nil, evalErr
@@ -545,8 +551,10 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 			switch value := value.(type) {
 			case Break:
 				return value, evalErr
+			case Continue:
+			default:
+				return nil, evalErr
 			}
-			return nil, evalErr
 		}
 		result, conditionErr = i.evaluate(stmt.Condition)
 	}

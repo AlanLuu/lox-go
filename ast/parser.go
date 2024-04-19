@@ -130,6 +130,18 @@ func (p *Parser) consume(tokenType token.TokenType, message string) (token.Token
 	return token.Token{}, p.error(p.peek(), message)
 }
 
+func (p *Parser) continueStatement() (Stmt, error) {
+	continueToken := p.previous()
+	if p.loopDepth <= 0 {
+		return nil, p.error(continueToken, "Illegal continue statement.")
+	}
+	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after 'continue'.")
+	if consumeErr != nil {
+		return nil, consumeErr
+	}
+	return Continue{}, nil
+}
+
 func (p *Parser) declaration() (Stmt, error) {
 	var value Stmt
 	var err error
@@ -408,22 +420,20 @@ func (p *Parser) printStatement() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
-	if p.match(token.BREAK) {
+	switch {
+	case p.match(token.BREAK):
 		return p.breakStatement()
-	}
-	if p.match(token.FOR) {
+	case p.match(token.CONTINUE):
+		return p.continueStatement()
+	case p.match(token.FOR):
 		return p.forStatement()
-	}
-	if p.match(token.IF) {
+	case p.match(token.IF):
 		return p.ifStatement()
-	}
-	if p.match(token.PRINT) {
+	case p.match(token.PRINT):
 		return p.printStatement()
-	}
-	if p.match(token.WHILE) {
+	case p.match(token.WHILE):
 		return p.whileStatement()
-	}
-	if p.match(token.LEFT_BRACE) {
+	case p.match(token.LEFT_BRACE):
 		blockList, blockErr := p.block()
 		if blockErr != nil {
 			return nil, blockErr

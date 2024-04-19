@@ -25,6 +25,8 @@ type Block struct {
 	Statements list.List[Stmt]
 }
 
+type Continue struct{}
+
 type Expression struct {
 	Expression Expr
 }

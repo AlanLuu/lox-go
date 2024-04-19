@@ -33,6 +33,7 @@ const (
 	AND
 	BREAK
 	CLASS
+	CONTINUE
 	ELSE
 	FALSE
 	FUN
@@ -80,6 +81,7 @@ var tokenArr = [...]string{
 	"AND",
 	"BREAK",
 	"CLASS",
+	"CONTINUE",
 	"ELSE",
 	"FALSE",
 	"FUN",
