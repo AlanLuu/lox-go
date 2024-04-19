@@ -89,7 +89,7 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	case int64:
 		return obj != 0
 	case float64:
-		return obj != 0.0
+		return obj != 0.0 && !math.IsNaN(obj)
 	case string:
 		return len(obj) > 0
 	}
