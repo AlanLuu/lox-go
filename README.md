@@ -42,7 +42,7 @@ go build
 - Chapter 6 - Parsing Expressions (Complete)
 - Chapter 7 - Evaluating Expressions (Complete)
 - Chapter 8 - Statements and State (Complete)
-- Chapter 9 - Control Flow (TODO)
+- Chapter 9 - Control Flow (Complete)
 - Chapter 10 - Functions (TODO)
 - Chapter 11 - Resolving and Binding (TODO)
 - Chapter 12 - Classes (TODO)
