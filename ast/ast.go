@@ -29,6 +29,14 @@ type Expression struct {
 	Expression Expr
 }
 
+type For struct {
+	Initializer Stmt
+	Condition   Expr
+	Increment   Expr
+	Body        Stmt
+	ForToken    token.Token
+}
+
 type Grouping struct {
 	Expression Expr
 }

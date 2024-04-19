@@ -215,6 +215,74 @@ func (p *Parser) factor() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) forStatement() (Stmt, error) {
+	p.loopDepth++
+	defer func() {
+		p.loopDepth--
+	}()
+
+	forToken := p.previous()
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'for'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+
+	var initializer Stmt
+	var initializerErr error
+	switch {
+	case p.match(token.SEMICOLON):
+		initializer = nil
+	case p.match(token.VAR):
+		initializer, initializerErr = p.varDeclaration()
+		if initializerErr != nil {
+			return nil, initializerErr
+		}
+	default:
+		initializer, initializerErr = p.expressionStatement()
+		if initializerErr != nil {
+			return nil, initializerErr
+		}
+	}
+
+	var condition Expr
+	var conditionErr error
+	if !p.check(token.SEMICOLON) {
+		condition, conditionErr = p.expression()
+		if conditionErr != nil {
+			return nil, conditionErr
+		}
+	}
+	_, conditionSemicolonErr := p.consume(token.SEMICOLON, "Expected ';' after loop condition.")
+	if conditionSemicolonErr != nil {
+		return nil, conditionSemicolonErr
+	}
+
+	var increment Expr
+	var incrementErr error
+	if !p.check(token.RIGHT_PAREN) {
+		increment, incrementErr = p.expression()
+		if incrementErr != nil {
+			return nil, incrementErr
+		}
+	}
+	_, incrementSemicolonErr := p.consume(token.RIGHT_PAREN, "Expected ')' after for clauses.")
+	if incrementSemicolonErr != nil {
+		return nil, incrementSemicolonErr
+	}
+
+	body, bodyErr := p.statement()
+	if bodyErr != nil {
+		return nil, bodyErr
+	}
+	return For{
+		Initializer: initializer,
+		Condition:   condition,
+		Increment:   increment,
+		Body:        body,
+		ForToken:    forToken,
+	}, nil
+}
+
 func (p *Parser) ifStatement() (Stmt, error) {
 	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'if'.")
 	if leftParenErr != nil {
@@ -342,6 +410,9 @@ func (p *Parser) printStatement() (Stmt, error) {
 func (p *Parser) statement() (Stmt, error) {
 	if p.match(token.BREAK) {
 		return p.breakStatement()
+	}
+	if p.match(token.FOR) {
+		return p.forStatement()
 	}
 	if p.match(token.IF) {
 		return p.ifStatement()

@@ -36,6 +36,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return expr, errors.New("")
 	case Expression:
 		return i.visitExpressionStmt(expr)
+	case For:
+		return i.visitForStmt(expr)
 	case If:
 		return i.visitIfStmt(expr)
 	case Print:
@@ -66,7 +68,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While:
+				case While, For:
 					continue
 				}
 			}
@@ -310,7 +312,7 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While:
+				case While, For:
 					continue
 				}
 			}
@@ -345,6 +347,79 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 		_, ok := stmt.Expression.(Assign)
 		if !ok {
 			printResultExpressionStmt(value)
+		}
+	}
+	return nil, nil
+}
+
+func (i *Interpreter) visitForStmt(stmt For) (any, error) {
+	loopInterrupted := false
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	go func() {
+		sig := <-sigChan
+		switch sig {
+		case os.Interrupt:
+			loopInterrupted = true
+		}
+	}()
+
+	tempEnvironment := env.NewEnvironmentEnclosing(i.environment)
+	previous := i.environment
+	i.environment = tempEnvironment
+	defer func() {
+		i.environment = previous
+	}()
+
+	if stmt.Initializer != nil {
+		_, initializerErr := i.evaluate(stmt.Initializer)
+		if initializerErr != nil {
+			return nil, initializerErr
+		}
+	}
+	if stmt.Condition != nil {
+		for result, conditionErr := i.evaluate(stmt.Condition); conditionErr != nil || i.isTruthy(result); {
+			if conditionErr != nil {
+				return nil, conditionErr
+			}
+			if loopInterrupted {
+				return nil, loxerror.RuntimeError(stmt.ForToken, "loop interrupted")
+			}
+			value, evalErr := i.evaluate(stmt.Body)
+			if evalErr != nil {
+				switch value := value.(type) {
+				case Break:
+					return value, evalErr
+				}
+				return nil, evalErr
+			}
+			if stmt.Increment != nil {
+				_, incrementErr := i.evaluate(stmt.Increment)
+				if incrementErr != nil {
+					return nil, incrementErr
+				}
+			}
+			result, conditionErr = i.evaluate(stmt.Condition)
+		}
+	} else {
+		for {
+			if loopInterrupted {
+				return nil, loxerror.RuntimeError(stmt.ForToken, "loop interrupted")
+			}
+			value, evalErr := i.evaluate(stmt.Body)
+			if evalErr != nil {
+				switch value := value.(type) {
+				case Break:
+					return value, evalErr
+				}
+				return nil, evalErr
+			}
+			if stmt.Increment != nil {
+				_, incrementErr := i.evaluate(stmt.Increment)
+				if incrementErr != nil {
+					return nil, incrementErr
+				}
+			}
 		}
 	}
 	return nil, nil

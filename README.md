@@ -29,6 +29,7 @@ go build
 - Strings can be multiplied by a whole number `n`, which returns a copy of the string repeated `n` times
 - Besides `false` and `nil`, the values `0`, `0.0`, and `""` are also falsy values
 - `break` statements are supported in this implementation of Lox
+- For loops are implemented with their own AST node instead of being desugared into while loop nodes
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
     - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;`
