@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/AlanLuu/lox/env"
 	"github.com/AlanLuu/lox/list"
@@ -18,12 +19,29 @@ import (
 
 type Interpreter struct {
 	environment *env.Environment
+	globals     *env.Environment
 }
 
 func NewInterpreter() *Interpreter {
-	return &Interpreter{
-		environment: env.NewEnvironment(),
+	interpreter := &Interpreter{
+		globals: env.NewEnvironment(),
 	}
+	interpreter.environment = interpreter.globals
+	interpreter.defineNativeFuncs()
+	return interpreter
+}
+
+func (i *Interpreter) defineNativeFuncs() {
+	nativeFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
+		s := struct{ ProtoLoxCallable }{}
+		s.arityMethod = func() int { return arity }
+		s.callMethod = method
+		s.stringMethod = func() string { return "<native fn>" }
+		i.globals.Define(name, s)
+	}
+	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return time.Now().UnixMilli(), nil
+	})
 }
 
 func (i *Interpreter) evaluate(expr any) (any, error) {
@@ -34,6 +52,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitBlockStmt(expr)
 	case Break:
 		return expr, errors.New("")
+	case Call:
+		return i.visitCallExpr(expr)
 	case Continue:
 		return expr, errors.New("")
 	case Expression:
@@ -114,6 +134,7 @@ func printResult(source any, isPrintStmt bool) {
 		} else {
 			fmt.Println(source)
 		}
+	case LoxCallableVoid:
 	default:
 		fmt.Println(source)
 	}
@@ -301,6 +322,33 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 
 	return nil, runtimeErrorWrapper("operands must be numbers, strings, or booleans")
+}
+
+func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
+	callee, calleeErr := i.evaluate(expr.Callee)
+	if calleeErr != nil {
+		return nil, calleeErr
+	}
+	arguments := list.NewList[any]()
+	for _, argument := range expr.Arguments {
+		result, resultErr := i.evaluate(argument)
+		if resultErr != nil {
+			arguments.Clear()
+			return nil, resultErr
+		}
+		arguments.Add(result)
+	}
+	if function, ok := callee.(LoxCallable); ok {
+		argsLen := len(arguments)
+		arity := function.arity()
+		if argsLen != arity {
+			return nil, loxerror.RuntimeError(expr.Paren,
+				fmt.Sprintf("Expected %v arguments but got %v.", arity, argsLen),
+			)
+		}
+		return function.call(i, arguments)
+	}
+	return nil, loxerror.RuntimeError(expr.Paren, "Can only call functions and classes.")
 }
 
 func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {

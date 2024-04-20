@@ -96,6 +96,21 @@ func (p *Parser) breakStatement() (Stmt, error) {
 	return Break{}, nil
 }
 
+func (p *Parser) call() (Expr, error) {
+	expr, exprErr := p.primary()
+	if exprErr != nil {
+		return nil, exprErr
+	}
+	for p.match(token.LEFT_PAREN) {
+		finishCallExpr, finishCallExprErr := p.finishCall(expr)
+		if finishCallExprErr != nil {
+			return nil, finishCallExprErr
+		}
+		expr = finishCallExpr
+	}
+	return expr, nil
+}
+
 func (p *Parser) check(tokenType token.TokenType) bool {
 	if p.isAtEnd() {
 		return false
@@ -225,6 +240,32 @@ func (p *Parser) factor() (Expr, error) {
 		}
 	}
 	return expr, nil
+}
+
+func (p *Parser) finishCall(callee Expr) (Expr, error) {
+	arguments := list.NewList[Expr]()
+	if !p.check(token.RIGHT_PAREN) {
+		for cond := true; cond; cond = p.match(token.COMMA) {
+			if len(arguments) >= 255 {
+				loxerror.PrintErrorObject(p.error(p.peek(), "Can't have more than 255 arguments."))
+			}
+			expr, exprErr := p.expression()
+			if exprErr != nil {
+				arguments.Clear()
+				return nil, exprErr
+			}
+			arguments.Add(expr)
+		}
+	}
+	paren, parenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after arguments.")
+	if parenErr != nil {
+		return nil, parenErr
+	}
+	return Call{
+		Callee:    callee,
+		Paren:     paren,
+		Arguments: arguments,
+	}, nil
 }
 
 func (p *Parser) forStatement() (Stmt, error) {
@@ -505,7 +546,7 @@ func (p *Parser) unary() (Expr, error) {
 			Right:    right,
 		}, nil
 	}
-	return p.primary()
+	return p.call()
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {

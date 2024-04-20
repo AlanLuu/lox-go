@@ -25,6 +25,12 @@ type Block struct {
 	Statements list.List[Stmt]
 }
 
+type Call struct {
+	Callee    Expr
+	Paren     token.Token
+	Arguments list.List[Expr]
+}
+
 type Continue struct{}
 
 type Expression struct {
