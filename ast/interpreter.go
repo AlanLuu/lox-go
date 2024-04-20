@@ -53,7 +53,15 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 	case Break:
 		return expr, errors.New("")
 	case Call:
-		return i.visitCallExpr(expr)
+		result, resultErr := i.visitCallExpr(expr)
+		if resultErr != nil {
+			switch result := result.(type) {
+			case Return:
+				return result.FinalValue, nil
+			}
+			return nil, resultErr
+		}
+		return result, nil
 	case Continue:
 		return expr, errors.New("")
 	case Expression:
@@ -66,6 +74,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitIfStmt(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
+	case Return:
+		return i.visitReturnStmt(expr)
 	case Var:
 		return i.visitVarStmt(expr)
 	case Variable:
@@ -92,7 +102,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For:
+				case While, For, Call:
 					continue
 				}
 			}
@@ -366,11 +376,13 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 			if value != nil {
 				switch statement.(type) {
 				case While, For:
-					continue
+					if _, ok := value.(Return); !ok {
+						continue
+					}
 				}
 			}
 			switch value := value.(type) {
-			case Break, Continue:
+			case Break, Continue, Return:
 				return value, evalErr
 			}
 			return nil, evalErr
@@ -383,7 +395,7 @@ func (i *Interpreter) visitBlockStmt(stmt Block) (any, error) {
 	value, blockErr := i.executeBlock(stmt.Statements, env.NewEnvironmentEnclosing(i.environment))
 	if blockErr != nil {
 		switch value := value.(type) {
-		case Break, Continue:
+		case Break, Continue, Return:
 			return value, blockErr
 		}
 		return nil, blockErr
@@ -441,7 +453,7 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
 				switch value := value.(type) {
-				case Break:
+				case Break, Return:
 					return value, evalErr
 				case Continue:
 				default:
@@ -464,7 +476,7 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
 				switch value := value.(type) {
-				case Break:
+				case Break, Return:
 					return value, evalErr
 				case Continue:
 				default:
@@ -501,7 +513,7 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		value, evalErr := i.evaluate(stmt.ThenBranch)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break, Continue:
+			case Break, Continue, Return:
 				return value, evalErr
 			}
 			return nil, evalErr
@@ -510,7 +522,7 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		value, evalErr := i.evaluate(stmt.ElseBranch)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break, Continue:
+			case Break, Continue, Return:
 				return value, evalErr
 			}
 			return nil, evalErr
@@ -545,6 +557,19 @@ func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	}
 	printResultPrintStmt(value)
 	return nil, nil
+}
+
+func (i *Interpreter) visitReturnStmt(stmt Return) (any, error) {
+	var value any
+	var valueErr error
+	if stmt.Value != nil {
+		value, valueErr = i.evaluate(stmt.Value)
+		if valueErr != nil {
+			return nil, valueErr
+		}
+	}
+	stmt.FinalValue = value
+	return stmt, errors.New("")
 }
 
 func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
@@ -606,7 +631,7 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 		value, evalErr := i.evaluate(stmt.Body)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break:
+			case Break, Return:
 				return value, evalErr
 			case Continue:
 			default:

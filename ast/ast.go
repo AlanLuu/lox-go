@@ -75,6 +75,12 @@ type Print struct {
 	Expression Expr
 }
 
+type Return struct {
+	Keyword    token.Token
+	Value      Expr
+	FinalValue any
+}
+
 type Unary struct {
 	Operator token.Token
 	Right    Expr

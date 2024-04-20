@@ -18,8 +18,12 @@ func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (a
 	for i := 0; i < len(f.declaration.Params); i++ {
 		environment.Define(f.declaration.Params[i].Lexeme, arguments[i])
 	}
-	_, blockErr := interpreter.executeBlock(f.declaration.Body, environment)
+	retValue, blockErr := interpreter.executeBlock(f.declaration.Body, environment)
 	if blockErr != nil {
+		switch retValue := retValue.(type) {
+		case Return:
+			return retValue, blockErr
+		}
 		return nil, blockErr
 	}
 	return nil, nil

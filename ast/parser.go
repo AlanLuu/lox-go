@@ -10,13 +10,14 @@ import (
 )
 
 type Parser struct {
-	tokens    list.List[token.Token]
-	current   int
-	loopDepth int
+	tokens        list.List[token.Token]
+	current       int
+	functionDepth int
+	loopDepth     int
 }
 
 func NewParser(tokens list.List[token.Token]) *Parser {
-	return &Parser{tokens, 0, 0}
+	return &Parser{tokens, 0, 0, 0}
 }
 
 func (p *Parser) advance() token.Token {
@@ -342,6 +343,10 @@ func (p *Parser) forStatement() (Stmt, error) {
 }
 
 func (p *Parser) function(kind string) (Function, error) {
+	p.functionDepth++
+	defer func() {
+		p.functionDepth--
+	}()
 	emptyFuncNode := Function{}
 	name, nameErr := p.consume(token.IDENTIFIER, fmt.Sprintf("Expected %v name.", kind))
 	if nameErr != nil {
@@ -511,6 +516,26 @@ func (p *Parser) printStatement() (Stmt, error) {
 	return Print{Expression: value}, nil
 }
 
+func (p *Parser) returnStatement() (Stmt, error) {
+	keyword := p.previous()
+	if p.functionDepth <= 0 {
+		return nil, p.error(keyword, "Illegal return statement.")
+	}
+	var value Expr
+	var valueErr error
+	if !p.check(token.SEMICOLON) {
+		value, valueErr = p.expression()
+		if valueErr != nil {
+			return nil, valueErr
+		}
+	}
+	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after return value.")
+	if consumeErr != nil {
+		return nil, consumeErr
+	}
+	return Return{Keyword: keyword, Value: value}, nil
+}
+
 func (p *Parser) statement() (Stmt, error) {
 	switch {
 	case p.match(token.BREAK):
@@ -523,6 +548,8 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.ifStatement()
 	case p.match(token.PRINT):
 		return p.printStatement()
+	case p.match(token.RETURN):
+		return p.returnStatement()
 	case p.match(token.WHILE):
 		return p.whileStatement()
 	case p.match(token.LEFT_BRACE):
