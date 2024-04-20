@@ -45,6 +45,12 @@ type For struct {
 	ForToken    token.Token
 }
 
+type Function struct {
+	Name   token.Token
+	Params list.List[token.Token]
+	Body   list.List[Stmt]
+}
+
 type Grouping struct {
 	Expression Expr
 }

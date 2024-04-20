@@ -7,8 +7,6 @@ type LoxCallable interface {
 	call(interpreter *Interpreter, arguments list.List[any]) (any, error)
 }
 
-type LoxCallableVoid struct{}
-
 type ProtoLoxCallable struct {
 	arityMethod  func() int
 	callMethod   func(interpreter *Interpreter, arguments list.List[any]) (any, error)

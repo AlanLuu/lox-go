@@ -40,7 +40,7 @@ func (i *Interpreter) defineNativeFuncs() {
 		i.globals.Define(name, s)
 	}
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-		return time.Now().UnixMilli(), nil
+		return float64(time.Now().UnixMilli()) / 1000, nil
 	})
 }
 
@@ -60,6 +60,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitExpressionStmt(expr)
 	case For:
 		return i.visitForStmt(expr)
+	case Function:
+		return i.visitFunctionStmt(expr)
 	case If:
 		return i.visitIfStmt(expr)
 	case Print:
@@ -119,7 +121,9 @@ func (i *Interpreter) isTruthy(obj any) bool {
 func printResult(source any, isPrintStmt bool) {
 	switch source := source.(type) {
 	case nil:
-		fmt.Println("nil")
+		if isPrintStmt {
+			fmt.Println("nil")
+		}
 	case float64:
 		if math.IsInf(source, 1) {
 			fmt.Println("Infinity")
@@ -134,7 +138,6 @@ func printResult(source any, isPrintStmt bool) {
 		} else {
 			fmt.Println(source)
 		}
-	case LoxCallableVoid:
 	default:
 		fmt.Println(source)
 	}
@@ -476,6 +479,12 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 			}
 		}
 	}
+	return nil, nil
+}
+
+func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
+	function := LoxFunction{stmt}
+	i.environment.Define(stmt.Name.Lexeme, function)
 	return nil, nil
 }
 

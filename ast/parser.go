@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"fmt"
+
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -160,9 +162,12 @@ func (p *Parser) continueStatement() (Stmt, error) {
 func (p *Parser) declaration() (Stmt, error) {
 	var value Stmt
 	var err error
-	if p.match(token.VAR) {
+	switch {
+	case p.match(token.VAR):
 		value, err = p.varDeclaration()
-	} else {
+	case p.match(token.FUN):
+		value, err = p.function("function")
+	default:
 		value, err = p.statement()
 	}
 	if err != nil {
@@ -333,6 +338,52 @@ func (p *Parser) forStatement() (Stmt, error) {
 		Increment:   increment,
 		Body:        body,
 		ForToken:    forToken,
+	}, nil
+}
+
+func (p *Parser) function(kind string) (Function, error) {
+	emptyFuncNode := Function{}
+	name, nameErr := p.consume(token.IDENTIFIER, fmt.Sprintf("Expected %v name.", kind))
+	if nameErr != nil {
+		return emptyFuncNode, nameErr
+	}
+	_, leftParenErr := p.consume(token.LEFT_PAREN, fmt.Sprintf("Expected '(' after %v name.", kind))
+	if leftParenErr != nil {
+		return emptyFuncNode, leftParenErr
+	}
+
+	parameters := list.NewList[token.Token]()
+	if !p.check(token.RIGHT_PAREN) {
+		for cond := true; cond; cond = p.match(token.COMMA) {
+			if len(parameters) >= 255 {
+				loxerror.PrintErrorObject(p.error(p.peek(), "Can't have more than 255 parameters."))
+			}
+			paramName, paramNameErr := p.consume(token.IDENTIFIER, "Expected parameter name.")
+			if paramNameErr != nil {
+				parameters.Clear()
+				return emptyFuncNode, paramNameErr
+			}
+			parameters.Add(paramName)
+		}
+	}
+
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after parameters.")
+	if rightParenErr != nil {
+		return emptyFuncNode, rightParenErr
+	}
+	_, leftBraceErr := p.consume(token.LEFT_BRACE, fmt.Sprintf("Expected '{' before %v body.", kind))
+	if leftBraceErr != nil {
+		return emptyFuncNode, leftBraceErr
+	}
+
+	block, blockErr := p.block()
+	if blockErr != nil {
+		return emptyFuncNode, blockErr
+	}
+	return Function{
+		Name:   name,
+		Params: parameters,
+		Body:   block,
 	}, nil
 }
 
