@@ -495,7 +495,7 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
-	function := LoxFunction{stmt}
+	function := LoxFunction{stmt, i.environment}
 	i.environment.Define(stmt.Name.Lexeme, function)
 	return nil, nil
 }

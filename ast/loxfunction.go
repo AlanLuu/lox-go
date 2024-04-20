@@ -7,6 +7,7 @@ import (
 
 type LoxFunction struct {
 	declaration Function
+	closure     *env.Environment
 }
 
 func (f LoxFunction) arity() int {
@@ -14,7 +15,7 @@ func (f LoxFunction) arity() int {
 }
 
 func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
-	environment := env.NewEnvironmentEnclosing(interpreter.globals)
+	environment := env.NewEnvironmentEnclosing(f.closure)
 	for i := 0; i < len(f.declaration.Params); i++ {
 		environment.Define(f.declaration.Params[i].Lexeme, arguments[i])
 	}
