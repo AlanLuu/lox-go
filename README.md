@@ -26,7 +26,7 @@ go build
 - Concatenating a string with another data type will convert that type into a string and concatenate them together
 - Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
-- Booleans are treated as numbers when performing arithmetic operations on them
+- Booleans and `nil` are treated as numbers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
 - Strings can be multiplied by a whole number `n`, which returns a copy of the string repeated `n` times
 - Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, and `""` are also falsy values
 - `break` and `continue` statements are supported in this implementation of Lox

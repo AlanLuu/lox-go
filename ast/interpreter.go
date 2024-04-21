@@ -261,6 +261,13 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	if expr.Operator.TokenType == token.BANG_EQUAL {
 		return left != right, nil
 	}
+
+	if leftAsStringer, ok := left.(fmt.Stringer); ok {
+		left = leftAsStringer.String()
+	}
+	if rightAsStringer, ok := right.(fmt.Stringer); ok {
+		right = rightAsStringer.String()
+	}
 	switch left := left.(type) {
 	case int64:
 		switch right := right.(type) {
@@ -272,6 +279,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(float64(left), boolMap[right])
 		case string:
 			return handleNumString(float64(left), right)
+		case nil:
+			return handleTwoFloats(float64(left), 0)
 		}
 	case float64:
 		switch right := right.(type) {
@@ -283,6 +292,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(float64(left), boolMap[right])
 		case string:
 			return handleNumString(left, right)
+		case nil:
+			return handleTwoFloats(float64(left), 0)
 		}
 	case bool:
 		switch right := right.(type) {
@@ -299,7 +310,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			case token.STAR:
 				return handleNumString(boolMap[left], right)
 			}
-			return math.NaN(), nil
+		case nil:
+			return handleTwoFloats(boolMap[left], 0)
 		}
 	case string:
 		switch expr.Operator.TokenType {
@@ -318,6 +330,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return left + strconv.FormatBool(right), nil
 			case string:
 				return left + right, nil
+			case nil:
+				return left + "nil", nil
 			}
 		case token.STAR:
 			repeat := func(left string, right int64) (string, error) {
@@ -331,12 +345,31 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return repeat(left, right)
 			case bool:
 				return repeat(left, int64(boolMap[right]))
+			case nil:
+				return "", nil
 			}
 		}
-		return math.NaN(), nil
+	case nil:
+		switch right := right.(type) {
+		case int64:
+			return handleTwoFloats(0, float64(right))
+		case float64:
+			return handleTwoFloats(0, float64(right))
+		case bool:
+			return handleTwoFloats(0, boolMap[right])
+		case string:
+			switch expr.Operator.TokenType {
+			case token.PLUS:
+				return "nil" + right, nil
+			case token.STAR:
+				return "", nil
+			}
+		case nil:
+			return handleTwoFloats(0, 0)
+		}
 	}
 
-	return nil, runtimeErrorWrapper("operands must be numbers, strings, or booleans")
+	return math.NaN(), nil
 }
 
 func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
