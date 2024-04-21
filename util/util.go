@@ -2,10 +2,9 @@ package util
 
 import "os"
 
+var InteractiveMode = false
+
 func StdinFromTerminal() bool {
-	stat, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-	return (stat.Mode() & os.ModeCharDevice) != 0
+	stat, _ := os.Stdin.Stat()
+	return InteractiveMode && (stat.Mode()&os.ModeCharDevice) != 0
 }

@@ -142,7 +142,6 @@ func main() {
 	flag.Parse()
 
 	if *exprCLine != "" {
-		os.Stdin.Close()
 		sc := scanner.NewScanner(*exprCLine)
 		resultError := run(sc, ast.NewInterpreter())
 		if resultError != nil {
@@ -150,13 +149,13 @@ func main() {
 			os.Exit(1)
 		}
 	} else if len(args) > 1 {
-		os.Stdin.Close()
 		possibleError := processFile(args[1])
 		if possibleError != nil {
 			loxerror.PrintErrorObject(possibleError)
 			os.Exit(1)
 		}
 	} else {
+		util.InteractiveMode = true
 		os.Exit(interactiveMode())
 	}
 }
