@@ -343,15 +343,24 @@ func (p *Parser) forStatement() (Stmt, error) {
 }
 
 func (p *Parser) function(kind string) (Function, error) {
-	p.functionDepth++
-	defer func() {
-		p.functionDepth--
-	}()
 	emptyFuncNode := Function{}
 	name, nameErr := p.consume(token.IDENTIFIER, fmt.Sprintf("Expected %v name.", kind))
 	if nameErr != nil {
 		return emptyFuncNode, nameErr
 	}
+	funcBody, funcBodyErr := p.functionBody(kind)
+	if funcBodyErr != nil {
+		return emptyFuncNode, funcBodyErr
+	}
+	return Function{Name: name, Function: funcBody}, nil
+}
+
+func (p *Parser) functionBody(kind string) (FunctionExpr, error) {
+	p.functionDepth++
+	defer func() {
+		p.functionDepth--
+	}()
+	emptyFuncNode := FunctionExpr{}
 	_, leftParenErr := p.consume(token.LEFT_PAREN, fmt.Sprintf("Expected '(' after %v name.", kind))
 	if leftParenErr != nil {
 		return emptyFuncNode, leftParenErr
@@ -385,8 +394,7 @@ func (p *Parser) function(kind string) (Function, error) {
 	if blockErr != nil {
 		return emptyFuncNode, blockErr
 	}
-	return Function{
-		Name:   name,
+	return FunctionExpr{
 		Params: parameters,
 		Body:   block,
 	}, nil
@@ -490,6 +498,8 @@ func (p *Parser) primary() (Expr, error) {
 		return Literal{Value: p.previous().Literal}, nil
 	case p.match(token.IDENTIFIER):
 		return Variable{Name: p.previous()}, nil
+	case p.match(token.FUN):
+		return p.functionBody("function")
 	case p.match(token.LEFT_PAREN):
 		expr, expressionErr := p.expression()
 		if expressionErr != nil {

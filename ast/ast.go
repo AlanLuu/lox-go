@@ -46,7 +46,11 @@ type For struct {
 }
 
 type Function struct {
-	Name   token.Token
+	Name     token.Token
+	Function FunctionExpr
+}
+
+type FunctionExpr struct {
 	Params list.List[token.Token]
 	Body   list.List[Stmt]
 }

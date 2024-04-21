@@ -70,6 +70,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitForStmt(expr)
 	case Function:
 		return i.visitFunctionStmt(expr)
+	case FunctionExpr:
+		return i.visitFunctionExpr(expr)
 	case If:
 		return i.visitIfStmt(expr)
 	case Print:
@@ -494,9 +496,13 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 	return nil, nil
 }
 
+func (i *Interpreter) visitFunctionExpr(expr FunctionExpr) (LoxFunction, error) {
+	return LoxFunction{"", expr, i.environment}, nil
+}
+
 func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
-	function := LoxFunction{stmt, i.environment}
-	i.environment.Define(stmt.Name.Lexeme, function)
+	funcName := stmt.Name.Lexeme
+	i.environment.Define(funcName, LoxFunction{funcName, stmt.Function, i.environment})
 	return nil, nil
 }
 

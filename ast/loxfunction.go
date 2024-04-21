@@ -6,7 +6,8 @@ import (
 )
 
 type LoxFunction struct {
-	declaration Function
+	name        string
+	declaration FunctionExpr
 	closure     *env.Environment
 }
 
@@ -31,5 +32,8 @@ func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (a
 }
 
 func (f LoxFunction) String() string {
-	return "<fn " + f.declaration.Name.Lexeme + ">"
+	if len(f.name) == 0 {
+		return "<fn>"
+	}
+	return "<fn " + f.name + ">"
 }
