@@ -348,14 +348,14 @@ func (p *Parser) function(kind string) (Function, error) {
 	if nameErr != nil {
 		return emptyFuncNode, nameErr
 	}
-	funcBody, funcBodyErr := p.functionBody(kind)
+	funcBody, funcBodyErr := p.functionBody(kind, true)
 	if funcBodyErr != nil {
 		return emptyFuncNode, funcBodyErr
 	}
 	return Function{Name: name, Function: funcBody}, nil
 }
 
-func (p *Parser) functionBody(kind string) (FunctionExpr, error) {
+func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, error) {
 	p.functionDepth++
 	defer func() {
 		p.functionDepth--
@@ -385,14 +385,31 @@ func (p *Parser) functionBody(kind string) (FunctionExpr, error) {
 	if rightParenErr != nil {
 		return emptyFuncNode, rightParenErr
 	}
-	_, leftBraceErr := p.consume(token.LEFT_BRACE, fmt.Sprintf("Expected '{' before %v body.", kind))
-	if leftBraceErr != nil {
-		return emptyFuncNode, leftBraceErr
-	}
 
-	block, blockErr := p.block()
-	if blockErr != nil {
-		return emptyFuncNode, blockErr
+	var block list.List[Stmt]
+	var blockErr error
+	if !funcHasName && p.match(token.ARROW) {
+		expr, exprErr := p.expression()
+		if exprErr != nil {
+			return emptyFuncNode, exprErr
+		}
+		block = list.NewList[Stmt]()
+		block.Add(Return{Value: expr})
+	} else {
+		var leftBraceErrMsg string
+		if funcHasName {
+			leftBraceErrMsg = fmt.Sprintf("Expected '{' before %v body.", kind)
+		} else {
+			leftBraceErrMsg = fmt.Sprintf("Expected '{' or '=>' before %v body.", kind)
+		}
+		_, leftBraceErr := p.consume(token.LEFT_BRACE, leftBraceErrMsg)
+		if leftBraceErr != nil {
+			return emptyFuncNode, leftBraceErr
+		}
+		block, blockErr = p.block()
+		if blockErr != nil {
+			return emptyFuncNode, blockErr
+		}
 	}
 	return FunctionExpr{
 		Params: parameters,
@@ -499,7 +516,7 @@ func (p *Parser) primary() (Expr, error) {
 	case p.match(token.IDENTIFIER):
 		return Variable{Name: p.previous()}, nil
 	case p.match(token.FUN):
-		return p.functionBody("function")
+		return p.functionBody("function", false)
 	case p.match(token.LEFT_PAREN):
 		expr, expressionErr := p.expression()
 		if expressionErr != nil {

@@ -196,6 +196,8 @@ func (sc *Scanner) scanToken() error {
 	case '=':
 		if sc.match('=') { //handle "=="
 			addToken(token.EQUAL_EQUAL)
+		} else if sc.match('>') { //handle "=>"
+			addToken(token.ARROW)
 		} else {
 			addToken(token.EQUAL)
 		}

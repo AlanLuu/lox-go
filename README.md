@@ -32,7 +32,9 @@ go build
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops
-- Anonymous function expressions are supported in this implementation of Lox
+- Anonymous function expressions are supported in this implementation of Lox. There are two forms supported:
+    - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
+    - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
     - The parser will attempt to parse anonymous function expressions that appear on their own line as function declarations, throwing a parser error as a result. This is expected behavior; to force the parser to parse them as expressions, wrap the function expression inside parentheses, like `(fun() {})()`. In this case, this creates an anonymous function expression that is called immediately
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end

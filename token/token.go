@@ -17,6 +17,7 @@ const (
 	SLASH
 	STAR
 
+	ARROW
 	BANG
 	BANG_EQUAL
 	EQUAL
@@ -65,6 +66,7 @@ var tokenArr = [...]string{
 	"SLASH",
 	"STAR",
 
+	"ARROW",
 	"BANG",
 	"BANG_EQUAL",
 	"EQUAL",
