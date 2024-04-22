@@ -360,10 +360,23 @@ func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, erro
 	defer func() {
 		p.functionDepth--
 	}()
+
 	emptyFuncNode := FunctionExpr{}
-	_, leftParenErr := p.consume(token.LEFT_PAREN, fmt.Sprintf("Expected '(' after %v name.", kind))
-	if leftParenErr != nil {
-		return emptyFuncNode, leftParenErr
+	if funcHasName {
+		_, leftParenErr := p.consume(token.LEFT_PAREN, fmt.Sprintf("Expected '(' after %v name.", kind))
+		if leftParenErr != nil {
+			return emptyFuncNode, leftParenErr
+		}
+	} else {
+		var leftParenErr error
+		if kind == "function" {
+			_, leftParenErr = p.consume(token.LEFT_PAREN, "Expected '(' after 'fun'.")
+		} else {
+			_, leftParenErr = p.consume(token.LEFT_PAREN, "Expected '('.")
+		}
+		if leftParenErr != nil {
+			return emptyFuncNode, leftParenErr
+		}
 	}
 
 	parameters := list.NewList[token.Token]()
