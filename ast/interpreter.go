@@ -81,7 +81,7 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 	case Var:
 		return i.visitVarStmt(expr)
 	case Variable:
-		return i.visitVariableStmt(expr)
+		return i.visitVariableExpr(expr)
 	case While:
 		return i.visitWhileStmt(expr)
 	case Binary:
@@ -645,7 +645,7 @@ func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitVariableStmt(expr Variable) (any, error) {
+func (i *Interpreter) visitVariableExpr(expr Variable) (any, error) {
 	return i.environment.Get(expr.Name)
 }
 
