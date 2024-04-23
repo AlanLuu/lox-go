@@ -471,16 +471,19 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 }
 
 func (i *Interpreter) visitForStmt(stmt For) (any, error) {
+	enteredLoop := false
 	loopInterrupted := false
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
-	go func() {
-		sig := <-sigChan
-		switch sig {
-		case os.Interrupt:
-			loopInterrupted = true
-		}
-	}()
+	catchInterruptSignal := func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt)
+		go func() {
+			sig := <-sigChan
+			switch sig {
+			case os.Interrupt:
+				loopInterrupted = true
+			}
+		}()
+	}
 
 	tempEnvironment := env.NewEnvironmentEnclosing(i.environment)
 	previous := i.environment
@@ -502,6 +505,10 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 			}
 			if loopInterrupted {
 				return nil, loxerror.RuntimeError(stmt.ForToken, "loop interrupted")
+			}
+			if !enteredLoop {
+				catchInterruptSignal()
+				enteredLoop = true
 			}
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
@@ -525,6 +532,10 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 		for {
 			if loopInterrupted {
 				return nil, loxerror.RuntimeError(stmt.ForToken, "loop interrupted")
+			}
+			if !enteredLoop {
+				catchInterruptSignal()
+				enteredLoop = true
 			}
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
