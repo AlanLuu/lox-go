@@ -1,12 +1,12 @@
 package list
 
-type List[T comparable] []T
+type List[T any] []T
 
-func NewList[T comparable]() List[T] {
+func NewList[T any]() List[T] {
 	return NewListCap[T](0)
 }
 
-func NewListCap[T comparable](cap int) List[T] {
+func NewListCap[T any](cap int) List[T] {
 	return make(List[T], 0, cap)
 }
 
@@ -23,17 +23,8 @@ func (l *List[T]) Clear() {
 	*l = nil
 }
 
-func (l *List[T]) Contains(value T) bool {
-	return l.IndexOf(value) >= 0
-}
-
-func (l *List[T]) IndexOf(value T) int {
-	for i, e := range *l {
-		if e == value {
-			return i
-		}
-	}
-	return -1
+func (l *List[T]) IsEmpty() bool {
+	return len(*l) == 0
 }
 
 func (l *List[T]) Peek() T {
@@ -52,13 +43,4 @@ func (l *List[T]) RemoveIndex(index int) T {
 	data := (*l)[index]
 	*l = append((*l)[:index], (*l)[index+1:]...)
 	return data
-}
-
-func (l *List[T]) RemoveValue(value T) bool {
-	i := l.IndexOf(value)
-	if i >= 0 {
-		l.RemoveIndex(i)
-		return true
-	}
-	return false
 }

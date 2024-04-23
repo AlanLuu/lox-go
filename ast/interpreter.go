@@ -20,11 +20,13 @@ import (
 type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
+	locals      map[Expr]int
 }
 
 func NewInterpreter() *Interpreter {
 	interpreter := &Interpreter{
 		globals: env.NewEnvironment(),
+		locals:  make(map[Expr]int),
 	}
 	interpreter.environment = interpreter.globals
 	interpreter.defineNativeFuncs()
@@ -130,6 +132,15 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
+func (i *Interpreter) lookUpVariable(name token.Token, expr Expr) (any, error) {
+	distance, ok := i.locals[expr]
+	if ok {
+		return i.environment.GetAt(distance, name.Lexeme), nil
+	} else {
+		return i.globals.Get(name)
+	}
+}
+
 func printResult(source any, isPrintStmt bool) {
 	switch source := source.(type) {
 	case nil:
@@ -163,14 +174,23 @@ func printResultPrintStmt(source any) {
 	printResult(source, true)
 }
 
+func (i *Interpreter) Resolve(expr Expr, depth int) {
+	i.locals[expr] = depth
+}
+
 func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
 	value, valueErr := i.evaluate(expr.Value)
 	if valueErr != nil {
 		return nil, valueErr
 	}
-	assignErr := i.environment.Assign(expr.Name, value)
-	if assignErr != nil {
-		return nil, assignErr
+	distance, ok := i.locals[expr]
+	if ok {
+		i.environment.AssignAt(distance, expr.Name, value)
+	} else {
+		assignErr := i.globals.Assign(expr.Name, value)
+		if assignErr != nil {
+			return nil, assignErr
+		}
 	}
 	return value, nil
 }
@@ -646,7 +666,7 @@ func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 }
 
 func (i *Interpreter) visitVariableExpr(expr Variable) (any, error) {
-	return i.environment.Get(expr.Name)
+	return i.lookUpVariable(expr.Name, expr)
 }
 
 func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {

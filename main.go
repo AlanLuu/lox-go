@@ -30,6 +30,12 @@ func run(sc *scanner.Scanner, interpreter *ast.Interpreter) error {
 		return parseErr
 	}
 
+	resolver := ast.NewResolver(interpreter)
+	resolverErr := resolver.Resolve(exprList)
+	if resolverErr != nil {
+		return resolverErr
+	}
+
 	valueErr := interpreter.Interpret(exprList)
 	if valueErr != nil {
 		return valueErr
