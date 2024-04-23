@@ -78,6 +78,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitUnaryExpr(expr)
 	case Variable:
 		return r.visitVariableExpr(expr)
+	case nil:
+		return nil
 	}
 	return errors.New("unknown expression found in resolver")
 }
@@ -104,6 +106,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitVarStmt(stmt)
 	case While:
 		return r.visitWhileStmt(stmt)
+	case nil:
+		return nil
 	}
 	return errors.New("unknown statement found in resolver")
 }
