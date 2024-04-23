@@ -20,13 +20,13 @@ import (
 type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
-	locals      map[Expr]int
+	locals      map[any]int
 }
 
 func NewInterpreter() *Interpreter {
 	interpreter := &Interpreter{
 		globals: env.NewEnvironment(),
-		locals:  make(map[Expr]int),
+		locals:  make(map[any]int),
 	}
 	interpreter.environment = interpreter.globals
 	interpreter.defineNativeFuncs()
@@ -673,22 +673,26 @@ func (i *Interpreter) visitVariableExpr(expr Variable) (any, error) {
 }
 
 func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
+	enteredLoop := false
 	loopInterrupted := false
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
-	go func() {
-		sig := <-sigChan
-		switch sig {
-		case os.Interrupt:
-			loopInterrupted = true
-		}
-	}()
 	for result, conditionErr := i.evaluate(stmt.Condition); conditionErr != nil || i.isTruthy(result); {
 		if conditionErr != nil {
 			return nil, conditionErr
 		}
 		if loopInterrupted {
 			return nil, loxerror.RuntimeError(stmt.WhileToken, "loop interrupted")
+		}
+		if !enteredLoop {
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt)
+			go func() {
+				sig := <-sigChan
+				switch sig {
+				case os.Interrupt:
+					loopInterrupted = true
+				}
+			}()
+			enteredLoop = true
 		}
 		value, evalErr := i.evaluate(stmt.Body)
 		if evalErr != nil {
