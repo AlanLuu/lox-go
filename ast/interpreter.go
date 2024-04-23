@@ -132,15 +132,6 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
-func (i *Interpreter) lookUpVariable(name token.Token, expr Expr) (any, error) {
-	distance, ok := i.locals[expr]
-	if ok {
-		return i.environment.GetAt(distance, name.Lexeme), nil
-	} else {
-		return i.globals.Get(name)
-	}
-}
-
 func printResult(source any, isPrintStmt bool) {
 	switch source := source.(type) {
 	case nil:
@@ -175,7 +166,14 @@ func printResultPrintStmt(source any) {
 }
 
 func (i *Interpreter) Resolve(expr Expr, depth int) {
-	i.locals[expr] = depth
+	switch expr := expr.(type) {
+	case Assign:
+		i.locals[expr.Name] = depth
+	case Variable:
+		i.locals[expr.Name] = depth
+	default:
+		i.locals[expr] = depth
+	}
 }
 
 func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
@@ -183,7 +181,7 @@ func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
 	if valueErr != nil {
 		return nil, valueErr
 	}
-	distance, ok := i.locals[expr]
+	distance, ok := i.locals[expr.Name]
 	if ok {
 		i.environment.AssignAt(distance, expr.Name, value)
 	} else {
@@ -666,7 +664,12 @@ func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 }
 
 func (i *Interpreter) visitVariableExpr(expr Variable) (any, error) {
-	return i.lookUpVariable(expr.Name, expr)
+	distance, ok := i.locals[expr.Name]
+	if ok {
+		return i.environment.GetAt(distance, expr.Name.Lexeme), nil
+	} else {
+		return i.globals.Get(expr.Name)
+	}
 }
 
 func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
