@@ -48,7 +48,7 @@ go build
 - Chapter 8 - Statements and State (Complete)
 - Chapter 9 - Control Flow (Complete)
 - Chapter 10 - Functions (Complete)
-- Chapter 11 - Resolving and Binding (TODO)
+- Chapter 11 - Resolving and Binding (Complete)
 - Chapter 12 - Classes (TODO)
 - Chapter 13 - Inheritance (TODO)
 
