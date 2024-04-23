@@ -86,6 +86,10 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 	switch stmt := stmt.(type) {
 	case Block:
 		return r.visitBlockStmt(stmt)
+	case Break, Continue:
+		return nil
+	case For:
+		return r.visitForStmt(stmt)
 	case Function:
 		return r.visitFunctionStmt(stmt)
 	case Expression:
@@ -153,6 +157,24 @@ func (r *Resolver) visitCallExpr(expr Call) error {
 
 func (r *Resolver) visitExpressionStmt(stmt Expression) error {
 	return r.resolveExpr(stmt.Expression)
+}
+
+func (r *Resolver) visitForStmt(stmt For) error {
+	r.beginScope()
+	defer r.endScope()
+	resolveErr := r.resolveStmt(stmt.Initializer)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	resolveErr = r.resolveExpr(stmt.Condition)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	resolveErr = r.resolveExpr(stmt.Increment)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveStmt(stmt.Body)
 }
 
 func (r *Resolver) visitFunctionExpr(expr FunctionExpr) error {
