@@ -32,6 +32,7 @@ go build
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops
+- Variables declared in the initialization part of a for loop are locally scoped to that loop and do not become global variables
 - Anonymous function expressions are supported in this implementation of Lox. There are two forms supported:
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
