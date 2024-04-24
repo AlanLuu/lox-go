@@ -68,12 +68,16 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitCallExpr(expr)
 	case FunctionExpr:
 		return r.visitFunctionExpr(expr)
+	case Get:
+		return r.visitGetExpr(expr)
 	case Grouping:
 		return r.visitGroupingExpr(expr)
 	case Literal:
 		return nil
 	case Logical:
 		return r.visitLogicalExpr(expr)
+	case Set:
+		return r.visitSetExpr(expr)
 	case Unary:
 		return r.visitUnaryExpr(expr)
 	case Variable:
@@ -214,6 +218,10 @@ func (r *Resolver) visitFunctionStmt(stmt Function) error {
 	return r.visitFunctionExpr(stmt.Function)
 }
 
+func (r *Resolver) visitGetExpr(expr Get) error {
+	return r.resolveExpr(expr.Object)
+}
+
 func (r *Resolver) visitGroupingExpr(expr Grouping) error {
 	return r.resolveExpr(expr.Expression)
 }
@@ -253,6 +261,14 @@ func (r *Resolver) visitReturnStmt(stmt Return) error {
 		return r.resolveExpr(stmt.Value)
 	}
 	return nil
+}
+
+func (r *Resolver) visitSetExpr(expr Set) error {
+	resolveErr := r.resolveExpr(expr.Value)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveExpr(expr.Object)
 }
 
 func (r *Resolver) visitUnaryExpr(expr Unary) error {

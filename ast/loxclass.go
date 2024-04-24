@@ -11,7 +11,7 @@ func (c LoxClass) arity() int {
 }
 
 func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
-	return LoxInstance{c}, nil
+	return NewLoxInstance(c), nil
 }
 
 func (c LoxClass) String() string {

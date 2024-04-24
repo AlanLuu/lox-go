@@ -62,6 +62,12 @@ func (p *Parser) assignment() (Expr, error) {
 		switch expr := expr.(type) {
 		case Variable:
 			return Assign{Name: expr.Name, Value: value}, nil
+		case Get:
+			return Set{
+				Object: expr.Object,
+				Name:   expr.Name,
+				Value:  value,
+			}, nil
 		}
 		return nil, p.error(equals, "Invalid assignment target.")
 	}
@@ -104,12 +110,22 @@ func (p *Parser) call() (Expr, error) {
 	if exprErr != nil {
 		return nil, exprErr
 	}
-	for p.match(token.LEFT_PAREN) {
-		finishCallExpr, finishCallExprErr := p.finishCall(expr)
-		if finishCallExprErr != nil {
-			return nil, finishCallExprErr
+	for {
+		if p.match(token.LEFT_PAREN) {
+			finishCallExpr, finishCallExprErr := p.finishCall(expr)
+			if finishCallExprErr != nil {
+				return nil, finishCallExprErr
+			}
+			expr = finishCallExpr
+		} else if p.match(token.DOT) {
+			name, nameErr := p.consume(token.IDENTIFIER, "Expected property name after '.'.")
+			if nameErr != nil {
+				return nil, nameErr
+			}
+			expr = Get{Object: expr, Name: name}
+		} else {
+			break
 		}
-		expr = finishCallExpr
 	}
 	return expr, nil
 }

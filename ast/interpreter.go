@@ -76,12 +76,16 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitFunctionStmt(expr)
 	case FunctionExpr:
 		return i.visitFunctionExpr(expr)
+	case Get:
+		return i.visitGetExpr(expr)
 	case If:
 		return i.visitIfStmt(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
 	case Return:
 		return i.visitReturnStmt(expr)
+	case Set:
+		return i.visitSetExpr(expr)
 	case Var:
 		return i.visitVarStmt(expr)
 	case Variable:
@@ -577,6 +581,17 @@ func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
 	return nil, nil
 }
 
+func (i *Interpreter) visitGetExpr(expr Get) (any, error) {
+	obj, objErr := i.evaluate(expr.Object)
+	if objErr != nil {
+		return nil, objErr
+	}
+	if obj, ok := obj.(*LoxInstance); ok {
+		return obj.Get(expr.Name)
+	}
+	return nil, loxerror.RuntimeError(expr.Name, "Only instances have properties.")
+}
+
 func (i *Interpreter) visitGroupingExpr(expr Grouping) (any, error) {
 	return i.evaluate(expr.Expression)
 }
@@ -647,6 +662,22 @@ func (i *Interpreter) visitReturnStmt(stmt Return) (any, error) {
 	}
 	stmt.FinalValue = value
 	return stmt, errors.New("")
+}
+
+func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
+	obj, objErr := i.evaluate(expr.Object)
+	if objErr != nil {
+		return nil, objErr
+	}
+	if obj, ok := obj.(*LoxInstance); ok {
+		value, valueErr := i.evaluate(expr.Value)
+		if valueErr != nil {
+			return nil, valueErr
+		}
+		obj.Set(expr.Name, value)
+		return value, nil
+	}
+	return nil, loxerror.RuntimeError(expr.Name, "Only instances have fields.")
 }
 
 func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {

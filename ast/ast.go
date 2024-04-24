@@ -60,6 +60,11 @@ type FunctionExpr struct {
 	Body   list.List[Stmt]
 }
 
+type Get struct {
+	Object Expr
+	Name   token.Token
+}
+
 type Grouping struct {
 	Expression Expr
 }
@@ -88,6 +93,12 @@ type Return struct {
 	Keyword    token.Token
 	Value      Expr
 	FinalValue any
+}
+
+type Set struct {
+	Object Expr
+	Name   token.Token
+	Value  Expr
 }
 
 type Unary struct {
