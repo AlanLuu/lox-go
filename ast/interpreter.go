@@ -677,7 +677,7 @@ func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 func (i *Interpreter) visitVariableExpr(expr Variable) (any, error) {
 	distance, ok := i.locals[expr.Name]
 	if ok {
-		return i.environment.GetAt(distance, expr.Name.Lexeme), nil
+		return i.environment.GetAt(distance, expr.Name)
 	} else {
 		return i.globals.Get(expr.Name)
 	}
