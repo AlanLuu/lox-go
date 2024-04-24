@@ -90,6 +90,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitBlockStmt(stmt)
 	case Break, Continue:
 		return nil
+	case Class:
+		return r.visitClassStmt(stmt)
 	case For:
 		return r.visitForStmt(stmt)
 	case Function:
@@ -156,6 +158,15 @@ func (r *Resolver) visitCallExpr(expr Call) error {
 			return resolveErr
 		}
 	}
+	return nil
+}
+
+func (r *Resolver) visitClassStmt(stmt Class) error {
+	declareErr := r.declare(stmt.Name)
+	if declareErr != nil {
+		return declareErr
+	}
+	r.define(stmt.Name)
 	return nil
 }
 

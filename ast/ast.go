@@ -31,6 +31,11 @@ type Call struct {
 	Arguments list.List[Expr]
 }
 
+type Class struct {
+	Name    token.Token
+	Methods list.List[Function]
+}
+
 type Continue struct{}
 
 type Expression struct {

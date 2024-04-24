@@ -64,6 +64,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 			return nil, resultErr
 		}
 		return result, nil
+	case Class:
+		return i.visitClassStmt(expr)
 	case Continue:
 		return expr, errors.New("")
 	case Expression:
@@ -415,6 +417,13 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 		return function.call(i, arguments)
 	}
 	return nil, loxerror.RuntimeError(expr.Paren, "Can only call functions and classes.")
+}
+
+func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
+	i.environment.Define(stmt.Name.Lexeme, nil)
+	loxClass := LoxClass{stmt.Name.Lexeme}
+	i.environment.Assign(stmt.Name, loxClass)
+	return nil, nil
 }
 
 func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {

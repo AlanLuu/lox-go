@@ -121,6 +121,36 @@ func (p *Parser) check(tokenType token.TokenType) bool {
 	return p.peek().TokenType == tokenType
 }
 
+func (p *Parser) classDeclaration() (Stmt, error) {
+	className, classNameErr := p.consume(token.IDENTIFIER, "Expected class name.")
+	if classNameErr != nil {
+		return nil, classNameErr
+	}
+	_, leftBraceErr := p.consume(token.LEFT_BRACE, "Expected '{' before class body.")
+	if leftBraceErr != nil {
+		return nil, leftBraceErr
+	}
+
+	methods := list.NewList[Function]()
+	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		methodName, methodNameErr := p.consume(token.IDENTIFIER, "Expected method name.")
+		if methodNameErr != nil {
+			return nil, methodNameErr
+		}
+		method, methodErr := p.functionBody("method", true)
+		if methodErr != nil {
+			return nil, methodErr
+		}
+		methods.Add(Function{Name: methodName, Function: method})
+	}
+
+	_, rightBraceErr := p.consume(token.RIGHT_BRACE, "Expected '}' after class body.")
+	if rightBraceErr != nil {
+		return nil, rightBraceErr
+	}
+	return Class{Name: className, Methods: methods}, nil
+}
+
 func (p *Parser) comparison() (Expr, error) {
 	expr, termErr := p.term()
 	if termErr != nil {
@@ -168,6 +198,8 @@ func (p *Parser) declaration() (Stmt, error) {
 		value, err = p.varDeclaration()
 	case p.match(token.FUN):
 		value, err = p.function("function")
+	case p.match(token.CLASS):
+		value, err = p.classDeclaration()
 	default:
 		value, err = p.statement()
 	}
