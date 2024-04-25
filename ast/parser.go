@@ -572,6 +572,8 @@ func (p *Parser) primary() (Expr, error) {
 		return Variable{Name: p.previous()}, nil
 	case p.match(token.FUN):
 		return p.functionBody("function", false)
+	case p.match(token.THIS):
+		return This{Keyword: p.previous()}, nil
 	case p.match(token.LEFT_PAREN):
 		expr, expressionErr := p.expression()
 		if expressionErr != nil {

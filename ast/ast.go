@@ -101,6 +101,10 @@ type Set struct {
 	Value  Expr
 }
 
+type This struct {
+	Keyword token.Token
+}
+
 type Unary struct {
 	Operator token.Token
 	Right    Expr

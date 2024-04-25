@@ -22,9 +22,10 @@ func (i *LoxInstance) Get(name token.Token) (any, error) {
 	if ok {
 		return value, nil
 	}
-	value, ok = i.class.findMethod(name.Lexeme)
+	var method LoxFunction
+	method, ok = i.class.findMethod(name.Lexeme)
 	if ok {
-		return value, nil
+		return method.bind(i), nil
 	}
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }

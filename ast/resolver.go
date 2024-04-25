@@ -81,6 +81,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitLogicalExpr(expr)
 	case Set:
 		return r.visitSetExpr(expr)
+	case This:
+		return r.visitThisExpr(expr)
 	case Unary:
 		return r.visitUnaryExpr(expr)
 	case Variable:
@@ -193,12 +195,15 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		return declareErr
 	}
 	r.define(stmt.Name)
+	r.beginScope()
+	r.Scopes.Peek()["this"] = true
 	for _, method := range stmt.Methods {
 		resolveErr := r.resolveFunction(method.Function, functiontype.METHOD)
 		if resolveErr != nil {
 			return resolveErr
 		}
 	}
+	r.endScope()
 	return nil
 }
 
@@ -291,6 +296,11 @@ func (r *Resolver) visitSetExpr(expr Set) error {
 		return resolveErr
 	}
 	return r.resolveExpr(expr.Object)
+}
+
+func (r *Resolver) visitThisExpr(expr This) error {
+	r.resolveLocal(expr, expr.Keyword)
+	return nil
 }
 
 func (r *Resolver) visitUnaryExpr(expr Unary) error {

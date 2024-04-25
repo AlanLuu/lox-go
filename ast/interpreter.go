@@ -86,6 +86,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitReturnStmt(expr)
 	case Set:
 		return i.visitSetExpr(expr)
+	case This:
+		return i.visitThisExpr(expr)
 	case Var:
 		return i.visitVarStmt(expr)
 	case Variable:
@@ -685,6 +687,15 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 		return value, nil
 	}
 	return nil, loxerror.RuntimeError(expr.Name, "Only instances have fields.")
+}
+
+func (i *Interpreter) visitThisExpr(expr This) (any, error) {
+	distance, ok := i.locals[expr]
+	if ok {
+		return i.environment.GetAt(distance, expr.Keyword)
+	} else {
+		return i.globals.Get(expr.Keyword)
+	}
 }
 
 func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
