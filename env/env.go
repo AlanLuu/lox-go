@@ -68,3 +68,7 @@ func (e *Environment) GetAt(distance int, name token.Token) (any, error) {
 	}
 	return nil, loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
 }
+
+func (e *Environment) GetAtStr(distance int, name string) any {
+	return e.ancestor(distance).values[name]
+}

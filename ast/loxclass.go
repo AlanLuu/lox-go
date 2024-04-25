@@ -8,11 +8,20 @@ type LoxClass struct {
 }
 
 func (c LoxClass) arity() int {
-	return 0
+	initializer, ok := c.findMethod("init")
+	if !ok {
+		return 0
+	}
+	return initializer.arity()
 }
 
 func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
-	return NewLoxInstance(c), nil
+	instance := NewLoxInstance(c)
+	initializer, ok := c.findMethod("init")
+	if ok {
+		initializer.bind(instance).call(interpreter, arguments)
+	}
+	return instance, nil
 }
 
 func (c LoxClass) findMethod(name string) (LoxFunction, bool) {

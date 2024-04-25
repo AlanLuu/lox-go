@@ -430,7 +430,8 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 
 	methods := make(map[string]LoxFunction)
 	for _, method := range stmt.Methods {
-		function := LoxFunction{method.Name.Lexeme, method.Function, i.environment}
+		isInit := method.Name.Lexeme == "init"
+		function := LoxFunction{method.Name.Lexeme, method.Function, i.environment, isInit}
 		methods[method.Name.Lexeme] = function
 	}
 
@@ -484,8 +485,9 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 		return nil, err
 	}
 	if util.StdinFromTerminal() {
-		_, ok := stmt.Expression.(Assign)
-		if !ok {
+		_, isAssign := stmt.Expression.(Assign)
+		_, isSet := stmt.Expression.(Set)
+		if !isAssign && !isSet {
 			printResultExpressionStmt(value)
 		}
 	}
@@ -581,12 +583,12 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 }
 
 func (i *Interpreter) visitFunctionExpr(expr FunctionExpr) (LoxFunction, error) {
-	return LoxFunction{"", expr, i.environment}, nil
+	return LoxFunction{"", expr, i.environment, false}, nil
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
 	funcName := stmt.Name.Lexeme
-	i.environment.Define(funcName, LoxFunction{funcName, stmt.Function, i.environment})
+	i.environment.Define(funcName, LoxFunction{funcName, stmt.Function, i.environment, false})
 	return nil, nil
 }
 

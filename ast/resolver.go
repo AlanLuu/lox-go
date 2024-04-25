@@ -208,7 +208,11 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 	r.beginScope()
 	r.Scopes.Peek()["this"] = true
 	for _, method := range stmt.Methods {
-		resolveErr := r.resolveFunction(method.Function, functiontype.METHOD)
+		declaration := functiontype.METHOD
+		if method.Name.Lexeme == "init" {
+			declaration = functiontype.INITIALIZER
+		}
+		resolveErr := r.resolveFunction(method.Function, declaration)
 		if resolveErr != nil {
 			return resolveErr
 		}
@@ -296,6 +300,9 @@ func (r *Resolver) visitReturnStmt(stmt Return) error {
 		return loxerror.RuntimeError(stmt.Keyword, "Can't return from top-level code.")
 	}
 	if stmt.Value != nil {
+		if r.CurrentFunction == functiontype.INITIALIZER {
+			return loxerror.RuntimeError(stmt.Keyword, "Can't return a value from an initializer.")
+		}
 		return r.resolveExpr(stmt.Value)
 	}
 	return nil

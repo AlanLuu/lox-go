@@ -6,9 +6,10 @@ import (
 )
 
 type LoxFunction struct {
-	name        string
-	declaration FunctionExpr
-	closure     *env.Environment
+	name          string
+	declaration   FunctionExpr
+	closure       *env.Environment
+	isInitializer bool
 }
 
 func (f LoxFunction) arity() int {
@@ -18,7 +19,7 @@ func (f LoxFunction) arity() int {
 func (f LoxFunction) bind(instance *LoxInstance) LoxFunction {
 	environment := env.NewEnvironmentEnclosing(f.closure)
 	environment.Define("this", instance)
-	return LoxFunction{f.name, f.declaration, environment}
+	return LoxFunction{f.name, f.declaration, environment, f.isInitializer}
 }
 
 func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
@@ -30,9 +31,15 @@ func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (a
 	if blockErr != nil {
 		switch retValue := retValue.(type) {
 		case Return:
+			if f.isInitializer {
+				return f.closure.GetAtStr(0, "this"), nil
+			}
 			return retValue, blockErr
 		}
 		return nil, blockErr
+	}
+	if f.isInitializer {
+		return f.closure.GetAtStr(0, "this"), nil
 	}
 	return nil, nil
 }
