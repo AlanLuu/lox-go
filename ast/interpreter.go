@@ -425,7 +425,14 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 
 func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 	i.environment.Define(stmt.Name.Lexeme, nil)
-	loxClass := LoxClass{stmt.Name.Lexeme}
+
+	methods := make(map[string]LoxFunction)
+	for _, method := range stmt.Methods {
+		function := LoxFunction{method.Name.Lexeme, method.Function, i.environment}
+		methods[method.Name.Lexeme] = function
+	}
+
+	loxClass := LoxClass{stmt.Name.Lexeme, methods}
 	i.environment.Assign(stmt.Name, loxClass)
 	return nil, nil
 }

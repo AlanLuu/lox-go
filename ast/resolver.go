@@ -193,6 +193,12 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		return declareErr
 	}
 	r.define(stmt.Name)
+	for _, method := range stmt.Methods {
+		resolveErr := r.resolveFunction(method.Function, functiontype.METHOD)
+		if resolveErr != nil {
+			return resolveErr
+		}
+	}
 	return nil
 }
 
