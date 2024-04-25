@@ -3,6 +3,7 @@ package ast
 import (
 	"errors"
 
+	"github.com/AlanLuu/lox/ast/classtype"
 	"github.com/AlanLuu/lox/ast/functiontype"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -13,6 +14,7 @@ type Resolver struct {
 	Interpreter     *Interpreter
 	Scopes          list.List[map[string]bool]
 	CurrentFunction functiontype.FunctionType
+	CurrentClass    classtype.ClassType
 }
 
 func NewResolver(interpreter *Interpreter) *Resolver {
@@ -20,6 +22,7 @@ func NewResolver(interpreter *Interpreter) *Resolver {
 		Interpreter:     interpreter,
 		Scopes:          list.NewList[map[string]bool](),
 		CurrentFunction: functiontype.NONE,
+		CurrentClass:    classtype.NONE,
 	}
 }
 
@@ -190,10 +193,17 @@ func (r *Resolver) visitCallExpr(expr Call) error {
 }
 
 func (r *Resolver) visitClassStmt(stmt Class) error {
+	enclosingClass := r.CurrentClass
+	r.CurrentClass = classtype.CLASS
+	defer func() {
+		r.CurrentClass = enclosingClass
+	}()
+
 	declareErr := r.declare(stmt.Name)
 	if declareErr != nil {
 		return declareErr
 	}
+
 	r.define(stmt.Name)
 	r.beginScope()
 	r.Scopes.Peek()["this"] = true
@@ -203,6 +213,7 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 			return resolveErr
 		}
 	}
+
 	r.endScope()
 	return nil
 }
@@ -299,6 +310,9 @@ func (r *Resolver) visitSetExpr(expr Set) error {
 }
 
 func (r *Resolver) visitThisExpr(expr This) error {
+	if r.CurrentClass == classtype.NONE {
+		return loxerror.RuntimeError(expr.Keyword, "Can't use 'this' outside of a class.")
+	}
 	r.resolveLocal(expr, expr.Keyword)
 	return nil
 }
