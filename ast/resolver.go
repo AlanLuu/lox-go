@@ -3,20 +3,23 @@ package ast
 import (
 	"errors"
 
+	"github.com/AlanLuu/lox/ast/functiontype"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
 )
 
 type Resolver struct {
-	Interpreter *Interpreter
-	Scopes      list.List[map[string]bool]
+	Interpreter     *Interpreter
+	Scopes          list.List[map[string]bool]
+	CurrentFunction functiontype.FunctionType
 }
 
 func NewResolver(interpreter *Interpreter) *Resolver {
 	return &Resolver{
-		Interpreter: interpreter,
-		Scopes:      list.NewList[map[string]bool](),
+		Interpreter:     interpreter,
+		Scopes:          list.NewList[map[string]bool](),
+		CurrentFunction: functiontype.NONE,
 	}
 }
 
@@ -118,6 +121,25 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 	return errors.New("unknown statement found in resolver")
 }
 
+func (r *Resolver) resolveFunction(fnExpr FunctionExpr, fnType functiontype.FunctionType) error {
+	enclosingFunction := r.CurrentFunction
+	r.CurrentFunction = fnType
+	defer func() {
+		r.CurrentFunction = enclosingFunction
+	}()
+
+	r.beginScope()
+	defer r.endScope()
+	for _, param := range fnExpr.Params {
+		declareErr := r.declare(param)
+		if declareErr != nil {
+			return declareErr
+		}
+		r.define(param)
+	}
+	return r.Resolve(fnExpr.Body)
+}
+
 func (r *Resolver) resolveLocal(expr Expr, name token.Token) {
 	for i := len(r.Scopes) - 1; i >= 0; i-- {
 		scope := r.Scopes[i]
@@ -197,16 +219,7 @@ func (r *Resolver) visitForStmt(stmt For) error {
 }
 
 func (r *Resolver) visitFunctionExpr(expr FunctionExpr) error {
-	r.beginScope()
-	defer r.endScope()
-	for _, param := range expr.Params {
-		declareErr := r.declare(param)
-		if declareErr != nil {
-			return declareErr
-		}
-		r.define(param)
-	}
-	return r.Resolve(expr.Body)
+	return r.resolveFunction(expr, functiontype.FUNCTION)
 }
 
 func (r *Resolver) visitFunctionStmt(stmt Function) error {
@@ -215,7 +228,7 @@ func (r *Resolver) visitFunctionStmt(stmt Function) error {
 		return declareErr
 	}
 	r.define(stmt.Name)
-	return r.visitFunctionExpr(stmt.Function)
+	return r.resolveFunction(stmt.Function, functiontype.FUNCTION)
 }
 
 func (r *Resolver) visitGetExpr(expr Get) error {
@@ -257,6 +270,9 @@ func (r *Resolver) visitPrintStmt(stmt Print) error {
 }
 
 func (r *Resolver) visitReturnStmt(stmt Return) error {
+	if r.CurrentFunction == functiontype.NONE {
+		return loxerror.RuntimeError(stmt.Keyword, "Can't return from top-level code.")
+	}
 	if stmt.Value != nil {
 		return r.resolveExpr(stmt.Value)
 	}

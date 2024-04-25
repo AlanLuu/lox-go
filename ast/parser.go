@@ -10,14 +10,13 @@ import (
 )
 
 type Parser struct {
-	tokens        list.List[token.Token]
-	current       int
-	functionDepth int
-	loopDepth     int
+	tokens    list.List[token.Token]
+	current   int
+	loopDepth int
 }
 
 func NewParser(tokens list.List[token.Token]) *Parser {
-	return &Parser{tokens, 0, 0, 0}
+	return &Parser{tokens, 0, 0}
 }
 
 func (p *Parser) advance() token.Token {
@@ -404,11 +403,6 @@ func (p *Parser) function(kind string) (Function, error) {
 }
 
 func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, error) {
-	p.functionDepth++
-	defer func() {
-		p.functionDepth--
-	}()
-
 	emptyFuncNode := FunctionExpr{}
 	if funcHasName {
 		_, leftParenErr := p.consume(token.LEFT_PAREN, fmt.Sprintf("Expected '(' after %v name.", kind))
@@ -606,9 +600,6 @@ func (p *Parser) printStatement() (Stmt, error) {
 
 func (p *Parser) returnStatement() (Stmt, error) {
 	keyword := p.previous()
-	if p.functionDepth <= 0 {
-		return nil, p.error(keyword, "Illegal return statement.")
-	}
 	var value Expr
 	var valueErr error
 	if !p.check(token.SEMICOLON) {
