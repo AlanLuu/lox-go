@@ -211,6 +211,7 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		if stmt.Name.Lexeme == stmt.SuperClass.Name.Lexeme {
 			return loxerror.RuntimeError(stmt.SuperClass.Name, "A class can't inherit from itself.")
 		}
+		r.CurrentClass = classtype.SUBCLASS
 		resolveErr := r.resolveExpr(*stmt.SuperClass)
 		if resolveErr != nil {
 			return resolveErr
@@ -333,6 +334,11 @@ func (r *Resolver) visitSetExpr(expr Set) error {
 }
 
 func (r *Resolver) visitSuperExpr(expr Super) error {
+	if r.CurrentClass == classtype.NONE {
+		return loxerror.RuntimeError(expr.Keyword, "Can't use 'super' outside of a class.")
+	} else if r.CurrentClass != classtype.SUBCLASS {
+		return loxerror.RuntimeError(expr.Keyword, "Can't use 'super' in a class with no superclass.")
+	}
 	r.resolveLocal(expr, expr.Keyword)
 	return nil
 }
