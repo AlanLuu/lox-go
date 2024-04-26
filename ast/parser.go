@@ -244,7 +244,9 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := expr.(Assign); !util.StdinFromTerminal() || ok {
+	_, isAssign := expr.(Assign)
+	_, isSet := expr.(Set)
+	if !util.StdinFromTerminal() || isAssign || isSet {
 		_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
 		if consumeErr != nil {
 			return nil, consumeErr
