@@ -426,6 +426,19 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 }
 
 func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
+	var superClass *LoxClass
+	if stmt.SuperClass != nil {
+		evalObj, evalObjErr := i.evaluate(*stmt.SuperClass)
+		if evalObjErr != nil {
+			return nil, evalObjErr
+		}
+		switch evalObj := evalObj.(type) {
+		case LoxClass:
+			superClass = &evalObj
+		default:
+			return nil, loxerror.RuntimeError(stmt.SuperClass.Name, "Superclass must be a class.")
+		}
+	}
 	i.environment.Define(stmt.Name.Lexeme, nil)
 
 	methods := make(map[string]LoxFunction)
@@ -435,7 +448,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		methods[method.Name.Lexeme] = function
 	}
 
-	loxClass := LoxClass{stmt.Name.Lexeme, methods}
+	loxClass := LoxClass{stmt.Name.Lexeme, superClass, methods}
 	i.environment.Assign(stmt.Name, loxClass)
 	return nil, nil
 }

@@ -141,6 +141,16 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 	if classNameErr != nil {
 		return nil, classNameErr
 	}
+
+	var superClass *Variable
+	if p.match(token.LESS) {
+		_, superClassNameErr := p.consume(token.IDENTIFIER, "Expected superclass name.")
+		if superClassNameErr != nil {
+			return nil, superClassNameErr
+		}
+		superClass = &Variable{p.previous()}
+	}
+
 	_, leftBraceErr := p.consume(token.LEFT_BRACE, "Expected '{' before class body.")
 	if leftBraceErr != nil {
 		return nil, leftBraceErr
@@ -163,7 +173,11 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 	if rightBraceErr != nil {
 		return nil, rightBraceErr
 	}
-	return Class{Name: className, Methods: methods}, nil
+	return Class{
+		Name:       className,
+		SuperClass: superClass,
+		Methods:    methods,
+	}, nil
 }
 
 func (p *Parser) comparison() (Expr, error) {

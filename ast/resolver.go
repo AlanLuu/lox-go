@@ -205,6 +205,15 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 	}
 
 	r.define(stmt.Name)
+	if stmt.SuperClass != nil {
+		if stmt.Name.Lexeme == stmt.SuperClass.Name.Lexeme {
+			return loxerror.RuntimeError(stmt.SuperClass.Name, "A class can't inherit from itself.")
+		}
+		resolveErr := r.resolveExpr(*stmt.SuperClass)
+		if resolveErr != nil {
+			return resolveErr
+		}
+	}
 	r.beginScope()
 	r.Scopes.Peek()["this"] = true
 	for _, method := range stmt.Methods {
