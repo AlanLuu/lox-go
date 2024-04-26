@@ -4,7 +4,7 @@ A Golang implementation of the Lox language from the book [Crafting Interpreters
 # Usage
 Supports running code from a file:
 ```
-lox code.txt
+lox code.lox
 ```
 or from stdin as a REPL:
 ```
