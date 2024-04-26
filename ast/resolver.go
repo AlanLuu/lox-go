@@ -84,6 +84,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitLogicalExpr(expr)
 	case Set:
 		return r.visitSetExpr(expr)
+	case Super:
+		return r.visitSuperExpr(expr)
 	case This:
 		return r.visitThisExpr(expr)
 	case Unary:
@@ -213,6 +215,8 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		if resolveErr != nil {
 			return resolveErr
 		}
+		r.beginScope()
+		r.Scopes.Peek()["super"] = true
 	}
 	r.beginScope()
 	r.Scopes.Peek()["this"] = true
@@ -228,6 +232,9 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 	}
 
 	r.endScope()
+	if stmt.SuperClass != nil {
+		r.endScope()
+	}
 	return nil
 }
 
@@ -323,6 +330,11 @@ func (r *Resolver) visitSetExpr(expr Set) error {
 		return resolveErr
 	}
 	return r.resolveExpr(expr.Object)
+}
+
+func (r *Resolver) visitSuperExpr(expr Super) error {
+	r.resolveLocal(expr, expr.Keyword)
+	return nil
 }
 
 func (r *Resolver) visitThisExpr(expr This) error {

@@ -588,6 +588,17 @@ func (p *Parser) primary() (Expr, error) {
 		return Variable{Name: p.previous()}, nil
 	case p.match(token.FUN):
 		return p.functionBody("function", false)
+	case p.match(token.SUPER):
+		keyword := p.previous()
+		_, dotErr := p.consume(token.DOT, "Expected '.' after 'super'.")
+		if dotErr != nil {
+			return nil, dotErr
+		}
+		method, methodErr := p.consume(token.IDENTIFIER, "Expected superclass method name.")
+		if methodErr != nil {
+			return nil, methodErr
+		}
+		return Super{Keyword: keyword, Method: method}, nil
 	case p.match(token.THIS):
 		return This{Keyword: p.previous()}, nil
 	case p.match(token.LEFT_PAREN):

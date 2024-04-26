@@ -86,6 +86,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitReturnStmt(expr)
 	case Set:
 		return i.visitSetExpr(expr)
+	case Super:
+		return i.visitSuperExpr(expr)
 	case This:
 		return i.visitThisExpr(expr)
 	case Var:
@@ -440,6 +442,15 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		}
 	}
 	i.environment.Define(stmt.Name.Lexeme, nil)
+	if stmt.SuperClass != nil {
+		environment := env.NewEnvironmentEnclosing(i.environment)
+		environment.Define("super", superClass)
+		previous := i.environment
+		i.environment = environment
+		defer func() {
+			i.environment = previous
+		}()
+	}
 
 	methods := make(map[string]LoxFunction)
 	for _, method := range stmt.Methods {
@@ -702,6 +713,17 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 		return value, nil
 	}
 	return nil, loxerror.RuntimeError(expr.Name, "Only instances have fields.")
+}
+
+func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {
+	distance := i.locals[expr]
+	superClass := i.environment.GetAtStr(distance, "super").(*LoxClass)
+	object := i.environment.GetAtStr(distance-1, "this").(*LoxInstance)
+	method, ok := superClass.findMethod(expr.Method.Lexeme)
+	if !ok {
+		return nil, loxerror.RuntimeError(expr.Method, "Undefined property '"+expr.Method.Lexeme+"'.")
+	}
+	return method.bind(object), nil
 }
 
 func (i *Interpreter) visitThisExpr(expr This) (any, error) {
