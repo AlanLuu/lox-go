@@ -122,6 +122,20 @@ func (p *Parser) call() (Expr, error) {
 				return nil, nameErr
 			}
 			expr = Get{Object: expr, Name: name}
+		} else if p.match(token.LEFT_BRACKET) {
+			index, indexErr := p.expression()
+			if indexErr != nil {
+				return nil, indexErr
+			}
+			rightBracket, rightBracketErr := p.consume(token.RIGHT_BRACKET, "Expected ']' after index.")
+			if rightBracketErr != nil {
+				return nil, rightBracketErr
+			}
+			expr = Index{
+				IndexElement: expr,
+				Bracket:      rightBracket,
+				Index:        index,
+			}
 		} else {
 			break
 		}
@@ -524,6 +538,25 @@ func (p *Parser) isAtEnd() bool {
 	return p.peek().TokenType == token.EOF
 }
 
+func (p *Parser) list() (any, error) {
+	elements := list.NewList[Expr]()
+	if !p.check(token.RIGHT_BRACKET) {
+		for cond := true; cond; cond = p.match(token.COMMA) {
+			expr, exprErr := p.expression()
+			if exprErr != nil {
+				elements.Clear()
+				return nil, exprErr
+			}
+			elements.Add(expr)
+		}
+	}
+	_, rightBracketErr := p.consume(token.RIGHT_BRACKET, "Expected ']' after list.")
+	if rightBracketErr != nil {
+		return nil, rightBracketErr
+	}
+	return List{Elements: elements}, nil
+}
+
 func (p *Parser) match(tokenTypes ...token.TokenType) bool {
 	for _, tokenType := range tokenTypes {
 		if p.check(tokenType) {
@@ -588,6 +621,8 @@ func (p *Parser) primary() (Expr, error) {
 		return Variable{Name: p.previous()}, nil
 	case p.match(token.FUN):
 		return p.functionBody("function", false)
+	case p.match(token.LEFT_BRACKET):
+		return p.list()
 	case p.match(token.SUPER):
 		keyword := p.previous()
 		_, dotErr := p.consume(token.DOT, "Expected '.' after 'super'.")

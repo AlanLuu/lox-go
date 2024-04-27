@@ -76,6 +76,16 @@ type If struct {
 	ElseBranch Stmt
 }
 
+type Index struct {
+	IndexElement Expr
+	Bracket      token.Token
+	Index        Expr
+}
+
+type List struct {
+	Elements list.List[Expr]
+}
+
 type Literal struct {
 	Value any
 }

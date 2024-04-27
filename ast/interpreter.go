@@ -82,6 +82,10 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitGetExpr(expr)
 	case If:
 		return i.visitIfStmt(expr)
+	case Index:
+		return i.visitIndexExpr(expr)
+	case List:
+		return i.visitListExpr(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
 	case Return:
@@ -660,6 +664,45 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		}
 	}
 	return nil, nil
+}
+
+func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
+	indexElement, indexElementErr := i.evaluate(expr.IndexElement)
+	if indexElementErr != nil {
+		return nil, indexElementErr
+	}
+	indexVal, indexValErr := i.evaluate(expr.Index)
+	if indexValErr != nil {
+		return nil, indexValErr
+	}
+	if _, ok := indexVal.(int64); !ok {
+		return nil, loxerror.RuntimeError(expr.Bracket, "Index value is not an integer.")
+	}
+	indexValInt := indexVal.(int64)
+	switch indexElement := indexElement.(type) {
+	case string:
+		if indexValInt < 0 || indexValInt >= int64(len(indexElement)) {
+			return nil, loxerror.RuntimeError(expr.Bracket, "String index out of range.")
+		}
+		return string(indexElement[indexValInt]), nil
+	case list.List[Expr]:
+		if indexValInt < 0 || indexValInt >= int64(len(indexElement)) {
+			return nil, loxerror.RuntimeError(expr.Bracket, "List index out of range.")
+		}
+		return indexElement[indexValInt], nil
+	}
+	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into lists and strings.")
+}
+
+func (i *Interpreter) visitListExpr(expr List) (any, error) {
+	for index, element := range expr.Elements {
+		evalResult, evalErr := i.evaluate(element)
+		if evalErr != nil {
+			return nil, evalErr
+		}
+		expr.Elements[index] = evalResult
+	}
+	return expr.Elements, nil
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {

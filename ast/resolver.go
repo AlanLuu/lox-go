@@ -78,6 +78,10 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitGetExpr(expr)
 	case Grouping:
 		return r.visitGroupingExpr(expr)
+	case Index:
+		return r.visitIndexExpr(expr)
+	case List:
+		return r.visitListExpr(expr)
 	case Literal:
 		return nil
 	case Logical:
@@ -280,6 +284,24 @@ func (r *Resolver) visitGetExpr(expr Get) error {
 
 func (r *Resolver) visitGroupingExpr(expr Grouping) error {
 	return r.resolveExpr(expr.Expression)
+}
+
+func (r *Resolver) visitIndexExpr(expr Index) error {
+	resolveErr := r.resolveExpr(expr.IndexElement)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveExpr(expr.Index)
+}
+
+func (r *Resolver) visitListExpr(expr List) error {
+	for _, element := range expr.Elements {
+		resolveErr := r.resolveExpr(element)
+		if resolveErr != nil {
+			return resolveErr
+		}
+	}
+	return nil
 }
 
 func (r *Resolver) visitIfStmt(stmt If) error {
