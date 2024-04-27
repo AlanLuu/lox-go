@@ -112,6 +112,10 @@ type Set struct {
 	Value  Expr
 }
 
+type SetList struct {
+	Set
+}
+
 type Super struct {
 	Keyword token.Token
 	Method  token.Token

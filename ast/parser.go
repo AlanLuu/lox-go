@@ -67,6 +67,13 @@ func (p *Parser) assignment() (Expr, error) {
 				Name:   expr.Name,
 				Value:  value,
 			}, nil
+		case Index:
+			set := Set{
+				Object: expr,
+				Name:   expr.Bracket,
+				Value:  value,
+			}
+			return SetList{set}, nil
 		}
 		return nil, p.error(equals, "Invalid assignment target.")
 	}

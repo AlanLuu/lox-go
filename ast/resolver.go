@@ -88,6 +88,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitLogicalExpr(expr)
 	case Set:
 		return r.visitSetExpr(expr)
+	case SetList:
+		return r.visitSetExpr(expr.Set)
 	case Super:
 		return r.visitSuperExpr(expr)
 	case This:

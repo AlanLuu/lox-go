@@ -92,6 +92,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitReturnStmt(expr)
 	case Set:
 		return i.visitSetExpr(expr)
+	case SetList:
+		return i.visitSetListExpr(expr)
 	case Super:
 		return i.visitSuperExpr(expr)
 	case This:
@@ -760,6 +762,57 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 		return value, nil
 	}
 	return nil, loxerror.RuntimeError(expr.Name, "Only instances have fields.")
+}
+
+func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
+	indexes := list.NewList[int64]()
+	defer indexes.Clear()
+
+	node := expr.Object
+	for index, ok := node.(Index); ok; {
+		indexNum, indexNumErr := i.evaluate(index.Index)
+		if indexNumErr != nil {
+			return nil, indexNumErr
+		}
+		switch indexNum := indexNum.(type) {
+		case int64:
+			indexes.Add(indexNum)
+		default:
+			return nil, loxerror.RuntimeError(expr.Name, "Index value is not an integer.")
+		}
+		node = index.IndexElement
+		index, ok = node.(Index)
+	}
+
+	variable, variableErr := i.evaluate(node)
+	if variableErr != nil {
+		return nil, variableErr
+	}
+	if variable, ok := variable.(list.List[Expr]); ok {
+		value, valueErr := i.evaluate(expr.Value)
+		if valueErr != nil {
+			return nil, valueErr
+		}
+		for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
+			position := indexes[loopIndex]
+			if loopIndex > 0 {
+				if position < 0 || position >= int64(len(variable)) {
+					return nil, loxerror.RuntimeError(expr.Name, "List index out of range.")
+				}
+				variable, ok = variable[position].(list.List[Expr])
+				if !ok {
+					return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
+				}
+			} else {
+				if position < 0 || position >= int64(len(variable)) {
+					return nil, loxerror.RuntimeError(expr.Name, "List index out of range.")
+				}
+				variable[position] = value
+			}
+		}
+		return value, nil
+	}
+	return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
 }
 
 func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {
