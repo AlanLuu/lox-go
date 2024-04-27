@@ -21,12 +21,14 @@ type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
 	locals      map[any]int
+	blockDepth  int
 }
 
 func NewInterpreter() *Interpreter {
 	interpreter := &Interpreter{
-		globals: env.NewEnvironment(),
-		locals:  make(map[any]int),
+		globals:    env.NewEnvironment(),
+		locals:     make(map[any]int),
+		blockDepth: 0,
 	}
 	interpreter.environment = interpreter.globals
 	interpreter.defineNativeFuncs()
@@ -465,10 +467,12 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 }
 
 func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {
+	i.blockDepth++
 	previous := i.environment
 	i.environment = environment
 	defer func() {
 		i.environment = previous
+		i.blockDepth--
 	}()
 	for _, statement := range statements {
 		value, evalErr := i.evaluate(statement)
@@ -508,7 +512,7 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if util.StdinFromTerminal() {
+	if util.StdinFromTerminal() && i.blockDepth <= 0 {
 		_, isAssign := stmt.Expression.(Assign)
 		_, isSet := stmt.Expression.(Set)
 		if !isAssign && !isSet {
