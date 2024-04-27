@@ -51,7 +51,7 @@ go build
 - Chapter 10 - Functions (Complete)
 - Chapter 11 - Resolving and Binding (Complete)
 - Chapter 12 - Classes (Complete)
-- Chapter 13 - Inheritance (TODO)
+- Chapter 13 - Inheritance (Complete)
 
 # License
 This implementation of Lox is distributed under the terms of the [MIT License](https://github.com/AlanLuu/lox-go/blob/main/LICENSE).
