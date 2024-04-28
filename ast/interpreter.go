@@ -198,37 +198,51 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
-func printResult(source any, isPrintStmt bool) {
+func getResult(source any, isPrintStmt bool, alwaysPrint bool) string {
 	switch source := source.(type) {
 	case nil:
-		if isPrintStmt {
-			fmt.Println("nil")
+		if isPrintStmt || alwaysPrint {
+			return "nil"
+		} else {
+			return ""
 		}
 	case float64:
 		if math.IsInf(source, 1) {
-			fmt.Println("Infinity")
+			return "Infinity"
 		} else if math.IsInf(source, -1) {
-			fmt.Println("-Infinity")
+			return "-Infinity"
 		} else {
-			fmt.Println(source)
+			return fmt.Sprint(source)
 		}
 	case string:
-		if len(source) == 0 && !isPrintStmt {
-			fmt.Println("\"\"")
+		if len(source) == 0 && (!isPrintStmt || alwaysPrint) {
+			return "\"\""
 		} else {
-			fmt.Println(source)
+			return fmt.Sprint(source)
 		}
+	case list.List[Expr]:
+		sourceLen := len(source)
+		var listStr strings.Builder
+		listStr.WriteByte('[')
+		for i, element := range source {
+			listStr.WriteString(getResult(element, isPrintStmt, true))
+			if i < sourceLen-1 {
+				listStr.WriteString(", ")
+			}
+		}
+		listStr.WriteByte(']')
+		return listStr.String()
 	default:
-		fmt.Println(source)
+		return fmt.Sprint(source)
 	}
 }
 
 func printResultExpressionStmt(source any) {
-	printResult(source, false)
+	fmt.Println(getResult(source, false, false))
 }
 
 func printResultPrintStmt(source any) {
-	printResult(source, true)
+	fmt.Println(getResult(source, true, false))
 }
 
 func (i *Interpreter) Resolve(expr Expr, depth int) {
