@@ -50,8 +50,8 @@ func (i *Interpreter) defineNativeFuncs() {
 		switch element := args[0].(type) {
 		case string:
 			return int64(len(element)), nil
-		case list.List[Expr]:
-			return int64(len(element)), nil
+		case LoxList:
+			return int64(len(element.elements)), nil
 		}
 		return nil, loxerror.Error(fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))
 	})
@@ -159,7 +159,7 @@ func getType(element any) string {
 		return "function"
 	case *LoxInstance:
 		return element.String()
-	case list.List[Expr]:
+	case LoxList:
 		return "list"
 	default:
 		return "unknown type"
@@ -218,13 +218,13 @@ func getResult(source any, isPrintStmt bool, alwaysPrint bool) string {
 		if len(source) == 0 && (!isPrintStmt || alwaysPrint) {
 			return "\"\""
 		} else {
-			return fmt.Sprint(source)
+			return fmt.Sprintf("\"%v\"", source)
 		}
-	case list.List[Expr]:
-		sourceLen := len(source)
+	case LoxList:
+		sourceLen := len(source.elements)
 		var listStr strings.Builder
 		listStr.WriteByte('[')
-		for i, element := range source {
+		for i, element := range source.elements {
 			listStr.WriteString(getResult(element, isPrintStmt, true))
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
@@ -694,7 +694,7 @@ func (i *Interpreter) visitGetExpr(expr Get) (any, error) {
 	if objErr != nil {
 		return nil, objErr
 	}
-	if obj, ok := obj.(*LoxInstance); ok {
+	if obj, ok := obj.(LoxObject); ok {
 		return obj.Get(expr.Name)
 	}
 	return nil, loxerror.RuntimeError(expr.Name, "Only instances have properties.")
@@ -750,11 +750,11 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			return nil, loxerror.RuntimeError(expr.Bracket, "String index out of range.")
 		}
 		return string(indexElement[indexValInt]), nil
-	case list.List[Expr]:
-		if indexValInt < 0 || indexValInt >= int64(len(indexElement)) {
+	case LoxList:
+		if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
 			return nil, loxerror.RuntimeError(expr.Bracket, "List index out of range.")
 		}
-		return indexElement[indexValInt], nil
+		return indexElement.elements[indexValInt], nil
 	}
 	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into lists and strings.")
 }
@@ -767,7 +767,7 @@ func (i *Interpreter) visitListExpr(expr List) (any, error) {
 		}
 		expr.Elements[index] = evalResult
 	}
-	return expr.Elements, nil
+	return LoxList{expr.Elements}, nil
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
@@ -851,7 +851,7 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 	if variableErr != nil {
 		return nil, variableErr
 	}
-	if variable, ok := variable.(list.List[Expr]); ok {
+	if variable, ok := variable.(LoxList); ok {
 		value, valueErr := i.evaluate(expr.Value)
 		if valueErr != nil {
 			return nil, valueErr
@@ -859,18 +859,18 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 		for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
 			position := indexes[loopIndex]
 			if loopIndex > 0 {
-				if position < 0 || position >= int64(len(variable)) {
+				if position < 0 || position >= int64(len(variable.elements)) {
 					return nil, loxerror.RuntimeError(expr.Name, "List index out of range.")
 				}
-				variable, ok = variable[position].(list.List[Expr])
+				variable, ok = variable.elements[position].(LoxList)
 				if !ok {
 					return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
 				}
 			} else {
-				if position < 0 || position >= int64(len(variable)) {
+				if position < 0 || position >= int64(len(variable.elements)) {
 					return nil, loxerror.RuntimeError(expr.Name, "List index out of range.")
 				}
-				variable[position] = value
+				variable.elements[position] = value
 			}
 		}
 		return value, nil
