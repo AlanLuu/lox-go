@@ -8,6 +8,10 @@ import (
 	"github.com/AlanLuu/lox/token"
 )
 
+func Error(message string) error {
+	return errors.New(message)
+}
+
 func GiveError(line int, where string, message string) error {
 	errorMsg := fmt.Sprintf("[line %v] Error%v: %v", line, where, message)
 	return errors.New(errorMsg)

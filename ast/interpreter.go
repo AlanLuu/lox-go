@@ -46,6 +46,31 @@ func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return float64(time.Now().UnixMilli()) / 1000, nil
 	})
+	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		switch element := args[0].(type) {
+		case string:
+			return int64(len(element)), nil
+		case list.List[Expr]:
+			return int64(len(element)), nil
+		}
+		return nil, loxerror.Error(fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))
+	})
+	nativeFunc("List", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		if size, ok := args[0].(int64); ok {
+			if size < 0 {
+				return nil, loxerror.Error("Argument to List function cannot be negative.")
+			}
+			lst := list.NewList[Expr]()
+			for index := int64(0); index < size; index++ {
+				lst.Add(nil)
+			}
+			return lst, nil
+		}
+		return nil, loxerror.Error("Expected argument of type 'number' to List function.")
+	})
+	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		return getType(args[0]), nil
+	})
 }
 
 func (i *Interpreter) evaluate(expr any) (any, error) {
@@ -116,6 +141,29 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitUnaryExpr(expr)
 	}
 	return nil, errors.New("critical error: unknown type found in AST")
+}
+
+func getType(element any) string {
+	switch element := element.(type) {
+	case nil:
+		return "nil"
+	case int64, float64:
+		return "number"
+	case bool:
+		return "boolean"
+	case string:
+		return "string"
+	case LoxClass:
+		return "class"
+	case LoxFunction:
+		return "function"
+	case *LoxInstance:
+		return element.String()
+	case list.List[Expr]:
+		return "list"
+	default:
+		return "unknown type"
+	}
 }
 
 func (i *Interpreter) Interpret(statements list.List[Stmt]) error {

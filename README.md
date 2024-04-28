@@ -37,6 +37,15 @@ go build
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
     - The parser will attempt to parse anonymous function expressions that appear on their own line as function declarations, throwing a parser error as a result. This is expected behavior; to force the parser to parse them as expressions, wrap the function expression inside parentheses, like `(fun() {})()`. In this case, this creates an anonymous function expression that is called immediately
+- Lists are supported in this implementation of Lox
+    - Create a list and assign it to a variable: `var list = [1, 2, 3];`
+    - Get an element from a list by index: `list[index]`
+    - Set an element: `list[index] = value;`
+    - Attempting to access an index larger than the length of the list will cause a runtime error
+- A few other native functions are defined:
+    - `len(element)`, which returns the length of a string or list element
+    - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
+    - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
     - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;` and `object.property = value;`
