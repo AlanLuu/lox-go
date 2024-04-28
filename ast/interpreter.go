@@ -50,7 +50,7 @@ func (i *Interpreter) defineNativeFuncs() {
 		switch element := args[0].(type) {
 		case string:
 			return int64(len(element)), nil
-		case LoxList:
+		case *LoxList:
 			return int64(len(element.elements)), nil
 		}
 		return nil, loxerror.Error(fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))
@@ -64,7 +64,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			for index := int64(0); index < size; index++ {
 				lst.Add(nil)
 			}
-			return lst, nil
+			return &LoxList{lst}, nil
 		}
 		return nil, loxerror.Error("Expected argument of type 'number' to List function.")
 	})
@@ -159,7 +159,7 @@ func getType(element any) string {
 		return "function"
 	case *LoxInstance:
 		return element.String()
-	case LoxList:
+	case *LoxList:
 		return "list"
 	default:
 		return "unknown type"
@@ -198,14 +198,10 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
-func getResult(source any, isPrintStmt bool, alwaysPrint bool) string {
+func getResult(source any) string {
 	switch source := source.(type) {
 	case nil:
-		if isPrintStmt || alwaysPrint {
-			return "nil"
-		} else {
-			return ""
-		}
+		return "nil"
 	case float64:
 		if math.IsInf(source, 1) {
 			return "Infinity"
@@ -215,17 +211,17 @@ func getResult(source any, isPrintStmt bool, alwaysPrint bool) string {
 			return fmt.Sprint(source)
 		}
 	case string:
-		if len(source) == 0 && (!isPrintStmt || alwaysPrint) {
+		if len(source) == 0 {
 			return "\"\""
 		} else {
 			return fmt.Sprintf("\"%v\"", source)
 		}
-	case LoxList:
+	case *LoxList:
 		sourceLen := len(source.elements)
 		var listStr strings.Builder
 		listStr.WriteByte('[')
 		for i, element := range source.elements {
-			listStr.WriteString(getResult(element, isPrintStmt, true))
+			listStr.WriteString(getResult(element))
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
 			}
@@ -238,11 +234,13 @@ func getResult(source any, isPrintStmt bool, alwaysPrint bool) string {
 }
 
 func printResultExpressionStmt(source any) {
-	fmt.Println(getResult(source, false, false))
+	if source != nil {
+		fmt.Println(getResult(source))
+	}
 }
 
 func printResultPrintStmt(source any) {
-	fmt.Println(getResult(source, true, false))
+	fmt.Println(getResult(source))
 }
 
 func (i *Interpreter) Resolve(expr Expr, depth int) {
@@ -750,7 +748,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			return nil, loxerror.RuntimeError(expr.Bracket, "String index out of range.")
 		}
 		return string(indexElement[indexValInt]), nil
-	case LoxList:
+	case *LoxList:
 		if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
 			return nil, loxerror.RuntimeError(expr.Bracket, "List index out of range.")
 		}
@@ -767,7 +765,7 @@ func (i *Interpreter) visitListExpr(expr List) (any, error) {
 		}
 		expr.Elements[index] = evalResult
 	}
-	return LoxList{expr.Elements}, nil
+	return &LoxList{expr.Elements}, nil
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
@@ -851,7 +849,7 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 	if variableErr != nil {
 		return nil, variableErr
 	}
-	if variable, ok := variable.(LoxList); ok {
+	if variable, ok := variable.(*LoxList); ok {
 		value, valueErr := i.evaluate(expr.Value)
 		if valueErr != nil {
 			return nil, valueErr
@@ -862,7 +860,7 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 				if position < 0 || position >= int64(len(variable.elements)) {
 					return nil, loxerror.RuntimeError(expr.Name, "List index out of range.")
 				}
-				variable, ok = variable.elements[position].(LoxList)
+				variable, ok = variable.elements[position].(*LoxList)
 				if !ok {
 					return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
 				}
