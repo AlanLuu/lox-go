@@ -48,7 +48,7 @@ go build
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
-    - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;` and `object.property = value;`
+    - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;`, `object.property = value;`, and `list[index] = value;`
 
 # Progress
 - Chapter 4 - Scanning (Complete)

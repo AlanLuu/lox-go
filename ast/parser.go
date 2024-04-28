@@ -281,7 +281,8 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	}
 	_, isAssign := expr.(Assign)
 	_, isSet := expr.(Set)
-	if !util.StdinFromTerminal() || isAssign || isSet {
+	_, isSetList := expr.(SetList)
+	if !util.StdinFromTerminal() || isAssign || isSet || isSetList {
 		_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
 		if consumeErr != nil {
 			return nil, consumeErr

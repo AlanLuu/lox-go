@@ -583,7 +583,8 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	if util.StdinFromTerminal() && i.blockDepth <= 0 {
 		_, isAssign := stmt.Expression.(Assign)
 		_, isSet := stmt.Expression.(Set)
-		if !isAssign && !isSet {
+		_, isSetList := stmt.Expression.(SetList)
+		if !isAssign && !isSet && !isSetList {
 			printResultExpressionStmt(value)
 		}
 	}
