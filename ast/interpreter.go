@@ -222,7 +222,11 @@ func getResult(source any) string {
 		var listStr strings.Builder
 		listStr.WriteByte('[')
 		for i, element := range source.elements {
-			listStr.WriteString(getResult(element))
+			if element == source {
+				listStr.WriteString("[...]")
+			} else {
+				listStr.WriteString(getResult(element))
+			}
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
 			}
