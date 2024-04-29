@@ -42,8 +42,11 @@ go build
     - Get an element from a list by index: `list[index]`
     - Set an element: `list[index] = value;`
     - Besides these operations, lists also have some methods associated with them:
-        - `list.append(element)`, which appends an element to the end of a list
-        - `list.insert(index, element)` which inserts an element into the list at the specified index
+        - `list.append(element)`, which appends an element to the end of the list
+        - `list.clear()`, which removes all elements from the list
+        - `list.extend(list2)`, which appends every element from `list2` to the end of the list
+        - `list.insert(index, element)`, which inserts an element into the list at the specified index
+        - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A few other native functions are defined:
     - `len(element)`, which returns the length of a string or list element
