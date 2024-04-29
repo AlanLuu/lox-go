@@ -66,7 +66,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			return &LoxList{lst}, nil
 		}
-		return nil, loxerror.Error("Expected argument of type 'number' to List function.")
+		return nil, loxerror.Error("Invalid list length.")
 	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return getType(args[0]), nil
