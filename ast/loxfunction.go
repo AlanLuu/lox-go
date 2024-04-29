@@ -12,17 +12,17 @@ type LoxFunction struct {
 	isInitializer bool
 }
 
-func (f LoxFunction) arity() int {
+func (f *LoxFunction) arity() int {
 	return len(f.declaration.Params)
 }
 
-func (f LoxFunction) bind(instance *LoxInstance) LoxFunction {
+func (f *LoxFunction) bind(instance *LoxInstance) *LoxFunction {
 	environment := env.NewEnvironmentEnclosing(f.closure)
 	environment.Define("this", instance)
-	return LoxFunction{f.name, f.declaration, environment, f.isInitializer}
+	return &LoxFunction{f.name, f.declaration, environment, f.isInitializer}
 }
 
-func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
+func (f *LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
 	environment := env.NewEnvironmentEnclosing(f.closure)
 	for i := 0; i < len(f.declaration.Params); i++ {
 		environment.Define(f.declaration.Params[i].Lexeme, arguments[i])
@@ -44,7 +44,7 @@ func (f LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (a
 	return nil, nil
 }
 
-func (f LoxFunction) String() string {
+func (f *LoxFunction) String() string {
 	if len(f.name) == 0 {
 		return "<fn>"
 	}

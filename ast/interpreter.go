@@ -155,7 +155,7 @@ func getType(element any) string {
 		return "string"
 	case LoxClass:
 		return "class"
-	case LoxFunction:
+	case *LoxFunction:
 		return "function"
 	case *LoxInstance:
 		return element.String()
@@ -520,10 +520,10 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		}()
 	}
 
-	methods := make(map[string]LoxFunction)
+	methods := make(map[string]*LoxFunction)
 	for _, method := range stmt.Methods {
 		isInit := method.Name.Lexeme == "init"
-		function := LoxFunction{method.Name.Lexeme, method.Function, i.environment, isInit}
+		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, isInit}
 		methods[method.Name.Lexeme] = function
 	}
 
@@ -677,13 +677,13 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitFunctionExpr(expr FunctionExpr) (LoxFunction, error) {
-	return LoxFunction{"", expr, i.environment, false}, nil
+func (i *Interpreter) visitFunctionExpr(expr FunctionExpr) (*LoxFunction, error) {
+	return &LoxFunction{"", expr, i.environment, false}, nil
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
 	funcName := stmt.Name.Lexeme
-	i.environment.Define(funcName, LoxFunction{funcName, stmt.Function, i.environment, false})
+	i.environment.Define(funcName, &LoxFunction{funcName, stmt.Function, i.environment, false})
 	return nil, nil
 }
 

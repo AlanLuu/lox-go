@@ -5,7 +5,7 @@ import "github.com/AlanLuu/lox/list"
 type LoxClass struct {
 	name       string
 	superClass *LoxClass
-	methods    map[string]LoxFunction
+	methods    map[string]*LoxFunction
 }
 
 func (c LoxClass) arity() int {
@@ -25,7 +25,7 @@ func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any,
 	return instance, nil
 }
 
-func (c LoxClass) findMethod(name string) (LoxFunction, bool) {
+func (c LoxClass) findMethod(name string) (*LoxFunction, bool) {
 	value, ok := c.methods[name]
 	if ok {
 		return value, ok
