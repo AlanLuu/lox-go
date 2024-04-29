@@ -199,7 +199,7 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
-func getResult(source any) string {
+func getResult(source any, isPrintStmt bool) string {
 	switch source := source.(type) {
 	case nil:
 		return "nil"
@@ -213,9 +213,17 @@ func getResult(source any) string {
 		}
 	case string:
 		if len(source) == 0 {
-			return "\"\""
+			if isPrintStmt {
+				return ""
+			} else {
+				return "\"\""
+			}
 		} else {
-			return fmt.Sprintf("\"%v\"", source)
+			if isPrintStmt {
+				return fmt.Sprint(source)
+			} else {
+				return fmt.Sprintf("\"%v\"", source)
+			}
 		}
 	case *LoxList:
 		sourceLen := len(source.elements)
@@ -225,7 +233,7 @@ func getResult(source any) string {
 			if element == source {
 				listStr.WriteString("[...]")
 			} else {
-				listStr.WriteString(getResult(element))
+				listStr.WriteString(getResult(element, false))
 			}
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
@@ -240,12 +248,12 @@ func getResult(source any) string {
 
 func printResultExpressionStmt(source any) {
 	if source != nil {
-		fmt.Println(getResult(source))
+		fmt.Println(getResult(source, false))
 	}
 }
 
 func printResultPrintStmt(source any) {
-	fmt.Println(getResult(source))
+	fmt.Println(getResult(source, true))
 }
 
 func (i *Interpreter) Resolve(expr Expr, depth int) {
