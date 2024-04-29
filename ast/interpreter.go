@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/AlanLuu/lox/env"
+	"github.com/AlanLuu/lox/equatable"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -352,9 +353,17 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 
 	if expr.Operator.TokenType == token.EQUAL_EQUAL {
+		leftEquatable, leftIsEquatable := left.(equatable.Equatable)
+		if leftIsEquatable {
+			return leftEquatable.Equals(right), nil
+		}
 		return left == right, nil
 	}
 	if expr.Operator.TokenType == token.BANG_EQUAL {
+		leftEquatable, leftIsEquatable := left.(equatable.Equatable)
+		if leftIsEquatable {
+			return !leftEquatable.Equals(right), nil
+		}
 		return left != right, nil
 	}
 

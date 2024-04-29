@@ -47,6 +47,7 @@ go build
         - `list.extend(list2)`, which appends every element from `list2` to the end of the list
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
+    - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A few other native functions are defined:
     - `len(element)`, which returns the length of a string or list element

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -13,6 +14,15 @@ const LIST_INDEX_OUT_OF_RANGE = "List index out of range."
 
 type LoxList struct {
 	elements list.List[Expr]
+}
+
+func (l *LoxList) Equals(obj any) bool {
+	switch obj := obj.(type) {
+	case *LoxList:
+		return reflect.DeepEqual(l.elements, obj.elements)
+	default:
+		return false
+	}
 }
 
 func (l *LoxList) Get(name token.Token) (any, error) {
