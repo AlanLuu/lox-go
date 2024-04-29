@@ -41,7 +41,10 @@ go build
     - Create a list and assign it to a variable: `var list = [1, 2, 3];`
     - Get an element from a list by index: `list[index]`
     - Set an element: `list[index] = value;`
-    - Attempting to access an index larger than the length of the list will cause a runtime error
+    - Besides these operations, lists also have some methods associated with them:
+        - `list.append(element)`, which appends an element to the end of a list
+        - `list.insert(index, element)` which inserts an element into the list at the specified index
+    - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A few other native functions are defined:
     - `len(element)`, which returns the length of a string or list element
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
