@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/AlanLuu/lox/equatable"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -33,6 +34,22 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		s.stringMethod = func() string { return "<native list fn>" }
 		return s, nil
 	}
+	indexOf := func(obj any) int64 {
+		if equatableObj, ok := obj.(equatable.Equatable); ok {
+			for i, element := range l.elements {
+				if equatableObj.Equals(element) {
+					return int64(i)
+				}
+			}
+		} else {
+			for i, element := range l.elements {
+				if obj == element {
+					return int64(i)
+				}
+			}
+		}
+		return -1
+	}
 	methodName := name.Lexeme
 	switch methodName {
 	case "append":
@@ -45,6 +62,29 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			l.elements.Clear()
 			return nil, nil
 		})
+	case "contains":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			return indexOf(args[0]) >= 0, nil
+		})
+	case "count":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			obj := args[0]
+			count := int64(0)
+			if equatableObj, ok := obj.(equatable.Equatable); ok {
+				for _, element := range l.elements {
+					if equatableObj.Equals(element) {
+						count++
+					}
+				}
+			} else {
+				for _, element := range l.elements {
+					if obj == element {
+						count++
+					}
+				}
+			}
+			return count, nil
+		})
 	case "extend":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if extendList, ok := args[0].(*LoxList); ok {
@@ -54,6 +94,10 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return nil, nil
 			}
 			return nil, loxerror.RuntimeError(name, "Argument to 'list.extend' must be a list.")
+		})
+	case "index":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			return indexOf(args[0]), nil
 		})
 	case "insert":
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {

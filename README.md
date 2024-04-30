@@ -44,7 +44,10 @@ go build
     - Besides these operations, lists also have some methods associated with them:
         - `list.append(element)`, which appends an element to the end of the list
         - `list.clear()`, which removes all elements from the list
+        - `list.contains(element)`, which returns `true` if `element` is contained in the list, and `false` otherwise
+        - `list.count(element)`, which returns the number of times `element` appears in the list
         - `list.extend(list2)`, which appends every element from `list2` to the end of the list
+        - `list.index(element)`, which returns the index value of the element's position in the list, or `-1` if the element is not in the list
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
