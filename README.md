@@ -16,16 +16,20 @@ lox -c <code>
 ```
 
 # Installation
+First, [install Go](https://go.dev/doc/install) if it's not installed already. Then run the following commands to build this interpreter:
 ```
 git clone https://github.com/AlanLuu/lox-go.git
 cd lox-go
 go build
 ```
+This will create an executable binary called `lox` on Linux/macOS and `lox.exe` on Windows that can be run directly.
 
 # Differences from Lox
 - Concatenating a string with another data type will convert that type into a string and concatenate them together
 - The following additional operations are supported in this implementation of Lox:
     - `a % b`, which returns the remainder of two numbers `a` and `b`
+    - `a ** b`, which returns `a` raised to the power of `b`, where `a` and `b` are numbers
+        - The exponent operator has higher precedence than any unary operators on the left, so `-a ** b` is equivalent to `-(a ** b)`.
     - `a << b` and `a >> b`, which returns a number representing the number `a` shifted by `b` bits to the left and right respectively.
         - If `a` or `b` are decimal numbers, they are converted into whole numbers before the shift operation
     - `~a`, which returns the bitwise NOT of the number `a`

@@ -393,6 +393,26 @@ func (p *Parser) equality() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) exponent() (Expr, error) {
+	expr, callErr := p.call()
+	if callErr != nil {
+		return nil, callErr
+	}
+	for p.match(token.DOUBLE_STAR) {
+		operator := p.previous()
+		right, unaryErr := p.unary()
+		if unaryErr != nil {
+			return nil, unaryErr
+		}
+		expr = Binary{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
+}
+
 func (p *Parser) factor() (Expr, error) {
 	expr, unaryErr := p.unary()
 	if unaryErr != nil {
@@ -400,9 +420,9 @@ func (p *Parser) factor() (Expr, error) {
 	}
 	for p.match(token.SLASH, token.STAR, token.PERCENT) {
 		operator := p.previous()
-		right, comparisonErr := p.unary()
-		if comparisonErr != nil {
-			return nil, comparisonErr
+		right, unaryErr := p.unary()
+		if unaryErr != nil {
+			return nil, unaryErr
 		}
 		expr = Binary{
 			Left:     expr,
@@ -855,7 +875,7 @@ func (p *Parser) unary() (Expr, error) {
 			Right:    right,
 		}, nil
 	}
-	return p.call()
+	return p.exponent()
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {

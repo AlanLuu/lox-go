@@ -21,6 +21,7 @@ const (
 	DOT
 	DOUBLE_GREATER
 	DOUBLE_LESS
+	DOUBLE_STAR
 	MINUS
 	OR_SYMBOL
 	PERCENT
@@ -86,6 +87,7 @@ var tokenArr = [...]string{
 	"DOT",
 	"DOUBLE_GREATER",
 	"DOUBLE_LESS",
+	"DOUBLE_STAR",
 	"MINUS",
 	"OR_SYMBOL",
 	"PERCENT",

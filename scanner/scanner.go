@@ -196,7 +196,11 @@ func (sc *Scanner) scanToken() error {
 	case ';':
 		addToken(token.SEMICOLON)
 	case '*':
-		addToken(token.STAR)
+		if sc.match('*') {
+			addToken(token.DOUBLE_STAR)
+		} else {
+			addToken(token.STAR)
+		}
 	case '!':
 		if sc.match('=') { //handle "!="
 			addToken(token.BANG_EQUAL)

@@ -327,6 +327,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			result = left / right
 		case token.PERCENT:
 			result = math.Mod(left, right)
+		case token.DOUBLE_STAR:
+			result = math.Pow(left, right)
 		case token.DOUBLE_LESS:
 			result = int64(left) << int64(right)
 		case token.LESS:
