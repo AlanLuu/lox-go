@@ -5,22 +5,30 @@ import "fmt"
 type TokenType int
 
 const (
+	//Bracket operators
 	LEFT_PAREN TokenType = iota
 	RIGHT_PAREN
 	LEFT_BRACE
 	RIGHT_BRACE
 	LEFT_BRACKET
 	RIGHT_BRACKET
+
+	//Operators
+	AND_SYMBOL
+	ARROW
+	CARET
 	COMMA
 	DOT
 	MINUS
+	OR_SYMBOL
 	PERCENT
 	PLUS
 	SEMICOLON
 	SLASH
 	STAR
+	TILDE
 
-	ARROW
+	//Comparison operators
 	BANG
 	BANG_EQUAL
 	DOUBLE_GREATER
@@ -31,16 +39,15 @@ const (
 	GREATER_EQUAL
 	LESS
 	LESS_EQUAL
-	TILDE
 
+	//Names, strings, and numbers
 	IDENTIFIER
 	STRING
 	NUMBER
 
+	//Reserved keywords
 	AND
-	AND_SYMBOL
 	BREAK
-	CARET
 	CLASS
 	CONTINUE
 	ELSE
@@ -50,7 +57,6 @@ const (
 	IF
 	NIL
 	OR
-	OR_SYMBOL
 	PRINT
 	RETURN
 	SUPER
@@ -59,24 +65,35 @@ const (
 	VAR
 	WHILE
 
+	//EOF token
 	EOF
 )
 
 var tokenArr = [...]string{
+	//Bracket operators
 	"LEFT_PAREN",
 	"RIGHT_PAREN",
 	"LEFT_BRACE",
 	"RIGHT_BRACE",
+	"LEFT_BRACKET",
+	"RIGHT_BRACKET",
+
+	//Operators
+	"AND_SYMBOL",
+	"ARROW",
+	"CARET",
 	"COMMA",
 	"DOT",
 	"MINUS",
+	"OR_SYMBOL",
 	"PERCENT",
 	"PLUS",
 	"SEMICOLON",
 	"SLASH",
 	"STAR",
+	"TILDE",
 
-	"ARROW",
+	//Comparison operators
 	"BANG",
 	"BANG_EQUAL",
 	"DOUBLE_GREATER",
@@ -87,16 +104,15 @@ var tokenArr = [...]string{
 	"GREATER_EQUAL",
 	"LESS",
 	"LESS_EQUAL",
-	"TILDE",
 
+	//Names, strings, and numbers
 	"IDENTIFIER",
 	"STRING",
 	"NUMBER",
 
+	//Reserved keywords
 	"AND",
-	"AND_SYMBOL",
 	"BREAK",
-	"CARET",
 	"CLASS",
 	"CONTINUE",
 	"ELSE",
@@ -106,7 +122,6 @@ var tokenArr = [...]string{
 	"IF",
 	"NIL",
 	"OR",
-	"OR_SYMBOL",
 	"PRINT",
 	"RETURN",
 	"SUPER",
@@ -115,6 +130,7 @@ var tokenArr = [...]string{
 	"VAR",
 	"WHILE",
 
+	//EOF token
 	"EOF",
 }
 
