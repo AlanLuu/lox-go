@@ -19,6 +19,8 @@ const (
 	CARET
 	COMMA
 	DOT
+	DOUBLE_GREATER
+	DOUBLE_LESS
 	MINUS
 	OR_SYMBOL
 	PERCENT
@@ -31,8 +33,6 @@ const (
 	//Comparison operators
 	BANG
 	BANG_EQUAL
-	DOUBLE_GREATER
-	DOUBLE_LESS
 	EQUAL
 	EQUAL_EQUAL
 	GREATER
@@ -84,6 +84,8 @@ var tokenArr = [...]string{
 	"CARET",
 	"COMMA",
 	"DOT",
+	"DOUBLE_GREATER",
+	"DOUBLE_LESS",
 	"MINUS",
 	"OR_SYMBOL",
 	"PERCENT",
@@ -96,8 +98,6 @@ var tokenArr = [...]string{
 	//Comparison operators
 	"BANG",
 	"BANG_EQUAL",
-	"DOUBLE_GREATER",
-	"DOUBLE_LESS",
 	"EQUAL",
 	"EQUAL_EQUAL",
 	"GREATER",
