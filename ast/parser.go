@@ -101,6 +101,66 @@ func (p *Parser) bitShift() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) bitwiseAnd() (Expr, error) {
+	expr, bitShiftErr := p.bitShift()
+	if bitShiftErr != nil {
+		return nil, bitShiftErr
+	}
+	for p.match(token.AND_SYMBOL) {
+		operator := p.previous()
+		right, bitShiftErr := p.bitShift()
+		if bitShiftErr != nil {
+			return nil, bitShiftErr
+		}
+		expr = Binary{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
+}
+
+func (p *Parser) bitwiseOr() (Expr, error) {
+	expr, bitwiseXorErr := p.bitwiseXor()
+	if bitwiseXorErr != nil {
+		return nil, bitwiseXorErr
+	}
+	for p.match(token.OR_SYMBOL) {
+		operator := p.previous()
+		right, bitwiseXorErr := p.bitwiseXor()
+		if bitwiseXorErr != nil {
+			return nil, bitwiseXorErr
+		}
+		expr = Binary{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
+}
+
+func (p *Parser) bitwiseXor() (Expr, error) {
+	expr, bitwiseAndErr := p.bitwiseAnd()
+	if bitwiseAndErr != nil {
+		return nil, bitwiseAndErr
+	}
+	for p.match(token.CARET) {
+		operator := p.previous()
+		right, bitwiseAndErr := p.bitwiseAnd()
+		if bitwiseAndErr != nil {
+			return nil, bitwiseAndErr
+		}
+		expr = Binary{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
+}
+
 func (p *Parser) block() (list.List[Stmt], error) {
 	statements := list.NewList[Stmt]()
 	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
@@ -222,15 +282,15 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) comparison() (Expr, error) {
-	expr, bitShiftErr := p.bitShift()
-	if bitShiftErr != nil {
-		return nil, bitShiftErr
+	expr, bitwiseOrErr := p.bitwiseOr()
+	if bitwiseOrErr != nil {
+		return nil, bitwiseOrErr
 	}
 	for p.match(token.GREATER, token.GREATER_EQUAL, token.LESS, token.LESS_EQUAL) {
 		operator := p.previous()
-		right, bitShiftErr := p.bitShift()
-		if bitShiftErr != nil {
-			return nil, bitShiftErr
+		right, bitwiseOrErr := p.bitwiseOr()
+		if bitwiseOrErr != nil {
+			return nil, bitwiseOrErr
 		}
 		expr = Binary{
 			Left:     expr,
@@ -566,7 +626,7 @@ func (p *Parser) isAtEnd() bool {
 	return p.peek().TokenType == token.EOF
 }
 
-func (p *Parser) list() (any, error) {
+func (p *Parser) list() (Expr, error) {
 	elements := list.NewList[Expr]()
 	if !p.check(token.RIGHT_BRACKET) {
 		for cond := true; cond; cond = p.match(token.COMMA) {

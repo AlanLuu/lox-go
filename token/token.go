@@ -38,7 +38,9 @@ const (
 	NUMBER
 
 	AND
+	AND_SYMBOL
 	BREAK
+	CARET
 	CLASS
 	CONTINUE
 	ELSE
@@ -48,6 +50,7 @@ const (
 	IF
 	NIL
 	OR
+	OR_SYMBOL
 	PRINT
 	RETURN
 	SUPER
@@ -91,7 +94,9 @@ var tokenArr = [...]string{
 	"NUMBER",
 
 	"AND",
+	"AND_SYMBOL",
 	"BREAK",
+	"CARET",
 	"CLASS",
 	"CONTINUE",
 	"ELSE",
@@ -101,6 +106,7 @@ var tokenArr = [...]string{
 	"IF",
 	"NIL",
 	"OR",
+	"OR_SYMBOL",
 	"PRINT",
 	"RETURN",
 	"SUPER",
