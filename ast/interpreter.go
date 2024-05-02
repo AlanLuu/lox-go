@@ -939,6 +939,14 @@ func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 		return math.NaN(), nil
 	case token.BANG:
 		return !i.isTruthy(right), nil
+	case token.TILDE:
+		switch right := right.(type) {
+		case int64:
+			return ^right, nil
+		case float64:
+			return ^int64(right), nil
+		}
+		return math.NaN(), nil
 	}
 
 	return nil, nil

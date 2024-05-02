@@ -24,9 +24,10 @@ go build
 
 # Differences from Lox
 - Concatenating a string with another data type will convert that type into a string and concatenate them together
-- The following additional binary operations are supported in this implementation of Lox:
+- The following additional operations are supported in this implementation of Lox:
     - `a % b`, which returns the remainder of two numbers `a` and `b`
-    - `a << b` and `a >> b`, which returns a number representing `a` shifted by `b` bits to the left and right respectively. If `a` or `b` are decimal numbers, they are converted into whole numbers before the shift operation
+    - `a << b` and `a >> b`, which returns a number representing the number `a` shifted by `b` bits to the left and right respectively. If `a` or `b` are decimal numbers, they are converted into whole numbers before the shift operation
+    - `~a`, which returns the bitwise NOT of the number `a`
 - Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
 - Booleans and `nil` are treated as numbers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`

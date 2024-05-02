@@ -784,7 +784,7 @@ func (p *Parser) term() (Expr, error) {
 }
 
 func (p *Parser) unary() (Expr, error) {
-	if p.match(token.BANG, token.MINUS) {
+	if p.match(token.BANG, token.MINUS, token.TILDE) {
 		operator := p.previous()
 		right, unaryErr := p.unary()
 		if unaryErr != nil {

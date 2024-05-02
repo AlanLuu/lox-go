@@ -31,6 +31,7 @@ const (
 	GREATER_EQUAL
 	LESS
 	LESS_EQUAL
+	TILDE
 
 	IDENTIFIER
 	STRING
@@ -83,6 +84,7 @@ var tokenArr = [...]string{
 	"GREATER_EQUAL",
 	"LESS",
 	"LESS_EQUAL",
+	"TILDE",
 
 	"IDENTIFIER",
 	"STRING",
