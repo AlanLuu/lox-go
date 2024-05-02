@@ -318,7 +318,7 @@ func (p *Parser) factor() (Expr, error) {
 	if unaryErr != nil {
 		return nil, unaryErr
 	}
-	for p.match(token.SLASH, token.STAR) {
+	for p.match(token.SLASH, token.STAR, token.PERCENT) {
 		operator := p.previous()
 		right, comparisonErr := p.unary()
 		if comparisonErr != nil {

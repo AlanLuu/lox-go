@@ -225,6 +225,8 @@ func (sc *Scanner) scanToken() error {
 		} else {
 			addToken(token.SLASH)
 		}
+	case '%':
+		addToken(token.PERCENT)
 
 	case '\n':
 		sc.lineNum++

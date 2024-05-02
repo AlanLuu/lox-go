@@ -14,6 +14,7 @@ const (
 	COMMA
 	DOT
 	MINUS
+	PERCENT
 	PLUS
 	SEMICOLON
 	SLASH
@@ -63,6 +64,7 @@ var tokenArr = [...]string{
 	"COMMA",
 	"DOT",
 	"MINUS",
+	"PERCENT",
 	"PLUS",
 	"SEMICOLON",
 	"SLASH",

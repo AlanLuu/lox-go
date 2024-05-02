@@ -293,7 +293,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 	unknownOpStr := "unknown operator"
 	unknownOp := func() error {
-		return runtimeErrorWrapper(unknownOpStr)
+		return runtimeErrorWrapper(fmt.Sprintf("%v '%v'.", unknownOpStr, expr.Operator.Lexeme))
 	}
 	handleNumString := func(left float64, right string) (any, error) {
 		switch expr.Operator.TokenType {
@@ -325,6 +325,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			result = left * right
 		case token.SLASH:
 			result = left / right
+		case token.PERCENT:
+			result = math.Mod(left, right)
 		case token.LESS:
 			result = left < right
 		case token.LESS_EQUAL:
