@@ -208,12 +208,16 @@ func (sc *Scanner) scanToken() error {
 	case '<':
 		if sc.match('=') { //handle "<="
 			addToken(token.LESS_EQUAL)
+		} else if sc.match('<') { //handle "<<"
+			addToken(token.DOUBLE_LESS)
 		} else {
 			addToken(token.LESS)
 		}
 	case '>':
 		if sc.match('=') { //handle ">="
 			addToken(token.GREATER_EQUAL)
+		} else if sc.match('>') { //handle ">>"
+			addToken(token.DOUBLE_GREATER)
 		} else {
 			addToken(token.GREATER)
 		}

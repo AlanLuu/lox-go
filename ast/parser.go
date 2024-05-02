@@ -81,6 +81,26 @@ func (p *Parser) assignment() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) bitShift() (Expr, error) {
+	expr, termErr := p.term()
+	if termErr != nil {
+		return nil, termErr
+	}
+	for p.match(token.DOUBLE_LESS, token.DOUBLE_GREATER) {
+		operator := p.previous()
+		right, termErr := p.term()
+		if termErr != nil {
+			return nil, termErr
+		}
+		expr = Binary{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return expr, nil
+}
+
 func (p *Parser) block() (list.List[Stmt], error) {
 	statements := list.NewList[Stmt]()
 	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
@@ -202,15 +222,15 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) comparison() (Expr, error) {
-	expr, termErr := p.term()
-	if termErr != nil {
-		return nil, termErr
+	expr, bitShiftErr := p.bitShift()
+	if bitShiftErr != nil {
+		return nil, bitShiftErr
 	}
 	for p.match(token.GREATER, token.GREATER_EQUAL, token.LESS, token.LESS_EQUAL) {
 		operator := p.previous()
-		right, comparisonErr := p.comparison()
-		if comparisonErr != nil {
-			return nil, comparisonErr
+		right, bitShiftErr := p.bitShift()
+		if bitShiftErr != nil {
+			return nil, bitShiftErr
 		}
 		expr = Binary{
 			Left:     expr,

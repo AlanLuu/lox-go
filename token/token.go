@@ -23,6 +23,8 @@ const (
 	ARROW
 	BANG
 	BANG_EQUAL
+	DOUBLE_GREATER
+	DOUBLE_LESS
 	EQUAL
 	EQUAL_EQUAL
 	GREATER
@@ -73,6 +75,8 @@ var tokenArr = [...]string{
 	"ARROW",
 	"BANG",
 	"BANG_EQUAL",
+	"DOUBLE_GREATER",
+	"DOUBLE_LESS",
 	"EQUAL",
 	"EQUAL_EQUAL",
 	"GREATER",
