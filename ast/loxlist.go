@@ -10,8 +10,13 @@ import (
 	"github.com/AlanLuu/lox/token"
 )
 
-const LIST_INDEX_MUST_BE_WHOLE_NUMBER = "Index value must be a whole number."
-const LIST_INDEX_OUT_OF_RANGE = "List index out of range."
+func ListIndexMustBeWholeNum(index any) string {
+	return fmt.Sprintf("List index '%v' must be a whole number.", index)
+}
+
+func ListIndexOutOfRange(index int64) string {
+	return fmt.Sprintf("List index %v out of range.", index)
+}
 
 type LoxList struct {
 	elements list.List[Expr]
@@ -103,27 +108,33 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if index, ok := args[0].(int64); ok {
 				if index < 0 || index > int64(len(l.elements)) {
-					return nil, loxerror.RuntimeError(name, LIST_INDEX_OUT_OF_RANGE)
+					return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(index))
 				}
 				l.elements.AddAt(index, args[1])
 				return nil, nil
 			}
-			return nil, loxerror.RuntimeError(name, LIST_INDEX_MUST_BE_WHOLE_NUMBER)
+			return nil, loxerror.RuntimeError(name, ListIndexMustBeWholeNum(args[0]))
 		})
 	case "pop":
 		return listFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
 			switch argsLen {
 			case 0:
+				if len(l.elements) == 0 {
+					return nil, loxerror.RuntimeError(name, "Cannot pop from empty list.")
+				}
 				return l.elements.Pop(), nil
 			case 1:
 				if index, ok := args[0].(int64); ok {
+					if len(l.elements) == 0 {
+						return nil, loxerror.RuntimeError(name, "Cannot pop from empty list.")
+					}
 					if index < 0 || index >= int64(len(l.elements)) {
-						return nil, loxerror.RuntimeError(name, LIST_INDEX_OUT_OF_RANGE)
+						return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(index))
 					}
 					return l.elements.RemoveIndex(index), nil
 				}
-				return nil, loxerror.RuntimeError(name, LIST_INDEX_MUST_BE_WHOLE_NUMBER)
+				return nil, loxerror.RuntimeError(name, ListIndexMustBeWholeNum(args[0]))
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})

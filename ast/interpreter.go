@@ -774,7 +774,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		return nil, indexValErr
 	}
 	if _, ok := indexVal.(int64); !ok {
-		return nil, loxerror.RuntimeError(expr.Bracket, LIST_INDEX_MUST_BE_WHOLE_NUMBER)
+		return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
 	}
 	indexValInt := indexVal.(int64)
 	switch indexElement := indexElement.(type) {
@@ -785,7 +785,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		return string(indexElement[indexValInt]), nil
 	case *LoxList:
 		if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
-			return nil, loxerror.RuntimeError(expr.Bracket, LIST_INDEX_OUT_OF_RANGE)
+			return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
 		}
 		return indexElement.elements[indexValInt], nil
 	}
@@ -874,7 +874,7 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 		case int64:
 			indexes.Add(indexNum)
 		default:
-			return nil, loxerror.RuntimeError(expr.Name, LIST_INDEX_MUST_BE_WHOLE_NUMBER)
+			return nil, loxerror.RuntimeError(expr.Name, ListIndexMustBeWholeNum(indexNum))
 		}
 		node = index.IndexElement
 		index, ok = node.(Index)
@@ -893,7 +893,7 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 			position := indexes[loopIndex]
 			if loopIndex > 0 {
 				if position < 0 || position >= int64(len(variable.elements)) {
-					return nil, loxerror.RuntimeError(expr.Name, LIST_INDEX_OUT_OF_RANGE)
+					return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(position))
 				}
 				variable, ok = variable.elements[position].(*LoxList)
 				if !ok {
@@ -901,7 +901,7 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 				}
 			} else {
 				if position < 0 || position >= int64(len(variable.elements)) {
-					return nil, loxerror.RuntimeError(expr.Name, LIST_INDEX_OUT_OF_RANGE)
+					return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(position))
 				}
 				variable.elements[position] = value
 			}
