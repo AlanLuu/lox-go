@@ -120,13 +120,13 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			argsLen := len(args)
 			switch argsLen {
 			case 0:
-				if len(l.elements) == 0 {
+				if l.elements.IsEmpty() {
 					return nil, loxerror.RuntimeError(name, "Cannot pop from empty list.")
 				}
 				return l.elements.Pop(), nil
 			case 1:
 				if index, ok := args[0].(int64); ok {
-					if len(l.elements) == 0 {
+					if l.elements.IsEmpty() {
 						return nil, loxerror.RuntimeError(name, "Cannot pop from empty list.")
 					}
 					if index < 0 || index >= int64(len(l.elements)) {

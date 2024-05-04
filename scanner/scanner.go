@@ -281,8 +281,13 @@ func (sc *Scanner) ScanTokens() error {
 			return scanTokenErr
 		}
 	}
-	sc.lineNum--
-	sc.Tokens.Add(token.NewToken(token.EOF, "", nil, sc.lineNum))
+	var eofLineNum int
+	if sc.Tokens.IsEmpty() {
+		eofLineNum = sc.lineNum
+	} else {
+		eofLineNum = sc.Tokens.Peek().Line
+	}
+	sc.Tokens.Add(token.NewToken(token.EOF, "", nil, eofLineNum))
 	return nil
 }
 
