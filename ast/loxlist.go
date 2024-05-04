@@ -138,6 +138,15 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
+	case "remove":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			index := indexOf(args[0])
+			if index >= 0 {
+				l.elements.RemoveIndex(index)
+				return true, nil
+			}
+			return false, nil
+		})
 	}
 	return nil, loxerror.RuntimeError(name, "Lists have no property called '"+methodName+"'.")
 }
