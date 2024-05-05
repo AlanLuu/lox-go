@@ -385,12 +385,36 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		if leftIsEquatable {
 			return leftEquatable.Equals(right), nil
 		}
+		switch left := left.(type) {
+		case int64:
+			switch right := right.(type) {
+			case float64:
+				return float64(left) == right, nil
+			}
+		case float64:
+			switch right := right.(type) {
+			case int64:
+				return left == float64(right), nil
+			}
+		}
 		return left == right, nil
 	}
 	if expr.Operator.TokenType == token.BANG_EQUAL {
 		leftEquatable, leftIsEquatable := left.(equatable.Equatable)
 		if leftIsEquatable {
 			return !leftEquatable.Equals(right), nil
+		}
+		switch left := left.(type) {
+		case int64:
+			switch right := right.(type) {
+			case float64:
+				return float64(left) != right, nil
+			}
+		case float64:
+			switch right := right.(type) {
+			case int64:
+				return left != float64(right), nil
+			}
 		}
 		return left != right, nil
 	}
