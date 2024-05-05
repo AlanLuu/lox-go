@@ -88,7 +88,6 @@ type List struct {
 
 type Literal struct {
 	Value any
-	Quote byte
 }
 
 type Logical struct {
@@ -115,6 +114,11 @@ type Set struct {
 
 type SetList struct {
 	Set
+}
+
+type String struct {
+	Str   string
+	Quote byte
 }
 
 type Super struct {

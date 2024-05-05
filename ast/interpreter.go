@@ -120,6 +120,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitSetExpr(expr)
 	case SetList:
 		return i.visitSetListExpr(expr)
+	case String:
+		return i.visitStringExpr(expr)
 	case Super:
 		return i.visitSuperExpr(expr)
 	case This:
@@ -811,9 +813,6 @@ func (i *Interpreter) visitListExpr(expr List) (any, error) {
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
-	if str, ok := expr.Value.(string); ok {
-		return &LoxString{str, expr.Quote}, nil
-	}
 	return expr.Value, nil
 }
 
@@ -919,6 +918,10 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 		return value, nil
 	}
 	return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
+}
+
+func (i *Interpreter) visitStringExpr(expr String) (any, error) {
+	return &LoxString{expr.Str, expr.Quote}, nil
 }
 
 func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {

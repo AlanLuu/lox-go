@@ -727,7 +727,7 @@ func (p *Parser) primary() (Expr, error) {
 		return Literal{Value: p.previous().Literal}, nil
 	case p.match(token.STRING):
 		previous := p.previous()
-		return Literal{Value: previous.Literal, Quote: previous.Quote}, nil
+		return String{Str: previous.Literal.(string), Quote: previous.Quote}, nil
 	case p.match(token.IDENTIFIER):
 		return Variable{Name: p.previous()}, nil
 	case p.match(token.FUN):
