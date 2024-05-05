@@ -88,6 +88,7 @@ type List struct {
 
 type Literal struct {
 	Value any
+	Quote byte
 }
 
 type Logical struct {

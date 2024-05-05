@@ -49,8 +49,8 @@ func (i *Interpreter) defineNativeFuncs() {
 	})
 	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		switch element := args[0].(type) {
-		case string:
-			return int64(len(element)), nil
+		case *LoxString:
+			return int64(len(element.str)), nil
 		case *LoxList:
 			return int64(len(element.elements)), nil
 		}
@@ -152,7 +152,7 @@ func getType(element any) string {
 		return "number"
 	case bool:
 		return "boolean"
-	case string:
+	case *LoxString:
 		return "string"
 	case LoxClass:
 		return "class"
@@ -193,8 +193,8 @@ func (i *Interpreter) isTruthy(obj any) bool {
 		return obj != 0
 	case float64:
 		return obj != 0.0 && !math.IsNaN(obj)
-	case string:
-		return len(obj) > 0
+	case *LoxString:
+		return len(obj.str) > 0
 	}
 	return true
 }
@@ -211,18 +211,18 @@ func getResult(source any, isPrintStmt bool) string {
 		} else {
 			return fmt.Sprint(source)
 		}
-	case string:
-		if len(source) == 0 {
+	case *LoxString:
+		if len(source.str) == 0 {
 			if isPrintStmt {
 				return ""
 			} else {
-				return "\"\""
+				return fmt.Sprintf("%c%c", source.quote, source.quote)
 			}
 		} else {
 			if isPrintStmt {
-				return fmt.Sprint(source)
+				return fmt.Sprint(source.str)
 			} else {
-				return fmt.Sprintf("\"%v\"", source)
+				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
 			}
 		}
 	case *LoxList:
@@ -295,21 +295,21 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	unknownOp := func() error {
 		return runtimeErrorWrapper(fmt.Sprintf("%v '%v'.", unknownOpStr, expr.Operator.Lexeme))
 	}
-	handleNumString := func(left float64, right string) (any, error) {
+	handleNumString := func(left float64, right *LoxString) (any, error) {
 		switch expr.Operator.TokenType {
 		case token.PLUS:
 			if math.IsInf(left, 1) {
-				return "Infinity" + right, nil
+				return right.NewLoxString("Infinity" + right.str), nil
 			} else if math.IsInf(left, -1) {
-				return "-Infinity" + right, nil
+				return right.NewLoxString("-Infinity" + right.str), nil
 			}
-			return strconv.FormatFloat(left, 'f', -1, 64) + right, nil
+			return right.NewLoxString(strconv.FormatFloat(left, 'f', -1, 64) + right.str), nil
 		case token.STAR:
 			if left <= 0 {
-				return "", nil
+				return EmptyLoxString(), nil
 			}
 			if floatIsInt(left) {
-				return strings.Repeat(right, int(left)), nil
+				return right.NewLoxString(strings.Repeat(right.str, int(left))), nil
 			}
 		}
 		return math.NaN(), nil
@@ -394,10 +394,10 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 
 	if leftAsStringer, ok := left.(fmt.Stringer); ok {
-		left = leftAsStringer.String()
+		left = &LoxString{leftAsStringer.String(), '\''}
 	}
 	if rightAsStringer, ok := right.(fmt.Stringer); ok {
-		right = rightAsStringer.String()
+		right = &LoxString{rightAsStringer.String(), '\''}
 	}
 	switch left := left.(type) {
 	case int64:
@@ -408,7 +408,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(float64(left), float64(right))
 		case bool:
 			return handleTwoFloats(float64(left), boolMap[right])
-		case string:
+		case *LoxString:
 			return handleNumString(float64(left), right)
 		case nil:
 			return handleTwoFloats(float64(left), 0)
@@ -421,7 +421,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(float64(left), float64(right))
 		case bool:
 			return handleTwoFloats(float64(left), boolMap[right])
-		case string:
+		case *LoxString:
 			return handleNumString(left, right)
 		case nil:
 			return handleTwoFloats(float64(left), 0)
@@ -434,42 +434,45 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(boolMap[left], float64(right))
 		case bool:
 			return handleTwoFloats(boolMap[left], boolMap[right])
-		case string:
+		case *LoxString:
 			switch expr.Operator.TokenType {
 			case token.PLUS:
-				return strconv.FormatBool(left) + right, nil
+				return right.NewLoxString(strconv.FormatBool(left) + right.str), nil
 			case token.STAR:
 				return handleNumString(boolMap[left], right)
 			}
 		case nil:
 			return handleTwoFloats(boolMap[left], 0)
 		}
-	case string:
+	case *LoxString:
 		switch expr.Operator.TokenType {
 		case token.PLUS:
 			switch right := right.(type) {
 			case int64:
-				return left + strconv.FormatFloat(float64(right), 'f', -1, 64), nil
+				return left.NewLoxString(left.str + strconv.FormatFloat(float64(right), 'f', -1, 64)), nil
 			case float64:
 				if math.IsInf(right, 1) {
-					return "Infinity" + left, nil
+					return left.NewLoxString("Infinity" + left.str), nil
 				} else if math.IsInf(right, -1) {
-					return "-Infinity" + left, nil
+					return left.NewLoxString("-Infinity" + left.str), nil
 				}
-				return left + strconv.FormatFloat(right, 'f', -1, 64), nil
+				return left.NewLoxString(left.str + strconv.FormatFloat(right, 'f', -1, 64)), nil
 			case bool:
-				return left + strconv.FormatBool(right), nil
-			case string:
-				return left + right, nil
+				return left.NewLoxString(left.str + strconv.FormatBool(right)), nil
+			case *LoxString:
+				if left.quote == '"' || right.quote == '"' {
+					return &LoxString{left.str + right.str, '"'}, nil
+				}
+				return &LoxString{left.str + right.str, '\''}, nil
 			case nil:
-				return left + "nil", nil
+				return left.NewLoxString(left.str + "nil"), nil
 			}
 		case token.STAR:
-			repeat := func(left string, right int64) (string, error) {
+			repeat := func(left *LoxString, right int64) (*LoxString, error) {
 				if right <= 0 {
-					return "", nil
+					return EmptyLoxString(), nil
 				}
-				return strings.Repeat(left, int(right)), nil
+				return left.NewLoxString(strings.Repeat(left.str, int(right))), nil
 			}
 			switch right := right.(type) {
 			case int64:
@@ -477,7 +480,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			case bool:
 				return repeat(left, int64(boolMap[right]))
 			case nil:
-				return "", nil
+				return EmptyLoxString(), nil
 			}
 		}
 	case nil:
@@ -488,12 +491,12 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(0, float64(right))
 		case bool:
 			return handleTwoFloats(0, boolMap[right])
-		case string:
+		case *LoxString:
 			switch expr.Operator.TokenType {
 			case token.PLUS:
-				return "nil" + right, nil
+				return right.NewLoxString("nil" + right.str), nil
 			case token.STAR:
-				return "", nil
+				return EmptyLoxString(), nil
 			}
 		case nil:
 			return handleTwoFloats(0, 0)
@@ -778,11 +781,15 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 	}
 	indexValInt := indexVal.(int64)
 	switch indexElement := indexElement.(type) {
-	case string:
-		if indexValInt < 0 || indexValInt >= int64(len(indexElement)) {
+	case *LoxString:
+		if indexValInt < 0 || indexValInt >= int64(len(indexElement.str)) {
 			return nil, loxerror.RuntimeError(expr.Bracket, "String index out of range.")
 		}
-		return string(indexElement[indexValInt]), nil
+		str := string(indexElement.str[indexValInt])
+		if str == "'" {
+			return &LoxString{str, '"'}, nil
+		}
+		return &LoxString{str, '\''}, nil
 	case *LoxList:
 		if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
 			return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
@@ -804,6 +811,9 @@ func (i *Interpreter) visitListExpr(expr List) (any, error) {
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
+	if str, ok := expr.Value.(string); ok {
+		return &LoxString{str, expr.Quote}, nil
+	}
 	return expr.Value, nil
 }
 

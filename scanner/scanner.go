@@ -54,9 +54,9 @@ func (sc *Scanner) advance() byte {
 	return c
 }
 
-func (sc *Scanner) addToken(tokenType token.TokenType, literal any) {
+func (sc *Scanner) addToken(tokenType token.TokenType, literal any, quote byte) {
 	text := sc.sourceLine[sc.startIndex:sc.currentIndex]
-	sc.Tokens.Add(token.NewToken(tokenType, text, literal, sc.lineNum))
+	sc.Tokens.Add(token.NewToken(tokenType, text, literal, sc.lineNum, quote))
 }
 
 func (sc *Scanner) handleNumber() error {
@@ -78,10 +78,10 @@ func (sc *Scanner) handleNumber() error {
 	numStr := sc.sourceLine[sc.startIndex:sc.currentIndex]
 	if strings.Contains(numStr, ".") {
 		num, _ := strconv.ParseFloat(numStr, 64)
-		sc.addToken(token.NUMBER, num)
+		sc.addToken(token.NUMBER, num, 0)
 	} else {
 		num, _ := strconv.ParseInt(numStr, 10, 64)
-		sc.addToken(token.NUMBER, num)
+		sc.addToken(token.NUMBER, num, 0)
 	}
 
 	return nil
@@ -97,16 +97,20 @@ func (sc *Scanner) handleIdentifier() {
 	if !ok {
 		tokenType = token.IDENTIFIER
 	}
-	sc.addToken(tokenType, nil)
+	sc.addToken(tokenType, nil, 0)
 }
 
-func (sc *Scanner) handleString() error {
+func (sc *Scanner) handleString(quote byte) error {
 	unclosedStringErr := func() error {
 		return loxerror.GiveError(sc.lineNum, "", "Unclosed string")
 	}
-	for sc.peek() != '"' && !sc.isAtEnd() {
+	var tokenQuote byte = '\''
+	for sc.peek() != quote && !sc.isAtEnd() {
 		if sc.peek() == '\n' {
 			return unclosedStringErr()
+		}
+		if tokenQuote != '"' && quote == '"' && sc.peek() == '\'' {
+			tokenQuote = '"'
 		}
 		sc.advance()
 	}
@@ -117,7 +121,7 @@ func (sc *Scanner) handleString() error {
 	sc.advance()
 
 	theString := sc.sourceLine[sc.startIndex+1 : sc.currentIndex-1]
-	sc.addToken(token.STRING, theString)
+	sc.addToken(token.STRING, theString, tokenQuote)
 	return nil
 }
 
@@ -164,7 +168,7 @@ func (sc *Scanner) ResetForNextLine() {
 func (sc *Scanner) scanToken() error {
 	c := sc.advance()
 	addToken := func(tokenType token.TokenType) {
-		sc.addToken(tokenType, nil)
+		sc.addToken(tokenType, nil, 0)
 	}
 	switch c {
 	case '(':
@@ -251,8 +255,8 @@ func (sc *Scanner) scanToken() error {
 	case '\r':
 	case '\t':
 
-	case '"':
-		handleStringErr := sc.handleString()
+	case '"', '\'':
+		handleStringErr := sc.handleString(c)
 		if handleStringErr != nil {
 			return handleStringErr
 		}
@@ -287,7 +291,7 @@ func (sc *Scanner) ScanTokens() error {
 	} else {
 		eofLineNum = sc.Tokens.Peek().Line
 	}
-	sc.Tokens.Add(token.NewToken(token.EOF, "", nil, eofLineNum))
+	sc.Tokens.Add(token.NewToken(token.EOF, "", nil, eofLineNum, 0))
 	return nil
 }
 
