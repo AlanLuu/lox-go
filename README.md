@@ -49,6 +49,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
     - The parser will attempt to parse anonymous function expressions that appear on their own line as function declarations, throwing a parser error as a result. This is expected behavior; to force the parser to parse them as expressions, wrap the function expression inside parentheses, like `(fun() {})()`. In this case, this creates an anonymous function expression that is called immediately
+- Strings have some methods associated with them:
+    - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
+    - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
+    - `string.index(string2)`, which returns a number representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
+    - `string.lower()`, which returns a new string with all lowercase letters
+    - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
+    - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
+    - `string.upper()`, which returns a new string with all uppercase letters
 - Lists are supported in this implementation of Lox
     - Create a list and assign it to a variable: `var list = [1, 2, 3];`
     - Get an element from a list by index: `list[index]`
