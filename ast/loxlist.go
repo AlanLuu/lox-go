@@ -56,6 +56,10 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return -1
 	}
 	methodName := name.Lexeme
+	argMustBeType := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'list.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	switch methodName {
 	case "append":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -98,7 +102,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				}
 				return nil, nil
 			}
-			return nil, loxerror.RuntimeError(name, "Argument to 'list.extend' must be a list.")
+			return argMustBeType("list")
 		})
 	case "index":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -114,6 +118,38 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return nil, nil
 			}
 			return nil, loxerror.RuntimeError(name, ListIndexMustBeWholeNum(args[0]))
+		})
+	case "map":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argListLen := 3
+				argList := list.NewListLen[any](int64(argListLen))
+				defer argList.Clear()
+				argList[2] = l
+				callbackArity := callback.arity()
+				if callbackArity > argListLen {
+					for i := 0; i < callbackArity-argListLen; i++ {
+						argList.Add(nil)
+					}
+				}
+
+				newList := list.NewList[Expr]()
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						newList.Add(resultReturn.FinalValue)
+					} else if resultErr != nil {
+						newList.Clear()
+						return nil, resultErr
+					} else {
+						newList.Add(result)
+					}
+				}
+				return &LoxList{newList}, nil
+			}
+			return argMustBeType("function")
 		})
 	case "pop":
 		return listFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {

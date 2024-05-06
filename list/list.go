@@ -3,11 +3,19 @@ package list
 type List[T any] []T
 
 func NewList[T any]() List[T] {
-	return NewListCap[T](0)
+	return NewListLenCap[T](0, 0)
 }
 
 func NewListCap[T any](cap int64) List[T] {
-	return make(List[T], 0, cap)
+	return NewListLenCap[T](0, cap)
+}
+
+func NewListLen[T any](len int64) List[T] {
+	return NewListLenCap[T](len, len)
+}
+
+func NewListLenCap[T any](len int64, cap int64) List[T] {
+	return make(List[T], len, cap)
 }
 
 func (l *List[T]) Add(t T) {
