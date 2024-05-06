@@ -36,6 +36,15 @@ func (l *LoxString) NewLoxString(str string) *LoxString {
 	}
 }
 
+func (l *LoxString) Equals(obj any) bool {
+	switch obj := obj.(type) {
+	case *LoxString:
+		return l.str == obj.str
+	default:
+		return false
+	}
+}
+
 func (l *LoxString) Get(name token.Token) (any, error) {
 	strFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (struct{ ProtoLoxCallable }, error) {
 		s := struct{ ProtoLoxCallable }{}
