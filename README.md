@@ -72,6 +72,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.contains(element)`, which returns `true` if `element` is contained in the list, and `false` otherwise
         - `list.count(element)`, which returns the number of times `element` appears in the list
         - `list.extend(list2)`, which appends every element from `list2` to the end of the list
+        - `list.filter(callback)`, which returns a new list containing only the elements from the original list where the callback function returns a truthy value for them
         - `list.index(element)`, which returns the index value of the element's position in the list, or `-1` if the element is not in the list
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list

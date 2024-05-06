@@ -55,6 +55,16 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		}
 		return -1
 	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
+	}
 	methodName := name.Lexeme
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'list.%v' must be a %v.", methodName, theType)
@@ -104,6 +114,31 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("list")
 		})
+	case "filter":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				newList := list.NewList[Expr]()
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						newList.Clear()
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						newList.Add(element)
+					}
+				}
+				return &LoxList{newList}, nil
+			}
+			return argMustBeType("function")
+		})
 	case "index":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return indexOf(args[0]), nil
@@ -122,17 +157,9 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 	case "map":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
-				argListLen := 3
-				argList := list.NewListLen[any](int64(argListLen))
+				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				callbackArity := callback.arity()
-				if callbackArity > argListLen {
-					for i := 0; i < callbackArity-argListLen; i++ {
-						argList.Add(nil)
-					}
-				}
-
 				newList := list.NewList[Expr]()
 				for index, element := range l.elements {
 					argList[0] = element
