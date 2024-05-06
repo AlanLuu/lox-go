@@ -422,10 +422,14 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 
 	if leftAsStringer, ok := left.(fmt.Stringer); ok {
-		left = &LoxString{leftAsStringer.String(), '\''}
+		if _, leftIsString := left.(*LoxString); !leftIsString {
+			left = &LoxString{leftAsStringer.String(), '\''}
+		}
 	}
 	if rightAsStringer, ok := right.(fmt.Stringer); ok {
-		right = &LoxString{rightAsStringer.String(), '\''}
+		if _, rightIsString := right.(*LoxString); !rightIsString {
+			right = &LoxString{rightAsStringer.String(), '\''}
+		}
 	}
 	switch left := left.(type) {
 	case int64:
