@@ -142,6 +142,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitLogicalExpr(expr)
 	case Unary:
 		return i.visitUnaryExpr(expr)
+	case nil:
+		return nil, nil
 	}
 	return nil, errors.New("critical error: unknown type found in AST")
 }
@@ -798,29 +800,84 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 	if indexElementErr != nil {
 		return nil, indexElementErr
 	}
+
 	indexVal, indexValErr := i.evaluate(expr.Index)
 	if indexValErr != nil {
 		return nil, indexValErr
 	}
-	if _, ok := indexVal.(int64); !ok {
-		return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
+	if indexVal == nil {
+		indexVal = int64(0)
 	}
-	indexValInt := indexVal.(int64)
+
+	indexEndVal, indexEndValErr := i.evaluate(expr.IndexEnd)
+	if indexEndValErr != nil {
+		return nil, indexEndValErr
+	}
+
 	switch indexElement := indexElement.(type) {
 	case *LoxString:
-		if indexValInt < 0 || indexValInt >= int64(len(indexElement.str)) {
-			return nil, loxerror.RuntimeError(expr.Bracket, "String index out of range.")
+		if _, ok := indexVal.(int64); !ok {
+			return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
 		}
-		str := string(indexElement.str[indexValInt])
-		if str == "'" {
-			return &LoxString{str, '"'}, nil
+		indexValInt := indexVal.(int64)
+		if expr.IsSlice {
+			if indexEndVal == nil {
+				indexEndVal = int64(len(indexElement.str))
+			}
+			if _, ok := indexEndVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexEndVal))
+			}
+			indexEndValInt := indexEndVal.(int64)
+			if indexEndValInt > int64(len(indexElement.str)) {
+				indexEndValInt = int64(len(indexElement.str))
+			}
+			if indexValInt < 0 {
+				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexOutOfRange(indexValInt))
+			}
+			if indexValInt > indexEndValInt {
+				return EmptyLoxString(), nil
+			}
+			return &LoxString{indexElement.str[indexValInt:indexEndValInt], '\''}, nil
+		} else {
+			if indexValInt < 0 || indexValInt >= int64(len(indexElement.str)) {
+				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexOutOfRange(indexValInt))
+			}
+			str := string(indexElement.str[indexValInt])
+			if str == "'" {
+				return &LoxString{str, '"'}, nil
+			}
+			return &LoxString{str, '\''}, nil
 		}
-		return &LoxString{str, '\''}, nil
 	case *LoxList:
-		if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
-			return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
+		if _, ok := indexVal.(int64); !ok {
+			return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
 		}
-		return indexElement.elements[indexValInt], nil
+		indexValInt := indexVal.(int64)
+		if expr.IsSlice {
+			if indexEndVal == nil {
+				indexEndVal = int64(len(indexElement.elements))
+			}
+			if _, ok := indexEndVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexEndVal))
+			}
+			indexEndValInt := indexEndVal.(int64)
+			if indexEndValInt > int64(len(indexElement.elements)) {
+				indexEndValInt = int64(len(indexElement.elements))
+			}
+			if indexValInt < 0 {
+				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
+			}
+			listSlice := list.NewList[Expr]()
+			for i := indexValInt; i < indexEndValInt; i++ {
+				listSlice.Add(indexElement.elements[i])
+			}
+			return &LoxList{listSlice}, nil
+		} else {
+			if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
+				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
+			}
+			return indexElement.elements[indexValInt], nil
+		}
 	}
 	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into lists and strings.")
 }

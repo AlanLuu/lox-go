@@ -17,6 +17,7 @@ const (
 	AND_SYMBOL
 	ARROW
 	CARET
+	COLON
 	COMMA
 	DOT
 	DOUBLE_GREATER
@@ -83,6 +84,7 @@ var tokenArr = [...]string{
 	"AND_SYMBOL",
 	"ARROW",
 	"CARET",
+	"COLON",
 	"COMMA",
 	"DOT",
 	"DOUBLE_GREATER",

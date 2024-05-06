@@ -183,6 +183,8 @@ func (sc *Scanner) scanToken() error {
 		addToken(token.LEFT_BRACKET)
 	case ']':
 		addToken(token.RIGHT_BRACKET)
+	case ':':
+		addToken(token.COLON)
 	case ',':
 		addToken(token.COMMA)
 	case '.':

@@ -210,9 +210,43 @@ func (p *Parser) call() (Expr, error) {
 			}
 			expr = Get{Object: expr, Name: name}
 		} else if p.match(token.LEFT_BRACKET) {
+			if p.match(token.COLON) {
+				var indexEnd Expr
+				if p.peek().TokenType != token.RIGHT_BRACKET {
+					var indexEndErr error
+					indexEnd, indexEndErr = p.expression()
+					if indexEndErr != nil {
+						return nil, indexEndErr
+					}
+				}
+				rightBracket, rightBracketErr := p.consume(token.RIGHT_BRACKET, "Expected ']' after index.")
+				if rightBracketErr != nil {
+					return nil, rightBracketErr
+				}
+				expr = Index{
+					IndexElement: expr,
+					Bracket:      rightBracket,
+					Index:        nil,
+					IndexEnd:     indexEnd,
+					IsSlice:      true,
+				}
+				continue
+			}
 			index, indexErr := p.expression()
 			if indexErr != nil {
 				return nil, indexErr
+			}
+			var indexEnd Expr
+			isSlice := false
+			if p.match(token.COLON) {
+				isSlice = true
+				if p.peek().TokenType != token.RIGHT_BRACKET {
+					var indexEndErr error
+					indexEnd, indexEndErr = p.expression()
+					if indexEndErr != nil {
+						return nil, indexEndErr
+					}
+				}
 			}
 			rightBracket, rightBracketErr := p.consume(token.RIGHT_BRACKET, "Expected ']' after index.")
 			if rightBracketErr != nil {
@@ -222,6 +256,8 @@ func (p *Parser) call() (Expr, error) {
 				IndexElement: expr,
 				Bracket:      rightBracket,
 				Index:        index,
+				IndexEnd:     indexEnd,
+				IsSlice:      isSlice,
 			}
 		} else {
 			break

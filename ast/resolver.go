@@ -295,7 +295,11 @@ func (r *Resolver) visitIndexExpr(expr Index) error {
 	if resolveErr != nil {
 		return resolveErr
 	}
-	return r.resolveExpr(expr.Index)
+	resolveErr = r.resolveExpr(expr.Index)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveExpr(expr.IndexEnd)
 }
 
 func (r *Resolver) visitListExpr(expr List) error {

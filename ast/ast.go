@@ -80,6 +80,8 @@ type Index struct {
 	IndexElement Expr
 	Bracket      token.Token
 	Index        Expr
+	IndexEnd     Expr
+	IsSlice      bool
 }
 
 type List struct {
