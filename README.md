@@ -78,6 +78,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
+        - `list.reduce(callback, [initialValue])`, which applies a reducer callback function on every element in the list from left to right and returns a single value
         - `list.remove(element)`, which removes the first occurrence of `element` from the list. Returns `true` if the list contained `element` and `false` otherwise
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
