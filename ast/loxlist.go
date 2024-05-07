@@ -23,6 +23,10 @@ type LoxList struct {
 	elements list.List[Expr]
 }
 
+func EmptyLoxList() *LoxList {
+	return &LoxList{list.NewList[Expr]()}
+}
+
 func (l *LoxList) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxList:

@@ -69,6 +69,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Get a new list with all elements from indexes `start` to `end` exclusive, where `start < end`: `list[start:end]`
         - If `start >= end`, a new empty list is returned
     - Set an element: `list[index] = value;`
+    - Concatenate two lists together into a new list: `list + list2`
+    - Get a new list with all elements from the original list repeated `n` times, where `n` is a whole number: `list * n`
     - Besides these operations, lists also have some methods associated with them:
         - `list.all(callback)`, which returns `true` if the callback function returns `true` for all elements in the list and `false` otherwise
         - `list.any(callback)` which returns `true` if the callback function returns `true` for any element in the list and `false` otherwise
