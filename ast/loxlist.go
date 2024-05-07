@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/AlanLuu/lox/equatable"
 	"github.com/AlanLuu/lox/list"
@@ -280,6 +281,28 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return nil, nil
 			}
 			return nil, loxerror.RuntimeError(name, ListIndexMustBeWholeNum(args[0]))
+		})
+	case "join":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				var quote byte = '\''
+				var builder strings.Builder
+				for index, element := range l.elements {
+					switch element := element.(type) {
+					case *LoxString:
+						if quote != '"' && element.quote == '"' {
+							quote = '"'
+						}
+					}
+					elementAsStr := getResult(element, true)
+					builder.WriteString(elementAsStr)
+					if loxStr.str != "" && index < len(l.elements)-1 {
+						builder.WriteString(loxStr.str)
+					}
+				}
+				return &LoxString{builder.String(), quote}, nil
+			}
+			return argMustBeType("string")
 		})
 	case "map":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {

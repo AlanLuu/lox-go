@@ -84,6 +84,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.forEach(callback)`, which executes the callback function for each element in the list
         - `list.index(element)`, which returns the index value of the element's position in the list, or `-1` if the element is not in the list
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
+        - `list.join(separator)`, which concatenates all elements in the list into a string where each element is separated by a separator string
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
         - `list.reduce(callback, [initialValue])`, which applies a reducer callback function on every element in the list from left to right and returns a single value
