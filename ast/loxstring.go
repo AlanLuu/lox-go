@@ -75,6 +75,13 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "endswith":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return strings.HasSuffix(l.str, loxStr.str), nil
+			}
+			return argMustBeType("string")
+		})
 	case "index":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
@@ -95,6 +102,13 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 					loxList.Add(&LoxString{str, '\''})
 				}
 				return &LoxList{loxList}, nil
+			}
+			return argMustBeType("string")
+		})
+	case "startswith":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return strings.HasPrefix(l.str, loxStr.str), nil
 			}
 			return argMustBeType("string")
 		})

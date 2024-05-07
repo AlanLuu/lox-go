@@ -55,9 +55,11 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Besides these operations, strings also have some methods associated with them:
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
+        - `string.endswith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
         - `string.index(string2)`, which returns a number representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
+        - `string.startswith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
         - `string.toNum()`, which attempts to convert `string` into a number and returns that number if successful and `NaN` otherwise
         - `string.upper()`, which returns a new string with all uppercase letters
