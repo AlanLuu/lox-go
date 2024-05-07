@@ -185,6 +185,52 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "find":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return element, nil
+					}
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
+	case "findIndex":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return argList[1], nil
+					}
+				}
+				return int64(-1), nil
+			}
+			return argMustBeType("function")
+		})
 	case "flatten":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newList := list.NewList[Expr]()
