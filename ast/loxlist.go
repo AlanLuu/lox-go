@@ -71,6 +71,52 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
+	case "all":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if !i.isTruthy(result) {
+						return false, nil
+					}
+				}
+				return true, nil
+			}
+			return argMustBeType("function")
+		})
+	case "any":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return true, nil
+					}
+				}
+				return false, nil
+			}
+			return argMustBeType("function")
+		})
 	case "append":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			l.elements.Add(args[0])
@@ -238,6 +284,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				}
 
 				argList := getArgList(callback, 4)
+				defer argList.Clear()
 				argList[3] = l
 				for index, element := range l.elements {
 					if index == 0 && argsLen == 1 {

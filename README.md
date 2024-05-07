@@ -67,6 +67,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If `start >= end`, a new empty list is returned
     - Set an element: `list[index] = value;`
     - Besides these operations, lists also have some methods associated with them:
+        - `list.all(callback)`, which returns `true` if the callback function returns `true` for all elements in the list and `false` otherwise
+        - `list.any(callback)` which returns `true` if the callback function returns `true` for any element in the list and `false` otherwise
         - `list.append(element)`, which appends an element to the end of the list
         - `list.clear()`, which removes all elements from the list
         - `list.contains(element)`, which returns `true` if `element` is contained in the list, and `false` otherwise
