@@ -139,6 +139,24 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "forEach":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
 	case "index":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return indexOf(args[0]), nil
