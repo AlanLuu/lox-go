@@ -185,6 +185,23 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "flatten":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newList := list.NewList[Expr]()
+			var flatten func(elements list.List[Expr])
+			flatten = func(elements list.List[Expr]) {
+				for _, element := range elements {
+					switch element := element.(type) {
+					case *LoxList:
+						flatten(element.elements)
+					default:
+						newList.Add(element)
+					}
+				}
+			}
+			flatten(l.elements)
+			return &LoxList{newList}, nil
+		})
 	case "forEach":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
