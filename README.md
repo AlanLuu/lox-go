@@ -59,6 +59,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
+        - `string.toNum()`, which attempts to convert `string` into a number and returns that number if successful and `NaN` otherwise
         - `string.upper()`, which returns a new string with all uppercase letters
 - Lists are supported in this implementation of Lox
     - Create a list and assign it to a variable: `var list = [1, 2, 3];`

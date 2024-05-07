@@ -2,6 +2,8 @@ package ast
 
 import (
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
 
 	"github.com/AlanLuu/lox/list"
@@ -81,7 +83,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			return argMustBeType("string")
 		})
 	case "lower":
-		return strFunc(0, func(_ *Interpreter, args list.List[any]) (any, error) {
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return &LoxString{strings.ToLower(l.str), l.quote}, nil
 		})
 	case "split":
@@ -110,8 +112,20 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
+	case "toNum":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			result, resultErr := strconv.ParseFloat(l.str, 64)
+			if resultErr != nil {
+				return math.NaN(), nil
+			}
+			resultAsInt := int64(result)
+			if result == float64(resultAsInt) {
+				return resultAsInt, nil
+			}
+			return result, nil
+		})
 	case "upper":
-		return strFunc(0, func(_ *Interpreter, args list.List[any]) (any, error) {
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return &LoxString{strings.ToUpper(l.str), l.quote}, nil
 		})
 	}
