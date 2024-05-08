@@ -55,6 +55,38 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		s.stringMethod = func() string { return "<native string fn>" }
 		return s, nil
 	}
+	padString := func(initialStr string, finalStrLen int64, arg any, padAtStart bool) (string, bool) {
+		var builder strings.Builder
+		if !padAtStart {
+			builder.WriteString(initialStr)
+		}
+
+		var padStr string
+		switch arg := arg.(type) {
+		case string:
+			padStr = arg
+		default:
+			padStr = getResult(arg, true)
+		}
+
+		useDoubleQuote := false
+		padStrLen := int64(len(padStr))
+		if padStrLen > 0 {
+			offset := finalStrLen - int64(len(initialStr))
+			for i := int64(0); i < offset; i++ {
+				b := padStr[i%padStrLen]
+				if !useDoubleQuote && b == '\'' {
+					useDoubleQuote = true
+				}
+				builder.WriteByte(b)
+			}
+		}
+		if padAtStart {
+			builder.WriteString(initialStr)
+		}
+
+		return builder.String(), useDoubleQuote
+	}
 	methodName := name.Lexeme
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'string.%v' must be a %v.", methodName, theType)
@@ -92,6 +124,28 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 	case "lower":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return &LoxString{strings.ToLower(l.str), l.quote}, nil
+		})
+	case "padEnd":
+		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if finalStrLen, ok := args[0].(int64); ok {
+				paddedStr, useDoubleQuote := padString(l.str, finalStrLen, args[1], false)
+				if useDoubleQuote {
+					return &LoxString{paddedStr, '"'}, nil
+				}
+				return &LoxString{paddedStr, l.quote}, nil
+			}
+			return nil, loxerror.RuntimeError(name, "First argument to 'string.padEnd' must be a whole number.")
+		})
+	case "padStart":
+		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if finalStrLen, ok := args[0].(int64); ok {
+				paddedStr, useDoubleQuote := padString(l.str, finalStrLen, args[1], true)
+				if useDoubleQuote {
+					return &LoxString{paddedStr, '"'}, nil
+				}
+				return &LoxString{paddedStr, l.quote}, nil
+			}
+			return nil, loxerror.RuntimeError(name, "First argument to 'string.padStart' must be a whole number.")
 		})
 	case "split":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -141,6 +195,36 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 	case "upper":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return &LoxString{strings.ToUpper(l.str), l.quote}, nil
+		})
+	case "zfill":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if finalStrLen, ok := args[0].(int64); ok {
+				var paddedStr string
+				var useDoubleQuote bool
+				var strSign byte = 0
+				if len(l.str) > 0 && (l.str[0] == '-' || l.str[0] == '+') {
+					strSign = l.str[0]
+					paddedStr, useDoubleQuote = padString(l.str[1:], finalStrLen-1, "0", true)
+				} else {
+					paddedStr, useDoubleQuote = padString(l.str, finalStrLen, "0", true)
+				}
+
+				var finalStr string
+				var quote byte = '\''
+				if useDoubleQuote {
+					quote = '"'
+				}
+				if strSign != 0 {
+					var builder strings.Builder
+					builder.WriteByte(strSign)
+					builder.WriteString(paddedStr)
+					finalStr = builder.String()
+				} else {
+					finalStr = paddedStr
+				}
+				return &LoxString{finalStr, quote}, nil
+			}
+			return argMustBeType("whole number")
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Strings have no property called '"+methodName+"'.")

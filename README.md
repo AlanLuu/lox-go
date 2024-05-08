@@ -58,11 +58,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
         - `string.index(string2)`, which returns a number representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lower()`, which returns a new string with all lowercase letters
+        - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
+        - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
         - `string.toNum()`, which attempts to convert `string` into a number and returns that number if successful and `NaN` otherwise
         - `string.upper()`, which returns a new string with all uppercase letters
+        - `string.zfill(length)`, which returns a new string where the character `'0'` is padded to the left until the new string is of length `length`. If a leading `'+'` or `'-'` sign is part of the original string, the `'0'` padding is inserted after the leading sign instead of before
 - Lists are supported in this implementation of Lox
     - Create a list and assign it to a variable: `var list = [1, 2, 3];`
     - Get an element from a list by index: `list[index]`
