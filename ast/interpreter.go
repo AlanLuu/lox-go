@@ -313,9 +313,6 @@ func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
 }
 
 func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
-	floatIsInt := func(f float64) bool {
-		return f == float64(int64(f))
-	}
 	runtimeErrorWrapper := func(message string) error {
 		return loxerror.RuntimeError(expr.Operator, message)
 	}
@@ -336,7 +333,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if left <= 0 {
 				return EmptyLoxString(), nil
 			}
-			if floatIsInt(left) {
+			if util.FloatIsInt(left) {
 				return right.NewLoxString(strings.Repeat(right.str, int(left))), nil
 			}
 		}
@@ -350,7 +347,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if left <= 0 || len(right.elements) == 0 {
 				return EmptyLoxList(), nil
 			}
-			if floatIsInt(left) {
+			if util.FloatIsInt(left) {
 				newList := list.NewList[Expr]()
 				for i := 0; i < int(left); i++ {
 					for _, element := range right.elements {
@@ -403,9 +400,9 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		case float64:
 			if !math.IsInf(result, 1) &&
 				!math.IsInf(result, -1) &&
-				floatIsInt(left) &&
-				floatIsInt(right) &&
-				floatIsInt(result) {
+				util.FloatIsInt(left) &&
+				util.FloatIsInt(right) &&
+				util.FloatIsInt(result) {
 				return int64(result), nil
 			}
 		}

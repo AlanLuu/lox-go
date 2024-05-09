@@ -9,6 +9,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 type LoxString struct {
@@ -186,9 +187,8 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			if resultErr != nil {
 				return math.NaN(), nil
 			}
-			resultAsInt := int64(result)
-			if result == float64(resultAsInt) {
-				return resultAsInt, nil
+			if util.FloatIsInt(result) {
+				return int64(result), nil
 			}
 			return result, nil
 		})
