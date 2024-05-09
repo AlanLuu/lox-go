@@ -62,7 +62,7 @@ func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		switch element := args[0].(type) {
 		case *LoxString:
-			return int64(len(element.str)), nil
+			return int64(utf8.RuneCountInString(element.str)), nil
 		case *LoxList:
 			return int64(len(element.elements)), nil
 		}
