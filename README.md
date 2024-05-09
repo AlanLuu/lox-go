@@ -97,8 +97,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A few other native functions are defined:
+    - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is a whole number
     - `len(element)`, which returns the length of a string or list element
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
+    - `ord(c)`, which returns a number that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/env"
 	"github.com/AlanLuu/lox/equatable"
@@ -47,6 +48,17 @@ func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return float64(time.Now().UnixMilli()) / 1000, nil
 	})
+	nativeFunc("chr", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		if codePointNum, ok := args[0].(int64); ok {
+			codePoint := rune(codePointNum)
+			character := string(codePoint)
+			if codePoint == '\'' {
+				return &LoxString{character, '"'}, nil
+			}
+			return &LoxString{character, '\''}, nil
+		}
+		return nil, loxerror.Error("Argument to 'chr' must be a whole number.")
+	})
 	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		switch element := args[0].(type) {
 		case *LoxString:
@@ -59,7 +71,7 @@ func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc("List", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if size, ok := args[0].(int64); ok {
 			if size < 0 {
-				return nil, loxerror.Error("Argument to List function cannot be negative.")
+				return nil, loxerror.Error("Argument to 'List' cannot be negative.")
 			}
 			lst := list.NewList[Expr]()
 			for index := int64(0); index < size; index++ {
@@ -67,7 +79,19 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			return &LoxList{lst}, nil
 		}
-		return nil, loxerror.Error("List length must be a whole number.")
+		return nil, loxerror.Error("Argument to 'List' must be a whole number.")
+	})
+	nativeFunc("ord", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			if utf8.RuneCountInString(loxStr.str) == 1 {
+				codePoint, _ := utf8.DecodeRuneInString(loxStr.str)
+				if codePoint == utf8.RuneError {
+					return nil, loxerror.Error(fmt.Sprintf("Failed to decode character '%v'.", loxStr.str))
+				}
+				return int64(codePoint), nil
+			}
+		}
+		return nil, loxerror.Error("Argument to 'ord' must be a single character.")
 	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return getType(args[0]), nil
