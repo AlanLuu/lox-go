@@ -148,6 +148,20 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.padStart' must be a whole number.")
 		})
+	case "replace":
+		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if firstStr, firstStrOk := args[0].(*LoxString); firstStrOk {
+				if secondStr, secondStrOk := args[1].(*LoxString); secondStrOk {
+					newStr := strings.ReplaceAll(l.str, firstStr.str, secondStr.str)
+					if strings.Contains(newStr, "'") {
+						return &LoxString{newStr, '"'}, nil
+					}
+					return &LoxString{newStr, '\''}, nil
+				}
+				return nil, loxerror.RuntimeError(name, "Second argument to 'string.replace' must be a string.")
+			}
+			return nil, loxerror.RuntimeError(name, "First argument to 'string.replace' must be a string.")
+		})
 	case "split":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

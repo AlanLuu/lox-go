@@ -60,6 +60,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
         - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
+        - `string.replace(oldStr, newStr)`, which returns a new string where all occurrences of `oldStr` in the original string are replaced with `newStr`
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
