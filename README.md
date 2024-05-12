@@ -40,6 +40,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
 - Booleans and `nil` are treated as numbers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
 - Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, and `""` are also falsy values
+- Binary, hexadecimal, and octal number literals are supported in this implementation of Lox
+    - Binary literals start with the prefix `0b`
+    - Hexadecimal literals start with the prefix `0x`
+    - Octal literals start with the prefix `0o`
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops

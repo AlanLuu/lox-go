@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -60,27 +59,70 @@ func (sc *Scanner) addToken(tokenType token.TokenType, literal any, quote byte) 
 }
 
 func (sc *Scanner) handleNumber() error {
-	for isDigit(sc.peek()) {
+	isBinaryNum := false
+	isHexNum := false
+	isOctalNum := false
+	switch sc.peek() {
+	case 'b', 'B':
+		isBinaryNum = true
 		sc.advance()
+		for isBinaryDigit(sc.peek()) {
+			sc.advance()
+		}
+	case 'x', 'X':
+		isHexNum = true
+		sc.advance()
+		for isHexDigit(sc.peek()) {
+			sc.advance()
+		}
+	case 'o', 'O':
+		isOctalNum = true
+		sc.advance()
+		for isOctalDigit(sc.peek()) {
+			sc.advance()
+		}
+	default:
+		for isDigit(sc.peek()) {
+			sc.advance()
+		}
 	}
 
+	numHasDot := false
 	if sc.peek() == '.' {
+		unexpectedDotIn := func(numType string) error {
+			return loxerror.GiveError(sc.lineNum, "", "Unexpected '.' in "+numType)
+		}
+		if isBinaryNum {
+			return unexpectedDotIn("binary number")
+		}
+		if isHexNum {
+			return unexpectedDotIn("hex number")
+		}
+		if isOctalNum {
+			return unexpectedDotIn("octal number")
+		}
+		numHasDot = true
 		sc.advance()
 		if isDigit(sc.peek()) {
 			for isDigit(sc.peek()) {
 				sc.advance()
 			}
 		} else {
-			return loxerror.GiveError(sc.lineNum, "", "Unexpected '.' in number")
+			return unexpectedDotIn("number")
 		}
 	}
 
 	numStr := sc.sourceLine[sc.startIndex:sc.currentIndex]
-	if strings.Contains(numStr, ".") {
+	if numHasDot {
 		num, _ := strconv.ParseFloat(numStr, 64)
 		sc.addToken(token.NUMBER, num, 0)
 	} else {
-		num, _ := strconv.ParseInt(numStr, 10, 64)
+		var num int64
+		if isBinaryNum || isHexNum || isOctalNum {
+			num, _ = strconv.ParseInt(numStr, 0, 64)
+		} else {
+			num, _ = strconv.ParseInt(numStr, 10, 64)
+		}
 		sc.addToken(token.NUMBER, num, 0)
 	}
 
@@ -139,6 +181,18 @@ func isAlphaNumeric(b byte) bool {
 
 func isDigit(b byte) bool {
 	return b >= '0' && b <= '9'
+}
+
+func isBinaryDigit(b byte) bool {
+	return b == '0' || b == '1'
+}
+
+func isHexDigit(b byte) bool {
+	return isDigit(b) || (b >= 'A' && b <= 'F') || (b >= 'a' && b <= 'f')
+}
+
+func isOctalDigit(b byte) bool {
+	return b >= '0' && b <= '7'
 }
 
 func (sc *Scanner) match(expected byte) bool {
