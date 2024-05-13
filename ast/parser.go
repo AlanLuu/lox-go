@@ -294,7 +294,12 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 	}
 
 	methods := list.NewList[Function]()
+	classMethods := list.NewList[Function]()
 	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		isStaticMethod := false
+		if p.match(token.STATIC) {
+			isStaticMethod = true
+		}
 		methodName, methodNameErr := p.consume(token.IDENTIFIER, "Expected method name.")
 		if methodNameErr != nil {
 			return nil, methodNameErr
@@ -303,7 +308,11 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 		if methodErr != nil {
 			return nil, methodErr
 		}
-		methods.Add(Function{Name: methodName, Function: method})
+		if isStaticMethod {
+			classMethods.Add(Function{Name: methodName, Function: method})
+		} else {
+			methods.Add(Function{Name: methodName, Function: method})
+		}
 	}
 
 	_, rightBraceErr := p.consume(token.RIGHT_BRACE, "Expected '}' after class body.")
@@ -311,9 +320,10 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 		return nil, rightBraceErr
 	}
 	return Class{
-		Name:       className,
-		SuperClass: superClass,
-		Methods:    methods,
+		Name:         className,
+		SuperClass:   superClass,
+		Methods:      methods,
+		ClassMethods: classMethods,
 	}, nil
 }
 

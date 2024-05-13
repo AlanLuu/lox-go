@@ -715,7 +715,13 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		methods[method.Name.Lexeme] = function
 	}
 
-	loxClass := LoxClass{stmt.Name.Lexeme, superClass, methods}
+	classMethods := make(map[string]*LoxFunction)
+	for _, method := range stmt.ClassMethods {
+		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, false}
+		classMethods[method.Name.Lexeme] = function
+	}
+
+	loxClass := LoxClass{stmt.Name.Lexeme, superClass, methods, classMethods}
 	i.environment.Assign(stmt.Name, loxClass)
 	return nil, nil
 }

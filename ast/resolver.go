@@ -239,6 +239,15 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 			return resolveErr
 		}
 	}
+	for _, method := range stmt.ClassMethods {
+		r.beginScope()
+		r.Scopes.Peek()["this"] = true
+		resolveErr := r.resolveFunction(method.Function, functiontype.METHOD)
+		if resolveErr != nil {
+			return resolveErr
+		}
+		r.endScope()
+	}
 
 	r.endScope()
 	if stmt.SuperClass != nil {

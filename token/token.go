@@ -61,6 +61,7 @@ const (
 	OR
 	PRINT
 	RETURN
+	STATIC
 	SUPER
 	THIS
 	TRUE
@@ -128,6 +129,7 @@ var tokenArr = [...]string{
 	"OR",
 	"PRINT",
 	"RETURN",
+	"STATIC",
 	"SUPER",
 	"THIS",
 	"TRUE",

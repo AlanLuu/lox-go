@@ -16,7 +16,7 @@ func (f *LoxFunction) arity() int {
 	return len(f.declaration.Params)
 }
 
-func (f *LoxFunction) bind(instance *LoxInstance) *LoxFunction {
+func (f *LoxFunction) bind(instance any) *LoxFunction {
 	environment := env.NewEnvironmentEnclosing(f.closure)
 	environment.Define("this", instance)
 	return &LoxFunction{f.name, f.declaration, environment, f.isInitializer}

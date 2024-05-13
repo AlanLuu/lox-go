@@ -32,9 +32,10 @@ type Call struct {
 }
 
 type Class struct {
-	Name       token.Token
-	SuperClass *Variable
-	Methods    list.List[Function]
+	Name         token.Token
+	SuperClass   *Variable
+	Methods      list.List[Function]
+	ClassMethods list.List[Function]
 }
 
 type Continue struct{}
