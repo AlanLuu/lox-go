@@ -68,7 +68,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
-        - `string.toNum()`, which attempts to convert `string` into a number and returns that number if successful and `NaN` otherwise
+        - `string.toNum([base])`, which attempts to convert `string` into a number and returns that number if successful and `NaN` otherwise. If `base` is specified, then this method will attempt to convert `string` that is represented as the specified base into a number and returns that number if the conversion was successful and `NaN` otherwise
         - `string.upper()`, which returns a new string with all uppercase letters
         - `string.zfill(length)`, which returns a new string where the character `'0'` is padded to the left until the new string is of length `length`. If a leading `'+'` or `'-'` sign is part of the original string, the `'0'` padding is inserted after the leading sign instead of before
 - Lists are supported in this implementation of Lox

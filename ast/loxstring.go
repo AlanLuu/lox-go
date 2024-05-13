@@ -196,15 +196,64 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
 	case "toNum":
-		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			result, resultErr := strconv.ParseFloat(l.str, 64)
-			if resultErr != nil {
-				return math.NaN(), nil
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			useParseFloat := func() (any, error) {
+				result, resultErr := strconv.ParseFloat(l.str, 64)
+				if resultErr != nil {
+					return math.NaN(), nil
+				}
+				if util.FloatIsInt(result) {
+					return int64(result), nil
+				}
+				return result, nil
 			}
-			if util.FloatIsInt(result) {
-				return int64(result), nil
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				return useParseFloat()
+			case 1:
+				if base, ok := args[0].(int64); ok {
+					if base == 10 {
+						return useParseFloat()
+					}
+					bases := map[byte]int64{
+						'b': 2,
+						'B': 2,
+						'o': 8,
+						'O': 8,
+						'x': 16,
+						'X': 16,
+					}
+					var result int64
+					var resultErr error
+					if len(l.str) > 1 {
+						if l.str[0] == '0' {
+							if bases[l.str[1]] != 0 && (base == bases[l.str[1]] || base == 0) {
+								//String starts with 0b, 0B, 0o, 0O, 0x, 0X
+								result, resultErr = strconv.ParseInt(l.str, 0, 64)
+							} else if base == 0 {
+								//Treat strings starting with '0' as base 10 when base argument is 0
+								result, resultErr = strconv.ParseInt(l.str, 10, 64)
+							} else {
+								//Multi digit strings that start with '0'
+								result, resultErr = strconv.ParseInt(l.str, int(base), 64)
+							}
+						} else {
+							//Multi digit strings that don't start with '0'
+							result, resultErr = strconv.ParseInt(l.str, int(base), 64)
+						}
+					} else {
+						//Single digit strings
+						result, resultErr = strconv.ParseInt(l.str, int(base), 64)
+					}
+					if resultErr != nil {
+						return math.NaN(), nil
+					}
+					return result, nil
+				}
+				return argMustBeType("whole number")
 			}
-			return result, nil
+			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
 	case "upper":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
