@@ -52,6 +52,17 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
     - The parser will attempt to parse anonymous function expressions that appear on their own line as function declarations, throwing a parser error as a result. This is expected behavior; to force the parser to parse them as expressions, wrap the function expression inside parentheses, like `(fun() {})()`. In this case, this creates an anonymous function expression that is called immediately
+- Static class fields and methods are supported in this implementation of Lox
+    ```js
+    class A {
+        static x = 10;
+        static y() {
+            return 20;
+        }
+    }
+    print A.x; //Prints "10"
+    print A.y(); //Prints "20"
+    ```
 - Strings have some additional operations associated with them:
     - Get a new string that is the original string repeated `n` times, where `n` is a whole number: `string * n`
     - Get a new string with all characters from indexes `start` to `end` exclusive, where `start < end`: `string[start:end]`
