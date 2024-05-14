@@ -312,11 +312,18 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 				return nil, exprErr
 			}
 			if isStatic {
+				_, semiColonErr := p.consume(token.SEMICOLON, "Expected ';' after static field initializer.")
+				if semiColonErr != nil {
+					return nil, semiColonErr
+				}
 				classFields[name.Lexeme] = expr
 			} else {
+				_, semiColonErr := p.consume(token.SEMICOLON, "Expected ';' after instance field initializer.")
+				if semiColonErr != nil {
+					return nil, semiColonErr
+				}
 				instanceFields[name.Lexeme] = expr
 			}
-			p.consume(token.SEMICOLON, "")
 		} else {
 			method, methodErr := p.functionBody("method", true)
 			if methodErr != nil {
