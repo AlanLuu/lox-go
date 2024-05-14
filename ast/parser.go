@@ -295,23 +295,33 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 
 	methods := list.NewList[Function]()
 	classMethods := list.NewList[Function]()
+	classFields := make(map[string]Expr)
 	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
-		isStaticMethod := false
+		isStatic := false
 		if p.match(token.STATIC) {
-			isStaticMethod = true
+			isStatic = true
 		}
-		methodName, methodNameErr := p.consume(token.IDENTIFIER, "Expected method name.")
-		if methodNameErr != nil {
-			return nil, methodNameErr
+		name, nameErr := p.consume(token.IDENTIFIER, "Expected identifier name.")
+		if nameErr != nil {
+			return nil, nameErr
 		}
-		method, methodErr := p.functionBody("method", true)
-		if methodErr != nil {
-			return nil, methodErr
-		}
-		if isStaticMethod {
-			classMethods.Add(Function{Name: methodName, Function: method})
+		if isStatic && p.match(token.EQUAL) {
+			expr, exprErr := p.expression()
+			if exprErr != nil {
+				return nil, exprErr
+			}
+			classFields[name.Lexeme] = expr
+			p.consume(token.SEMICOLON, "")
 		} else {
-			methods.Add(Function{Name: methodName, Function: method})
+			method, methodErr := p.functionBody("method", true)
+			if methodErr != nil {
+				return nil, methodErr
+			}
+			if isStatic {
+				classMethods.Add(Function{Name: name, Function: method})
+			} else {
+				methods.Add(Function{Name: name, Function: method})
+			}
 		}
 	}
 
@@ -324,6 +334,7 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 		SuperClass:   superClass,
 		Methods:      methods,
 		ClassMethods: classMethods,
+		ClassFields:  classFields,
 	}, nil
 }
 

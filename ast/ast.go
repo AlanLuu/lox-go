@@ -36,6 +36,7 @@ type Class struct {
 	SuperClass   *Variable
 	Methods      list.List[Function]
 	ClassMethods list.List[Function]
+	ClassFields  map[string]Expr
 }
 
 type Continue struct{}

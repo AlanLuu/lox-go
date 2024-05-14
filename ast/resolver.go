@@ -248,6 +248,12 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		}
 		r.endScope()
 	}
+	for _, field := range stmt.ClassFields {
+		resolveErr := r.resolveExpr(field)
+		if resolveErr != nil {
+			return resolveErr
+		}
+	}
 
 	r.endScope()
 	if stmt.SuperClass != nil {
