@@ -715,7 +715,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		methods[method.Name.Lexeme] = function
 	}
 
-	classMethods := make(map[string]*LoxFunction)
+	classMethods := make(map[string]any)
 	for _, method := range stmt.ClassMethods {
 		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, false}
 		classMethods[method.Name.Lexeme] = function
@@ -889,7 +889,7 @@ func (i *Interpreter) visitGetExpr(expr Get) (any, error) {
 	if obj, ok := obj.(LoxObject); ok {
 		return obj.Get(expr.Name)
 	}
-	return nil, loxerror.RuntimeError(expr.Name, "Only instances have properties.")
+	return nil, loxerror.RuntimeError(expr.Name, "Only classes, instances, lists, and strings have properties.")
 }
 
 func (i *Interpreter) visitGroupingExpr(expr Grouping) (any, error) {
@@ -1067,15 +1067,25 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 	if objErr != nil {
 		return nil, objErr
 	}
-	if obj, ok := obj.(*LoxInstance); ok {
+	evaluateAndSet := func(setFunc func(value any)) (any, error) {
 		value, valueErr := i.evaluate(expr.Value)
 		if valueErr != nil {
 			return nil, valueErr
 		}
-		obj.Set(expr.Name, value)
+		setFunc(value)
 		return value, nil
 	}
-	return nil, loxerror.RuntimeError(expr.Name, "Only instances have fields.")
+	if instance, ok := obj.(*LoxInstance); ok {
+		return evaluateAndSet(func(value any) {
+			instance.Set(expr.Name, value)
+		})
+	}
+	if class, ok := obj.(LoxClass); ok {
+		return evaluateAndSet(func(value any) {
+			class.classProperties[expr.Name.Lexeme] = value
+		})
+	}
+	return nil, loxerror.RuntimeError(expr.Name, "Only classes and instances have properties that can be set.")
 }
 
 func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {

@@ -7,10 +7,10 @@ import (
 )
 
 type LoxClass struct {
-	name         string
-	superClass   *LoxClass
-	methods      map[string]*LoxFunction
-	classMethods map[string]*LoxFunction
+	name            string
+	superClass      *LoxClass
+	methods         map[string]*LoxFunction
+	classProperties map[string]any
 }
 
 func (c LoxClass) arity() int {
@@ -31,9 +31,13 @@ func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any,
 }
 
 func (c LoxClass) Get(name token.Token) (any, error) {
-	method, ok := c.classMethods[name.Lexeme]
+	item, ok := c.classProperties[name.Lexeme]
 	if ok {
-		return method.bind(c), nil
+		switch method := item.(type) {
+		case *LoxFunction:
+			return method.bind(c), nil
+		}
+		return item, nil
 	}
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }
