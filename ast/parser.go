@@ -296,6 +296,7 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 	methods := list.NewList[Function]()
 	classMethods := list.NewList[Function]()
 	classFields := make(map[string]Expr)
+	instanceFields := make(map[string]Expr)
 	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
 		isStatic := false
 		if p.match(token.STATIC) {
@@ -305,12 +306,16 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 		if nameErr != nil {
 			return nil, nameErr
 		}
-		if isStatic && p.match(token.EQUAL) {
+		if p.match(token.EQUAL) {
 			expr, exprErr := p.expression()
 			if exprErr != nil {
 				return nil, exprErr
 			}
-			classFields[name.Lexeme] = expr
+			if isStatic {
+				classFields[name.Lexeme] = expr
+			} else {
+				instanceFields[name.Lexeme] = expr
+			}
 			p.consume(token.SEMICOLON, "")
 		} else {
 			method, methodErr := p.functionBody("method", true)
@@ -330,11 +335,12 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 		return nil, rightBraceErr
 	}
 	return Class{
-		Name:         className,
-		SuperClass:   superClass,
-		Methods:      methods,
-		ClassMethods: classMethods,
-		ClassFields:  classFields,
+		Name:           className,
+		SuperClass:     superClass,
+		Methods:        methods,
+		ClassMethods:   classMethods,
+		ClassFields:    classFields,
+		InstanceFields: instanceFields,
 	}, nil
 }
 

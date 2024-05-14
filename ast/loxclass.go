@@ -11,6 +11,7 @@ type LoxClass struct {
 	superClass      *LoxClass
 	methods         map[string]*LoxFunction
 	classProperties map[string]any
+	instanceFields  map[string]any
 }
 
 func (c LoxClass) arity() int {
@@ -23,6 +24,9 @@ func (c LoxClass) arity() int {
 
 func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
 	instance := NewLoxInstance(c)
+	for name, field := range c.instanceFields {
+		instance.fields[name] = field
+	}
 	initializer, ok := c.findMethod("init")
 	if ok {
 		initializer.bind(instance).call(interpreter, arguments)

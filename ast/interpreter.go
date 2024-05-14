@@ -728,7 +728,22 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		classProperties[name] = value
 	}
 
-	loxClass := LoxClass{stmt.Name.Lexeme, superClass, methods, classProperties}
+	instanceFields := make(map[string]any)
+	for name, field := range stmt.InstanceFields {
+		value, valueErr := i.evaluate(field)
+		if valueErr != nil {
+			return nil, valueErr
+		}
+		instanceFields[name] = value
+	}
+
+	loxClass := LoxClass{
+		stmt.Name.Lexeme,
+		superClass,
+		methods,
+		classProperties,
+		instanceFields,
+	}
 	i.environment.Assign(stmt.Name, loxClass)
 	return nil, nil
 }
