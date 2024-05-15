@@ -235,11 +235,14 @@ func getResult(source any, isPrintStmt bool) string {
 	case nil:
 		return "nil"
 	case float64:
-		if math.IsInf(source, 1) {
+		switch {
+		case math.IsInf(source, 1):
 			return "Infinity"
-		} else if math.IsInf(source, -1) {
+		case math.IsInf(source, -1):
 			return "-Infinity"
-		} else {
+		case util.FloatIsInt(source):
+			return fmt.Sprintf("%.1f", source)
+		default:
 			return fmt.Sprint(source)
 		}
 	case *LoxString:
