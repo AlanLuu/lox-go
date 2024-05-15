@@ -67,6 +67,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     var a = A();
     print a.z; //Prints "30"
     ```
+- Various mathematical functions and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
 - Strings have some additional operations associated with them:
     - Get a new string that is the original string repeated `n` times, where `n` is a whole number: `string * n`
     - Get a new string with all characters from indexes `start` to `end` exclusive, where `start < end`: `string[start:end]`
