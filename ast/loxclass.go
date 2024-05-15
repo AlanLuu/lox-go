@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"fmt"
+
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -12,9 +14,13 @@ type LoxClass struct {
 	methods         map[string]*LoxFunction
 	classProperties map[string]any
 	instanceFields  map[string]any
+	canInstantiate  bool
 }
 
 func (c LoxClass) arity() int {
+	if !c.canInstantiate {
+		return -1
+	}
 	initializer, ok := c.findMethod("init")
 	if !ok {
 		return 0
@@ -23,6 +29,9 @@ func (c LoxClass) arity() int {
 }
 
 func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
+	if !c.canInstantiate {
+		return nil, loxerror.Error(fmt.Sprintf("Cannot instantiate class '%v'.", c.name))
+	}
 	instance := NewLoxInstance(c)
 	for name, field := range c.instanceFields {
 		instance.fields[name] = field

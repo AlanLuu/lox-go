@@ -33,6 +33,7 @@ func NewInterpreter() *Interpreter {
 		blockDepth: 0,
 	}
 	interpreter.environment = interpreter.globals
+	interpreter.defineMathFuncs() //Defined in mathfuncs.go
 	interpreter.defineNativeFuncs()
 	return interpreter
 }
@@ -743,6 +744,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		methods,
 		classProperties,
 		instanceFields,
+		true,
 	}
 	i.environment.Assign(stmt.Name, loxClass)
 	return nil, nil
