@@ -100,8 +100,14 @@ func (i *Interpreter) defineMathFuncs() {
 	twoArgFuncs := map[string]func(float64, float64) float64{
 		"atan2": math.Atan2,
 		"hypot": math.Hypot,
-		"max":   math.Max,
-		"min":   math.Min,
+		"logB": func(num float64, base float64) float64 {
+			return math.Log(num) / math.Log(base)
+		},
+		"max": math.Max,
+		"min": math.Min,
+		"nthrt": func(num float64, n float64) float64 {
+			return math.Pow(num, 1/n)
+		},
 	}
 	constants := map[string]float64{
 		"E":  math.E,

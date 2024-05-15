@@ -23,8 +23,10 @@ The following mathematical functions and constants are defined in the built-in `
 - `Math.log10(num)`, which returns the base 10 logarithm of `num`
 - `Math.log1p(num)`, which returns the natural logarithm of `1 + num`
 - `Math.log2(num)`, which returns the base 2 logarithm of `num`
+- `Math.logB(num, base)`, which returns the base `base` logarithm of `num`
 - `Math.max(x, y)`, which returns the largest of `x` and `y`
 - `Math.min(x, y)`, which returns the smallest of `x` and `y`
+- `Math.nthrt(num, n)`, which returns the `n`th root of `num`
 - `Math.PI`, which is the value of pi, approximately `3.14159`
 - `Math.random()`, which returns a random decimal number between `0` and `1` exclusive
 - `Math.round(num)`, which returns `num` rounded to the nearest whole number
