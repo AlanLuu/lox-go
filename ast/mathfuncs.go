@@ -12,7 +12,7 @@ import (
 
 func (i *Interpreter) defineMathFuncs() {
 	className := "Math"
-	mathClass := LoxClass{
+	mathClass := &LoxClass{
 		className,
 		nil,
 		make(map[string]*LoxFunction),
@@ -24,7 +24,9 @@ func (i *Interpreter) defineMathFuncs() {
 		s := struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
 		s.callMethod = method
-		s.stringMethod = func() string { return "<native fn>" }
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native fn %v at %p>", name, &s)
+		}
 		mathClass.classProperties[name] = s
 	}
 	zeroArgFunc := func(name string, fun func() float64) {

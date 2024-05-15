@@ -1,16 +1,18 @@
 package ast
 
 import (
+	"fmt"
+
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
 )
 
 type LoxInstance struct {
-	class  LoxClass
+	class  *LoxClass
 	fields map[string]any
 }
 
-func NewLoxInstance(class LoxClass) *LoxInstance {
+func NewLoxInstance(class *LoxClass) *LoxInstance {
 	return &LoxInstance{
 		class:  class,
 		fields: make(map[string]any),
@@ -35,5 +37,5 @@ func (i *LoxInstance) Set(name token.Token, value any) {
 }
 
 func (i *LoxInstance) String() string {
-	return i.class.name + " instance"
+	return fmt.Sprintf("<%v instance at %p>", i.class.name, i)
 }

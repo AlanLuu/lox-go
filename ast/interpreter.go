@@ -43,7 +43,9 @@ func (i *Interpreter) defineNativeFuncs() {
 		s := struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
 		s.callMethod = method
-		s.stringMethod = func() string { return "<native fn>" }
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native fn %v at %p>", name, &s)
+		}
 		i.globals.Define(name, s)
 	}
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
@@ -183,7 +185,7 @@ func getType(element any) string {
 		return "boolean"
 	case *LoxString:
 		return "string"
-	case LoxClass:
+	case *LoxClass:
 		return "class"
 	case *LoxFunction:
 		return "function"
@@ -692,8 +694,8 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 			return nil, evalObjErr
 		}
 		switch evalObj := evalObj.(type) {
-		case LoxClass:
-			superClass = &evalObj
+		case *LoxClass:
+			superClass = evalObj
 		default:
 			return nil, loxerror.RuntimeError(stmt.SuperClass.Name, "Superclass must be a class.")
 		}
@@ -738,7 +740,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		instanceFields[name] = value
 	}
 
-	loxClass := LoxClass{
+	loxClass := &LoxClass{
 		stmt.Name.Lexeme,
 		superClass,
 		methods,
@@ -1104,7 +1106,7 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 			instance.Set(expr.Name, value)
 		})
 	}
-	if class, ok := obj.(LoxClass); ok {
+	if class, ok := obj.(*LoxClass); ok {
 		return evaluateAndSet(func(value any) {
 			class.classProperties[expr.Name.Lexeme] = value
 		})

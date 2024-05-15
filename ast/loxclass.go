@@ -17,7 +17,7 @@ type LoxClass struct {
 	canInstantiate  bool
 }
 
-func (c LoxClass) arity() int {
+func (c *LoxClass) arity() int {
 	if !c.canInstantiate {
 		return -1
 	}
@@ -28,7 +28,7 @@ func (c LoxClass) arity() int {
 	return initializer.arity()
 }
 
-func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
+func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
 	if !c.canInstantiate {
 		return nil, loxerror.Error(fmt.Sprintf("Cannot instantiate class '%v'.", c.name))
 	}
@@ -43,7 +43,7 @@ func (c LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any,
 	return instance, nil
 }
 
-func (c LoxClass) Get(name token.Token) (any, error) {
+func (c *LoxClass) Get(name token.Token) (any, error) {
 	item, ok := c.classProperties[name.Lexeme]
 	if ok {
 		switch method := item.(type) {
@@ -55,7 +55,7 @@ func (c LoxClass) Get(name token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }
 
-func (c LoxClass) findMethod(name string) (*LoxFunction, bool) {
+func (c *LoxClass) findMethod(name string) (*LoxFunction, bool) {
 	value, ok := c.methods[name]
 	if ok {
 		return value, ok
@@ -66,6 +66,6 @@ func (c LoxClass) findMethod(name string) (*LoxFunction, bool) {
 	return value, ok
 }
 
-func (c LoxClass) String() string {
-	return c.name
+func (c *LoxClass) String() string {
+	return fmt.Sprintf("<class %v at %p>", c.name, c)
 }

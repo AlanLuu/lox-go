@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"fmt"
+
 	"github.com/AlanLuu/lox/env"
 	"github.com/AlanLuu/lox/list"
 )
@@ -46,7 +48,7 @@ func (f *LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (
 
 func (f *LoxFunction) String() string {
 	if len(f.name) == 0 {
-		return "<fn>"
+		return fmt.Sprintf("<fn at %p>", f)
 	}
-	return "<fn " + f.name + ">"
+	return fmt.Sprintf("<fn %v at %p>", f.name, f)
 }
