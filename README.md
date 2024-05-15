@@ -77,6 +77,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
         - `string.index(string2)`, which returns a number representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
+        - `string.lastIndex(string2)`, which returns a number representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
         - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
@@ -109,6 +110,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.flatten()`, which returns a new list where all elements contained within nested lists are flattened into a list without any nested lists
         - `list.forEach(callback)`, which executes the callback function for each element in the list
         - `list.index(element)`, which returns the index value of the element's position in the list, or `-1` if the element is not in the list
+        - `list.lastIndex(element)`, which returns the index value of the last occurrence of the element in the list, or `-1` if the element is not in the list
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.join(separator)`, which concatenates all elements in the list into a string where each element is separated by a separator string
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list

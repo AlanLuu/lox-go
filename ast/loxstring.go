@@ -122,6 +122,13 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "lastIndex":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return int64(strings.LastIndex(l.str, loxStr.str)), nil
+			}
+			return argMustBeType("string")
+		})
 	case "lower":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return &LoxString{strings.ToLower(l.str), l.quote}, nil

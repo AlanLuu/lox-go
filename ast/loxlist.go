@@ -60,6 +60,22 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		}
 		return -1
 	}
+	lastIndexOf := func(obj any) int64 {
+		if equatableObj, ok := obj.(equatable.Equatable); ok {
+			for i := len(l.elements) - 1; i >= 0; i-- {
+				if equatableObj.Equals(l.elements[i]) {
+					return int64(i)
+				}
+			}
+		} else {
+			for i := len(l.elements) - 1; i >= 0; i-- {
+				if obj == l.elements[i] {
+					return int64(i)
+				}
+			}
+		}
+		return -1
+	}
 	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
 		argList := list.NewListLen[any](int64(numArgs))
 		callbackArity := callback.arity()
@@ -274,6 +290,10 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 	case "index":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return indexOf(args[0]), nil
+		})
+	case "lastIndex":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			return lastIndexOf(args[0]), nil
 		})
 	case "insert":
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
