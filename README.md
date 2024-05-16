@@ -125,6 +125,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `len(element)`, which returns the length of a string or list element
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ord(c)`, which returns a number that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
+    - `sleep(duration)`, which pauses the program for the specified duration in seconds
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end

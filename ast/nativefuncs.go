@@ -67,6 +67,18 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.Error("Argument to 'ord' must be a single character.")
 	})
+	nativeFunc("sleep", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		switch seconds := args[0].(type) {
+		case int64:
+			time.Sleep(time.Duration(seconds) * time.Second)
+			return nil, nil
+		case float64:
+			duration, _ := time.ParseDuration(fmt.Sprintf("%vs", seconds))
+			time.Sleep(duration)
+			return nil, nil
+		}
+		return nil, loxerror.Error("Argument to 'sleep' must be a number.")
+	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return getType(args[0]), nil
 	})
