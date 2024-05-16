@@ -12,18 +12,22 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
-var strFuncs = make(map[string]*struct{ ProtoLoxCallable })
-
 type LoxString struct {
-	str   string
-	quote byte
+	str     string
+	quote   byte
+	methods map[string]*struct{ ProtoLoxCallable }
+}
+
+func NewLoxString(str string, quote byte) *LoxString {
+	return &LoxString{
+		str:     str,
+		quote:   quote,
+		methods: make(map[string]*struct{ ProtoLoxCallable }),
+	}
 }
 
 func EmptyLoxString() *LoxString {
-	return &LoxString{
-		str:   "",
-		quote: '\'',
-	}
+	return NewLoxString("", '\'')
 }
 
 func StringIndexMustBeWholeNum(index any) string {
@@ -52,7 +56,7 @@ func (l *LoxString) Equals(obj any) bool {
 
 func (l *LoxString) Get(name token.Token) (any, error) {
 	methodName := name.Lexeme
-	if method, ok := strFuncs[methodName]; ok {
+	if method, ok := l.methods[methodName]; ok {
 		return method, nil
 	}
 	strFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
@@ -62,8 +66,8 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		s.stringMethod = func() string {
 			return fmt.Sprintf("<native string fn %v at %p>", methodName, s)
 		}
-		if _, ok := strFuncs[methodName]; !ok {
-			strFuncs[methodName] = s
+		if _, ok := l.methods[methodName]; !ok {
+			l.methods[methodName] = s
 		}
 		return s, nil
 	}
@@ -141,16 +145,16 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		})
 	case "lower":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return &LoxString{strings.ToLower(l.str), l.quote}, nil
+			return NewLoxString(strings.ToLower(l.str), l.quote), nil
 		})
 	case "padEnd":
 		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if finalStrLen, ok := args[0].(int64); ok {
 				paddedStr, useDoubleQuote := padString(l.str, finalStrLen, args[1], false)
 				if useDoubleQuote {
-					return &LoxString{paddedStr, '"'}, nil
+					return NewLoxString(paddedStr, '"'), nil
 				}
-				return &LoxString{paddedStr, l.quote}, nil
+				return NewLoxString(paddedStr, l.quote), nil
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.padEnd' must be a whole number.")
 		})
@@ -159,9 +163,9 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			if finalStrLen, ok := args[0].(int64); ok {
 				paddedStr, useDoubleQuote := padString(l.str, finalStrLen, args[1], true)
 				if useDoubleQuote {
-					return &LoxString{paddedStr, '"'}, nil
+					return NewLoxString(paddedStr, '"'), nil
 				}
-				return &LoxString{paddedStr, l.quote}, nil
+				return NewLoxString(paddedStr, l.quote), nil
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.padStart' must be a whole number.")
 		})
@@ -171,9 +175,9 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				if secondStr, secondStrOk := args[1].(*LoxString); secondStrOk {
 					newStr := strings.ReplaceAll(l.str, firstStr.str, secondStr.str)
 					if strings.Contains(newStr, "'") {
-						return &LoxString{newStr, '"'}, nil
+						return NewLoxString(newStr, '"'), nil
 					}
-					return &LoxString{newStr, '\''}, nil
+					return NewLoxString(newStr, '\''), nil
 				}
 				return nil, loxerror.RuntimeError(name, "Second argument to 'string.replace' must be a string.")
 			}
@@ -185,7 +189,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				splitSlice := strings.Split(l.str, loxStr.str)
 				loxList := list.NewList[Expr]()
 				for _, str := range splitSlice {
-					loxList.Add(&LoxString{str, '\''})
+					loxList.Add(NewLoxString(str, '\''))
 				}
 				return NewLoxList(loxList), nil
 			}
@@ -203,10 +207,10 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			argsLen := len(args)
 			switch argsLen {
 			case 0:
-				return &LoxString{strings.TrimSpace(l.str), l.quote}, nil
+				return NewLoxString(strings.TrimSpace(l.str), l.quote), nil
 			case 1:
 				if loxStr, ok := args[0].(*LoxString); ok {
-					return &LoxString{strings.Trim(l.str, loxStr.str), l.quote}, nil
+					return NewLoxString(strings.Trim(l.str, loxStr.str), l.quote), nil
 				}
 				return argMustBeType("string")
 			}
@@ -274,7 +278,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		})
 	case "upper":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return &LoxString{strings.ToUpper(l.str), l.quote}, nil
+			return NewLoxString(strings.ToUpper(l.str), l.quote), nil
 		})
 	case "zfill":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -302,7 +306,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				} else {
 					finalStr = paddedStr
 				}
-				return &LoxString{finalStr, quote}, nil
+				return NewLoxString(finalStr, quote), nil
 			}
 			return argMustBeType("whole number")
 		})

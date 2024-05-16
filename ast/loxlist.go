@@ -341,7 +341,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 						builder.WriteString(loxStr.str)
 					}
 				}
-				return &LoxString{builder.String(), quote}, nil
+				return NewLoxString(builder.String(), quote), nil
 			}
 			return argMustBeType("string")
 		})

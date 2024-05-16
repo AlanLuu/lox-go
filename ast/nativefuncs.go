@@ -27,9 +27,9 @@ func (i *Interpreter) defineNativeFuncs() {
 			codePoint := rune(codePointNum)
 			character := string(codePoint)
 			if codePoint == '\'' {
-				return &LoxString{character, '"'}, nil
+				return NewLoxString(character, '"'), nil
 			}
-			return &LoxString{character, '\''}, nil
+			return NewLoxString(character, '\''), nil
 		}
 		return nil, loxerror.Error("Argument to 'chr' must be a whole number.")
 	})
