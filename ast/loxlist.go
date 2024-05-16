@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
 	"strings"
 
@@ -424,6 +425,13 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return true, nil
 			}
 			return false, nil
+		})
+	case "shuffle":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			rand.Shuffle(len(l.elements), func(a int, b int) {
+				l.elements[a], l.elements[b] = l.elements[b], l.elements[a]
+			})
+			return nil, nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Lists have no property called '"+methodName+"'.")
