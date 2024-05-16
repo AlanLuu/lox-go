@@ -187,7 +187,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				for _, str := range splitSlice {
 					loxList.Add(&LoxString{str, '\''})
 				}
-				return &LoxList{loxList}, nil
+				return NewLoxList(loxList), nil
 			}
 			return argMustBeType("string")
 		})

@@ -51,7 +51,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			for index := int64(0); index < size; index++ {
 				lst.Add(nil)
 			}
-			return &LoxList{lst}, nil
+			return NewLoxList(lst), nil
 		}
 		return nil, loxerror.Error("Argument to 'List' must be a whole number.")
 	})

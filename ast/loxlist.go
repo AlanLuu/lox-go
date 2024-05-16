@@ -20,14 +20,20 @@ func ListIndexOutOfRange(index int64) string {
 	return fmt.Sprintf("List index %v out of range.", index)
 }
 
-var listFuncs = make(map[string]*struct{ ProtoLoxCallable })
-
 type LoxList struct {
 	elements list.List[Expr]
+	methods  map[string]*struct{ ProtoLoxCallable }
+}
+
+func NewLoxList(elements list.List[Expr]) *LoxList {
+	return &LoxList{
+		elements: elements,
+		methods:  make(map[string]*struct{ ProtoLoxCallable }),
+	}
 }
 
 func EmptyLoxList() *LoxList {
-	return &LoxList{list.NewList[Expr]()}
+	return NewLoxList(list.NewList[Expr]())
 }
 
 func (l *LoxList) Equals(obj any) bool {
@@ -41,7 +47,7 @@ func (l *LoxList) Equals(obj any) bool {
 
 func (l *LoxList) Get(name token.Token) (any, error) {
 	methodName := name.Lexeme
-	if method, ok := listFuncs[methodName]; ok {
+	if method, ok := l.methods[methodName]; ok {
 		return method, nil
 	}
 	listFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
@@ -51,8 +57,8 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		s.stringMethod = func() string {
 			return fmt.Sprintf("<native list fn %v at %p>", methodName, s)
 		}
-		if _, ok := listFuncs[methodName]; !ok {
-			listFuncs[methodName] = s
+		if _, ok := l.methods[methodName]; !ok {
+			l.methods[methodName] = s
 		}
 		return s, nil
 	}
@@ -213,7 +219,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 						newList.Add(element)
 					}
 				}
-				return &LoxList{newList}, nil
+				return NewLoxList(newList), nil
 			}
 			return argMustBeType("function")
 		})
@@ -278,7 +284,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				}
 			}
 			flatten(l.elements)
-			return &LoxList{newList}, nil
+			return NewLoxList(newList), nil
 		})
 	case "forEach":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
@@ -359,7 +365,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 						newList.Add(result)
 					}
 				}
-				return &LoxList{newList}, nil
+				return NewLoxList(newList), nil
 			}
 			return argMustBeType("function")
 		})

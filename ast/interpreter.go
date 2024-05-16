@@ -295,7 +295,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 						newList.Add(element)
 					}
 				}
-				return &LoxList{newList}, nil
+				return NewLoxList(newList), nil
 			}
 		}
 		return math.NaN(), nil
@@ -541,7 +541,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				for _, element := range right.elements {
 					newList.Add(element)
 				}
-				return &LoxList{newList}, nil
+				return NewLoxList(newList), nil
 			case nil:
 				return &LoxString{left.String() + "nil", '\''}, nil
 			}
@@ -556,7 +556,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 						newList.Add(element)
 					}
 				}
-				return &LoxList{newList}, nil
+				return NewLoxList(newList), nil
 			}
 			switch right := right.(type) {
 			case int64:
@@ -968,7 +968,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			for i := indexValInt; i < indexEndValInt; i++ {
 				listSlice.Add(indexElement.elements[i])
 			}
-			return &LoxList{listSlice}, nil
+			return NewLoxList(listSlice), nil
 		} else {
 			if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
 				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
@@ -987,7 +987,7 @@ func (i *Interpreter) visitListExpr(expr List) (any, error) {
 		}
 		expr.Elements[index] = evalResult
 	}
-	return &LoxList{expr.Elements}, nil
+	return NewLoxList(expr.Elements), nil
 }
 
 func (i *Interpreter) visitLiteralExpr(expr Literal) (any, error) {
