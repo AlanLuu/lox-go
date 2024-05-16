@@ -615,6 +615,11 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 		argsLen := len(arguments)
 		arity := function.arity()
 		if arity >= 0 && argsLen != arity {
+			if arity == 1 {
+				return nil, loxerror.RuntimeError(expr.Paren,
+					fmt.Sprintf("Expected %v argument but got %v.", arity, argsLen),
+				)
+			}
 			return nil, loxerror.RuntimeError(expr.Paren,
 				fmt.Sprintf("Expected %v arguments but got %v.", arity, argsLen),
 			)
