@@ -20,6 +20,8 @@ func ListIndexOutOfRange(index int64) string {
 	return fmt.Sprintf("List index %v out of range.", index)
 }
 
+var listFuncs = make(map[string]*struct{ ProtoLoxCallable })
+
 type LoxList struct {
 	elements list.List[Expr]
 }
@@ -38,11 +40,20 @@ func (l *LoxList) Equals(obj any) bool {
 }
 
 func (l *LoxList) Get(name token.Token) (any, error) {
-	listFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (struct{ ProtoLoxCallable }, error) {
-		s := struct{ ProtoLoxCallable }{}
+	methodName := name.Lexeme
+	if method, ok := listFuncs[methodName]; ok {
+		return method, nil
+	}
+	listFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
+		s := &struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
 		s.callMethod = method
-		s.stringMethod = func() string { return "<native list fn>" }
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native list fn %v at %p>", methodName, s)
+		}
+		if _, ok := listFuncs[methodName]; !ok {
+			listFuncs[methodName] = s
+		}
 		return s, nil
 	}
 	indexOf := func(obj any) int64 {
@@ -87,7 +98,6 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		}
 		return argList
 	}
-	methodName := name.Lexeme
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'list.%v' must be a %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)

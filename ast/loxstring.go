@@ -12,6 +12,8 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
+var strFuncs = make(map[string]*struct{ ProtoLoxCallable })
+
 type LoxString struct {
 	str   string
 	quote byte
@@ -49,11 +51,20 @@ func (l *LoxString) Equals(obj any) bool {
 }
 
 func (l *LoxString) Get(name token.Token) (any, error) {
-	strFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (struct{ ProtoLoxCallable }, error) {
-		s := struct{ ProtoLoxCallable }{}
+	methodName := name.Lexeme
+	if method, ok := strFuncs[methodName]; ok {
+		return method, nil
+	}
+	strFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
+		s := &struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
 		s.callMethod = method
-		s.stringMethod = func() string { return "<native string fn>" }
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native string fn %v at %p>", methodName, s)
+		}
+		if _, ok := strFuncs[methodName]; !ok {
+			strFuncs[methodName] = s
+		}
 		return s, nil
 	}
 	padString := func(initialStr string, finalStrLen int64, arg any, padAtStart bool) (string, bool) {
@@ -88,7 +99,6 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 
 		return builder.String(), useDoubleQuote
 	}
-	methodName := name.Lexeme
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'string.%v' must be a %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)

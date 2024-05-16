@@ -21,11 +21,11 @@ func (i *Interpreter) defineMathFuncs() {
 		false,
 	}
 	mathFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
-		s := struct{ ProtoLoxCallable }{}
+		s := &struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
 		s.callMethod = method
 		s.stringMethod = func() string {
-			return fmt.Sprintf("<native fn %v at %p>", name, &s)
+			return fmt.Sprintf("<native Math fn %v at %p>", name, &s)
 		}
 		mathClass.classProperties[name] = s
 	}
