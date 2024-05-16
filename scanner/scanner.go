@@ -335,6 +335,13 @@ func (sc *Scanner) scanToken() error {
 }
 
 func (sc *Scanner) ScanTokens() error {
+	source := &sc.sourceLine
+	if len(*source) > 1 && (*source)[0] == '#' && (*source)[1] == '!' {
+		//Ignore line with "#!" (Unix shebang) at beginning of first line
+		for sc.peek() != '\n' && !sc.isAtEnd() {
+			sc.currentIndex++
+		}
+	}
 	for !sc.isAtEnd() {
 		sc.startIndex = sc.currentIndex
 		scanTokenErr := sc.scanToken()
