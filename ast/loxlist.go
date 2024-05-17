@@ -272,18 +272,28 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 	case "flatten":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newList := list.NewList[Expr]()
-			var flatten func(elements list.List[Expr])
-			flatten = func(elements list.List[Expr]) {
+			var flatten func(elements list.List[Expr]) error
+			flatten = func(elements list.List[Expr]) error {
 				for _, element := range elements {
 					switch element := element.(type) {
 					case *LoxList:
-						flatten(element.elements)
+						if element == l {
+							return loxerror.RuntimeError(name, "Cannot flatten self-referential list.")
+						}
+						flattenErr := flatten(element.elements)
+						if flattenErr != nil {
+							return flattenErr
+						}
 					default:
 						newList.Add(element)
 					}
 				}
+				return nil
 			}
-			flatten(l.elements)
+			flattenErr := flatten(l.elements)
+			if flattenErr != nil {
+				return nil, flattenErr
+			}
 			return NewLoxList(newList), nil
 		})
 	case "forEach":
