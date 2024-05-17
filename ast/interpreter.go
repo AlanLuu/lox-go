@@ -300,7 +300,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		}
 		return math.NaN(), nil
 	}
-	handleTwoFloats := func(left float64, right float64) (any, error) {
+	handleTwoFloats := func(left float64, right float64, bothInts bool) (any, error) {
 		var result any
 		switch expr.Operator.TokenType {
 		case token.PLUS:
@@ -339,11 +339,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 
 		switch result := result.(type) {
 		case float64:
-			if !math.IsInf(result, 1) &&
-				!math.IsInf(result, -1) &&
-				util.FloatIsInt(left) &&
-				util.FloatIsInt(right) &&
-				util.FloatIsInt(result) {
+			if bothInts && !math.IsInf(result, 0) && !math.IsNaN(result) {
 				return int64(result), nil
 			}
 		}
@@ -423,41 +419,37 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	case int64:
 		switch right := right.(type) {
 		case int64:
-			return handleTwoFloats(float64(left), float64(right))
+			return handleTwoFloats(float64(left), float64(right), true)
 		case float64:
-			return handleTwoFloats(float64(left), float64(right))
+			return handleTwoFloats(float64(left), right, false)
 		case bool:
-			return handleTwoFloats(float64(left), boolMap[right])
+			return handleTwoFloats(float64(left), boolMap[right], true)
 		case *LoxString:
 			return handleNumString(float64(left), right)
 		case *LoxList:
 			return handleNumList(float64(left), right)
 		case nil:
-			return handleTwoFloats(float64(left), 0)
+			return handleTwoFloats(float64(left), 0, true)
 		}
 	case float64:
 		switch right := right.(type) {
 		case int64:
-			return handleTwoFloats(float64(left), float64(right))
+			return handleTwoFloats(left, float64(right), false)
 		case float64:
-			return handleTwoFloats(float64(left), float64(right))
+			return handleTwoFloats(left, right, false)
 		case bool:
-			return handleTwoFloats(float64(left), boolMap[right])
-		case *LoxString:
-			return handleNumString(left, right)
-		case *LoxList:
-			return handleNumList(left, right)
+			return handleTwoFloats(left, boolMap[right], false)
 		case nil:
-			return handleTwoFloats(float64(left), 0)
+			return handleTwoFloats(left, 0, false)
 		}
 	case bool:
 		switch right := right.(type) {
 		case int64:
-			return handleTwoFloats(boolMap[left], float64(right))
+			return handleTwoFloats(boolMap[left], float64(right), true)
 		case float64:
-			return handleTwoFloats(boolMap[left], float64(right))
+			return handleTwoFloats(boolMap[left], right, false)
 		case bool:
-			return handleTwoFloats(boolMap[left], boolMap[right])
+			return handleTwoFloats(boolMap[left], boolMap[right], true)
 		case *LoxString:
 			switch expr.Operator.TokenType {
 			case token.PLUS:
@@ -473,7 +465,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return handleNumList(boolMap[left], right)
 			}
 		case nil:
-			return handleTwoFloats(boolMap[left], 0)
+			return handleTwoFloats(boolMap[left], 0, true)
 		}
 	case *LoxString:
 		switch expr.Operator.TokenType {
@@ -570,11 +562,11 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	case nil:
 		switch right := right.(type) {
 		case int64:
-			return handleTwoFloats(0, float64(right))
+			return handleTwoFloats(0, float64(right), true)
 		case float64:
-			return handleTwoFloats(0, float64(right))
+			return handleTwoFloats(0, right, false)
 		case bool:
-			return handleTwoFloats(0, boolMap[right])
+			return handleTwoFloats(0, boolMap[right], true)
 		case *LoxString:
 			switch expr.Operator.TokenType {
 			case token.PLUS:
@@ -590,7 +582,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return EmptyLoxList(), nil
 			}
 		case nil:
-			return handleTwoFloats(0, 0)
+			return handleTwoFloats(0, 0, true)
 		}
 	}
 
