@@ -122,6 +122,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is a whole number
+    - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
     - `len(element)`, which returns the length of a string or list element
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ord(c)`, which returns a number that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character

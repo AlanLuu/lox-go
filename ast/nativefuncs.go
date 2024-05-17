@@ -1,13 +1,20 @@
 package ast
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
+	"strings"
 	"time"
 	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/chzyer/readline"
 )
+
+var textSc *bufio.Scanner
 
 func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
@@ -32,6 +39,47 @@ func (i *Interpreter) defineNativeFuncs() {
 			return NewLoxString(character, '\''), nil
 		}
 		return nil, loxerror.Error("Argument to 'chr' must be a whole number.")
+	})
+	nativeFunc("input", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		var prompt any = ""
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+		case 1:
+			prompt = args[0]
+		default:
+			return nil, loxerror.Error(fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+
+		var userInput string
+		stat, _ := os.Stdin.Stat()
+		if (stat.Mode() & os.ModeCharDevice) != 0 {
+			l, _ := readline.NewEx(&readline.Config{
+				Prompt:          getResult(prompt, true),
+				InterruptPrompt: "^C",
+			})
+			defer l.Close()
+
+			var readError error
+			userInput, readError = l.Readline()
+			switch readError {
+			case readline.ErrInterrupt, io.EOF:
+				return nil, nil
+			}
+		} else {
+			if textSc == nil {
+				textSc = bufio.NewScanner(os.Stdin)
+			}
+			if !textSc.Scan() {
+				return nil, nil
+			}
+			userInput = textSc.Text()
+		}
+
+		if strings.Contains(userInput, "'") {
+			return NewLoxString(userInput, '"'), nil
+		}
+		return NewLoxString(userInput, '\''), nil
 	})
 	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		switch element := args[0].(type) {
