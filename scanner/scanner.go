@@ -94,13 +94,13 @@ func (sc *Scanner) handleNumber() error {
 			return loxerror.GiveError(sc.lineNum, "", "Unexpected '.' in "+numType)
 		}
 		if isBinaryNum {
-			return unexpectedDotIn("binary number")
+			return unexpectedDotIn("binary literal")
 		}
 		if isHexNum {
-			return unexpectedDotIn("hex number")
+			return unexpectedDotIn("hex literal")
 		}
 		if isOctalNum {
-			return unexpectedDotIn("octal number")
+			return unexpectedDotIn("octal literal")
 		}
 		numHasDot = true
 		sc.advance()

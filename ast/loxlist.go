@@ -13,7 +13,7 @@ import (
 )
 
 func ListIndexMustBeWholeNum(index any) string {
-	return fmt.Sprintf("List index '%v' must be a whole number.", index)
+	return fmt.Sprintf("List index '%v' must be an integer.", index)
 }
 
 func ListIndexOutOfRange(index int64) string {

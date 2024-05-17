@@ -31,7 +31,7 @@ func EmptyLoxString() *LoxString {
 }
 
 func StringIndexMustBeWholeNum(index any) string {
-	return fmt.Sprintf("String index '%v' must be a whole number.", index)
+	return fmt.Sprintf("String index '%v' must be an integer.", index)
 }
 
 func StringIndexOutOfRange(index int64) string {
@@ -156,7 +156,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				}
 				return NewLoxString(paddedStr, l.quote), nil
 			}
-			return nil, loxerror.RuntimeError(name, "First argument to 'string.padEnd' must be a whole number.")
+			return nil, loxerror.RuntimeError(name, "First argument to 'string.padEnd' must be an integer.")
 		})
 	case "padStart":
 		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -167,7 +167,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				}
 				return NewLoxString(paddedStr, l.quote), nil
 			}
-			return nil, loxerror.RuntimeError(name, "First argument to 'string.padStart' must be a whole number.")
+			return nil, loxerror.RuntimeError(name, "First argument to 'string.padStart' must be an integer.")
 		})
 	case "replace":
 		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -272,7 +272,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 					}
 					return result, nil
 				}
-				return argMustBeType("whole number")
+				return argMustBeType("integer")
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
@@ -308,7 +308,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 				}
 				return NewLoxString(finalStr, quote), nil
 			}
-			return argMustBeType("whole number")
+			return argMustBeType("integer")
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Strings have no property called '"+methodName+"'.")

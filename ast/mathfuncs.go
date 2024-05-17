@@ -42,7 +42,7 @@ func (i *Interpreter) defineMathFuncs() {
 			case float64:
 				return util.IntOrFloat(fun(num)), nil
 			}
-			return nil, loxerror.Error(fmt.Sprintf("Argument to 'Math.%v' must be a number.", name))
+			return nil, loxerror.Error(fmt.Sprintf("Argument to 'Math.%v' must be an integer or float.", name))
 		})
 	}
 	twoArgFunc := func(name string, fun func(float64, float64) float64) {
@@ -55,7 +55,7 @@ func (i *Interpreter) defineMathFuncs() {
 				case float64:
 					return util.IntOrFloat(fun(float64(num1), num2)), nil
 				}
-				return nil, loxerror.Error(fmt.Sprintf("Second argument to 'Math.%v' must be a number.", name))
+				return nil, loxerror.Error(fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
 			case float64:
 				switch num2 := args[1].(type) {
 				case int64:
@@ -63,9 +63,9 @@ func (i *Interpreter) defineMathFuncs() {
 				case float64:
 					return util.IntOrFloat(fun(num1, num2)), nil
 				}
-				return nil, loxerror.Error(fmt.Sprintf("Second argument to 'Math.%v' must be a number.", name))
+				return nil, loxerror.Error(fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
 			}
-			return nil, loxerror.Error(fmt.Sprintf("First argument to 'Math.%v' must be a number.", name))
+			return nil, loxerror.Error(fmt.Sprintf("First argument to 'Math.%v' must be an integer or float.", name))
 		})
 	}
 	zeroArgFuncs := map[string]func() float64{

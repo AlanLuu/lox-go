@@ -38,7 +38,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			return NewLoxString(character, '\''), nil
 		}
-		return nil, loxerror.Error("Argument to 'chr' must be a whole number.")
+		return nil, loxerror.Error("Argument to 'chr' must be an integer.")
 	})
 	nativeFunc("input", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		var prompt any = ""
@@ -101,7 +101,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			return NewLoxList(lst), nil
 		}
-		return nil, loxerror.Error("Argument to 'List' must be a whole number.")
+		return nil, loxerror.Error("Argument to 'List' must be an integer.")
 	})
 	nativeFunc("ord", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
@@ -125,7 +125,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			time.Sleep(duration)
 			return nil, nil
 		}
-		return nil, loxerror.Error("Argument to 'sleep' must be a number.")
+		return nil, loxerror.Error("Argument to 'sleep' must be an integer or float.")
 	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return getType(args[0]), nil

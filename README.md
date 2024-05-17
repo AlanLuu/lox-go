@@ -31,16 +31,16 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `a ** b`, which returns `a` raised to the power of `b`, where `a` and `b` are numbers
         - The exponent operator has higher precedence than any unary operators on the left, so `-a ** b` is equivalent to `-(a ** b)`.
     - `a << b` and `a >> b`, which returns a number representing the number `a` shifted by `b` bits to the left and right respectively.
-        - If `a` or `b` are decimal numbers, they are converted into whole numbers before the shift operation
+        - If `a` or `b` are floats, they are converted into integers before the shift operation
     - `~a`, which returns the bitwise NOT of the number `a`
     - `a & b`, `a | b`, and `a ^ b`, which returns the bitwise AND, OR, and XOR of two numbers `a` and `b` respectively.
-        - If `a` or `b` are decimal numbers, they are converted into whole numbers before the bitwise operation
+        - If `a` or `b` are floats, they are converted into integers before the bitwise operation
         - Unlike in C, the precedence of the bitwise operators is higher than the precedence of the comparison operators, so `a & b == value` is equivalent to `(a & b) == value`
 - Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
-- Booleans and `nil` are treated as numbers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
+- Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
 - Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, and `""` are also falsy values
-- Binary, hexadecimal, and octal number literals are supported in this implementation of Lox
+- Binary, hexadecimal, and octal integer literals are supported in this implementation of Lox
     - Binary literals start with the prefix `0b`
     - Hexadecimal literals start with the prefix `0x`
     - Octal literals start with the prefix `0o`
@@ -69,15 +69,15 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     ```
 - Various mathematical functions and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
 - Strings have some additional operations associated with them:
-    - Get a new string that is the original string repeated `n` times, where `n` is a whole number: `string * n`
+    - Get a new string that is the original string repeated `n` times, where `n` is an integer: `string * n`
     - Get a new string with all characters from indexes `start` to `end` exclusive, where `start < end`: `string[start:end]`
         - If `start >= end`, a new empty string is returned
     - Besides these operations, strings also have some methods associated with them:
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
-        - `string.index(string2)`, which returns a number representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
-        - `string.lastIndex(string2)`, which returns a number representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
+        - `string.index(string2)`, which returns an integer representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
+        - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
         - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
@@ -85,7 +85,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
-        - `string.toNum([base])`, which attempts to convert `string` into a number and returns that number if successful and `NaN` otherwise. If `base` is specified, then this method will attempt to convert `string` that is represented as the specified base into a number and returns that number if the conversion was successful and `NaN` otherwise
+        - `string.toNum([base])`, which attempts to convert `string` into an integer or float and returns that value if successful and `NaN` otherwise. If `base` is specified, then this method will attempt to convert `string` that is represented as the specified base into an integer or float and returns that value if the conversion was successful and `NaN` otherwise
         - `string.upper()`, which returns a new string with all uppercase letters
         - `string.zfill(length)`, which returns a new string where the character `'0'` is padded to the left until the new string is of length `length`. If a leading `'+'` or `'-'` sign is part of the original string, the `'0'` padding is inserted after the leading sign instead of before
 - Lists are supported in this implementation of Lox
@@ -95,7 +95,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If `start >= end`, a new empty list is returned
     - Set an element: `list[index] = value;`
     - Concatenate two lists together into a new list: `list + list2`
-    - Get a new list with all elements from the original list repeated `n` times, where `n` is a whole number: `list * n`
+    - Get a new list with all elements from the original list repeated `n` times, where `n` is an integer: `list * n`
     - Besides these operations, lists also have some methods associated with them:
         - `list.all(callback)`, which returns `true` if the callback function returns `true` for all elements in the list and `false` otherwise
         - `list.any(callback)` which returns `true` if the callback function returns `true` for any element in the list and `false` otherwise
@@ -121,11 +121,11 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A few other native functions are defined:
-    - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is a whole number
+    - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
     - `len(element)`, which returns the length of a string or list element
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
-    - `ord(c)`, which returns a number that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
+    - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
     - `sleep(duration)`, which pauses the program for the specified duration in seconds
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines

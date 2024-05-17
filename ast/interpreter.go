@@ -114,8 +114,10 @@ func getType(element any) string {
 	switch element := element.(type) {
 	case nil:
 		return "nil"
-	case int64, float64:
-		return "number"
+	case int64:
+		return "integer"
+	case float64:
+		return "float"
 	case bool:
 		return "boolean"
 	case *LoxString:
@@ -339,7 +341,10 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 
 		switch result := result.(type) {
 		case float64:
-			if bothInts && !math.IsInf(result, 0) && !math.IsNaN(result) {
+			if bothInts &&
+				!math.IsInf(result, 0) &&
+				!math.IsNaN(result) &&
+				util.FloatIsInt(result) {
 				return int64(result), nil
 			}
 		}
