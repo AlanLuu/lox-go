@@ -73,7 +73,7 @@ func (p *Parser) assignment() (Expr, error) {
 				Name:   expr.Bracket,
 				Value:  value,
 			}
-			return SetList{set}, nil
+			return SetObject{set}, nil
 		}
 		return nil, p.error(equals, "Invalid assignment target.")
 	}
@@ -487,8 +487,8 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	}
 	_, isAssign := expr.(Assign)
 	_, isSet := expr.(Set)
-	_, isSetList := expr.(SetList)
-	if !util.StdinFromTerminal() || isAssign || isSet || isSetList {
+	_, isSetObject := expr.(SetObject)
+	if !util.StdinFromTerminal() || isAssign || isSet || isSetObject {
 		_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
 		if consumeErr != nil {
 			return nil, consumeErr

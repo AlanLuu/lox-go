@@ -90,7 +90,7 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitLogicalExpr(expr)
 	case Set:
 		return r.visitSetExpr(expr)
-	case SetList:
+	case SetObject:
 		return r.visitSetExpr(expr.Set)
 	case String:
 		return nil

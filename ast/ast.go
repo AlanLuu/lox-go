@@ -122,7 +122,7 @@ type Set struct {
 	Value  Expr
 }
 
-type SetList struct {
+type SetObject struct {
 	Set
 }
 

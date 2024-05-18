@@ -82,8 +82,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitReturnStmt(expr)
 	case Set:
 		return i.visitSetExpr(expr)
-	case SetList:
-		return i.visitSetListExpr(expr)
+	case SetObject:
+		return i.visitSetObjectExpr(expr)
 	case String:
 		return i.visitStringExpr(expr)
 	case Super:
@@ -191,6 +191,20 @@ func getResult(source any, isPrintStmt bool) string {
 			return fmt.Sprint(source)
 		}
 	case *LoxString:
+		if len(source.str) == 0 {
+			if isPrintStmt {
+				return ""
+			} else {
+				return fmt.Sprintf("%c%c", source.quote, source.quote)
+			}
+		} else {
+			if isPrintStmt {
+				return fmt.Sprint(source.str)
+			} else {
+				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
+			}
+		}
+	case LoxDictString:
 		if len(source.str) == 0 {
 			if isPrintStmt {
 				return ""
@@ -725,7 +739,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 }
 
 func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
-	entries := make(map[any]any)
+	dict := NewLoxDict(make(map[any]any))
 	var tempKey any
 	isKey := true
 	for _, entry := range expr.Entries {
@@ -734,21 +748,17 @@ func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
 			return nil, entryErr
 		}
 		if isKey {
-			switch entry := entry.(type) {
-			case *LoxDict, *LoxList:
-				return nil, loxerror.RuntimeError(expr.DictToken,
-					fmt.Sprintf("Unhashable type '%v'.", getType(entry)))
-			case *LoxString:
-				tempKey = entry.str
-			default:
-				tempKey = entry
+			canBeKey, keyErr := CanBeKeyCheck(entry)
+			if !canBeKey {
+				return nil, loxerror.RuntimeError(expr.DictToken, keyErr)
 			}
+			tempKey = entry
 		} else {
-			entries[tempKey] = entry
+			dict.setKeyValue(tempKey, entry)
 		}
 		isKey = !isKey
 	}
-	return NewLoxDict(entries), nil
+	return dict, nil
 }
 
 func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {
@@ -800,8 +810,8 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	if util.StdinFromTerminal() && i.blockDepth <= 0 {
 		_, isAssign := stmt.Expression.(Assign)
 		_, isSet := stmt.Expression.(Set)
-		_, isSetList := stmt.Expression.(SetList)
-		if !isAssign && !isSet && !isSetList {
+		_, isSetObject := stmt.Expression.(SetObject)
+		if !isAssign && !isSet && !isSetObject {
 			printResultExpressionStmt(value)
 		}
 	}
@@ -1005,14 +1015,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		if expr.IsSlice {
 			return nil, loxerror.RuntimeError(expr.Bracket, "Cannot use slice to index into dictionary.")
 		}
-		var value any
-		var ok bool
-		switch indexVal := indexVal.(type) {
-		case *LoxString:
-			value, ok = indexElement.entries[indexVal.str]
-		default:
-			value, ok = indexElement.entries[indexVal]
-		}
+		value, ok := indexElement.getValueByKey(indexVal)
 		if !ok {
 			return nil, nil
 		}
@@ -1129,22 +1132,17 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 	return nil, loxerror.RuntimeError(expr.Name, "Only classes and instances have properties that can be set.")
 }
 
-func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
-	indexes := list.NewList[int64]()
+func (i *Interpreter) visitSetObjectExpr(expr SetObject) (any, error) {
+	indexes := list.NewList[any]()
 	defer indexes.Clear()
 
 	node := expr.Object
 	for index, ok := node.(Index); ok; {
-		indexNum, indexNumErr := i.evaluate(index.Index)
-		if indexNumErr != nil {
-			return nil, indexNumErr
+		indexVal, indexValErr := i.evaluate(index.Index)
+		if indexValErr != nil {
+			return nil, indexValErr
 		}
-		switch indexNum := indexNum.(type) {
-		case int64:
-			indexes.Add(indexNum)
-		default:
-			return nil, loxerror.RuntimeError(expr.Name, ListIndexMustBeWholeNum(indexNum))
-		}
+		indexes.Add(indexVal)
 		node = index.IndexElement
 		index, ok = node.(Index)
 	}
@@ -1153,31 +1151,66 @@ func (i *Interpreter) visitSetListExpr(expr SetList) (any, error) {
 	if variableErr != nil {
 		return nil, variableErr
 	}
-	if variable, ok := variable.(*LoxList); ok {
+	assignErrMsg := "Can only assign to dictionary and list indexes."
+	switch variable := variable.(type) {
+	case *LoxDict:
 		value, valueErr := i.evaluate(expr.Value)
 		if valueErr != nil {
 			return nil, valueErr
 		}
 		for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
-			position := indexes[loopIndex]
+			index := indexes[loopIndex]
 			if loopIndex > 0 {
-				if position < 0 || position >= int64(len(variable.elements)) {
-					return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(position))
-				}
-				variable, ok = variable.elements[position].(*LoxList)
+				var ok bool
+				var keyValue any
+				keyValue, ok = variable.getValueByKey(index)
 				if !ok {
-					return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
+					return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
+				}
+				variable, ok = keyValue.(*LoxDict)
+				if !ok {
+					return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
 				}
 			} else {
-				if position < 0 || position >= int64(len(variable.elements)) {
-					return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(position))
+				canBeKey, keyErr := CanBeKeyCheck(index)
+				if !canBeKey {
+					return nil, loxerror.RuntimeError(expr.Name, keyErr)
 				}
-				variable.elements[position] = value
+				variable.setKeyValue(index, value)
+			}
+		}
+		return value, nil
+	case *LoxList:
+		value, valueErr := i.evaluate(expr.Value)
+		if valueErr != nil {
+			return nil, valueErr
+		}
+		for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
+			index := indexes[loopIndex]
+			switch index := index.(type) {
+			case int64:
+				if loopIndex > 0 {
+					if index < 0 || index >= int64(len(variable.elements)) {
+						return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(index))
+					}
+					var ok bool
+					variable, ok = variable.elements[index].(*LoxList)
+					if !ok {
+						return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
+					}
+				} else {
+					if index < 0 || index >= int64(len(variable.elements)) {
+						return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(index))
+					}
+					variable.elements[index] = value
+				}
+			default:
+				return nil, loxerror.RuntimeError(expr.Name, ListIndexMustBeWholeNum(index))
 			}
 		}
 		return value, nil
 	}
-	return nil, loxerror.RuntimeError(expr.Name, "Can only assign to list indexes.")
+	return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
 }
 
 func (i *Interpreter) visitStringExpr(expr String) (any, error) {
