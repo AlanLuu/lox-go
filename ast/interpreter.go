@@ -448,18 +448,12 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 
 	if leftAsStringer, ok := left.(fmt.Stringer); ok {
 		if _, ok := right.(*LoxString); ok && expr.Operator.TokenType == token.PLUS {
-			switch left.(type) {
-			case *LoxInstance:
-				left = NewLoxString(leftAsStringer.String(), '\'')
-			}
+			left = NewLoxString(leftAsStringer.String(), '\'')
 		}
 	}
 	if rightAsStringer, ok := right.(fmt.Stringer); ok {
 		if _, ok := left.(*LoxString); ok && expr.Operator.TokenType == token.PLUS {
-			switch right.(type) {
-			case *LoxInstance:
-				right = NewLoxString(rightAsStringer.String(), '\'')
-			}
+			right = NewLoxString(rightAsStringer.String(), '\'')
 		}
 	}
 	switch left := left.(type) {
