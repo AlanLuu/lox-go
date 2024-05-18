@@ -970,9 +970,6 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 	if indexValErr != nil {
 		return nil, indexValErr
 	}
-	if indexVal == nil {
-		indexVal = int64(0)
-	}
 
 	indexEndVal, indexEndValErr := i.evaluate(expr.IndexEnd)
 	if indexEndValErr != nil {
