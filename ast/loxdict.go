@@ -10,6 +10,10 @@ func CanBeKeyCheck(key any) (bool, string) {
 	return true, ""
 }
 
+func UnknownKey(key any) string {
+	return fmt.Sprintf("Unknown key '%v'.", key)
+}
+
 type LoxDictString struct {
 	str   string
 	quote byte

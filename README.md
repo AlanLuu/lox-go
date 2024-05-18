@@ -94,6 +94,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Get a new list with all elements from indexes `start` to `end` exclusive, where `start < end`: `list[start:end]`
         - If `start >= end`, a new empty list is returned
     - Set an element: `list[index] = value;`
+    - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the list to get or set
     - Concatenate two lists together into a new list: `list + list2`
     - Get a new list with all elements from the original list repeated `n` times, where `n` is an integer: `list * n`
     - Besides these operations, lists also have some methods associated with them:
@@ -123,7 +124,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Dictionaries are supported in this implementation of Lox
     - Create a dictionary and assign it to a variable: `var dict = {"key": "value"};`
     - Get an element from a dictionary by key: `dict[key]`
+        - It is a runtime error to attempt to get an element using a key that is not in the dictionary
     - Set an element: `dict[key] = value;`
+    - The following cannot be used as dictionary keys: dictionary, list
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string

@@ -1019,7 +1019,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		}
 		value, ok := indexElement.getValueByKey(indexVal)
 		if !ok {
-			return nil, nil
+			return nil, loxerror.RuntimeError(expr.Bracket, UnknownKey(indexVal))
 		}
 		return value, nil
 	case *LoxList:
