@@ -401,13 +401,69 @@ func (p *Parser) declaration() (Stmt, error) {
 	case p.match(token.CLASS):
 		value, err = p.classDeclaration()
 	default:
-		value, err = p.statement()
+		value, err = p.statement(false)
 	}
 	if err != nil {
 		p.synchronize()
 		return nil, err
 	}
 	return value, nil
+}
+
+func (p *Parser) dict() (Expr, error) {
+	entries := list.NewList[Expr]()
+	trailingComma := false
+	if !p.check(token.RIGHT_BRACE) {
+		for cond := true; cond; cond = p.match(token.COMMA) {
+			if p.match(token.RIGHT_BRACE) {
+				trailingComma = true
+				break
+			}
+			key, keyErr := p.or()
+			if keyErr != nil {
+				return nil, keyErr
+			}
+			_, colonErr := p.consume(token.COLON, "Expected ':' after dict key.")
+			if colonErr != nil {
+				return nil, colonErr
+			}
+			value, valueErr := p.or()
+			if valueErr != nil {
+				return nil, valueErr
+			}
+			entries.Add(key)
+			entries.Add(value)
+		}
+	}
+	if !trailingComma {
+		_, rightBraceErr := p.consume(token.RIGHT_BRACE, "Expected '}' after dict.")
+		if rightBraceErr != nil {
+			return nil, rightBraceErr
+		}
+	}
+	return Dict{entries, p.previous()}, nil
+}
+
+func (p *Parser) isDict() bool {
+	originalPos := p.current
+	defer func() {
+		p.current = originalPos
+	}()
+
+	if p.isAtEnd() {
+		return false
+	}
+	if p.match(token.RIGHT_BRACE) {
+		return true
+	}
+	_, exprErr := p.or()
+	if exprErr != nil {
+		return false
+	}
+	if p.match(token.COLON) {
+		return true
+	}
+	return false
 }
 
 func (p *Parser) error(theToken token.Token, message string) error {
@@ -584,7 +640,7 @@ func (p *Parser) forStatement() (Stmt, error) {
 		return nil, incrementSemicolonErr
 	}
 
-	body, bodyErr := p.statement()
+	body, bodyErr := p.statement(true)
 	if bodyErr != nil {
 		return nil, bodyErr
 	}
@@ -693,14 +749,14 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	if rightParenErr != nil {
 		return nil, rightParenErr
 	}
-	thenBranch, thenBranchErr := p.statement()
+	thenBranch, thenBranchErr := p.statement(true)
 	if thenBranchErr != nil {
 		return nil, thenBranchErr
 	}
 	var elseBranch Stmt
 	if p.match(token.ELSE) {
 		var elseBranchErr error
-		elseBranch, elseBranchErr = p.statement()
+		elseBranch, elseBranchErr = p.statement(true)
 		if elseBranchErr != nil {
 			return nil, elseBranchErr
 		}
@@ -802,6 +858,8 @@ func (p *Parser) primary() (Expr, error) {
 		return Variable{Name: p.previous()}, nil
 	case p.match(token.FUN):
 		return p.functionBody("function", false)
+	case p.match(token.LEFT_BRACE):
+		return p.dict()
 	case p.match(token.LEFT_BRACKET):
 		return p.list()
 	case p.match(token.SUPER):
@@ -860,7 +918,7 @@ func (p *Parser) returnStatement() (Stmt, error) {
 	return Return{Keyword: keyword, Value: value}, nil
 }
 
-func (p *Parser) statement() (Stmt, error) {
+func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 	switch {
 	case p.match(token.BREAK):
 		return p.breakStatement()
@@ -877,11 +935,14 @@ func (p *Parser) statement() (Stmt, error) {
 	case p.match(token.WHILE):
 		return p.whileStatement()
 	case p.match(token.LEFT_BRACE):
-		blockList, blockErr := p.block()
-		if blockErr != nil {
-			return nil, blockErr
+		if alwaysBlock || !p.isDict() {
+			blockList, blockErr := p.block()
+			if blockErr != nil {
+				return nil, blockErr
+			}
+			return Block{Statements: blockList}, nil
 		}
-		return Block{Statements: blockList}, nil
+		p.current--
 	}
 	return p.expressionStatement()
 }
@@ -992,7 +1053,7 @@ func (p *Parser) whileStatement() (Stmt, error) {
 	if rightParenErr != nil {
 		return nil, rightParenErr
 	}
-	body, bodyErr := p.statement()
+	body, bodyErr := p.statement(true)
 	if bodyErr != nil {
 		return nil, bodyErr
 	}

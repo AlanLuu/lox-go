@@ -58,6 +58,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitClassStmt(expr)
 	case Continue:
 		return expr, errors.New("")
+	case Dict:
+		return i.visitDictExpr(expr)
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case For:
@@ -124,6 +126,8 @@ func getType(element any) string {
 		return "string"
 	case *LoxClass:
 		return "class"
+	case *LoxDict:
+		return "dictionary"
 	case *LoxFunction:
 		return "function"
 	case *LoxInstance:
@@ -196,6 +200,30 @@ func getResult(source any, isPrintStmt bool) string {
 				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
 			}
 		}
+	case *LoxDict:
+		sourceLen := len(source.entries)
+		var listStr strings.Builder
+		listStr.WriteByte('{')
+		i := 0
+		for key, value := range source.entries {
+			if key == source {
+				listStr.WriteString("{...}")
+			} else {
+				listStr.WriteString(getResult(key, false))
+			}
+			listStr.WriteString(": ")
+			if value == source {
+				listStr.WriteString("{...}")
+			} else {
+				listStr.WriteString(getResult(value, false))
+			}
+			if i < sourceLen-1 {
+				listStr.WriteString(", ")
+			}
+			i++
+		}
+		listStr.WriteByte('}')
+		return listStr.String()
 	case *LoxList:
 		sourceLen := len(source.elements)
 		var listStr strings.Builder
@@ -692,6 +720,33 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 	return nil, nil
 }
 
+func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
+	entries := make(map[any]any)
+	var tempKey any
+	isKey := true
+	for _, entry := range expr.Entries {
+		entry, entryErr := i.evaluate(entry)
+		if entryErr != nil {
+			return nil, entryErr
+		}
+		if isKey {
+			switch entry := entry.(type) {
+			case *LoxDict, *LoxList:
+				return nil, loxerror.RuntimeError(expr.DictToken,
+					fmt.Sprintf("Unhashable type '%v'.", getType(entry)))
+			case *LoxString:
+				tempKey = entry.str
+			default:
+				tempKey = entry
+			}
+		} else {
+			entries[tempKey] = entry
+		}
+		isKey = !isKey
+	}
+	return NewLoxDict(entries), nil
+}
+
 func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {
 	i.blockDepth++
 	previous := i.environment
@@ -942,6 +997,22 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return NewLoxString(str, '\''), nil
 		}
+	case *LoxDict:
+		if expr.IsSlice {
+			return nil, loxerror.RuntimeError(expr.Bracket, "Cannot use slice to index into dictionary.")
+		}
+		var value any
+		var ok bool
+		switch indexVal := indexVal.(type) {
+		case *LoxString:
+			value, ok = indexElement.entries[indexVal.str]
+		default:
+			value, ok = indexElement.entries[indexVal]
+		}
+		if !ok {
+			return nil, nil
+		}
+		return value, nil
 	case *LoxList:
 		if _, ok := indexVal.(int64); !ok {
 			return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
@@ -973,7 +1044,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			return indexElement.elements[indexValInt], nil
 		}
 	}
-	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into lists and strings.")
+	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into dictionaries, lists, and strings.")
 }
 
 func (i *Interpreter) visitListExpr(expr List) (any, error) {

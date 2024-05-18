@@ -42,6 +42,11 @@ type Class struct {
 
 type Continue struct{}
 
+type Dict struct {
+	Entries   list.List[Expr]
+	DictToken token.Token
+}
+
 type Expression struct {
 	Expression Expr
 }

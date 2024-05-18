@@ -72,6 +72,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitBinaryExpr(expr)
 	case Call:
 		return r.visitCallExpr(expr)
+	case Dict:
+		return r.visitDictExpr(expr)
 	case FunctionExpr:
 		return r.visitFunctionExpr(expr)
 	case Get:
@@ -195,6 +197,16 @@ func (r *Resolver) visitCallExpr(expr Call) error {
 	}
 	for _, argument := range expr.Arguments {
 		resolveErr = r.resolveExpr(argument)
+		if resolveErr != nil {
+			return resolveErr
+		}
+	}
+	return nil
+}
+
+func (r *Resolver) visitDictExpr(expr Dict) error {
+	for _, entry := range expr.Entries {
+		resolveErr := r.resolveExpr(entry)
 		if resolveErr != nil {
 			return resolveErr
 		}
