@@ -128,7 +128,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Set an element: `dict[key] = value;`
     - The following cannot be used as dictionary keys: dictionary, list
     - Besides these operations, dictionaries also have some methods associated with them:
-        - `dictionary.clear()`, which removes all keys from the map
+        - `dictionary.clear()`, which removes all keys from the dictionary
         - `dictionary.containsKey(key)`, which returns `true` if the specified key exists in the dictionary and `false` otherwise
         - `dictionary.get(key, [defaultValue])`, which returns the value associated with the specified key from the dictionary, or `defaultValue` if the key doesn't exist in the dictionary and `defaultValue` is provided, or `nil` otherwise
         - `dictionary.keys()`, which returns a list of all the keys in the dictionary in no particular order
