@@ -490,6 +490,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(left, right, false)
 		case bool:
 			return handleTwoFloats(left, boolMap[right], false)
+		case *LoxString:
+			return handleNumString(float64(left), right)
 		case nil:
 			return handleTwoFloats(left, 0, false)
 		}
