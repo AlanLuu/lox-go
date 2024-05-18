@@ -39,7 +39,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
 - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
-- Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, and `""` are also falsy values
+- Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, `""`, `[]`, and `{}` are also falsy values
 - Binary, hexadecimal, and octal integer literals are supported in this implementation of Lox
     - Binary literals start with the prefix `0b`
     - Hexadecimal literals start with the prefix `0x`
@@ -127,6 +127,13 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - It is a runtime error to attempt to get an element using a key that is not in the dictionary
     - Set an element: `dict[key] = value;`
     - The following cannot be used as dictionary keys: dictionary, list
+    - Besides these operations, dictionaries also have some methods associated with them:
+        - `dictionary.clear()`, which removes all keys from the map
+        - `dictionary.containsKey(key)`, which returns `true` if the specified key exists in the dictionary and `false` otherwise
+        - `dictionary.get(key, [defaultValue])`, which returns the value associated with the specified key from the dictionary, or `defaultValue` if the key doesn't exist in the dictionary and `defaultValue` is provided, or `nil` otherwise
+        - `dictionary.keys()`, which returns a list of all the keys in the dictionary in no particular order
+        - `dictionary.removeKey(key)`, which removes the specified key from the dictionary and returns the value originally associated with the key or `nil` if the key doesn't exist in the dictionary. Note that a return value of `nil` can also mean that the specified key had a value of `nil`
+        - `dictionary.values()`, which returns a list of all the values in the dictionary in no particular order
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
