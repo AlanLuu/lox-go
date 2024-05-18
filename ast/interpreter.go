@@ -555,19 +555,18 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return EmptyLoxString(), nil
 			}
 		}
+	case *LoxDict:
+		switch expr.Operator.TokenType {
+		case token.PLUS:
+			switch right := right.(type) {
+			case *LoxString:
+				return right.NewLoxString(left.String() + right.str), nil
+			}
+		}
 	case *LoxList:
 		switch expr.Operator.TokenType {
 		case token.PLUS:
 			switch right := right.(type) {
-			case int64:
-				return NewLoxString(left.String()+strconv.FormatFloat(float64(right), 'f', -1, 64), '\''), nil
-			case float64:
-				if math.IsInf(right, 1) {
-					return NewLoxString(left.String()+"Infinity", '\''), nil
-				} else if math.IsInf(right, -1) {
-					return NewLoxString(left.String()+"-Infinity", '\''), nil
-				}
-				return NewLoxString(left.String()+strconv.FormatFloat(right, 'f', -1, 64), '\''), nil
 			case *LoxString:
 				return right.NewLoxString(left.String() + right.str), nil
 			case *LoxList:
