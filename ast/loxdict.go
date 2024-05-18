@@ -102,7 +102,7 @@ func (l *LoxDict) Get(name token.Token) (any, error) {
 		})
 	case "keys":
 		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			keys := list.NewList[Expr]()
+			keys := list.NewList[any]()
 			for key := range l.entries {
 				keys.Add(key)
 			}
@@ -114,7 +114,7 @@ func (l *LoxDict) Get(name token.Token) (any, error) {
 		})
 	case "values":
 		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			values := list.NewList[Expr]()
+			values := list.NewList[any]()
 			for _, value := range l.entries {
 				values.Add(value)
 			}

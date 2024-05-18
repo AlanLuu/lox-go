@@ -21,11 +21,11 @@ func ListIndexOutOfRange(index int64) string {
 }
 
 type LoxList struct {
-	elements list.List[Expr]
+	elements list.List[any]
 	methods  map[string]*struct{ ProtoLoxCallable }
 }
 
-func NewLoxList(elements list.List[Expr]) *LoxList {
+func NewLoxList(elements list.List[any]) *LoxList {
 	return &LoxList{
 		elements: elements,
 		methods:  make(map[string]*struct{ ProtoLoxCallable }),
@@ -33,7 +33,7 @@ func NewLoxList(elements list.List[Expr]) *LoxList {
 }
 
 func EmptyLoxList() *LoxList {
-	return NewLoxList(list.NewList[Expr]())
+	return NewLoxList(list.NewList[any]())
 }
 
 func (l *LoxList) Equals(obj any) bool {
@@ -204,7 +204,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				newList := list.NewList[Expr]()
+				newList := list.NewList[any]()
 				for index, element := range l.elements {
 					argList[0] = element
 					argList[1] = int64(index)
@@ -271,9 +271,9 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		})
 	case "flatten":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewList[Expr]()
-			var flatten func(elements list.List[Expr]) error
-			flatten = func(elements list.List[Expr]) error {
+			newList := list.NewList[any]()
+			var flatten func(elements list.List[any]) error
+			flatten = func(elements list.List[any]) error {
 				for _, element := range elements {
 					switch element := element.(type) {
 					case *LoxList:
@@ -361,7 +361,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				newList := list.NewList[Expr]()
+				newList := list.NewList[any]()
 				for index, element := range l.elements {
 					argList[0] = element
 					argList[1] = int64(index)

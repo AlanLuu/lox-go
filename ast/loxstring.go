@@ -187,7 +187,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				splitSlice := strings.Split(l.str, loxStr.str)
-				loxList := list.NewList[Expr]()
+				loxList := list.NewList[any]()
 				for _, str := range splitSlice {
 					loxList.Add(NewLoxString(str, '\''))
 				}

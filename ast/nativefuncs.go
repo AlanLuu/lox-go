@@ -97,7 +97,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			if size < 0 {
 				return nil, loxerror.Error("Argument to 'List' cannot be negative.")
 			}
-			lst := list.NewList[Expr]()
+			lst := list.NewList[any]()
 			for index := int64(0); index < size; index++ {
 				lst.Add(nil)
 			}
