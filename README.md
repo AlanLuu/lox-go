@@ -120,6 +120,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.shuffle()`, which shuffles all elements in the list in place
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
+- Dictionaries are supported in this implementation of Lox
+    - Create a dictionary and assign it to a variable: `var dict = {"key": "value"};`
+    - Get an element from a dictionary by key: `dict[key]`
+    - Set an element: `dict[key] = value;`
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
