@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -28,6 +29,19 @@ var keywords = map[string]token.TokenType{
 	"true":     token.TRUE,
 	"var":      token.VAR,
 	"while":    token.WHILE,
+}
+
+var escapeChars = map[byte]byte{
+	'\'': '\'',
+	'"':  '"',
+	'\\': '\\',
+	'a':  '\a',
+	'n':  '\n',
+	'r':  '\r',
+	't':  '\t',
+	'b':  '\b',
+	'f':  '\f',
+	'v':  '\v',
 }
 
 type Scanner struct {
@@ -147,13 +161,29 @@ func (sc *Scanner) handleString(quote byte) error {
 	unclosedStringErr := func() error {
 		return loxerror.GiveError(sc.lineNum, "", "Unclosed string")
 	}
+	var builder strings.Builder
 	var tokenQuote byte = '\''
-	for sc.peek() != quote && !sc.isAtEnd() {
+	foundBackslash := false
+	for foundBackslash || (sc.peek() != quote && !sc.isAtEnd()) {
 		if sc.peek() == '\n' {
 			return unclosedStringErr()
 		}
 		if tokenQuote != '"' && quote == '"' && sc.peek() == '\'' {
 			tokenQuote = '"'
+		}
+		currentChar := sc.sourceLine[sc.currentIndex]
+		if !foundBackslash && currentChar == '\\' {
+			foundBackslash = true
+		} else if foundBackslash {
+			escapeChar, ok := escapeChars[currentChar]
+			if !ok {
+				return loxerror.GiveError(sc.lineNum, "",
+					"Unknown escape character '"+string(currentChar)+"'.")
+			}
+			builder.WriteByte(escapeChar)
+			foundBackslash = false
+		} else {
+			builder.WriteByte(sc.sourceLine[sc.currentIndex])
 		}
 		sc.advance()
 	}
@@ -163,8 +193,7 @@ func (sc *Scanner) handleString(quote byte) error {
 	}
 	sc.advance()
 
-	theString := sc.sourceLine[sc.startIndex+1 : sc.currentIndex-1]
-	sc.addToken(token.STRING, theString, tokenQuote)
+	sc.addToken(token.STRING, builder.String(), tokenQuote)
 	return nil
 }
 
@@ -212,12 +241,6 @@ func (sc *Scanner) peek() byte {
 		return 0
 	}
 	return sc.sourceLine[sc.currentIndex]
-}
-
-func (sc *Scanner) ResetForNextLine() {
-	sc.Tokens.Clear()
-	sc.currentIndex = 0
-	sc.startIndex = 0
 }
 
 func (sc *Scanner) scanToken() error {

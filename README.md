@@ -68,11 +68,25 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     print a.z; //Prints "30"
     ```
 - Various mathematical functions and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
-- Strings have some additional operations associated with them:
-    - Get a new string that is the original string repeated `n` times, where `n` is an integer: `string * n`
+- Strings have some additional features associated with them:
+    - Strings can be represented using single quotes as well
+    - Strings can be indexed by an integer, which will return a new string with only the character at the specified index: `string[index]`
     - Get a new string with all characters from indexes `start` to `end` exclusive, where `start < end`: `string[start:end]`
         - If `start >= end`, a new empty string is returned
-    - Besides these operations, strings also have some methods associated with them:
+    - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the string to index into that string
+    - Get a new string that is the original string repeated `n` times, where `n` is an integer: `string * n`
+    - Escape characters in strings are supported:
+        - `\'`: single quote
+        - `\"`: double quote
+        - `\\`: backslash
+        - `\a`: bell
+        - `\n`: newline
+        - `\r`: carriage return
+        - `\t`: horizontal tab
+        - `\b`: backspace
+        - `\f`: form feed
+        - `\v`: vertical tab
+    - Besides these features, strings also have some methods associated with them:
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
