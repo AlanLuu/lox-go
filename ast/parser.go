@@ -667,6 +667,13 @@ func (p *Parser) function(kind string) (Function, error) {
 }
 
 func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, error) {
+	if p.loopDepth > 0 {
+		prevLoopDepth := p.loopDepth
+		defer func() {
+			p.loopDepth = prevLoopDepth
+		}()
+		p.loopDepth = 0
+	}
 	emptyFuncNode := FunctionExpr{}
 	if funcHasName {
 		_, leftParenErr := p.consume(token.LEFT_PAREN, fmt.Sprintf("Expected '(' after %v name.", kind))
