@@ -168,8 +168,10 @@ func (sc *Scanner) handleString(quote byte) error {
 		if sc.peek() == '\n' {
 			return unclosedStringErr()
 		}
-		if tokenQuote != '"' && quote == '"' && sc.peek() == '\'' {
+		if tokenQuote != '"' && sc.peek() == '\'' {
 			tokenQuote = '"'
+		} else if tokenQuote == '"' && sc.peek() == '"' {
+			tokenQuote = '\''
 		}
 		currentChar := sc.sourceLine[sc.currentIndex]
 		if !foundBackslash && currentChar == '\\' {
