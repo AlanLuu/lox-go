@@ -423,7 +423,7 @@ func (p *Parser) dict() (Expr, error) {
 			if keyErr != nil {
 				return nil, keyErr
 			}
-			_, colonErr := p.consume(token.COLON, "Expected ':' after dict key.")
+			_, colonErr := p.consume(token.COLON, "Expected ':' after dictionary key.")
 			if colonErr != nil {
 				return nil, colonErr
 			}

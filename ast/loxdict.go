@@ -12,7 +12,7 @@ import (
 func CanBeKeyCheck(key any) (bool, string) {
 	switch key := key.(type) {
 	case *LoxDict, *LoxList:
-		return false, fmt.Sprintf("Unhashable type '%v'.", getType(key))
+		return false, fmt.Sprintf("Type '%v' cannot be used as dictionary key.", getType(key))
 	}
 	return true, ""
 }
