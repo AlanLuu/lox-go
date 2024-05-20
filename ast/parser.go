@@ -126,7 +126,7 @@ func (p *Parser) bitwiseOr() (Expr, error) {
 	if bitwiseXorErr != nil {
 		return nil, bitwiseXorErr
 	}
-	for p.match(token.OR_SYMBOL) {
+	for p.match(token.PIPE) {
 		operator := p.previous()
 		right, bitwiseXorErr := p.bitwiseXor()
 		if bitwiseXorErr != nil {

@@ -373,7 +373,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			result = left >= right
 		case token.AND_SYMBOL:
 			result = int64(left) & int64(right)
-		case token.OR_SYMBOL:
+		case token.PIPE:
 			result = int64(left) | int64(right)
 		case token.CARET:
 			result = int64(left) ^ int64(right)
@@ -555,7 +555,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			case *LoxString:
 				return right.NewLoxString(left.String() + right.str), nil
 			}
-		case token.OR_SYMBOL:
+		case token.PIPE:
 			switch right := right.(type) {
 			case *LoxDict:
 				newDict := NewLoxDict(make(map[any]any))

@@ -24,8 +24,8 @@ const (
 	DOUBLE_LESS
 	DOUBLE_STAR
 	MINUS
-	OR_SYMBOL
 	PERCENT
+	PIPE
 	PLUS
 	SEMICOLON
 	SLASH
@@ -92,8 +92,8 @@ var tokenArr = [...]string{
 	"DOUBLE_LESS",
 	"DOUBLE_STAR",
 	"MINUS",
-	"OR_SYMBOL",
 	"PERCENT",
+	"PIPE",
 	"PLUS",
 	"SEMICOLON",
 	"SLASH",

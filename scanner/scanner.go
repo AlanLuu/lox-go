@@ -272,7 +272,7 @@ func (sc *Scanner) scanToken() error {
 	case '&':
 		addToken(token.AND_SYMBOL)
 	case '|':
-		addToken(token.OR_SYMBOL)
+		addToken(token.PIPE)
 	case '^':
 		addToken(token.CARET)
 	case '-':
