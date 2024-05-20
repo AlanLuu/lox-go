@@ -81,6 +81,14 @@ func (l *LoxDict) Get(name token.Token) (any, error) {
 			_, ok := l.getValueByKey(args[0])
 			return ok, nil
 		})
+	case "copy":
+		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newDict := NewLoxDict(make(map[any]any))
+			for key, value := range l.entries {
+				newDict.setKeyValue(key, value)
+			}
+			return newDict, nil
+		})
 	case "get":
 		return dictFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)

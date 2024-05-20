@@ -148,6 +148,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Besides these operations, dictionaries also have some methods associated with them:
         - `dictionary.clear()`, which removes all keys from the dictionary
         - `dictionary.containsKey(key)`, which returns `true` if the specified key exists in the dictionary and `false` otherwise
+        - `dictionary.copy()`, which returns a shallow copy of the original dictionary as a new dictionary
         - `dictionary.get(key, [defaultValue])`, which returns the value associated with the specified key from the dictionary, or `defaultValue` if the key doesn't exist in the dictionary and `defaultValue` is provided, or `nil` otherwise
         - `dictionary.keys()`, which returns a list of all the keys in the dictionary in no particular order
         - `dictionary.removeKey(key)`, which removes the specified key from the dictionary and returns the value originally associated with the key or `nil` if the key doesn't exist in the dictionary. Note that a return value of `nil` can also mean that the specified key had a value of `nil`
