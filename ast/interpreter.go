@@ -970,17 +970,20 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 
 	switch indexElement := indexElement.(type) {
 	case *LoxString:
-		if _, ok := indexVal.(int64); !ok {
-			return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
-		}
-		indexValInt := indexVal.(int64)
 		if expr.IsSlice {
+			if indexVal == nil {
+				indexVal = int64(0)
+			}
 			if indexEndVal == nil {
 				indexEndVal = int64(len(indexElement.str))
+			}
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
 			}
 			if _, ok := indexEndVal.(int64); !ok {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexEndVal))
 			}
+			indexValInt := indexVal.(int64)
 			indexEndValInt := indexEndVal.(int64)
 			if indexEndValInt > int64(len(indexElement.str)) {
 				indexEndValInt = int64(len(indexElement.str))
@@ -993,6 +996,10 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return NewLoxString(indexElement.str[indexValInt:indexEndValInt], '\''), nil
 		} else {
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
+			}
+			indexValInt := indexVal.(int64)
 			if indexValInt < 0 || indexValInt >= int64(len(indexElement.str)) {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexOutOfRange(indexValInt))
 			}
@@ -1012,17 +1019,20 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		}
 		return value, nil
 	case *LoxList:
-		if _, ok := indexVal.(int64); !ok {
-			return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
-		}
-		indexValInt := indexVal.(int64)
 		if expr.IsSlice {
+			if indexVal == nil {
+				indexVal = int64(0)
+			}
 			if indexEndVal == nil {
 				indexEndVal = int64(len(indexElement.elements))
+			}
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
 			}
 			if _, ok := indexEndVal.(int64); !ok {
 				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexEndVal))
 			}
+			indexValInt := indexVal.(int64)
 			indexEndValInt := indexEndVal.(int64)
 			if indexEndValInt > int64(len(indexElement.elements)) {
 				indexEndValInt = int64(len(indexElement.elements))
@@ -1036,6 +1046,10 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return NewLoxList(listSlice), nil
 		} else {
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexMustBeWholeNum(indexVal))
+			}
+			indexValInt := indexVal.(int64)
 			if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
 				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(indexValInt))
 			}
