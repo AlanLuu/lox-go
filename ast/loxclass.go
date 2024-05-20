@@ -38,7 +38,10 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 	}
 	initializer, ok := c.findMethod("init")
 	if ok {
-		initializer.bind(instance).call(interpreter, arguments)
+		call, callErr := initializer.bind(instance).call(interpreter, arguments)
+		if callErr != nil && call == nil {
+			return nil, callErr
+		}
 	}
 	return instance, nil
 }
