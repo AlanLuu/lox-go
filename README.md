@@ -140,6 +140,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Get an element from a dictionary by key: `dict[key]`
         - It is a runtime error to attempt to get an element using a key that is not in the dictionary
     - Set an element: `dict[key] = value;`
+    - Merge two dictionaries together: `dict | dict2`
+        - If a key exists in both `dict` and `dict2`, the key in the merged dictionary becomes associated with the value from `dict2`
     - The following cannot be used as dictionary keys: dictionary, list
     - Besides these operations, dictionaries also have some methods associated with them:
         - `dictionary.clear()`, which removes all keys from the dictionary

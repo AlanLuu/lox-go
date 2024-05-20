@@ -555,6 +555,18 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			case *LoxString:
 				return right.NewLoxString(left.String() + right.str), nil
 			}
+		case token.OR_SYMBOL:
+			switch right := right.(type) {
+			case *LoxDict:
+				newDict := NewLoxDict(make(map[any]any))
+				for key, value := range left.entries {
+					newDict.setKeyValue(key, value)
+				}
+				for key, value := range right.entries {
+					newDict.setKeyValue(key, value)
+				}
+				return newDict, nil
+			}
 		}
 	case *LoxList:
 		switch expr.Operator.TokenType {
