@@ -270,7 +270,7 @@ func (sc *Scanner) scanToken() error {
 	case '.':
 		addToken(token.DOT)
 	case '&':
-		addToken(token.AND_SYMBOL)
+		addToken(token.AMPERSAND)
 	case '|':
 		addToken(token.PIPE)
 	case '^':

@@ -14,7 +14,7 @@ const (
 	RIGHT_BRACKET
 
 	//Operators
-	AND_SYMBOL
+	AMPERSAND
 	ARROW
 	CARET
 	COLON
@@ -82,7 +82,7 @@ var tokenArr = [...]string{
 	"RIGHT_BRACKET",
 
 	//Operators
-	"AND_SYMBOL",
+	"AMPERSAND",
 	"ARROW",
 	"CARET",
 	"COLON",

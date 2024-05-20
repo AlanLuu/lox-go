@@ -106,7 +106,7 @@ func (p *Parser) bitwiseAnd() (Expr, error) {
 	if bitShiftErr != nil {
 		return nil, bitShiftErr
 	}
-	for p.match(token.AND_SYMBOL) {
+	for p.match(token.AMPERSAND) {
 		operator := p.previous()
 		right, bitShiftErr := p.bitShift()
 		if bitShiftErr != nil {

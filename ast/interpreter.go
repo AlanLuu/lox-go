@@ -371,7 +371,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			result = left > right
 		case token.GREATER_EQUAL:
 			result = left >= right
-		case token.AND_SYMBOL:
+		case token.AMPERSAND:
 			result = int64(left) & int64(right)
 		case token.PIPE:
 			result = int64(left) | int64(right)
