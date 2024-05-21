@@ -131,11 +131,11 @@ func getType(element any) string {
 	case *LoxFunction:
 		return "function"
 	case *LoxInstance:
-		return element.String()
+		return element.class.name
 	case *LoxList:
 		return "list"
 	default:
-		return "unknown type"
+		return "unknown"
 	}
 }
 

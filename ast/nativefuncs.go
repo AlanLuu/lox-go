@@ -130,6 +130,6 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.Error("Argument to 'sleep' must be an integer or float.")
 	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
-		return getType(args[0]), nil
+		return NewLoxString(getType(args[0]), '\''), nil
 	})
 }
