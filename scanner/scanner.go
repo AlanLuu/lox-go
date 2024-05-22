@@ -79,26 +79,32 @@ func (sc *Scanner) handleNumber() error {
 	isBinaryNum := false
 	isHexNum := false
 	isOctalNum := false
-	switch sc.peek() {
-	case 'b', 'B':
-		isBinaryNum = true
-		sc.advance()
-		for isBinaryDigit(sc.peek()) || sc.peek() == digitSeparator {
+	if sc.previous() == '0' {
+		switch sc.peek() {
+		case 'b', 'B':
+			isBinaryNum = true
 			sc.advance()
-		}
-	case 'x', 'X':
-		isHexNum = true
-		sc.advance()
-		for isHexDigit(sc.peek()) || sc.peek() == digitSeparator {
+			for isBinaryDigit(sc.peek()) || sc.peek() == digitSeparator {
+				sc.advance()
+			}
+		case 'x', 'X':
+			isHexNum = true
 			sc.advance()
-		}
-	case 'o', 'O':
-		isOctalNum = true
-		sc.advance()
-		for isOctalDigit(sc.peek()) || sc.peek() == digitSeparator {
+			for isHexDigit(sc.peek()) || sc.peek() == digitSeparator {
+				sc.advance()
+			}
+		case 'o', 'O':
+			isOctalNum = true
 			sc.advance()
+			for isOctalDigit(sc.peek()) || sc.peek() == digitSeparator {
+				sc.advance()
+			}
+		default:
+			for isDigit(sc.peek()) || sc.peek() == digitSeparator {
+				sc.advance()
+			}
 		}
-	default:
+	} else {
 		for isDigit(sc.peek()) || sc.peek() == digitSeparator {
 			sc.advance()
 		}
@@ -257,6 +263,13 @@ func (sc *Scanner) peek() byte {
 		return 0
 	}
 	return sc.sourceLine[sc.currentIndex]
+}
+
+func (sc *Scanner) previous() byte {
+	if sc.currentIndex == 0 {
+		return 0
+	}
+	return sc.sourceLine[sc.currentIndex-1]
 }
 
 func (sc *Scanner) scanToken() error {
