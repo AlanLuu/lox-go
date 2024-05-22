@@ -44,6 +44,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Binary literals start with the prefix `0b`
     - Hexadecimal literals start with the prefix `0x`
     - Octal literals start with the prefix `0o`
+- Number literals support the following features:
+    - An underscore character can be used to group digits, such as `1_000_000`, which is equivalent to `1000000`
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops

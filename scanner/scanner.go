@@ -75,6 +75,7 @@ func (sc *Scanner) addToken(tokenType token.TokenType, literal any, quote byte) 
 }
 
 func (sc *Scanner) handleNumber() error {
+	var digitSeparator byte = '_'
 	isBinaryNum := false
 	isHexNum := false
 	isOctalNum := false
@@ -82,23 +83,23 @@ func (sc *Scanner) handleNumber() error {
 	case 'b', 'B':
 		isBinaryNum = true
 		sc.advance()
-		for isBinaryDigit(sc.peek()) {
+		for isBinaryDigit(sc.peek()) || sc.peek() == digitSeparator {
 			sc.advance()
 		}
 	case 'x', 'X':
 		isHexNum = true
 		sc.advance()
-		for isHexDigit(sc.peek()) {
+		for isHexDigit(sc.peek()) || sc.peek() == digitSeparator {
 			sc.advance()
 		}
 	case 'o', 'O':
 		isOctalNum = true
 		sc.advance()
-		for isOctalDigit(sc.peek()) {
+		for isOctalDigit(sc.peek()) || sc.peek() == digitSeparator {
 			sc.advance()
 		}
 	default:
-		for isDigit(sc.peek()) {
+		for isDigit(sc.peek()) || sc.peek() == digitSeparator {
 			sc.advance()
 		}
 	}
@@ -108,19 +109,18 @@ func (sc *Scanner) handleNumber() error {
 		unexpectedDotIn := func(numType string) error {
 			return loxerror.GiveError(sc.lineNum, "", "Unexpected '.' in "+numType)
 		}
-		if isBinaryNum {
+		switch {
+		case isBinaryNum:
 			return unexpectedDotIn("binary literal")
-		}
-		if isHexNum {
+		case isHexNum:
 			return unexpectedDotIn("hex literal")
-		}
-		if isOctalNum {
+		case isOctalNum:
 			return unexpectedDotIn("octal literal")
 		}
 		numHasDot = true
 		sc.advance()
 		if isDigit(sc.peek()) {
-			for isDigit(sc.peek()) {
+			for isDigit(sc.peek()) || sc.peek() == digitSeparator {
 				sc.advance()
 			}
 		} else {
@@ -129,15 +129,28 @@ func (sc *Scanner) handleNumber() error {
 	}
 
 	numStr := sc.sourceLine[sc.startIndex:sc.currentIndex]
+	invalidLiteral := func(numType string) error {
+		return loxerror.GiveError(sc.lineNum, "",
+			"Invalid "+numType+" literal '"+numStr+"'")
+	}
 	if numHasDot {
-		num, _ := strconv.ParseFloat(numStr, 64)
+		num, numErr := strconv.ParseFloat(numStr, 64)
+		if numErr != nil {
+			return invalidLiteral("number")
+		}
 		sc.addToken(token.NUMBER, num, 0)
 	} else {
-		var num int64
-		if isBinaryNum || isHexNum || isOctalNum {
-			num, _ = strconv.ParseInt(numStr, 0, 64)
-		} else {
-			num, _ = strconv.ParseInt(numStr, 10, 64)
+		num, numErr := strconv.ParseInt(numStr, 0, 64)
+		if numErr != nil {
+			switch {
+			case isBinaryNum:
+				return invalidLiteral("binary")
+			case isHexNum:
+				return invalidLiteral("hex")
+			case isOctalNum:
+				return invalidLiteral("octal")
+			}
+			return invalidLiteral("number")
 		}
 		sc.addToken(token.NUMBER, num, 0)
 	}
