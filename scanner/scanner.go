@@ -100,7 +100,7 @@ func (sc *Scanner) handleNumber() error {
 				sc.advance()
 			}
 		default:
-			for isOctalDigit(sc.peek()) || sc.peek() == digitSeparator {
+			for isOctalDigit(sc.peek()) {
 				if !isOctalNum {
 					isOctalNum = true
 				}
