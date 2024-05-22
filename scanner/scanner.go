@@ -137,8 +137,7 @@ func (sc *Scanner) handleNumber() error {
 
 	numStr := sc.sourceLine[sc.startIndex:sc.currentIndex]
 	invalidLiteral := func(numType string) error {
-		return loxerror.GiveError(sc.lineNum, "",
-			"Invalid "+numType+" literal '"+numStr+"'")
+		return loxerror.GiveError(sc.lineNum, "", "Invalid "+numType+" literal")
 	}
 	if numHasDot {
 		num, numErr := strconv.ParseFloat(numStr, 64)
