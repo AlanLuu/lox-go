@@ -400,6 +400,8 @@ func (p *Parser) declaration() (Stmt, error) {
 		value, err = p.function("function")
 	case p.match(token.CLASS):
 		value, err = p.classDeclaration()
+	case p.match(token.ENUM):
+		value, err = p.enumDeclaration()
 	default:
 		value, err = p.statement(false)
 	}
@@ -464,6 +466,41 @@ func (p *Parser) isDict() bool {
 		return true
 	}
 	return false
+}
+
+func (p *Parser) enumDeclaration() (Stmt, error) {
+	enumName, enumNameErr := p.consume(token.IDENTIFIER, "Expected enum name.")
+	if enumNameErr != nil {
+		return nil, enumNameErr
+	}
+	_, leftBraceErr := p.consume(token.LEFT_BRACE, "Expected '{' before enum body.")
+	if leftBraceErr != nil {
+		return nil, leftBraceErr
+	}
+
+	trailingComma := false
+	enumMembers := list.NewList[token.Token]()
+	if !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		for cond := true; cond; cond = p.match(token.COMMA) {
+			if p.match(token.RIGHT_BRACE) {
+				trailingComma = true
+				break
+			}
+			enumMember, enumMemberErr := p.consume(token.IDENTIFIER, "Expected enum member name.")
+			if enumMemberErr != nil {
+				return nil, enumMemberErr
+			}
+			enumMembers.Add(enumMember)
+		}
+	}
+
+	if !trailingComma {
+		_, rightBraceErr := p.consume(token.RIGHT_BRACE, "Expected '}' after enum body.")
+		if rightBraceErr != nil {
+			return nil, rightBraceErr
+		}
+	}
+	return Enum{enumName, enumMembers}, nil
 }
 
 func (p *Parser) error(theToken token.Token, message string) error {

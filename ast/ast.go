@@ -47,6 +47,11 @@ type Dict struct {
 	DictToken token.Token
 }
 
+type Enum struct {
+	Name    token.Token
+	Members list.List[token.Token]
+}
+
 type Expression struct {
 	Expression Expr
 }

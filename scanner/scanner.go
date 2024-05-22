@@ -15,6 +15,7 @@ var keywords = map[string]token.TokenType{
 	"class":    token.CLASS,
 	"continue": token.CONTINUE,
 	"else":     token.ELSE,
+	"enum":     token.ENUM,
 	"false":    token.FALSE,
 	"for":      token.FOR,
 	"fun":      token.FUN,

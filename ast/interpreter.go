@@ -60,6 +60,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return expr, errors.New("")
 	case Dict:
 		return i.visitDictExpr(expr)
+	case Enum:
+		return i.visitEnumStmt(expr)
 	case Expression:
 		return i.visitExpressionStmt(expr)
 	case For:
@@ -128,6 +130,10 @@ func getType(element any) string {
 		return "class"
 	case *LoxDict:
 		return "dictionary"
+	case *LoxEnum:
+		return "enum"
+	case *LoxEnumMember:
+		return element.enum.name
 	case *LoxFunction:
 		return "function"
 	case *LoxInstance:
@@ -812,6 +818,18 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	return nil, nil
 }
 
+func (i *Interpreter) visitEnumStmt(stmt Enum) (any, error) {
+	enum := &LoxEnum{}
+	enum.name = stmt.Name.Lexeme
+	members := make(map[string]*LoxEnumMember)
+	for _, memberToken := range stmt.Members {
+		members[memberToken.Lexeme] = &LoxEnumMember{memberToken.Lexeme, enum}
+	}
+	enum.members = members
+	i.environment.Define(stmt.Name.Lexeme, enum)
+	return nil, nil
+}
+
 func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 	enteredLoop := false
 	loopInterrupted := false
@@ -918,7 +936,8 @@ func (i *Interpreter) visitGetExpr(expr Get) (any, error) {
 	if obj, ok := obj.(LoxObject); ok {
 		return obj.Get(expr.Name)
 	}
-	return nil, loxerror.RuntimeError(expr.Name, "Only classes, instances, lists, and strings have properties.")
+	return nil, loxerror.RuntimeError(expr.Name,
+		fmt.Sprintf("Type '%v' does not have properties.", getType(obj)))
 }
 
 func (i *Interpreter) visitGroupingExpr(expr Grouping) (any, error) {

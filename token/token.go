@@ -53,6 +53,7 @@ const (
 	CLASS
 	CONTINUE
 	ELSE
+	ENUM
 	FALSE
 	FUN
 	FOR
@@ -121,6 +122,7 @@ var tokenArr = [...]string{
 	"CLASS",
 	"CONTINUE",
 	"ELSE",
+	"ENUM",
 	"FALSE",
 	"FUN",
 	"FOR",

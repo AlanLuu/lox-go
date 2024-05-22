@@ -116,6 +116,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return nil
 	case Class:
 		return r.visitClassStmt(stmt)
+	case Enum:
+		return r.visitEnumStmt(stmt)
 	case For:
 		return r.visitForStmt(stmt)
 	case Function:
@@ -277,6 +279,15 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 	if stmt.SuperClass != nil {
 		r.endScope()
 	}
+	return nil
+}
+
+func (r *Resolver) visitEnumStmt(stmt Enum) error {
+	declareErr := r.declare(stmt.Name)
+	if declareErr != nil {
+		return declareErr
+	}
+	r.define(stmt.Name)
 	return nil
 }
 
