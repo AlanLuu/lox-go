@@ -176,7 +176,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
-    - `len(element)`, which returns the length of a string or list element
+    - `len(element)`, which returns the length of a dictionary, list, or string
+        - Dictionaries: the length is the number of keys in the dictionary
+        - Lists: the length is the number of elements in the list
+        - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
     - `sleep(duration)`, which pauses the program for the specified duration in seconds
