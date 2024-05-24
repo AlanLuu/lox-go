@@ -194,7 +194,7 @@ func getResult(source any, isPrintStmt bool) string {
 		case util.FloatIsInt(source):
 			return fmt.Sprintf("%.1f", source)
 		default:
-			return fmt.Sprint(source)
+			return util.FormatFloat(source)
 		}
 	case *LoxString:
 		if len(source.str) == 0 {
@@ -323,7 +323,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			} else if math.IsInf(left, -1) {
 				return right.NewLoxString("-Infinity" + right.str), nil
 			}
-			return right.NewLoxString(strconv.FormatFloat(left, 'f', -1, 64) + right.str), nil
+			return right.NewLoxString(util.FormatFloat(left) + right.str), nil
 		case token.STAR:
 			if left <= 0 {
 				return EmptyLoxString(), nil
@@ -516,14 +516,14 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		case token.PLUS:
 			switch right := right.(type) {
 			case int64:
-				return left.NewLoxString(left.str + strconv.FormatFloat(float64(right), 'f', -1, 64)), nil
+				return left.NewLoxString(left.str + util.FormatFloat(float64(right))), nil
 			case float64:
 				if math.IsInf(right, 1) {
 					return left.NewLoxString("Infinity" + left.str), nil
 				} else if math.IsInf(right, -1) {
 					return left.NewLoxString("-Infinity" + left.str), nil
 				}
-				return left.NewLoxString(left.str + strconv.FormatFloat(right, 'f', -1, 64)), nil
+				return left.NewLoxString(left.str + util.FormatFloat(right)), nil
 			case bool:
 				return left.NewLoxString(left.str + strconv.FormatBool(right)), nil
 			case *LoxString:

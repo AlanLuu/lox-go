@@ -14,14 +14,17 @@ import (
 )
 
 func ListIndexMustBeWholeNum(index any) string {
+	indexVal := index
 	format := "%v"
 	switch index := index.(type) {
 	case float64:
 		if util.FloatIsInt(index) {
 			format = "%.1f"
+		} else {
+			indexVal = util.FormatFloat(index)
 		}
 	}
-	return fmt.Sprintf("List index '"+format+"' must be an integer.", index)
+	return fmt.Sprintf("List index '"+format+"' must be an integer.", indexVal)
 }
 
 func ListIndexOutOfRange(index int64) string {
