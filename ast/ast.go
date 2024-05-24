@@ -47,6 +47,12 @@ type Dict struct {
 	DictToken token.Token
 }
 
+type DoWhile struct {
+	Condition Expr
+	Body      Stmt
+	DoToken   token.Token
+}
+
 type Enum struct {
 	Name    token.Token
 	Members list.List[token.Token]

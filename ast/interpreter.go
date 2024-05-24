@@ -60,6 +60,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return expr, errors.New("")
 	case Dict:
 		return i.visitDictExpr(expr)
+	case DoWhile:
+		return i.visitDoWhileStmt(expr)
 	case Enum:
 		return i.visitEnumStmt(expr)
 	case Expression:
@@ -151,7 +153,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, Call:
+				case While, For, DoWhile, Call:
 					continue
 				}
 			}
@@ -759,6 +761,50 @@ func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
 		isKey = !isKey
 	}
 	return dict, nil
+}
+
+func (i *Interpreter) visitDoWhileStmt(stmt DoWhile) (any, error) {
+	firstIteration := true
+	enteredLoop := false
+	loopInterrupted := false
+	var result any
+	var conditionErr error
+	for cond := true; cond; {
+		if conditionErr != nil {
+			return nil, conditionErr
+		}
+		if loopInterrupted {
+			return nil, loxerror.RuntimeError(stmt.DoToken, "loop interrupted")
+		}
+		if !firstIteration && !enteredLoop {
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt)
+			go func() {
+				sig := <-sigChan
+				switch sig {
+				case os.Interrupt:
+					loopInterrupted = true
+				}
+			}()
+			enteredLoop = true
+		}
+		value, evalErr := i.evaluate(stmt.Body)
+		if evalErr != nil {
+			switch value := value.(type) {
+			case Break, Return:
+				return value, evalErr
+			case Continue:
+			default:
+				return nil, evalErr
+			}
+		}
+		result, conditionErr = i.evaluate(stmt.Condition)
+		cond = conditionErr != nil || i.isTruthy(result)
+		if firstIteration {
+			firstIteration = false
+		}
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.Environment) (any, error) {

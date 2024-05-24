@@ -468,6 +468,39 @@ func (p *Parser) isDict() bool {
 	return false
 }
 
+func (p *Parser) doWhileStatement() (Stmt, error) {
+	p.loopDepth++
+	defer func() {
+		p.loopDepth--
+	}()
+	doToken := p.previous()
+	body, bodyErr := p.statement(true)
+	if bodyErr != nil {
+		return nil, bodyErr
+	}
+	_, whileErr := p.consume(token.WHILE, "Expected 'while' after body.")
+	if whileErr != nil {
+		return nil, whileErr
+	}
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'while'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+	condition, conditionErr := p.expression()
+	if conditionErr != nil {
+		return nil, conditionErr
+	}
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after condition.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+	_, semiColonErr := p.consume(token.SEMICOLON, "Expected ';' at end of 'do while' statement.")
+	if semiColonErr != nil {
+		return nil, semiColonErr
+	}
+	return DoWhile{condition, body, doToken}, nil
+}
+
 func (p *Parser) enumDeclaration() (Stmt, error) {
 	enumName, enumNameErr := p.consume(token.IDENTIFIER, "Expected enum name.")
 	if enumNameErr != nil {
@@ -968,6 +1001,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.breakStatement()
 	case p.match(token.CONTINUE):
 		return p.continueStatement()
+	case p.match(token.DO):
+		return p.doWhileStatement()
 	case p.match(token.FOR):
 		return p.forStatement()
 	case p.match(token.IF):

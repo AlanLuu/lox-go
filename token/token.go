@@ -52,6 +52,7 @@ const (
 	BREAK
 	CLASS
 	CONTINUE
+	DO
 	ELSE
 	ENUM
 	FALSE
@@ -121,6 +122,7 @@ var tokenArr = [...]string{
 	"BREAK",
 	"CLASS",
 	"CONTINUE",
+	"DO",
 	"ELSE",
 	"ENUM",
 	"FALSE",

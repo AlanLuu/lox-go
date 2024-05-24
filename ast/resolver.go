@@ -116,6 +116,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return nil
 	case Class:
 		return r.visitClassStmt(stmt)
+	case DoWhile:
+		return r.visitDoWhileStmt(stmt)
 	case Enum:
 		return r.visitEnumStmt(stmt)
 	case For:
@@ -280,6 +282,14 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		r.endScope()
 	}
 	return nil
+}
+
+func (r *Resolver) visitDoWhileStmt(stmt DoWhile) error {
+	resolveErr := r.resolveExpr(stmt.Condition)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveStmt(stmt.Body)
 }
 
 func (r *Resolver) visitEnumStmt(stmt Enum) error {
