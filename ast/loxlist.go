@@ -470,6 +470,29 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			})
 			return nil, nil
 		})
+	case "with":
+		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if newIndex, ok := args[0].(int64); ok {
+				originalNewIndex := newIndex
+				if newIndex < 0 {
+					newIndex += int64(len(l.elements))
+				}
+				if newIndex < 0 || newIndex >= int64(len(l.elements)) {
+					return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(originalNewIndex))
+				}
+				newElement := args[1]
+				newList := list.NewList[any]()
+				for oldIndex, oldElement := range l.elements {
+					if int64(oldIndex) != newIndex {
+						newList.Add(oldElement)
+					} else {
+						newList.Add(newElement)
+					}
+				}
+				return NewLoxList(newList), nil
+			}
+			return nil, loxerror.RuntimeError(name, "First argument to 'list.with' must be an integer.")
+		})
 	}
 	return nil, loxerror.RuntimeError(name, "Lists have no property called '"+methodName+"'.")
 }

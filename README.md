@@ -141,6 +141,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.reduce(callback, [initialValue])`, which applies a reducer callback function on every element in the list from left to right and returns a single value
         - `list.remove(element)`, which removes the first occurrence of `element` from the list. Returns `true` if the list contained `element` and `false` otherwise
         - `list.shuffle()`, which shuffles all elements in the list in place
+        - `list.with(index, element)`, which returns a new list that is a copy of the original list with the original element at the specified index replaced with the new element
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - Dictionaries are supported in this implementation of Lox
