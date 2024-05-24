@@ -13,6 +13,7 @@ import (
 	"github.com/AlanLuu/lox/equatable"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/loxsignal"
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
@@ -779,6 +780,12 @@ func (i *Interpreter) visitDoWhileStmt(stmt DoWhile) (any, error) {
 		if !firstIteration && !enteredLoop {
 			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, os.Interrupt)
+			defer func() {
+				if !loopInterrupted {
+					sigChan <- loxsignal.LoopSignal{}
+				}
+				signal.Stop(sigChan)
+			}()
 			go func() {
 				sig := <-sigChan
 				switch sig {
@@ -882,6 +889,12 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 	catchInterruptSignal := func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt)
+		defer func() {
+			if !loopInterrupted {
+				sigChan <- loxsignal.LoopSignal{}
+			}
+			signal.Stop(sigChan)
+		}()
 		go func() {
 			sig := <-sigChan
 			switch sig {
@@ -1398,6 +1411,12 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 		if !enteredLoop {
 			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, os.Interrupt)
+			defer func() {
+				if !loopInterrupted {
+					sigChan <- loxsignal.LoopSignal{}
+				}
+				signal.Stop(sigChan)
+			}()
 			go func() {
 				sig := <-sigChan
 				switch sig {
