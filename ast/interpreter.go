@@ -827,7 +827,7 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For:
+				case While, For, DoWhile:
 					if _, ok := value.(Return); !ok {
 						continue
 					}
