@@ -75,9 +75,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Strings have some additional features associated with them:
     - Strings can be represented using single quotes as well
     - Strings can be indexed by an integer, which will return a new string with only the character at the specified index: `string[index]`
-    - Get a new string with all characters from indexes `start` to `end` exclusive, where `start < end`: `string[start:end]`
+    - Get a new string with all characters from indexes `start` to `end` exclusive, where `start` and `end` are integers and `start < end`: `string[start:end]`
         - If `start >= end`, a new empty string is returned
         - `start` or `end` can be omitted, in which case the starting index will have a value of `0` if `start` is omitted and the ending index will have a value of `len(string)` if `end` is omitted
+    - Negative integers are supported for string indexes, where a negative index `i` is equivalent to the index `i + len(string)`. For example, `string[-1]` refers to the last character in the string
     - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the string to index into that string
     - Get a new string that is the original string repeated `n` times, where `n` is an integer: `string * n`
     - Escape characters in strings are supported:
@@ -109,11 +110,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.zfill(length)`, which returns a new string where the character `'0'` is padded to the left until the new string is of length `length`. If a leading `'+'` or `'-'` sign is part of the original string, the `'0'` padding is inserted after the leading sign instead of before
 - Lists are supported in this implementation of Lox
     - Create a list and assign it to a variable: `var list = [1, 2, 3];`
-    - Get an element from a list by index: `list[index]`
-    - Get a new list with all elements from indexes `start` to `end` exclusive, where `start < end`: `list[start:end]`
+    - Get an element from a list by index, where `index` is an integer: `list[index]`
+    - Get a new list with all elements from indexes `start` to `end` exclusive, where `start` and `end` are integers and `start < end`: `list[start:end]`
         - If `start >= end`, a new empty list is returned
         - `start` or `end` can be omitted, in which case the starting index will have a value of `0` if `start` is omitted and the ending index will have a value of `len(list)` if `end` is omitted
     - Set an element: `list[index] = value;`
+    - Negative integers are supported for list indexes, where a negative index `i` is equivalent to the index `i + len(list)`. For example, `list[-1]` refers to the last element in the list
     - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the list to get or set
     - Concatenate two lists together into a new list: `list + list2`
     - Get a new list with all elements from the original list repeated `n` times, where `n` is an integer: `list * n`
