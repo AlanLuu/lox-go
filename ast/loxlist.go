@@ -336,8 +336,12 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 	case "insert":
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if index, ok := args[0].(int64); ok {
+				originalIndex := index
+				if index < 0 {
+					index += int64(len(l.elements))
+				}
 				if index < 0 || index > int64(len(l.elements)) {
-					return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(index))
+					return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(originalIndex))
 				}
 				l.elements.AddAt(index, args[1])
 				return nil, nil
@@ -404,8 +408,12 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 					if l.elements.IsEmpty() {
 						return nil, loxerror.RuntimeError(name, "Cannot pop from empty list.")
 					}
+					originalIndex := index
+					if index < 0 {
+						index += int64(len(l.elements))
+					}
 					if index < 0 || index >= int64(len(l.elements)) {
-						return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(index))
+						return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(originalIndex))
 					}
 					return l.elements.RemoveIndex(index), nil
 				}

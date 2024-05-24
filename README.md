@@ -116,6 +116,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `start` or `end` can be omitted, in which case the starting index will have a value of `0` if `start` is omitted and the ending index will have a value of `len(list)` if `end` is omitted
     - Set an element: `list[index] = value;`
     - Negative integers are supported for list indexes, where a negative index `i` is equivalent to the index `i + len(list)`. For example, `list[-1]` refers to the last element in the list
+        - Negative indexes are also supported in list methods that accept integer values for list indexes as a parameter
     - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the list to get or set
     - Concatenate two lists together into a new list: `list + list2`
     - Get a new list with all elements from the original list repeated `n` times, where `n` is an integer: `list * n`
