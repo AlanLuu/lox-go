@@ -31,7 +31,14 @@ func EmptyLoxString() *LoxString {
 }
 
 func StringIndexMustBeWholeNum(index any) string {
-	return fmt.Sprintf("String index '%v' must be an integer.", index)
+	format := "%v"
+	switch index := index.(type) {
+	case float64:
+		if util.FloatIsInt(index) {
+			format = "%.1f"
+		}
+	}
+	return fmt.Sprintf("String index '"+format+"' must be an integer.", index)
 }
 
 func StringIndexOutOfRange(index int64) string {

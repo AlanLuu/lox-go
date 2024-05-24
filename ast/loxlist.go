@@ -10,10 +10,18 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 func ListIndexMustBeWholeNum(index any) string {
-	return fmt.Sprintf("List index '%v' must be an integer.", index)
+	format := "%v"
+	switch index := index.(type) {
+	case float64:
+		if util.FloatIsInt(index) {
+			format = "%.1f"
+		}
+	}
+	return fmt.Sprintf("List index '"+format+"' must be an integer.", index)
 }
 
 func ListIndexOutOfRange(index int64) string {
