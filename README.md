@@ -185,6 +185,15 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     print a == b; //Prints "true"
     print a == c; //Prints "false"
     ```
+- The ability to import other Lox files is supported in this implementation of Lox
+    - Syntax:
+        ```js
+        import "file-name";
+        import "file-name" as alias;
+        ```
+    - The specified import file is executed and all variable, function, and class declarations declared globally in the imported file are brought into the global environment of the current file
+    - `import` is an expression that returns `true` if the specified import file exists and was executed successfully, `false` if the file doesn't exist, and throws an error if the file exists but an error occurred while it was being executed
+    - `import` expressions can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.property`
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
