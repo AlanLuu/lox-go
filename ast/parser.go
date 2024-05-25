@@ -867,9 +867,6 @@ func (p *Parser) importExpression() (Expr, error) {
 			return nil, p.error(asKeyword, expectedErrMsg)
 		}
 	}
-	if p.peek().TokenType != token.SEMICOLON && len(importNamespace) == 0 {
-		return nil, p.error(importToken, expectedErrMsg)
-	}
 	return Import{importFile, importNamespace, importToken}, nil
 }
 
