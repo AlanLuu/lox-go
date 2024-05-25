@@ -12,14 +12,7 @@ import (
 
 func (i *Interpreter) defineMathFuncs() {
 	className := "Math"
-	mathClass := &LoxClass{
-		className,
-		nil,
-		make(map[string]*LoxFunction),
-		make(map[string]any),
-		make(map[string]any),
-		false,
-	}
+	mathClass := NewLoxClass(className, nil, false)
 	mathFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
 		s := &struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }

@@ -95,6 +95,12 @@ type If struct {
 	ElseBranch Stmt
 }
 
+type Import struct {
+	ImportFile      Expr
+	ImportNamespace string
+	ImportToken     token.Token
+}
+
 type Index struct {
 	IndexElement Expr
 	Bracket      token.Token

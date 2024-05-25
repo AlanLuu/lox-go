@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"math"
@@ -14,6 +15,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/loxsignal"
+	"github.com/AlanLuu/lox/scanner"
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
@@ -77,6 +79,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitGetExpr(expr)
 	case If:
 		return i.visitIfStmt(expr)
+	case Import:
+		return i.visitImportExpr(expr)
 	case Index:
 		return i.visitIndexExpr(expr)
 	case List:
@@ -862,9 +866,10 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	}
 	if util.StdinFromTerminal() && i.blockDepth <= 0 {
 		_, isAssign := stmt.Expression.(Assign)
+		_, isImport := stmt.Expression.(Import)
 		_, isSet := stmt.Expression.(Set)
 		_, isSetObject := stmt.Expression.(SetObject)
-		if !isAssign && !isSet && !isSetObject {
+		if !isAssign && !isImport && !isSet && !isSetObject {
 			printResultExpressionStmt(value)
 		}
 	}
@@ -1028,6 +1033,87 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 		}
 	}
 	return nil, nil
+}
+
+func (i *Interpreter) visitImportExpr(expr Import) (any, error) {
+	importFileObj, importFileErr := i.evaluate(expr.ImportFile)
+	if importFileErr != nil {
+		return nil, importFileErr
+	}
+
+	if _, ok := importFileObj.(*LoxString); !ok {
+		return nil, loxerror.RuntimeError(expr.ImportToken,
+			"Import file must be a string.")
+	}
+
+	importFilePath := importFileObj.(*LoxString).str
+	importFile, openFileError := os.Open(importFilePath)
+	if openFileError != nil {
+		return false, nil
+	}
+
+	importTextSc := bufio.NewScanner(importFile)
+	importTextSc.Scan()
+	var importProgram strings.Builder
+	for {
+		line := strings.TrimSpace(importTextSc.Text())
+		importProgram.WriteString(line)
+		if !importTextSc.Scan() {
+			break
+		}
+		importProgram.WriteByte('\n')
+	}
+
+	importErr := func(e error) (any, error) {
+		return nil, loxerror.RuntimeError(expr.ImportToken,
+			fmt.Sprintf("Error when importing file '%v':\n%v",
+				importFilePath, e.Error()))
+	}
+
+	importSc := scanner.NewScanner(importProgram.String())
+	scanErr := importSc.ScanTokens()
+	if scanErr != nil {
+		return importErr(scanErr)
+	}
+
+	importParser := NewParser(importSc.Tokens)
+	exprList, parseErr := importParser.Parse()
+	defer exprList.Clear()
+	if parseErr != nil {
+		return importErr(parseErr)
+	}
+
+	previous := i.environment
+	defer func() {
+		i.environment = previous
+	}()
+	if len(expr.ImportNamespace) > 0 {
+		i.environment = env.NewEnvironment()
+	} else {
+		i.environment = i.globals
+	}
+
+	importResolver := NewResolver(i)
+	resolverErr := importResolver.Resolve(exprList)
+	if resolverErr != nil {
+		return importErr(resolverErr)
+	}
+
+	valueErr := i.Interpret(exprList)
+	if valueErr != nil {
+		return importErr(valueErr)
+	}
+
+	if len(expr.ImportNamespace) > 0 {
+		nameSpaceClass := NewLoxClass(expr.ImportNamespace, nil, false)
+		values := i.environment.Values()
+		for name, value := range values {
+			nameSpaceClass.classProperties[name] = value
+		}
+		i.globals.Define(expr.ImportNamespace, nameSpaceClass)
+	}
+
+	return true, nil
 }
 
 func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {

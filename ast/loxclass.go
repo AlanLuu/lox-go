@@ -17,6 +17,17 @@ type LoxClass struct {
 	canInstantiate  bool
 }
 
+func NewLoxClass(name string, superClass *LoxClass, canInstantiate bool) *LoxClass {
+	return &LoxClass{
+		name:            name,
+		superClass:      superClass,
+		methods:         make(map[string]*LoxFunction),
+		classProperties: make(map[string]any),
+		instanceFields:  make(map[string]any),
+		canInstantiate:  canInstantiate,
+	}
+}
+
 func (c *LoxClass) arity() int {
 	if !c.canInstantiate {
 		return -1

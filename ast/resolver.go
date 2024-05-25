@@ -80,6 +80,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitGetExpr(expr)
 	case Grouping:
 		return r.visitGroupingExpr(expr)
+	case Import:
+		return r.visitImportExpr(expr)
 	case Index:
 		return r.visitIndexExpr(expr)
 	case List:
@@ -342,6 +344,10 @@ func (r *Resolver) visitGetExpr(expr Get) error {
 
 func (r *Resolver) visitGroupingExpr(expr Grouping) error {
 	return r.resolveExpr(expr.Expression)
+}
+
+func (r *Resolver) visitImportExpr(expr Import) error {
+	return r.resolveExpr(expr.ImportFile)
 }
 
 func (r *Resolver) visitIndexExpr(expr Index) error {

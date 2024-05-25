@@ -59,6 +59,7 @@ const (
 	FUN
 	FOR
 	IF
+	IMPORT
 	NIL
 	OR
 	PRINT
@@ -129,6 +130,7 @@ var tokenArr = [...]string{
 	"FUN",
 	"FOR",
 	"IF",
+	"IMPORT",
 	"NIL",
 	"OR",
 	"PRINT",

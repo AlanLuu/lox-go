@@ -72,3 +72,7 @@ func (e *Environment) GetAt(distance int, name token.Token) (any, error) {
 func (e *Environment) GetAtStr(distance int, name string) any {
 	return e.ancestor(distance).values[name]
 }
+
+func (e *Environment) Values() map[string]any {
+	return e.values
+}
