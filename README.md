@@ -60,6 +60,17 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         i = i + 1;
     } while (i <= 10);
     ```
+- Try-catch-finally statements are supported in this implementation of Lox
+    ```js
+    try {
+        print i;
+    } catch (e) {
+        print "caught error";
+    } finally {
+        print "done";
+    }
+    ```
+    - A `try` statement must be followed by a `catch` or `finally` statement or both
 - Anonymous function expressions are supported in this implementation of Lox. There are two forms supported:
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
