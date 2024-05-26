@@ -348,8 +348,8 @@ func (r *Resolver) visitGroupingExpr(expr Grouping) error {
 	return r.resolveExpr(expr.Expression)
 }
 
-func (r *Resolver) visitImportStmt(expr Import) error {
-	return r.resolveExpr(expr.ImportFile)
+func (r *Resolver) visitImportStmt(stmt Import) error {
+	return r.resolveExpr(stmt.ImportFile)
 }
 
 func (r *Resolver) visitIndexExpr(expr Index) error {
