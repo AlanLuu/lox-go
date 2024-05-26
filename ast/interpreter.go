@@ -99,8 +99,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitSuperExpr(expr)
 	case This:
 		return i.visitThisExpr(expr)
-	case TryCatch:
-		return i.visitTryCatchStmt(expr)
+	case TryCatchFinally:
+		return i.visitTryCatchFinallyStmt(expr)
 	case Var:
 		return i.visitVarStmt(expr)
 	case Variable:
@@ -1441,25 +1441,40 @@ func (i *Interpreter) visitThisExpr(expr This) (any, error) {
 	}
 }
 
-func (i *Interpreter) visitTryCatchStmt(stmt TryCatch) (any, error) {
-	tryValue, tryBlockErr := i.visitBlockStmt(stmt.TryBlock)
-	if tryBlockErr != nil {
+func (i *Interpreter) visitTryCatchFinallyStmt(stmt TryCatchFinally) (any, error) {
+	finallyBlock := func(originalAny any, originalErr error) (any, error) {
+		if stmt.FinallyBlock != nil {
+			finallyValue, finallyErr := i.visitBlockStmt(stmt.FinallyBlock.(Block))
+			if finallyErr != nil {
+				switch finallyValue := finallyValue.(type) {
+				case Break, Continue, Return:
+					return finallyValue, finallyErr
+				}
+				return nil, finallyErr
+			}
+		}
+		return originalAny, originalErr
+	}
+	tryValue, tryErr := i.visitBlockStmt(stmt.TryBlock.(Block))
+	if tryErr != nil {
 		switch tryValue := tryValue.(type) {
 		case Break, Continue, Return:
-			return tryValue, tryBlockErr
+			return finallyBlock(tryValue, tryErr)
 		}
-		catchBlockEnv := env.NewEnvironmentEnclosing(i.environment)
-		catchBlockEnv.Define(stmt.CatchName.Lexeme, NewLoxError(tryBlockErr))
-		catchValue, catchErr := i.visitBlockStmtEnv(stmt.CatchBlock, catchBlockEnv)
-		if catchErr != nil {
-			switch catchValue := catchValue.(type) {
-			case Break, Continue, Return:
-				return catchValue, catchErr
+		if stmt.CatchBlock != nil {
+			catchBlockEnv := env.NewEnvironmentEnclosing(i.environment)
+			catchBlockEnv.Define(stmt.CatchName.Lexeme, NewLoxError(tryErr))
+			catchValue, catchErr := i.visitBlockStmtEnv(stmt.CatchBlock.(Block), catchBlockEnv)
+			if catchErr != nil {
+				switch catchValue := catchValue.(type) {
+				case Break, Continue, Return:
+					return finallyBlock(catchValue, catchErr)
+				}
+				return finallyBlock(nil, catchErr)
 			}
-			return nil, catchErr
 		}
 	}
-	return nil, nil
+	return finallyBlock(nil, nil)
 }
 
 func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {

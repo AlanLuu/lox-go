@@ -157,10 +157,11 @@ type This struct {
 	Keyword token.Token
 }
 
-type TryCatch struct {
-	TryBlock   Block
-	CatchName  token.Token
-	CatchBlock Block
+type TryCatchFinally struct {
+	TryBlock     Stmt
+	CatchName    token.Token
+	CatchBlock   Stmt
+	FinallyBlock Stmt
 }
 
 type Unary struct {

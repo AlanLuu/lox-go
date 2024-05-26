@@ -57,8 +57,9 @@ const (
 	ELSE
 	ENUM
 	FALSE
-	FUN
+	FINALLY
 	FOR
+	FUN
 	IF
 	IMPORT
 	NIL
@@ -130,8 +131,9 @@ var tokenArr = [...]string{
 	"ELSE",
 	"ENUM",
 	"FALSE",
-	"FUN",
+	"FINALLY",
 	"FOR",
+	"FUN",
 	"IF",
 	"IMPORT",
 	"NIL",

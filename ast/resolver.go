@@ -134,8 +134,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitPrintStmt(stmt)
 	case Return:
 		return r.visitReturnStmt(stmt)
-	case TryCatch:
-		return r.visitTryCatchStmt(stmt)
+	case TryCatchFinally:
+		return r.visitTryCatchFinallyStmt(stmt)
 	case Var:
 		return r.visitVarStmt(stmt)
 	case While:
@@ -443,23 +443,37 @@ func (r *Resolver) visitThisExpr(expr This) error {
 	return nil
 }
 
-func (r *Resolver) visitTryCatchStmt(stmt TryCatch) error {
+func (r *Resolver) visitTryCatchFinallyStmt(stmt TryCatchFinally) error {
 	resolveErr := r.resolveStmt(stmt.TryBlock)
 	if resolveErr != nil {
 		return resolveErr
 	}
-	r.beginScope()
-	defer r.endScope()
-	declareErr := r.declare(stmt.CatchName)
-	if declareErr != nil {
-		return declareErr
+
+	if stmt.CatchBlock != nil {
+		r.beginScope()
+		declareErr := r.declare(stmt.CatchName)
+		if declareErr != nil {
+			return declareErr
+		}
+		r.define(stmt.CatchName)
+		visitCatchNameErr := r.visitVariableExpr(Variable{stmt.CatchName})
+		if visitCatchNameErr != nil {
+			return visitCatchNameErr
+		}
+		resolveErr = r.Resolve(stmt.CatchBlock.(Block).Statements)
+		if resolveErr != nil {
+			return resolveErr
+		}
+		r.endScope()
 	}
-	resolveErr = r.resolveStmt(stmt.CatchBlock)
-	if resolveErr != nil {
-		return resolveErr
+	if stmt.FinallyBlock != nil {
+		resolveErr = r.resolveStmt(stmt.FinallyBlock)
+		if resolveErr != nil {
+			return resolveErr
+		}
 	}
-	r.define(stmt.CatchName)
-	return r.visitVariableExpr(Variable{stmt.CatchName})
+
+	return nil
 }
 
 func (r *Resolver) visitUnaryExpr(expr Unary) error {
