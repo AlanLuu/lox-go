@@ -1100,20 +1100,20 @@ func (p *Parser) tryCatchFinallyStatement() (Stmt, error) {
 	foundCatchBlock := false
 	if p.match(token.CATCH) {
 		foundCatchBlock = true
-		_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'catch'.")
-		if leftParenErr != nil {
-			return nil, leftParenErr
+		leftBraceErrMsg := "Expected '(' or '{' after 'catch'."
+		if p.match(token.LEFT_PAREN) {
+			var catchNameErr error
+			catchName, catchNameErr = p.consume(token.IDENTIFIER, "Expected identifier name.")
+			if catchNameErr != nil {
+				return nil, catchNameErr
+			}
+			_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after identifier name.")
+			if rightParenErr != nil {
+				return nil, rightParenErr
+			}
+			leftBraceErrMsg = "Expected '{' before catch body."
 		}
-		var catchNameErr error
-		catchName, catchNameErr = p.consume(token.IDENTIFIER, "Expected identifier name.")
-		if catchNameErr != nil {
-			return nil, catchNameErr
-		}
-		_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after identifier name.")
-		if rightParenErr != nil {
-			return nil, rightParenErr
-		}
-		_, leftBraceErr = p.consume(token.LEFT_BRACE, "Expected '{' after 'catch'.")
+		_, leftBraceErr = p.consume(token.LEFT_BRACE, leftBraceErrMsg)
 		if leftBraceErr != nil {
 			return nil, leftBraceErr
 		}

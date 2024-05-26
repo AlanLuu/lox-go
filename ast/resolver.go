@@ -451,14 +451,16 @@ func (r *Resolver) visitTryCatchFinallyStmt(stmt TryCatchFinally) error {
 
 	if stmt.CatchBlock != nil {
 		r.beginScope()
-		declareErr := r.declare(stmt.CatchName)
-		if declareErr != nil {
-			return declareErr
-		}
-		r.define(stmt.CatchName)
-		visitCatchNameErr := r.visitVariableExpr(Variable{stmt.CatchName})
-		if visitCatchNameErr != nil {
-			return visitCatchNameErr
+		if len(stmt.CatchName.Lexeme) > 0 {
+			declareErr := r.declare(stmt.CatchName)
+			if declareErr != nil {
+				return declareErr
+			}
+			r.define(stmt.CatchName)
+			visitCatchNameErr := r.visitVariableExpr(Variable{stmt.CatchName})
+			if visitCatchNameErr != nil {
+				return visitCatchNameErr
+			}
 		}
 		resolveErr = r.Resolve(stmt.CatchBlock.(Block).Statements)
 		if resolveErr != nil {

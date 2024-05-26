@@ -71,6 +71,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     }
     ```
     - A `try` statement must be followed by a `catch` or `finally` statement or both
+    - If the exception variable is not needed, it may be omitted from the `catch` statement
+        ```js
+        try {
+            print i;
+        } catch {
+            print "caught error";
+        }
+        ```
 - Anonymous function expressions are supported in this implementation of Lox. There are two forms supported:
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
