@@ -157,6 +157,12 @@ type This struct {
 	Keyword token.Token
 }
 
+type TryCatch struct {
+	TryBlock   Block
+	CatchName  token.Token
+	CatchBlock Block
+}
+
 type Unary struct {
 	Operator token.Token
 	Right    Expr

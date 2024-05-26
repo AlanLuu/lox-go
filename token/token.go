@@ -50,6 +50,7 @@ const (
 	//Reserved keywords
 	AND
 	BREAK
+	CATCH
 	CLASS
 	CONTINUE
 	DO
@@ -68,6 +69,7 @@ const (
 	SUPER
 	THIS
 	TRUE
+	TRY
 	VAR
 	WHILE
 
@@ -121,6 +123,7 @@ var tokenArr = [...]string{
 	//Reserved keywords
 	"AND",
 	"BREAK",
+	"CATCH",
 	"CLASS",
 	"CONTINUE",
 	"DO",
@@ -139,6 +142,7 @@ var tokenArr = [...]string{
 	"SUPER",
 	"THIS",
 	"TRUE",
+	"TRY",
 	"VAR",
 	"WHILE",
 

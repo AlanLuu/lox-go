@@ -99,6 +99,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitSuperExpr(expr)
 	case This:
 		return i.visitThisExpr(expr)
+	case TryCatch:
+		return i.visitTryCatchStmt(expr)
 	case Var:
 		return i.visitVarStmt(expr)
 	case Variable:
@@ -139,6 +141,8 @@ func getType(element any) string {
 		return "dictionary"
 	case *LoxEnum:
 		return "enum"
+	case *LoxError:
+		return "error"
 	case *LoxEnumMember:
 		return element.enum.name
 	case *LoxFunction:
@@ -848,7 +852,11 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 }
 
 func (i *Interpreter) visitBlockStmt(stmt Block) (any, error) {
-	value, blockErr := i.executeBlock(stmt.Statements, env.NewEnvironmentEnclosing(i.environment))
+	return i.visitBlockStmtEnv(stmt, env.NewEnvironmentEnclosing(i.environment))
+}
+
+func (i *Interpreter) visitBlockStmtEnv(stmt Block, e *env.Environment) (any, error) {
+	value, blockErr := i.executeBlock(stmt.Statements, e)
 	if blockErr != nil {
 		switch value := value.(type) {
 		case Break, Continue, Return:
@@ -1431,6 +1439,27 @@ func (i *Interpreter) visitThisExpr(expr This) (any, error) {
 	} else {
 		return i.globals.Get(expr.Keyword)
 	}
+}
+
+func (i *Interpreter) visitTryCatchStmt(stmt TryCatch) (any, error) {
+	tryValue, tryBlockErr := i.visitBlockStmt(stmt.TryBlock)
+	if tryBlockErr != nil {
+		switch tryValue := tryValue.(type) {
+		case Break, Continue, Return:
+			return tryValue, tryBlockErr
+		}
+		catchBlockEnv := env.NewEnvironmentEnclosing(i.environment)
+		catchBlockEnv.Define(stmt.CatchName.Lexeme, NewLoxError(tryBlockErr))
+		catchValue, catchErr := i.visitBlockStmtEnv(stmt.CatchBlock, catchBlockEnv)
+		if catchErr != nil {
+			switch catchValue := catchValue.(type) {
+			case Break, Continue, Return:
+				return catchValue, catchErr
+			}
+			return nil, catchErr
+		}
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {

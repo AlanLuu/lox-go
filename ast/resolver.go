@@ -134,6 +134,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitPrintStmt(stmt)
 	case Return:
 		return r.visitReturnStmt(stmt)
+	case TryCatch:
+		return r.visitTryCatchStmt(stmt)
 	case Var:
 		return r.visitVarStmt(stmt)
 	case While:
@@ -439,6 +441,25 @@ func (r *Resolver) visitThisExpr(expr This) error {
 	}
 	r.resolveLocal(expr, expr.Keyword)
 	return nil
+}
+
+func (r *Resolver) visitTryCatchStmt(stmt TryCatch) error {
+	resolveErr := r.resolveStmt(stmt.TryBlock)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	r.beginScope()
+	defer r.endScope()
+	declareErr := r.declare(stmt.CatchName)
+	if declareErr != nil {
+		return declareErr
+	}
+	resolveErr = r.resolveStmt(stmt.CatchBlock)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	r.define(stmt.CatchName)
+	return r.visitVariableExpr(Variable{stmt.CatchName})
 }
 
 func (r *Resolver) visitUnaryExpr(expr Unary) error {

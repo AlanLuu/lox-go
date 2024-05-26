@@ -1038,6 +1038,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.printStatement()
 	case p.match(token.RETURN):
 		return p.returnStatement()
+	case p.match(token.TRY):
+		return p.tryCatchStatement()
 	case p.match(token.WHILE):
 		return p.whileStatement()
 	case p.match(token.LEFT_BRACE):
@@ -1081,6 +1083,46 @@ func (p *Parser) synchronize() {
 
 		p.advance()
 	}
+}
+
+func (p *Parser) tryCatchStatement() (Stmt, error) {
+	_, leftBraceErr := p.consume(token.LEFT_BRACE, "Expected '{' after 'try'.")
+	if leftBraceErr != nil {
+		return nil, leftBraceErr
+	}
+	tryBlockList, tryBlockListErr := p.block()
+	if tryBlockListErr != nil {
+		return nil, tryBlockListErr
+	}
+	_, catchErr := p.consume(token.CATCH, "Expected 'catch' after try block.")
+	if catchErr != nil {
+		return nil, catchErr
+	}
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'catch'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+	catchName, catchNameErr := p.consume(token.IDENTIFIER, "Expected identifier name.")
+	if catchNameErr != nil {
+		return nil, catchNameErr
+	}
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after identifier name.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+	_, leftBraceErr = p.consume(token.LEFT_BRACE, "Expected '{' after 'catch'.")
+	if leftBraceErr != nil {
+		return nil, leftBraceErr
+	}
+	catchBlockList, catchBlockListErr := p.block()
+	if catchBlockListErr != nil {
+		return nil, catchBlockListErr
+	}
+	return TryCatch{
+		Block{Statements: tryBlockList},
+		catchName,
+		Block{Statements: catchBlockList},
+	}, nil
 }
 
 func (p *Parser) term() (Expr, error) {
