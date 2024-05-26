@@ -80,7 +80,7 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 	case If:
 		return i.visitIfStmt(expr)
 	case Import:
-		return i.visitImportExpr(expr)
+		return i.visitImportStmt(expr)
 	case Index:
 		return i.visitIndexExpr(expr)
 	case List:
@@ -874,10 +874,9 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 	}
 	if util.StdinFromTerminal() && i.blockDepth <= 0 {
 		_, isAssign := stmt.Expression.(Assign)
-		_, isImport := stmt.Expression.(Import)
 		_, isSet := stmt.Expression.(Set)
 		_, isSetObject := stmt.Expression.(SetObject)
-		if !isAssign && !isImport && !isSet && !isSetObject {
+		if !isAssign && !isSet && !isSetObject {
 			printResultExpressionStmt(value)
 		}
 	}
@@ -1043,21 +1042,22 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitImportExpr(expr Import) (any, error) {
-	importFileObj, importFileErr := i.evaluate(expr.ImportFile)
+func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
+	importFileObj, importFileErr := i.evaluate(stmt.ImportFile)
 	if importFileErr != nil {
 		return nil, importFileErr
 	}
 
 	if _, ok := importFileObj.(*LoxString); !ok {
-		return nil, loxerror.RuntimeError(expr.ImportToken,
+		return nil, loxerror.RuntimeError(stmt.ImportToken,
 			"Import file must be a string.")
 	}
 
 	importFilePath := importFileObj.(*LoxString).str
 	importFile, openFileError := os.Open(importFilePath)
 	if openFileError != nil {
-		return false, nil
+		return nil, loxerror.RuntimeError(stmt.ImportToken,
+			fmt.Sprintf("Could not find file '%v'.", importFilePath))
 	}
 
 	importTextSc := bufio.NewScanner(importFile)
@@ -1073,7 +1073,7 @@ func (i *Interpreter) visitImportExpr(expr Import) (any, error) {
 	}
 
 	importErr := func(e error) (any, error) {
-		return nil, loxerror.RuntimeError(expr.ImportToken,
+		return nil, loxerror.RuntimeError(stmt.ImportToken,
 			fmt.Sprintf("Error when importing file '%v':\n%v",
 				importFilePath, e.Error()))
 	}
@@ -1095,7 +1095,7 @@ func (i *Interpreter) visitImportExpr(expr Import) (any, error) {
 	defer func() {
 		i.environment = previous
 	}()
-	if len(expr.ImportNamespace) > 0 {
+	if len(stmt.ImportNamespace) > 0 {
 		i.environment = env.NewEnvironment()
 	} else {
 		i.environment = i.globals
@@ -1112,13 +1112,13 @@ func (i *Interpreter) visitImportExpr(expr Import) (any, error) {
 		return importErr(valueErr)
 	}
 
-	if len(expr.ImportNamespace) > 0 {
-		nameSpaceClass := NewLoxClass(expr.ImportNamespace, nil, false)
+	if len(stmt.ImportNamespace) > 0 {
+		nameSpaceClass := NewLoxClass(stmt.ImportNamespace, nil, false)
 		values := i.environment.Values()
 		for name, value := range values {
 			nameSpaceClass.classProperties[name] = value
 		}
-		i.globals.Define(expr.ImportNamespace, nameSpaceClass)
+		i.globals.Define(stmt.ImportNamespace, nameSpaceClass)
 	}
 
 	return true, nil

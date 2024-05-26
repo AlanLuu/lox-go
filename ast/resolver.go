@@ -80,8 +80,6 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitGetExpr(expr)
 	case Grouping:
 		return r.visitGroupingExpr(expr)
-	case Import:
-		return r.visitImportExpr(expr)
 	case Index:
 		return r.visitIndexExpr(expr)
 	case List:
@@ -130,6 +128,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitExpressionStmt(stmt)
 	case If:
 		return r.visitIfStmt(stmt)
+	case Import:
+		return r.visitImportStmt(stmt)
 	case Print:
 		return r.visitPrintStmt(stmt)
 	case Return:
@@ -348,7 +348,7 @@ func (r *Resolver) visitGroupingExpr(expr Grouping) error {
 	return r.resolveExpr(expr.Expression)
 }
 
-func (r *Resolver) visitImportExpr(expr Import) error {
+func (r *Resolver) visitImportStmt(expr Import) error {
 	return r.resolveExpr(expr.ImportFile)
 }
 

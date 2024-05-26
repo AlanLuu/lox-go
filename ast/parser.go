@@ -556,10 +556,9 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 		return nil, err
 	}
 	_, isAssign := expr.(Assign)
-	_, isImport := expr.(Import)
 	_, isSet := expr.(Set)
 	_, isSetObject := expr.(SetObject)
-	if !util.StdinFromTerminal() || isAssign || isImport || isSet || isSetObject {
+	if !util.StdinFromTerminal() || isAssign || isSet || isSetObject {
 		_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after expression.")
 		if consumeErr != nil {
 			return nil, consumeErr
@@ -846,7 +845,7 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	}, nil
 }
 
-func (p *Parser) importExpression() (Expr, error) {
+func (p *Parser) importStatement() (Stmt, error) {
 	importToken := p.previous()
 	importFile, importFileErr := p.expression()
 	if importFileErr != nil {
@@ -863,9 +862,14 @@ func (p *Parser) importExpression() (Expr, error) {
 				return nil, asIdentifierErr
 			}
 			importNamespace = asIdentifier.Lexeme
+			expectedErrMsg = "Expected ';' after identifier."
 		} else {
 			return nil, p.error(asKeyword, expectedErrMsg)
 		}
+	}
+	_, semiColonErr := p.consume(token.SEMICOLON, expectedErrMsg)
+	if semiColonErr != nil {
+		return nil, semiColonErr
 	}
 	return Import{importFile, importNamespace, importToken}, nil
 }
@@ -958,8 +962,6 @@ func (p *Parser) primary() (Expr, error) {
 		return String{Str: previous.Literal.(string), Quote: previous.Quote}, nil
 	case p.match(token.IDENTIFIER):
 		return Variable{Name: p.previous()}, nil
-	case p.match(token.IMPORT):
-		return p.importExpression()
 	case p.match(token.FUN):
 		return p.functionBody("function", false)
 	case p.match(token.LEFT_BRACE):
@@ -1034,6 +1036,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.forStatement()
 	case p.match(token.IF):
 		return p.ifStatement()
+	case p.match(token.IMPORT):
+		return p.importStatement()
 	case p.match(token.PRINT):
 		return p.printStatement()
 	case p.match(token.RETURN):
