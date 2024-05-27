@@ -1450,6 +1450,8 @@ func (i *Interpreter) visitThrowStmt(stmt Throw) (any, error) {
 	}
 	var throwValueStr string
 	switch throwValue := throwValue.(type) {
+	case *LoxError:
+		return nil, throwValue.theError
 	case *LoxString:
 		throwValueStr = throwValue.str
 	default:
