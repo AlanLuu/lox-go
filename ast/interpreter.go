@@ -1506,6 +1506,8 @@ func (i *Interpreter) visitTryCatchFinallyStmt(stmt TryCatchFinally) (any, error
 				}
 				return finallyBlock(nil, catchErr)
 			}
+		} else {
+			return finallyBlock(nil, tryErr)
 		}
 	}
 	return finallyBlock(nil, nil)
