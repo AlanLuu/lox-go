@@ -31,6 +31,7 @@ var keywords = map[string]token.TokenType{
 	"static":   token.STATIC,
 	"super":    token.SUPER,
 	"this":     token.THIS,
+	"throw":    token.THROW,
 	"true":     token.TRUE,
 	"try":      token.TRY,
 	"var":      token.VAR,

@@ -79,6 +79,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             print "caught error";
         }
         ```
+    - Along with try-catch-finally statements, `throw` statements are supported in this implementation of Lox
+        - Syntax: `throw <expression>;`
+        - `throw` statements throw a runtime error using the provided expression as the error message. If the provided expression is not a string, the string representation of the expression is used as the error message
 - Anonymous function expressions are supported in this implementation of Lox. There are two forms supported:
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
@@ -211,7 +214,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         import "file-name" as alias;
         ```
     - The specified import file is executed and all variable, function, and class declarations declared globally in the imported file are brought into the global environment of the current file
-    - If the specified import file doesn't exist or if the file exists but an error occurred while it was being executed, an error is thrown
+    - If the specified import file doesn't exist or if the file exists but an error occurred while it was being executed, a runtime error is thrown
     - `import` statements can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.variable`
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer

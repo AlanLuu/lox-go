@@ -134,6 +134,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitPrintStmt(stmt)
 	case Return:
 		return r.visitReturnStmt(stmt)
+	case Throw:
+		return r.visitThrowStmt(stmt)
 	case TryCatchFinally:
 		return r.visitTryCatchFinallyStmt(stmt)
 	case Var:
@@ -433,6 +435,10 @@ func (r *Resolver) visitSuperExpr(expr Super) error {
 	}
 	r.resolveLocal(expr, expr.Keyword)
 	return nil
+}
+
+func (r *Resolver) visitThrowStmt(stmt Throw) error {
+	return r.resolveExpr(stmt.Value)
 }
 
 func (r *Resolver) visitThisExpr(expr This) error {

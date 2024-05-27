@@ -157,6 +157,11 @@ type This struct {
 	Keyword token.Token
 }
 
+type Throw struct {
+	Value      Expr
+	ThrowToken token.Token
+}
+
 type TryCatchFinally struct {
 	TryBlock     Stmt
 	CatchName    token.Token

@@ -851,7 +851,7 @@ func (p *Parser) importStatement() (Stmt, error) {
 	if importFileErr != nil {
 		return nil, importFileErr
 	}
-	expectedErrMsg := "Expected ';' or 'as' after expression."
+	expectedErrMsg := "Expected ';' or 'as' after value."
 	importNamespace := ""
 	if p.match(token.IDENTIFIER) {
 		asKeyword := p.previous()
@@ -1042,6 +1042,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.printStatement()
 	case p.match(token.RETURN):
 		return p.returnStatement()
+	case p.match(token.THROW):
+		return p.throwStatement()
 	case p.match(token.TRY):
 		return p.tryCatchFinallyStatement()
 	case p.match(token.WHILE):
@@ -1087,6 +1089,19 @@ func (p *Parser) synchronize() {
 
 		p.advance()
 	}
+}
+
+func (p *Parser) throwStatement() (Stmt, error) {
+	throwToken := p.previous()
+	throwExpr, throwExprErr := p.expression()
+	if throwExprErr != nil {
+		return nil, throwExprErr
+	}
+	_, semiColonErr := p.consume(token.SEMICOLON, "Expected ';' after value.")
+	if semiColonErr != nil {
+		return nil, semiColonErr
+	}
+	return Throw{throwExpr, throwToken}, nil
 }
 
 func (p *Parser) tryCatchFinallyStatement() (Stmt, error) {

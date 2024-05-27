@@ -69,6 +69,7 @@ const (
 	STATIC
 	SUPER
 	THIS
+	THROW
 	TRUE
 	TRY
 	VAR
@@ -143,6 +144,7 @@ var tokenArr = [...]string{
 	"STATIC",
 	"SUPER",
 	"THIS",
+	"THROW",
 	"TRUE",
 	"TRY",
 	"VAR",

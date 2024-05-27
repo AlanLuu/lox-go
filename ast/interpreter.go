@@ -99,6 +99,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitSuperExpr(expr)
 	case This:
 		return i.visitThisExpr(expr)
+	case Throw:
+		return i.visitThrowStmt(expr)
 	case TryCatchFinally:
 		return i.visitTryCatchFinallyStmt(expr)
 	case Var:
@@ -1439,6 +1441,30 @@ func (i *Interpreter) visitThisExpr(expr This) (any, error) {
 	} else {
 		return i.globals.Get(expr.Keyword)
 	}
+}
+
+func (i *Interpreter) visitThrowStmt(stmt Throw) (any, error) {
+	throwValue, throwValueErr := i.evaluate(stmt.Value)
+	if throwValueErr != nil {
+		return nil, throwValueErr
+	}
+	var throwValueStr string
+	switch throwValue := throwValue.(type) {
+	case *LoxString:
+		throwValueStr = throwValue.str
+	default:
+		//Use string representation of throw expression as error message
+		result, _ := i.visitBinaryExpr(Binary{
+			Literal{NewLoxString("", '\'')},
+			token.Token{
+				TokenType: token.PLUS,
+				Lexeme:    "+",
+			},
+			Literal{throwValue},
+		})
+		throwValueStr = result.(*LoxString).str
+	}
+	return nil, loxerror.RuntimeError(stmt.ThrowToken, throwValueStr)
 }
 
 func (i *Interpreter) visitTryCatchFinallyStmt(stmt TryCatchFinally) (any, error) {
