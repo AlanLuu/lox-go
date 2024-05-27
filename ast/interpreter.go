@@ -1525,6 +1525,13 @@ func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 			return -right, nil
 		case float64:
 			return -right, nil
+		case bool:
+			if right {
+				return int64(-1), nil
+			}
+			return int64(0), nil
+		case nil:
+			return int64(0), nil
 		}
 		return math.NaN(), nil
 	case token.BANG:
@@ -1535,6 +1542,13 @@ func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 			return ^right, nil
 		case float64:
 			return ^int64(right), nil
+		case bool:
+			if right {
+				return ^int64(1), nil
+			}
+			return ^int64(0), nil
+		case nil:
+			return ^int64(0), nil
 		}
 		return math.NaN(), nil
 	}
