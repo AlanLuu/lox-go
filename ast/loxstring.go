@@ -92,7 +92,7 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		case string:
 			padStr = arg
 		default:
-			padStr = getResult(arg, true)
+			padStr = getResult(arg, arg, true)
 		}
 
 		useDoubleQuote := false

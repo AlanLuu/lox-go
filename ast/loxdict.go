@@ -168,5 +168,5 @@ func (l *LoxDict) removeKey(key any) any {
 }
 
 func (l *LoxDict) String() string {
-	return getResult(l, true)
+	return getResult(l, l, true)
 }

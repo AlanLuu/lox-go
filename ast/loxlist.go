@@ -360,7 +360,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 							quote = '"'
 						}
 					}
-					elementAsStr := getResult(element, true)
+					elementAsStr := getResult(element, element, true)
 					builder.WriteString(elementAsStr)
 					if loxStr.str != "" && index < len(l.elements)-1 {
 						builder.WriteString(loxStr.str)
@@ -506,5 +506,5 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 }
 
 func (l *LoxList) String() string {
-	return getResult(l, true)
+	return getResult(l, l, true)
 }

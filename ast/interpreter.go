@@ -194,7 +194,17 @@ func (i *Interpreter) isTruthy(obj any) bool {
 	return true
 }
 
-func getResult(source any, isPrintStmt bool) string {
+func selfReferential(source any) string {
+	switch source.(type) {
+	case *LoxDict:
+		return "{...}"
+	case *LoxList:
+		return "[...]"
+	}
+	return "..."
+}
+
+func getResult(source any, originalSource any, isPrintStmt bool) string {
 	switch source := source.(type) {
 	case nil:
 		return "nil"
@@ -243,16 +253,16 @@ func getResult(source any, isPrintStmt bool) string {
 		listStr.WriteByte('{')
 		i := 0
 		for key, value := range source.entries {
-			if key == source {
-				listStr.WriteString("{...}")
+			if key == originalSource {
+				listStr.WriteString(selfReferential(originalSource))
 			} else {
-				listStr.WriteString(getResult(key, false))
+				listStr.WriteString(getResult(key, originalSource, false))
 			}
 			listStr.WriteString(": ")
-			if value == source {
-				listStr.WriteString("{...}")
+			if value == originalSource {
+				listStr.WriteString(selfReferential(originalSource))
 			} else {
-				listStr.WriteString(getResult(value, false))
+				listStr.WriteString(getResult(value, originalSource, false))
 			}
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
@@ -266,10 +276,10 @@ func getResult(source any, isPrintStmt bool) string {
 		var listStr strings.Builder
 		listStr.WriteByte('[')
 		for i, element := range source.elements {
-			if element == source {
-				listStr.WriteString("[...]")
+			if element == originalSource {
+				listStr.WriteString(selfReferential(originalSource))
 			} else {
-				listStr.WriteString(getResult(element, false))
+				listStr.WriteString(getResult(element, originalSource, false))
 			}
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
@@ -284,12 +294,12 @@ func getResult(source any, isPrintStmt bool) string {
 
 func printResultExpressionStmt(source any) {
 	if source != nil {
-		fmt.Println(getResult(source, false))
+		fmt.Println(getResult(source, source, false))
 	}
 }
 
 func printResultPrintStmt(source any) {
-	fmt.Println(getResult(source, true))
+	fmt.Println(getResult(source, source, true))
 }
 
 func (i *Interpreter) Resolve(expr Expr, depth int) {

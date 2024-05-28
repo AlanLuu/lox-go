@@ -55,7 +55,7 @@ func (i *Interpreter) defineNativeFuncs() {
 		stat, _ := os.Stdin.Stat()
 		if (stat.Mode() & os.ModeCharDevice) != 0 {
 			l, _ := readline.NewEx(&readline.Config{
-				Prompt:          getResult(prompt, true),
+				Prompt:          getResult(prompt, prompt, true),
 				InterruptPrompt: "^C",
 			})
 			defer l.Close()
