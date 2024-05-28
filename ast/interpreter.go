@@ -153,6 +153,8 @@ func getType(element any) string {
 		return element.class.name
 	case *LoxList:
 		return "list"
+	case *LoxSet:
+		return "set"
 	default:
 		return "unknown"
 	}
@@ -188,6 +190,8 @@ func (i *Interpreter) isTruthy(obj any) bool {
 		return len(obj.entries) > 0
 	case *LoxList:
 		return len(obj.elements) > 0
+	case *LoxSet:
+		return len(obj.elements) > 0
 	case *LoxString:
 		return len(obj.str) > 0
 	}
@@ -196,7 +200,7 @@ func (i *Interpreter) isTruthy(obj any) bool {
 
 func selfReferential(source any) string {
 	switch source.(type) {
-	case *LoxDict:
+	case *LoxDict, *LoxSet:
 		return "{...}"
 	case *LoxList:
 		return "[...]"
@@ -233,7 +237,7 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
 			}
 		}
-	case LoxDictString:
+	case LoxStringStr:
 		if len(source.str) == 0 {
 			if isPrintStmt {
 				return ""
@@ -249,28 +253,28 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		}
 	case *LoxDict:
 		sourceLen := len(source.entries)
-		var listStr strings.Builder
-		listStr.WriteByte('{')
+		var dictStr strings.Builder
+		dictStr.WriteByte('{')
 		i := 0
 		for key, value := range source.entries {
 			if key == originalSource {
-				listStr.WriteString(selfReferential(originalSource))
+				dictStr.WriteString(selfReferential(originalSource))
 			} else {
-				listStr.WriteString(getResult(key, originalSource, false))
+				dictStr.WriteString(getResult(key, originalSource, false))
 			}
-			listStr.WriteString(": ")
+			dictStr.WriteString(": ")
 			if value == originalSource {
-				listStr.WriteString(selfReferential(originalSource))
+				dictStr.WriteString(selfReferential(originalSource))
 			} else {
-				listStr.WriteString(getResult(value, originalSource, false))
+				dictStr.WriteString(getResult(value, originalSource, false))
 			}
 			if i < sourceLen-1 {
-				listStr.WriteString(", ")
+				dictStr.WriteString(", ")
 			}
 			i++
 		}
-		listStr.WriteByte('}')
-		return listStr.String()
+		dictStr.WriteByte('}')
+		return dictStr.String()
 	case *LoxList:
 		sourceLen := len(source.elements)
 		var listStr strings.Builder
@@ -287,6 +291,27 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		}
 		listStr.WriteByte(']')
 		return listStr.String()
+	case *LoxSet:
+		if len(source.elements) == 0 {
+			return "∅"
+		}
+		sourceLen := len(source.elements)
+		var setStr strings.Builder
+		setStr.WriteByte('{')
+		i := 0
+		for element := range source.elements {
+			if element == originalSource {
+				setStr.WriteString(selfReferential(originalSource))
+			} else {
+				setStr.WriteString(getResult(element, originalSource, false))
+			}
+			if i < sourceLen-1 {
+				setStr.WriteString(", ")
+			}
+			i++
+		}
+		setStr.WriteByte('}')
+		return setStr.String()
 	default:
 		return fmt.Sprint(source)
 	}
@@ -771,7 +796,7 @@ func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
 			return nil, entryErr
 		}
 		if isKey {
-			canBeKey, keyErr := CanBeKeyCheck(entry)
+			canBeKey, keyErr := CanBeDictKeyCheck(entry)
 			if !canBeKey {
 				return nil, loxerror.RuntimeError(expr.DictToken, keyErr)
 			}
@@ -1210,7 +1235,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		}
 		value, ok := indexElement.getValueByKey(indexVal)
 		if !ok {
-			return nil, loxerror.RuntimeError(expr.Bracket, UnknownKey(indexVal))
+			return nil, loxerror.RuntimeError(expr.Bracket, UnknownDictKey(indexVal))
 		}
 		return value, nil
 	case *LoxList:
@@ -1384,7 +1409,7 @@ func (i *Interpreter) visitSetObjectExpr(expr SetObject) (any, error) {
 					return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
 				}
 			} else {
-				canBeKey, keyErr := CanBeKeyCheck(index)
+				canBeKey, keyErr := CanBeDictKeyCheck(index)
 				if !canBeKey {
 					return nil, loxerror.RuntimeError(expr.Name, keyErr)
 				}

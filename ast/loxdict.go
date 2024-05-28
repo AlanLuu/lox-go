@@ -9,21 +9,16 @@ import (
 	"github.com/AlanLuu/lox/token"
 )
 
-func CanBeKeyCheck(key any) (bool, string) {
+func CanBeDictKeyCheck(key any) (bool, string) {
 	switch key := key.(type) {
-	case *LoxDict, *LoxList:
+	case *LoxDict, *LoxList, *LoxSet:
 		return false, fmt.Sprintf("Type '%v' cannot be used as dictionary key.", getType(key))
 	}
 	return true, ""
 }
 
-func UnknownKey(key any) string {
+func UnknownDictKey(key any) string {
 	return fmt.Sprintf("Unknown key '%v'.", key)
-}
-
-type LoxDictString struct {
-	str   string
-	quote byte
 }
 
 type LoxDict struct {
@@ -137,7 +132,7 @@ func (l *LoxDict) getValueByKey(key any) (any, bool) {
 	var ok bool
 	switch key := key.(type) {
 	case *LoxString:
-		value, ok = l.entries[LoxDictString{key.str, key.quote}]
+		value, ok = l.entries[LoxStringStr{key.str, key.quote}]
 	default:
 		value, ok = l.entries[key]
 	}
@@ -147,7 +142,7 @@ func (l *LoxDict) getValueByKey(key any) (any, bool) {
 func (l *LoxDict) setKeyValue(key any, value any) {
 	switch key := key.(type) {
 	case *LoxString:
-		l.entries[LoxDictString{key.str, key.quote}] = value
+		l.entries[LoxStringStr{key.str, key.quote}] = value
 	default:
 		l.entries[key] = value
 	}
@@ -157,7 +152,7 @@ func (l *LoxDict) removeKey(key any) any {
 	keyItem := key
 	switch key := key.(type) {
 	case *LoxString:
-		keyItem = LoxDictString{key.str, key.quote}
+		keyItem = LoxStringStr{key.str, key.quote}
 	}
 	value, ok := l.entries[keyItem]
 	if !ok {

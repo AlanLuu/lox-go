@@ -89,6 +89,8 @@ func (i *Interpreter) defineNativeFuncs() {
 			return int64(len(element.entries)), nil
 		case *LoxList:
 			return int64(len(element.elements)), nil
+		case *LoxSet:
+			return int64(len(element.elements)), nil
 		}
 		return nil, loxerror.Error(fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))
 	})
@@ -116,6 +118,16 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 		}
 		return nil, loxerror.Error("Argument to 'ord' must be a single character.")
+	})
+	nativeFunc("Set", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		set := EmptyLoxSet()
+		for _, element := range args {
+			_, errStr := set.add(element)
+			if len(errStr) > 0 {
+				return nil, loxerror.Error(errStr)
+			}
+		}
+		return set, nil
 	})
 	nativeFunc("sleep", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		switch seconds := args[0].(type) {
