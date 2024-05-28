@@ -49,10 +49,7 @@ func StringIndexOutOfRange(index int64) string {
 }
 
 func (l *LoxString) NewLoxString(str string) *LoxString {
-	return &LoxString{
-		str:   str,
-		quote: l.quote,
-	}
+	return NewLoxString(str, l.quote)
 }
 
 func (l *LoxString) Equals(obj any) bool {
