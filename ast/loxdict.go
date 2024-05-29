@@ -103,6 +103,10 @@ func (l *LoxDict) Get(name token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		})
+	case "isEmpty":
+		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return len(l.entries) == 0, nil
+		})
 	case "keys":
 		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			keys := list.NewList[any]()

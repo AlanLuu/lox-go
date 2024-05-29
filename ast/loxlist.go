@@ -329,10 +329,6 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return indexOf(args[0]), nil
 		})
-	case "lastIndex":
-		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
-			return lastIndexOf(args[0]), nil
-		})
 	case "insert":
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if index, ok := args[0].(int64); ok {
@@ -347,6 +343,10 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return nil, nil
 			}
 			return nil, loxerror.RuntimeError(name, ListIndexMustBeWholeNum(args[0]))
+		})
+	case "isEmpty":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return len(l.elements) == 0, nil
 		})
 	case "join":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -369,6 +369,10 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return NewLoxString(builder.String(), quote), nil
 			}
 			return argMustBeType("string")
+		})
+	case "lastIndex":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			return lastIndexOf(args[0]), nil
 		})
 	case "map":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {

@@ -143,6 +143,10 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "isEmpty":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return len(l.str) == 0, nil
+		})
 	case "lastIndex":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
