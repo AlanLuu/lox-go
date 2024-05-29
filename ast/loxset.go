@@ -3,6 +3,10 @@ package ast
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/AlanLuu/lox/list"
+	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/token"
 )
 
 func CanBeSetElementCheck(element any) (bool, string) {
@@ -38,6 +42,67 @@ func (l *LoxSet) Equals(obj any) bool {
 	}
 }
 
+func (l *LoxSet) Get(name token.Token) (any, error) {
+	methodName := name.Lexeme
+	if method, ok := l.methods[methodName]; ok {
+		return method, nil
+	}
+	setFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
+		s := &struct{ ProtoLoxCallable }{}
+		s.arityMethod = func() int { return arity }
+		s.callMethod = method
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native set fn %v at %p>", methodName, s)
+		}
+		if _, ok := l.methods[methodName]; !ok {
+			l.methods[methodName] = s
+		}
+		return s, nil
+	}
+	switch methodName {
+	case "add":
+		return setFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			ok, errStr := l.add(args[0])
+			if len(errStr) > 0 {
+				return nil, loxerror.RuntimeError(name, errStr)
+			}
+			return ok, nil
+		})
+	case "clear":
+		return setFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			for element := range l.elements {
+				delete(l.elements, element)
+			}
+			return nil, nil
+		})
+	case "contains":
+		return setFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			ok, errStr := CanBeSetElementCheck(args[0])
+			if !ok {
+				return nil, loxerror.RuntimeError(name, errStr)
+			}
+			return l.contains(args[0]), nil
+		})
+	case "copy":
+		return setFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newSet := EmptyLoxSet()
+			for element := range l.elements {
+				newSet.add(element)
+			}
+			return newSet, nil
+		})
+	case "remove":
+		return setFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			ok, errStr := CanBeSetElementCheck(args[0])
+			if !ok {
+				return nil, loxerror.RuntimeError(name, errStr)
+			}
+			return l.remove(args[0]), nil
+		})
+	}
+	return nil, loxerror.RuntimeError(name, "Sets have no property called '"+methodName+"'.")
+}
+
 func (l *LoxSet) add(element any) (bool, string) {
 	var theElement any
 	switch element := element.(type) {
@@ -55,6 +120,25 @@ func (l *LoxSet) add(element any) (bool, string) {
 	}
 	l.elements[theElement] = true
 	return true, ""
+}
+
+func (l *LoxSet) contains(element any) bool {
+	var theElement any
+	switch element := element.(type) {
+	case *LoxString:
+		theElement = LoxStringStr{element.str, element.quote}
+	default:
+		theElement = element
+	}
+	return l.elements[theElement]
+}
+
+func (l *LoxSet) remove(element any) bool {
+	if l.elements[element] {
+		delete(l.elements, element)
+		return true
+	}
+	return false
 }
 
 func (l *LoxSet) String() string {
