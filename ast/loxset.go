@@ -59,6 +59,10 @@ func (l *LoxSet) Get(name token.Token) (any, error) {
 		}
 		return s, nil
 	}
+	argMustBeType := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'set.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	switch methodName {
 	case "add":
 		return setFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -90,6 +94,17 @@ func (l *LoxSet) Get(name token.Token) (any, error) {
 				newSet.add(element)
 			}
 			return newSet, nil
+		})
+	case "isDisjoint":
+		return setFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if set, ok := args[0].(*LoxSet); ok {
+				return l.isDisjoint(set), nil
+			}
+			return argMustBeType("set")
+		})
+	case "isEmpty":
+		return setFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.isEmpty(), nil
 		})
 	case "remove":
 		return setFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -133,12 +148,97 @@ func (l *LoxSet) contains(element any) bool {
 	return l.elements[theElement]
 }
 
+func (l *LoxSet) difference(other *LoxSet) *LoxSet {
+	newSet := EmptyLoxSet()
+	for element := range l.elements {
+		if !other.elements[element] {
+			newSet.add(element)
+		}
+	}
+	return newSet
+}
+
+func (l *LoxSet) intersection(other *LoxSet) *LoxSet {
+	newSet := EmptyLoxSet()
+	for element := range l.elements {
+		if other.elements[element] {
+			newSet.add(element)
+		}
+	}
+	return newSet
+}
+
+func (l *LoxSet) isDisjoint(other *LoxSet) bool {
+	for element := range l.elements {
+		if other.elements[element] {
+			return false
+		}
+	}
+	return true
+}
+
+func (l *LoxSet) isEmpty() bool {
+	return len(l.elements) == 0
+}
+
+func (l *LoxSet) isSubset(other *LoxSet) bool {
+	for element := range l.elements {
+		if !other.elements[element] {
+			return false
+		}
+	}
+	return true
+}
+
+func (l *LoxSet) isProperSubset(other *LoxSet) bool {
+	return l.isSubset(other) && !l.isSuperset(other)
+}
+
+func (l *LoxSet) isSuperset(other *LoxSet) bool {
+	for element := range other.elements {
+		if !l.elements[element] {
+			return false
+		}
+	}
+	return true
+}
+
+func (l *LoxSet) isProperSuperset(other *LoxSet) bool {
+	return l.isSuperset(other) && !l.isSubset(other)
+}
+
 func (l *LoxSet) remove(element any) bool {
 	if l.elements[element] {
 		delete(l.elements, element)
 		return true
 	}
 	return false
+}
+
+func (l *LoxSet) symmetricDifference(other *LoxSet) *LoxSet {
+	newSet := EmptyLoxSet()
+	for element := range l.elements {
+		if !other.elements[element] {
+			newSet.add(element)
+		}
+	}
+	for element := range other.elements {
+		if !l.elements[element] {
+			newSet.add(element)
+		}
+	}
+	return newSet
+}
+
+func (l *LoxSet) union(other *LoxSet) *LoxSet {
+	newSet := EmptyLoxSet()
+	for element := range l.elements {
+		newSet.add(element)
+	}
+	for element := range other.elements {
+		newSet.add(element)
+	}
+	return newSet
 }
 
 func (l *LoxSet) String() string {

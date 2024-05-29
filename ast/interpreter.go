@@ -660,6 +660,28 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return EmptyLoxList(), nil
 			}
 		}
+	case *LoxSet:
+		switch right := right.(type) {
+		case *LoxSet:
+			switch expr.Operator.TokenType {
+			case token.PIPE:
+				return left.union(right), nil
+			case token.AMPERSAND:
+				return left.intersection(right), nil
+			case token.MINUS:
+				return left.difference(right), nil
+			case token.CARET:
+				return left.symmetricDifference(right), nil
+			case token.LESS:
+				return left.isProperSubset(right), nil
+			case token.LESS_EQUAL:
+				return left.isSubset(right), nil
+			case token.GREATER:
+				return left.isProperSuperset(right), nil
+			case token.GREATER_EQUAL:
+				return left.isSuperset(right), nil
+			}
+		}
 	case nil:
 		switch right := right.(type) {
 		case int64:
