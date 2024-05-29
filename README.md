@@ -184,7 +184,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Set an element: `dict[key] = value;`
     - Merge two dictionaries together: `dict | dict2`
         - If a key exists in both `dict` and `dict2`, the key in the merged dictionary becomes associated with the value from `dict2`
-    - The following cannot be used as dictionary keys: dictionary, list
+    - The following cannot be used as dictionary keys: dictionary, list, set
     - Besides these operations, dictionaries also have some methods associated with them:
         - `dictionary.clear()`, which removes all keys from the dictionary
         - `dictionary.containsKey(key)`, which returns `true` if the specified key exists in the dictionary and `false` otherwise
@@ -194,6 +194,27 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `dictionary.keys()`, which returns a list of all the keys in the dictionary in no particular order
         - `dictionary.removeKey(key)`, which removes the specified key from the dictionary and returns the value originally associated with the key or `nil` if the key doesn't exist in the dictionary. Note that a return value of `nil` can also mean that the specified key had a value of `nil`
         - `dictionary.values()`, which returns a list of all the values in the dictionary in no particular order
+- Sets are supported in this implementation of Lox
+    - Create a set and assign it to a variable: `var set = Set(element1, element2);`
+        - The `Set` function takes in a variable number of arguments and uses them as the set elements: `Set(element1, element2, ..., elementN)`
+    - Operations on sets, where `a` and `b` are sets:
+        - Union: `a | b`
+        - Intersection: `a & b`
+        - Difference: `a - b`
+        - Symmetric difference: `a ^ b`
+        - Proper subset test: `a < b`
+        - Subset test: `a <= b`
+        - Proper superset test: `a > b`
+        - Superset test: `a >= b`
+    - The following cannot be used as set elements: dictionary, list, set
+    - Besides these operations, sets also have some methods associated with them:
+        - `set.add(element)`, which adds an element to the set if it is not already in the set. This method returns `true` if the element was successfully added, `false` if it was not, and throws a runtime error if the element is an object that cannot be a set element
+        - `set.clear()`, which removes all elements from the set
+        - `set.contains(element)`, which returns `true` if the specified element is in the set, `false` if it is not, and throws a runtime error if the element is an object that cannot be a set element
+        - `set.copy()`, which returns a shallow copy of the original set as a new set
+        - `set.isDisjoint(set2)`, which returns `true` if `set` and `set2` are disjoint, meaning they have no elements in common, and `false` otherwise
+        - `set.isEmpty()`, which returns `true` if the set contains no elements and `false` otherwise
+        - `set.remove(element)`, which removes the specified element from the set. Returns `true` if the set contained `element`, false if it didn't, and throws a runtime error if the element is an object that cannot be a set element
 - Enums are supported in this implementation of Lox
     ```js
     enum Token {
