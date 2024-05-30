@@ -114,6 +114,14 @@ func (l *LoxSet) Get(name token.Token) (any, error) {
 			}
 			return l.remove(args[0]), nil
 		})
+	case "toList":
+		return setFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newList := list.NewList[any]()
+			for element := range l.elements {
+				newList.Add(element)
+			}
+			return NewLoxList(newList), nil
+		})
 	}
 	return nil, loxerror.RuntimeError(name, "Sets have no property called '"+methodName+"'.")
 }

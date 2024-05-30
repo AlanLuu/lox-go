@@ -216,6 +216,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `set.isDisjoint(set2)`, which returns `true` if `set` and `set2` are disjoint, meaning they have no elements in common, and `false` otherwise
         - `set.isEmpty()`, which returns `true` if the set contains no elements and `false` otherwise
         - `set.remove(element)`, which removes the specified element from the set. Returns `true` if the set contained `element`, false if it didn't, and throws a runtime error if the element is an object that cannot be a set element
+        - `set.toList()`, which returns a list of all the elements in the set in no particular order
 - Enums are supported in this implementation of Lox
     ```js
     enum Token {
