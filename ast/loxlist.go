@@ -482,6 +482,19 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 			})
 			return nil, nil
 		})
+	case "toSet":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newSet := EmptyLoxSet()
+			for index, element := range l.elements {
+				_, errStr := newSet.add(element)
+				if len(errStr) > 0 {
+					errStr = "Type '%v' at index %v cannot be used as set element."
+					return nil, loxerror.RuntimeError(name,
+						fmt.Sprintf(errStr, getType(element), index))
+				}
+			}
+			return newSet, nil
+		})
 	case "with":
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if newIndex, ok := args[0].(int64); ok {
