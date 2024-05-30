@@ -176,6 +176,31 @@ func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 	return nil
 }
 
+func (i *Interpreter) InterpretReturnLast(statements list.List[Stmt]) (any, error) {
+	var lastValue any
+	for _, statement := range statements {
+		var value any
+		var evalErr error
+		switch statement := statement.(type) {
+		case Expression:
+			value, evalErr = i.visitExpressionStmtReturn(statement)
+		default:
+			value, evalErr = i.evaluate(statement)
+		}
+		lastValue = value
+		if evalErr != nil {
+			if value != nil {
+				switch statement.(type) {
+				case While, For, DoWhile, Call:
+					continue
+				}
+			}
+			return nil, evalErr
+		}
+	}
+	return lastValue, nil
+}
+
 func (i *Interpreter) isTruthy(obj any) bool {
 	switch obj := obj.(type) {
 	case nil:
@@ -940,6 +965,14 @@ func (i *Interpreter) visitExpressionStmt(stmt Expression) (any, error) {
 		}
 	}
 	return nil, nil
+}
+
+func (i *Interpreter) visitExpressionStmtReturn(stmt Expression) (any, error) {
+	value, err := i.evaluate(stmt.Expression)
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
 }
 
 func (i *Interpreter) visitEnumStmt(stmt Enum) (any, error) {

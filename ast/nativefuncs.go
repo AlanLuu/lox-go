@@ -11,6 +11,7 @@ import (
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/scanner"
 	"github.com/chzyer/readline"
 )
 
@@ -39,6 +40,35 @@ func (i *Interpreter) defineNativeFuncs() {
 			return NewLoxString(character, '\''), nil
 		}
 		return nil, loxerror.Error("Argument to 'chr' must be an integer.")
+	})
+	nativeFunc("eval", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		if codeStr, ok := args[0].(*LoxString); ok {
+			importSc := scanner.NewScanner(codeStr.str)
+			scanErr := importSc.ScanTokens()
+			if scanErr != nil {
+				return nil, scanErr
+			}
+
+			importParser := NewParser(importSc.Tokens)
+			exprList, parseErr := importParser.Parse()
+			defer exprList.Clear()
+			if parseErr != nil {
+				return nil, parseErr
+			}
+
+			importResolver := NewResolver(i)
+			resolverErr := importResolver.Resolve(exprList)
+			if resolverErr != nil {
+				return nil, resolverErr
+			}
+
+			evalValue, valueErr := i.InterpretReturnLast(exprList)
+			if valueErr != nil {
+				return nil, valueErr
+			}
+			return evalValue, nil
+		}
+		return args[0], nil
 	})
 	nativeFunc("input", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		var prompt any = ""

@@ -244,10 +244,13 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `import` statements can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.variable`
 - A few other native functions are defined:
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
+    - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
+        - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
-    - `len(element)`, which returns the length of a dictionary, list, or string
+    - `len(element)`, which returns the length of a dictionary, list, set, or string
         - Dictionaries: the length is the number of keys in the dictionary
         - Lists: the length is the number of elements in the list
+        - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
