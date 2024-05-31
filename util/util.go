@@ -7,6 +7,21 @@ import (
 
 var InteractiveMode = false
 
+func CharCount(s string, c rune) int {
+	inString := false
+	count := 0
+	for _, current := range s {
+		switch current {
+		case '"', '\'':
+			inString = !inString
+		}
+		if !inString && current == c {
+			count++
+		}
+	}
+	return count
+}
+
 func FloatIsInt(f float64) bool {
 	return f == float64(int64(f))
 }

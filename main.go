@@ -118,7 +118,7 @@ outer:
 			program.WriteString(userInput)
 			program.WriteByte('\n')
 			if stdinFromTerminal {
-				scopeLevel += (strings.Count(userInput, "{") - strings.Count(userInput, "}"))
+				scopeLevel += (util.CharCount(userInput, '{') - util.CharCount(userInput, '}'))
 				if scopeLevel <= 0 {
 					break
 				}
