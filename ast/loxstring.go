@@ -26,6 +26,13 @@ func NewLoxString(str string, quote byte) *LoxString {
 	}
 }
 
+func NewLoxStringQuote(str string) *LoxString {
+	if strings.Contains(str, "'") {
+		return NewLoxString(str, '"')
+	}
+	return NewLoxString(str, '\'')
+}
+
 func EmptyLoxString() *LoxString {
 	return NewLoxString("", '\'')
 }

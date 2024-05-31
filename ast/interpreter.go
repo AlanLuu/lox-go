@@ -34,6 +34,7 @@ func NewInterpreter() *Interpreter {
 		blockDepth: 0,
 	}
 	interpreter.environment = interpreter.globals
+	interpreter.defineJSONFuncs()   //Defined in jsonfuncs.go
 	interpreter.defineMathFuncs()   //Defined in mathfuncs.go
 	interpreter.defineNativeFuncs() //Defined in nativefuncs.go
 	return interpreter
