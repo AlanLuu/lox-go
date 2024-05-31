@@ -7,19 +7,26 @@ import (
 
 var InteractiveMode = false
 
-func CharCount(s string, c rune) int {
+func CountBraces(s string) (int, int) {
 	inString := false
-	count := 0
+	leftBraceCount := 0
+	rightBraceCount := 0
 	for _, current := range s {
 		switch current {
 		case '"', '\'':
 			inString = !inString
+			continue
 		}
-		if !inString && current == c {
-			count++
+		if !inString {
+			switch current {
+			case '{':
+				leftBraceCount++
+			case '}':
+				rightBraceCount++
+			}
 		}
 	}
-	return count
+	return leftBraceCount, rightBraceCount
 }
 
 func FloatIsInt(f float64) bool {

@@ -118,7 +118,8 @@ outer:
 			program.WriteString(userInput)
 			program.WriteByte('\n')
 			if stdinFromTerminal {
-				scopeLevel += (util.CharCount(userInput, '{') - util.CharCount(userInput, '}'))
+				leftBraceCount, rightBraceCount := util.CountBraces(userInput)
+				scopeLevel += (leftBraceCount - rightBraceCount)
 				if scopeLevel <= 0 {
 					break
 				}
