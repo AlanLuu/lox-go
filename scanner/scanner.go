@@ -194,7 +194,7 @@ func (sc *Scanner) handleString(quote byte) error {
 	foundBackslash := false
 	for foundBackslash || (sc.peek() != quote && !sc.isAtEnd()) {
 		if sc.peek() == '\n' {
-			return unclosedStringErr()
+			sc.lineNum++
 		}
 		if tokenQuote != '"' && sc.peek() == '\'' {
 			tokenQuote = '"'
