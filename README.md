@@ -101,7 +101,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     var a = A();
     print a.z; //Prints "30"
     ```
-- Various mathematical functions and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
+- Various mathematical methods and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
+- Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
 - Strings have some additional features associated with them:
     - Strings can be represented using single quotes as well
     - Strings can be indexed by an integer, which will return a new string with only the character at the specified index: `string[index]`

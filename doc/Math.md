@@ -1,8 +1,8 @@
-## Mathematical functions and constants
+## Mathematical methods and constants
 
-Unless specified otherwise, all arguments to mathematical functions are numbers.
+Unless specified otherwise, all arguments to mathematical methods are numbers.
 
-The following mathematical functions and constants are defined in the built-in `Math` class:
+The following mathematical methods and constants are defined in the built-in `Math` class:
 - `Math.abs(num)`, which returns the absolute value of `num`
 - `Math.acos(num)`, which returns the inverse cosine in radians of `num`
 - `Math.acosh(num)`, which returns the inverse hyperbolic cosine of `num`
