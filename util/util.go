@@ -8,16 +8,22 @@ import (
 var InteractiveMode = false
 
 func CountBraces(s string) (int, int) {
-	inString := false
+	var quoteChr rune = 0
+	var prevChr rune = 0
 	leftBraceCount := 0
 	rightBraceCount := 0
 	for _, current := range s {
 		switch current {
 		case '"', '\'':
-			inString = !inString
+			if quoteChr == 0 {
+				quoteChr = current
+			} else if prevChr != '\\' && quoteChr == current {
+				quoteChr = 0
+			}
+			prevChr = current
 			continue
 		}
-		if !inString {
+		if quoteChr == 0 {
 			switch current {
 			case '{':
 				leftBraceCount++
@@ -25,6 +31,7 @@ func CountBraces(s string) (int, int) {
 				rightBraceCount++
 			}
 		}
+		prevChr = current
 	}
 	return leftBraceCount, rightBraceCount
 }
