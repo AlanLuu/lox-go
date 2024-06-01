@@ -37,12 +37,44 @@ func (i *Interpreter) defineJSONFuncs() {
 				return nil, jsonErr
 			}
 
+			escapeChars := map[rune]string{
+				'\a': "\\a",
+				'\n': "\\n",
+				'\r': "\\r",
+				'\t': "\\t",
+				'\b': "\\b",
+				'\f': "\\f",
+				'\v': "\\v",
+			}
+			processString := func(str string) *LoxString {
+				useDoubleQuote := false
+				var finalStrBuilder strings.Builder
+				for _, c := range str {
+					if escapeChar, ok := escapeChars[c]; ok {
+						finalStrBuilder.WriteString(escapeChar)
+					} else {
+						switch c {
+						case '\'':
+							useDoubleQuote = true
+							fallthrough
+						case '"', '\\':
+							finalStrBuilder.WriteRune('\\')
+						}
+						finalStrBuilder.WriteRune(c)
+					}
+				}
+				finalStr := finalStrBuilder.String()
+				if useDoubleQuote {
+					return NewLoxString(finalStr, '"')
+				}
+				return NewLoxString(finalStr, '\'')
+			}
 			parseValue := func(value any) any {
 				switch value := value.(type) {
 				case float64:
 					return util.IntOrFloat(value)
 				case string:
-					return NewLoxStringQuote(value)
+					return processString(value)
 				}
 				return value
 			}
@@ -70,13 +102,13 @@ func (i *Interpreter) defineJSONFuncs() {
 					case []any:
 						innerLoxList := EmptyLoxList()
 						parseList(innerLoxList, &value)
-						jsonLoxDict.setKeyValue(NewLoxStringQuote(key), innerLoxList)
+						jsonLoxDict.setKeyValue(processString(key), innerLoxList)
 					case map[string]any:
 						innerLoxDict := EmptyLoxDict()
 						parseMap(innerLoxDict, &value)
-						jsonLoxDict.setKeyValue(NewLoxStringQuote(key), innerLoxDict)
+						jsonLoxDict.setKeyValue(processString(key), innerLoxDict)
 					default:
-						jsonLoxDict.setKeyValue(NewLoxStringQuote(key), parseValue(value))
+						jsonLoxDict.setKeyValue(processString(key), parseValue(value))
 					}
 				}
 			}
