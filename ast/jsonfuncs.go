@@ -3,6 +3,8 @@ package ast
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"strings"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -84,6 +86,133 @@ func (i *Interpreter) defineJSONFuncs() {
 			return finalLoxDict, nil
 		}
 		return argMustBeType("parse", "string")
+	})
+	jsonFunc("stringify", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		escapeChars := map[rune]string{
+			'\a': "\\\\a",
+			'\n': "\\\\n",
+			'\r': "\\\\r",
+			'\t': "\\\\t",
+			'\b': "\\\\b",
+			'\f': "\\\\f",
+			'\v': "\\\\v",
+		}
+		selfReferentialErr := func(originalSource any) (string, error) {
+			return "", loxerror.Error(
+				fmt.Sprintf(
+					"Cannot stringify self-referential %v.",
+					getType(originalSource),
+				),
+			)
+		}
+		processString := func(str string, doubleQuotes bool) string {
+			var finalStrBuilder strings.Builder
+			for _, c := range str {
+				if escapeChar, ok := escapeChars[c]; ok {
+					finalStrBuilder.WriteString(escapeChar)
+				} else {
+					switch c {
+					case '"', '\'', '\\':
+						finalStrBuilder.WriteRune('\\')
+					}
+					finalStrBuilder.WriteRune(c)
+				}
+			}
+			finalStr := finalStrBuilder.String()
+			if doubleQuotes {
+				return fmt.Sprintf("\"%v\"", finalStr)
+			}
+			return finalStr
+		}
+		var getJSONString func(any, any, bool) (string, error)
+		getJSONString = func(
+			source any,
+			originalSource any,
+			doubleQuotes bool,
+		) (string, error) {
+			switch source := source.(type) {
+			case nil:
+				return processString("null", doubleQuotes), nil
+			case int64:
+				return processString(fmt.Sprint(source), doubleQuotes), nil
+			case float64:
+				switch {
+				case math.IsInf(source, 1), math.IsInf(source, -1):
+					return processString("null", doubleQuotes), nil
+				case util.FloatIsInt(source):
+					return processString(fmt.Sprintf("%.1f", source), doubleQuotes), nil
+				default:
+					return processString(util.FormatFloat(source), doubleQuotes), nil
+				}
+			case *LoxString:
+				return processString(source.str, true), nil
+			case LoxStringStr:
+				return processString(source.str, true), nil
+			case *LoxDict:
+				sourceLen := len(source.entries)
+				var dictStr strings.Builder
+				dictStr.WriteByte('{')
+				i := 0
+				for key, value := range source.entries {
+					if key == originalSource {
+						return selfReferentialErr(originalSource)
+					} else {
+						result, err := getJSONString(key, originalSource, true)
+						if err != nil {
+							return "", err
+						}
+						dictStr.WriteString(result)
+					}
+					dictStr.WriteString(": ")
+					if value == originalSource {
+						return selfReferentialErr(originalSource)
+					} else {
+						result, err := getJSONString(value, originalSource, false)
+						if err != nil {
+							return "", err
+						}
+						dictStr.WriteString(result)
+					}
+					if i < sourceLen-1 {
+						dictStr.WriteString(", ")
+					}
+					i++
+				}
+				dictStr.WriteByte('}')
+				return dictStr.String(), nil
+			case *LoxList:
+				sourceLen := len(source.elements)
+				var listStr strings.Builder
+				listStr.WriteByte('[')
+				for i, element := range source.elements {
+					if element == originalSource {
+						return selfReferentialErr(originalSource)
+					} else {
+						result, err := getJSONString(element, originalSource, doubleQuotes)
+						if err != nil {
+							return "", err
+						}
+						listStr.WriteString(result)
+					}
+					if i < sourceLen-1 {
+						listStr.WriteString(", ")
+					}
+				}
+				listStr.WriteByte(']')
+				return listStr.String(), nil
+			default:
+				return "", loxerror.Error(
+					fmt.Sprintf("Type '%v' cannot be serialized as JSON.",
+						getType(source)))
+			}
+		}
+
+		arg := args[0]
+		jsonString, jsonStringErr := getJSONString(arg, arg, arg == nil)
+		if jsonStringErr != nil {
+			return nil, jsonStringErr
+		}
+		return NewLoxString(jsonString, '\''), nil
 	})
 
 	i.globals.Define(className, jsonClass)
