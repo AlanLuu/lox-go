@@ -349,10 +349,6 @@ func printResultExpressionStmt(source any) {
 	}
 }
 
-func printResultPrintStmt(source any) {
-	fmt.Println(getResult(source, source, true))
-}
-
 func (i *Interpreter) Resolve(expr Expr, depth int) {
 	switch expr := expr.(type) {
 	case Assign:
@@ -1382,7 +1378,11 @@ func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	if evalErr != nil {
 		return nil, evalErr
 	}
-	printResultPrintStmt(value)
+	if stmt.NewLine {
+		fmt.Println(getResult(value, value, true))
+	} else {
+		fmt.Print(getResult(value, value, true))
+	}
 	return nil, nil
 }
 

@@ -65,6 +65,7 @@ const (
 	NIL
 	OR
 	PRINT
+	PUT
 	RETURN
 	STATIC
 	SUPER
@@ -140,6 +141,7 @@ var tokenArr = [...]string{
 	"NIL",
 	"OR",
 	"PRINT",
+	"PUT",
 	"RETURN",
 	"STATIC",
 	"SUPER",

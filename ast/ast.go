@@ -125,6 +125,7 @@ type Logical struct {
 
 type Print struct {
 	Expression Expr
+	NewLine    bool
 }
 
 type Return struct {

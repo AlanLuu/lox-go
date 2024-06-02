@@ -995,7 +995,7 @@ func (p *Parser) primary() (Expr, error) {
 	return nil, p.error(p.peek(), "Expected expression.")
 }
 
-func (p *Parser) printStatement() (Stmt, error) {
+func (p *Parser) printStatement(newLine bool) (Stmt, error) {
 	value, err := p.expression()
 	if err != nil {
 		return nil, err
@@ -1004,7 +1004,7 @@ func (p *Parser) printStatement() (Stmt, error) {
 	if consumeErr != nil {
 		return nil, consumeErr
 	}
-	return Print{Expression: value}, nil
+	return Print{Expression: value, NewLine: newLine}, nil
 }
 
 func (p *Parser) returnStatement() (Stmt, error) {
@@ -1039,7 +1039,9 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 	case p.match(token.IMPORT):
 		return p.importStatement()
 	case p.match(token.PRINT):
-		return p.printStatement()
+		return p.printStatement(true)
+	case p.match(token.PUT):
+		return p.printStatement(false)
 	case p.match(token.RETURN):
 		return p.returnStatement()
 	case p.match(token.THROW):

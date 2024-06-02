@@ -48,6 +48,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Number literals support the following features:
     - An underscore character can be used to group digits, such as `1_000_000`, which is equivalent to `1000000`
         - Underscore characters are also allowed in binary, hexadecimal, and octal literals, except for octal literals starting with a `0`
+- A new statement called `put` prints an expression without a newline character at the end
+    - Syntax: `put <expression>;`
+    - Note: in REPL mode, there is an issue where printed expressions without a newline at the end are not printed at all
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops
