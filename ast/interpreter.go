@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/AlanLuu/lox/env"
-	"github.com/AlanLuu/lox/equatable"
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/loxsignal"
@@ -19,14 +19,6 @@ import (
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
-
-type Length interface {
-	Length() int64
-}
-
-type Type interface {
-	Type() string
-}
 
 type Interpreter struct {
 	environment *env.Environment
@@ -144,7 +136,7 @@ func getType(element any) string {
 		return "float"
 	case bool:
 		return "boolean"
-	case Type:
+	case interfaces.Type:
 		return element.Type()
 	default:
 		return "unknown"
@@ -474,7 +466,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	}
 
 	if expr.Operator.TokenType == token.EQUAL_EQUAL {
-		leftEquatable, leftIsEquatable := left.(equatable.Equatable)
+		leftEquatable, leftIsEquatable := left.(interfaces.Equatable)
 		if leftIsEquatable {
 			return leftEquatable.Equals(right), nil
 		}
@@ -493,7 +485,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		return left == right, nil
 	}
 	if expr.Operator.TokenType == token.BANG_EQUAL {
-		leftEquatable, leftIsEquatable := left.(equatable.Equatable)
+		leftEquatable, leftIsEquatable := left.(interfaces.Equatable)
 		if leftIsEquatable {
 			return !leftEquatable.Equals(right), nil
 		}

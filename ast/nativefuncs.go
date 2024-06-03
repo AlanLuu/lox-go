@@ -9,6 +9,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/scanner"
@@ -112,7 +113,7 @@ func (i *Interpreter) defineNativeFuncs() {
 		return NewLoxString(userInput, '\''), nil
 	})
 	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
-		if element, ok := args[0].(Length); ok {
+		if element, ok := args[0].(interfaces.Length); ok {
 			return element.Length(), nil
 		}
 		return nil, loxerror.Error(fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))

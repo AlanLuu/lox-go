@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/AlanLuu/lox/equatable"
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -74,7 +74,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return s, nil
 	}
 	indexOf := func(obj any) int64 {
-		if equatableObj, ok := obj.(equatable.Equatable); ok {
+		if equatableObj, ok := obj.(interfaces.Equatable); ok {
 			for i, element := range l.elements {
 				if equatableObj.Equals(element) {
 					return int64(i)
@@ -90,7 +90,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return -1
 	}
 	lastIndexOf := func(obj any) int64 {
-		if equatableObj, ok := obj.(equatable.Equatable); ok {
+		if equatableObj, ok := obj.(interfaces.Equatable); ok {
 			for i := len(l.elements) - 1; i >= 0; i-- {
 				if equatableObj.Equals(l.elements[i]) {
 					return int64(i)
@@ -184,7 +184,7 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			obj := args[0]
 			count := int64(0)
-			if equatableObj, ok := obj.(equatable.Equatable); ok {
+			if equatableObj, ok := obj.(interfaces.Equatable); ok {
 				for _, element := range l.elements {
 					if equatableObj.Equals(element) {
 						count++
