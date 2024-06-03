@@ -20,6 +20,10 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
+type Length interface {
+	Length() int64
+}
+
 type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment

@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -330,6 +331,10 @@ func (l *LoxString) Get(name token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Strings have no property called '"+methodName+"'.")
+}
+
+func (l *LoxString) Length() int64 {
+	return int64(utf8.RuneCountInString(l.str))
 }
 
 func (l *LoxString) String() string {

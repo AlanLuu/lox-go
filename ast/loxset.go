@@ -249,6 +249,10 @@ func (l *LoxSet) union(other *LoxSet) *LoxSet {
 	return newSet
 }
 
+func (l *LoxSet) Length() int64 {
+	return int64(len(l.elements))
+}
+
 func (l *LoxSet) String() string {
 	return getResult(l, l, true)
 }

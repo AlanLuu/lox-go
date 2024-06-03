@@ -522,6 +522,10 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "Lists have no property called '"+methodName+"'.")
 }
 
+func (l *LoxList) Length() int64 {
+	return int64(len(l.elements))
+}
+
 func (l *LoxList) String() string {
 	return getResult(l, l, true)
 }

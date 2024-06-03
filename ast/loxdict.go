@@ -166,6 +166,10 @@ func (l *LoxDict) removeKey(key any) any {
 	return value
 }
 
+func (l *LoxDict) Length() int64 {
+	return int64(len(l.entries))
+}
+
 func (l *LoxDict) String() string {
 	return getResult(l, l, true)
 }
