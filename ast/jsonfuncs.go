@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 
 	"github.com/AlanLuu/lox/list"
@@ -30,9 +31,45 @@ func (i *Interpreter) defineJSONFuncs() {
 
 	jsonFunc("parse", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if jsonLoxStr, ok := args[0].(*LoxString); ok {
-			jsonStr := jsonLoxStr.str
-			jsonMap := make(map[string]any)
-			jsonErr := json.Unmarshal([]byte(jsonStr), &jsonMap)
+			jsonStr := strings.TrimSpace(jsonLoxStr.str)
+			if len(jsonStr) == 0 {
+				return nil, loxerror.Error("unexpected end of JSON input")
+			}
+			if jsonStr == "null" {
+				return nil, nil
+			}
+
+			jsonStrByteArr := []byte(jsonStr)
+			var jsonArr []any
+			var jsonBool bool
+			var jsonMap map[string]any
+			var jsonNum float64
+			var finalJsonString string
+			var jsonErr error
+
+			setJsonBool := false
+			setJsonNum := false
+			switch jsonStr[0] {
+			case '{':
+				jsonMap = make(map[string]any)
+				jsonErr = json.Unmarshal(jsonStrByteArr, &jsonMap)
+			case '[':
+				jsonArr = make([]any, 0)
+				jsonErr = json.Unmarshal(jsonStrByteArr, &jsonArr)
+			default:
+				_, numErr := strconv.ParseFloat(jsonStr, 64)
+				if numErr == nil {
+					setJsonNum = true
+					jsonErr = json.Unmarshal(jsonStrByteArr, &jsonNum)
+					break
+				}
+				if jsonStr == "true" || jsonStr == "false" {
+					setJsonBool = true
+					jsonErr = json.Unmarshal(jsonStrByteArr, &jsonBool)
+					break
+				}
+				jsonErr = json.Unmarshal(jsonStrByteArr, &finalJsonString)
+			}
 			if jsonErr != nil {
 				return nil, jsonErr
 			}
@@ -113,9 +150,22 @@ func (i *Interpreter) defineJSONFuncs() {
 				}
 			}
 
-			finalLoxDict := EmptyLoxDict()
-			parseMap(finalLoxDict, &jsonMap)
-			return finalLoxDict, nil
+			switch {
+			case jsonArr != nil:
+				finalLoxList := EmptyLoxList()
+				parseList(finalLoxList, &jsonArr)
+				return finalLoxList, nil
+			case jsonMap != nil:
+				finalLoxDict := EmptyLoxDict()
+				parseMap(finalLoxDict, &jsonMap)
+				return finalLoxDict, nil
+			case setJsonBool:
+				return jsonBool, nil
+			case setJsonNum:
+				return util.IntOrFloat(jsonNum), nil
+			default:
+				return NewLoxStringQuote(finalJsonString), nil
+			}
 		}
 		return argMustBeType("parse", "string")
 	})
