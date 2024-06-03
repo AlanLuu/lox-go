@@ -40,3 +40,7 @@ func (l *LoxError) Get(name token.Token) (any, error) {
 func (l *LoxError) String() string {
 	return fmt.Sprintf("<error object at %p>", l)
 }
+
+func (l *LoxError) Type() string {
+	return "error"
+}

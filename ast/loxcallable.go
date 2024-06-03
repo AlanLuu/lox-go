@@ -24,3 +24,7 @@ func (l ProtoLoxCallable) call(interpreter *Interpreter, arguments list.List[any
 func (l ProtoLoxCallable) String() string {
 	return l.stringMethod()
 }
+
+func (l ProtoLoxCallable) Type() string {
+	return "function"
+}

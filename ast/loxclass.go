@@ -83,3 +83,7 @@ func (c *LoxClass) findMethod(name string) (*LoxFunction, bool) {
 func (c *LoxClass) String() string {
 	return fmt.Sprintf("<class %v at %p>", c.name, c)
 }
+
+func (c *LoxClass) Type() string {
+	return "class"
+}

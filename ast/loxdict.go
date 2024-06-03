@@ -173,3 +173,7 @@ func (l *LoxDict) Length() int64 {
 func (l *LoxDict) String() string {
 	return getResult(l, l, true)
 }
+
+func (l *LoxDict) Type() string {
+	return "dictionary"
+}

@@ -256,3 +256,7 @@ func (l *LoxSet) Length() int64 {
 func (l *LoxSet) String() string {
 	return getResult(l, l, true)
 }
+
+func (l *LoxSet) Type() string {
+	return "set"
+}

@@ -39,3 +39,7 @@ func (i *LoxInstance) Set(name token.Token, value any) {
 func (i *LoxInstance) String() string {
 	return fmt.Sprintf("<%v instance at %p>", i.class.name, i)
 }
+
+func (i *LoxInstance) Type() string {
+	return i.class.name
+}

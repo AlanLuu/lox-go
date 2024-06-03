@@ -24,6 +24,10 @@ type Length interface {
 	Length() int64
 }
 
+type Type interface {
+	Type() string
+}
+
 type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
@@ -140,26 +144,8 @@ func getType(element any) string {
 		return "float"
 	case bool:
 		return "boolean"
-	case *LoxString:
-		return "string"
-	case *LoxClass:
-		return "class"
-	case *LoxDict:
-		return "dictionary"
-	case *LoxEnum:
-		return "enum"
-	case *LoxError:
-		return "error"
-	case *LoxEnumMember:
-		return element.enum.name
-	case *LoxFunction:
-		return "function"
-	case *LoxInstance:
-		return element.class.name
-	case *LoxList:
-		return "list"
-	case *LoxSet:
-		return "set"
+	case Type:
+		return element.Type()
 	default:
 		return "unknown"
 	}

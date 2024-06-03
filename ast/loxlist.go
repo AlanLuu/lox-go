@@ -529,3 +529,7 @@ func (l *LoxList) Length() int64 {
 func (l *LoxList) String() string {
 	return getResult(l, l, true)
 }
+
+func (l *LoxList) Type() string {
+	return "list"
+}

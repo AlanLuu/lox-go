@@ -52,3 +52,7 @@ func (f *LoxFunction) String() string {
 	}
 	return fmt.Sprintf("<fn %v at %p>", f.name, f)
 }
+
+func (f *LoxFunction) Type() string {
+	return "function"
+}

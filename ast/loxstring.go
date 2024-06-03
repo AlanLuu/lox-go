@@ -340,3 +340,7 @@ func (l *LoxString) Length() int64 {
 func (l *LoxString) String() string {
 	return l.str
 }
+
+func (l *LoxString) Type() string {
+	return "string"
+}

@@ -16,6 +16,10 @@ func (l *LoxEnumMember) String() string {
 	return l.enum.name + "." + l.name
 }
 
+func (l *LoxEnumMember) Type() string {
+	return l.enum.name
+}
+
 type LoxEnum struct {
 	name    string
 	members map[string]*LoxEnumMember
@@ -39,4 +43,8 @@ func (l *LoxEnum) Get(name token.Token) (any, error) {
 
 func (l *LoxEnum) String() string {
 	return fmt.Sprintf("<enum %v at %p>", l.name, l)
+}
+
+func (l *LoxEnum) Type() string {
+	return "enum"
 }
