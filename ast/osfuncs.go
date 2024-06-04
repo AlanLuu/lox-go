@@ -6,9 +6,11 @@ import (
 	"os/exec"
 	"os/user"
 	"runtime"
+	"strings"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/util"
 )
 
 func (i *Interpreter) defineOSFuncs() {
@@ -121,7 +123,7 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("system", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			var cmd *exec.Cmd
-			if runtime.GOOS == "windows" {
+			if util.IsWindows() {
 				cmd = exec.Command("cmd", "/c", loxStr.str)
 			} else {
 				cmd = exec.Command("sh", "-c", loxStr.str)
@@ -156,7 +158,12 @@ func (i *Interpreter) defineOSFuncs() {
 		if err != nil {
 			return nil, err
 		}
-		return NewLoxStringQuote(currentUser.Username), nil
+		username := currentUser.Username
+		if util.IsWindows() && strings.Contains(username, "\\") {
+			contents := strings.Split(username, "\\")
+			return NewLoxStringQuote(contents[len(contents)-1]), nil
+		}
+		return NewLoxStringQuote(username), nil
 	})
 
 	i.globals.Define(className, osClass)

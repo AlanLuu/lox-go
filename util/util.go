@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 )
 
@@ -49,6 +50,10 @@ func IntOrFloat(f float64) any {
 		return int64(f)
 	}
 	return f
+}
+
+func IsWindows() bool {
+	return runtime.GOOS == "windows"
 }
 
 func StdinFromTerminal() bool {
