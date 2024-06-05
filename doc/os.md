@@ -1,0 +1,24 @@
+## OS methods and fields
+
+Any method that fails will throw a runtime error with a message describing the error.
+
+The following methods and fields are defined in the built-in `os` class:
+- `os.chdir(directory)`, which changes the current working directory to the specified directory string
+- `os.chmod(path, mode)`, which changes the mode of the specified path string to `mode`
+    - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable
+- `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
+    - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
+- `os.getcwd()`, which returns the current working directory as a string
+- `os.getuid()`, which returns the user ID of the current process as an integer
+    - On Windows, this method always returns `-1`
+- `os.hostname()`, which returns the hostname of the computer as a string
+- `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory
+- `os.name`, which is a string that specifies the operating system that the program is running on
+- `os.remove(path)`, which removes the file or empty directory at the specified path string
+    - If the directory is not empty, a runtime error is thrown
+- `os.removeAll(path)`, which removes the file or directory at the specified path string
+    - If the directory is not empty, all files and directories inside it are removed recursively
+- `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
+- `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
+    - If the file already exists, it is truncated
+- `os.username()`, which returns the username of the user running the current process as a string
