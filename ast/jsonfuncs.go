@@ -9,6 +9,7 @@ import (
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
 
@@ -24,16 +25,17 @@ func (i *Interpreter) defineJSONFuncs() {
 		}
 		jsonClass.classProperties[name] = s
 	}
-	argMustBeType := func(name string, theType string) (any, error) {
+	argMustBeType := func(callToken token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'JSON.%v' must be a %v.", name, theType)
-		return nil, loxerror.Error(errStr)
+		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
-	jsonFunc("parse", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	jsonFunc("parse", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if jsonLoxStr, ok := args[0].(*LoxString); ok {
 			jsonStr := strings.TrimSpace(jsonLoxStr.str)
 			if len(jsonStr) == 0 {
-				return nil, loxerror.Error("unexpected end of JSON input")
+				return nil, loxerror.RuntimeError(in.callToken,
+					"unexpected end of JSON input")
 			}
 			if jsonStr == "null" {
 				return nil, nil
@@ -71,7 +73,7 @@ func (i *Interpreter) defineJSONFuncs() {
 				jsonErr = json.Unmarshal(jsonStrByteArr, &finalJsonString)
 			}
 			if jsonErr != nil {
-				return nil, jsonErr
+				return nil, loxerror.RuntimeError(in.callToken, jsonErr.Error())
 			}
 
 			escapeChars := map[rune]string{
@@ -167,9 +169,9 @@ func (i *Interpreter) defineJSONFuncs() {
 				return NewLoxStringQuote(finalJsonString), nil
 			}
 		}
-		return argMustBeType("parse", "string")
+		return argMustBeType(in.callToken, "parse", "string")
 	})
-	jsonFunc("stringify", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	jsonFunc("stringify", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		escapeChars := map[rune]string{
 			'\a': "\\\\a",
 			'\n': "\\\\n",
@@ -180,7 +182,7 @@ func (i *Interpreter) defineJSONFuncs() {
 			'\v': "\\\\v",
 		}
 		selfReferentialErr := func(originalSource any) (string, error) {
-			return "", loxerror.Error(
+			return "", loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf(
 					"Cannot stringify self-referential %v.",
 					getType(originalSource),
@@ -283,7 +285,7 @@ func (i *Interpreter) defineJSONFuncs() {
 				listStr.WriteByte(']')
 				return listStr.String(), nil
 			default:
-				return "", loxerror.Error(
+				return "", loxerror.RuntimeError(in.callToken,
 					fmt.Sprintf("Type '%v' cannot be serialized as JSON.",
 						getType(source)))
 			}

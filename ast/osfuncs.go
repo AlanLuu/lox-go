@@ -11,6 +11,7 @@ import (
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
 
@@ -26,12 +27,12 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		osClass.classProperties[name] = s
 	}
-	argMustBeType := func(name string, theType string) (any, error) {
+	argMustBeType := func(callToken token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'os.%v' must be a %v.", name, theType)
-		return nil, loxerror.Error(errStr)
+		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
-	osFunc("chdir", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("chdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Chdir(loxStr.str)
 			if err != nil {
@@ -39,14 +40,16 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return nil, nil
 		}
-		return argMustBeType("chdir", "string")
+		return argMustBeType(in.callToken, "chdir", "string")
 	})
-	osFunc("chmod", 2, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("chmod", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
-			return nil, loxerror.Error("First argument to 'os.chmod' must be a string.")
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.chmod' must be a string.")
 		}
 		if _, ok := args[1].(int64); !ok {
-			return nil, loxerror.Error("Second argument to 'os.chmod' must be an integer.")
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.chmod' must be an integer.")
 		}
 		file := args[0].(*LoxString).str
 		mode := args[1].(int64)
@@ -56,7 +59,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
-	osFunc("exit", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("exit", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		exitCode := 0
 		argsLen := len(args)
 		switch argsLen {
@@ -65,10 +68,12 @@ func (i *Interpreter) defineOSFuncs() {
 			if code, ok := args[0].(int64); ok {
 				exitCode = int(code)
 			} else {
-				return nil, loxerror.Error("Argument to 'os.exit' must be an integer.")
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'os.exit' must be an integer.")
 			}
 		default:
-			return nil, loxerror.Error(fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
 		os.Exit(exitCode)
 		return nil, nil
@@ -80,7 +85,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(cwd), nil
 	})
-	osFunc("getenv", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("getenv", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		var defaultValue any
 		switch argsLen {
@@ -88,7 +93,8 @@ func (i *Interpreter) defineOSFuncs() {
 		case 2:
 			defaultValue = args[1]
 		default:
-			return nil, loxerror.Error(fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
 		switch arg := args[0].(type) {
 		case *LoxString:
@@ -98,7 +104,8 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return NewLoxStringQuote(value), nil
 		default:
-			return nil, loxerror.Error("First argument to 'os.getenv' must be a string.")
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.getenv' must be a string.")
 		}
 	})
 	osFunc("getenvs", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
@@ -122,7 +129,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(hostname), nil
 	})
-	osFunc("listdir", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("listdir", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var path string
 		argsLen := len(args)
 		switch argsLen {
@@ -130,11 +137,12 @@ func (i *Interpreter) defineOSFuncs() {
 			path = "."
 		case 1:
 			if _, ok := args[0].(*LoxString); !ok {
-				return argMustBeType("listdir", "string")
+				return argMustBeType(in.callToken, "listdir", "string")
 			}
 			path = args[0].(*LoxString).str
 		default:
-			return nil, loxerror.Error(fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
 		dirList := list.NewList[any]()
 		dir := os.DirFS(path)
@@ -158,7 +166,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxList(dirList), nil
 	})
-	osFunc("mkdir", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("mkdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Mkdir(loxStr.str, 0777)
 			if err != nil {
@@ -166,10 +174,10 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return nil, nil
 		}
-		return argMustBeType("mkdir", "string")
+		return argMustBeType(in.callToken, "mkdir", "string")
 	})
 	osClass.classProperties["name"] = NewLoxString(runtime.GOOS, '\'')
-	osFunc("remove", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
 			if err != nil {
@@ -177,9 +185,9 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return nil, nil
 		}
-		return argMustBeType("remove", "string")
+		return argMustBeType(in.callToken, "remove", "string")
 	})
-	osFunc("removeAll", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("removeAll", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.RemoveAll(loxStr.str)
 			if err != nil {
@@ -187,14 +195,16 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return nil, nil
 		}
-		return argMustBeType("removeAll", "string")
+		return argMustBeType(in.callToken, "removeAll", "string")
 	})
-	osFunc("setenv", 2, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("setenv", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
-			return nil, loxerror.Error("First argument to 'os.setenv' must be a string.")
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.setenv' must be a string.")
 		}
 		if _, ok := args[1].(*LoxString); !ok {
-			return nil, loxerror.Error("Second argument to 'os.setenv' must be a string.")
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.setenv' must be a string.")
 		}
 		key := args[0].(*LoxString).str
 		value := args[1].(*LoxString).str
@@ -204,7 +214,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
-	osFunc("system", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("system", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			var cmd *exec.Cmd
 			if util.IsWindows() {
@@ -224,9 +234,9 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return int64(0), nil
 		}
-		return argMustBeType("system", "string")
+		return argMustBeType(in.callToken, "system", "string")
 	})
-	osFunc("touch", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("touch", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			file, fileErr := os.Create(loxStr.str)
 			if fileErr != nil {
@@ -235,9 +245,9 @@ func (i *Interpreter) defineOSFuncs() {
 			file.Close()
 			return nil, nil
 		}
-		return argMustBeType("touch", "string")
+		return argMustBeType(in.callToken, "touch", "string")
 	})
-	osFunc("unsetenv", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	osFunc("unsetenv", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Unsetenv(loxStr.str)
 			if err != nil {
@@ -245,7 +255,7 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return nil, nil
 		}
-		return argMustBeType("unsetenv", "string")
+		return argMustBeType(in.callToken, "unsetenv", "string")
 	})
 	osFunc("username", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		currentUser, err := user.Current()

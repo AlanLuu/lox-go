@@ -25,6 +25,7 @@ type Interpreter struct {
 	globals     *env.Environment
 	locals      map[any]int
 	blockDepth  int
+	callToken   token.Token
 }
 
 func NewInterpreter() *Interpreter {
@@ -32,6 +33,7 @@ func NewInterpreter() *Interpreter {
 		globals:    env.NewEnvironment(),
 		locals:     make(map[any]int),
 		blockDepth: 0,
+		callToken:  token.Token{},
 	}
 	interpreter.environment = interpreter.globals
 	interpreter.defineJSONFuncs()   //Defined in jsonfuncs.go
@@ -742,6 +744,11 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 				fmt.Sprintf("Expected %v arguments but got %v.", arity, argsLen),
 			)
 		}
+		prevToken := i.callToken
+		defer func() {
+			i.callToken = prevToken
+		}()
+		i.callToken = expr.Paren
 		return function.call(i, arguments)
 	}
 	return nil, loxerror.RuntimeError(expr.Paren, "Can only call functions and classes.")

@@ -31,7 +31,7 @@ func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return float64(time.Now().UnixMilli()) / 1000, nil
 	})
-	nativeFunc("chr", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("chr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if codePointNum, ok := args[0].(int64); ok {
 			codePoint := rune(codePointNum)
 			character := string(codePoint)
@@ -40,7 +40,8 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			return NewLoxString(character, '\''), nil
 		}
-		return nil, loxerror.Error("Argument to 'chr' must be an integer.")
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'chr' must be an integer.")
 	})
 	nativeFunc("eval", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if codeStr, ok := args[0].(*LoxString); ok {
@@ -71,7 +72,7 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return args[0], nil
 	})
-	nativeFunc("input", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("input", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var prompt any = ""
 		argsLen := len(args)
 		switch argsLen {
@@ -79,7 +80,8 @@ func (i *Interpreter) defineNativeFuncs() {
 		case 1:
 			prompt = args[0]
 		default:
-			return nil, loxerror.Error(fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
 
 		var userInput string
@@ -112,16 +114,18 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return NewLoxString(userInput, '\''), nil
 	})
-	nativeFunc("len", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("len", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if element, ok := args[0].(interfaces.Length); ok {
 			return element.Length(), nil
 		}
-		return nil, loxerror.Error(fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Cannot get length of type '%v'.", getType(args[0])))
 	})
-	nativeFunc("List", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("List", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if size, ok := args[0].(int64); ok {
 			if size < 0 {
-				return nil, loxerror.Error("Argument to 'List' cannot be negative.")
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'List' cannot be negative.")
 			}
 			lst := list.NewList[any]()
 			for index := int64(0); index < size; index++ {
@@ -129,31 +133,34 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			return NewLoxList(lst), nil
 		}
-		return nil, loxerror.Error("Argument to 'List' must be an integer.")
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'List' must be an integer.")
 	})
-	nativeFunc("ord", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("ord", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			if utf8.RuneCountInString(loxStr.str) == 1 {
 				codePoint, _ := utf8.DecodeRuneInString(loxStr.str)
 				if codePoint == utf8.RuneError {
-					return nil, loxerror.Error(fmt.Sprintf("Failed to decode character '%v'.", loxStr.str))
+					return nil, loxerror.RuntimeError(in.callToken,
+						fmt.Sprintf("Failed to decode character '%v'.", loxStr.str))
 				}
 				return int64(codePoint), nil
 			}
 		}
-		return nil, loxerror.Error("Argument to 'ord' must be a single character.")
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'ord' must be a single character.")
 	})
-	nativeFunc("Set", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("Set", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		set := EmptyLoxSet()
 		for _, element := range args {
 			_, errStr := set.add(element)
 			if len(errStr) > 0 {
-				return nil, loxerror.Error(errStr)
+				return nil, loxerror.RuntimeError(in.callToken, errStr)
 			}
 		}
 		return set, nil
 	})
-	nativeFunc("sleep", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+	nativeFunc("sleep", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch seconds := args[0].(type) {
 		case int64:
 			time.Sleep(time.Duration(seconds) * time.Second)
@@ -163,7 +170,8 @@ func (i *Interpreter) defineNativeFuncs() {
 			time.Sleep(duration)
 			return nil, nil
 		}
-		return nil, loxerror.Error("Argument to 'sleep' must be an integer or float.")
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'sleep' must be an integer or float.")
 	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return NewLoxString(getType(args[0]), '\''), nil

@@ -28,18 +28,19 @@ func (i *Interpreter) defineMathFuncs() {
 		})
 	}
 	oneArgFunc := func(name string, fun func(float64) float64) {
-		mathFunc(name, 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		mathFunc(name, 1, func(in *Interpreter, args list.List[any]) (any, error) {
 			switch num := args[0].(type) {
 			case int64:
 				return util.IntOrFloat(fun(float64(num))), nil
 			case float64:
 				return util.IntOrFloat(fun(num)), nil
 			}
-			return nil, loxerror.Error(fmt.Sprintf("Argument to 'Math.%v' must be an integer or float.", name))
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Argument to 'Math.%v' must be an integer or float.", name))
 		})
 	}
 	twoArgFunc := func(name string, fun func(float64, float64) float64) {
-		mathFunc(name, 2, func(_ *Interpreter, args list.List[any]) (any, error) {
+		mathFunc(name, 2, func(in *Interpreter, args list.List[any]) (any, error) {
 			switch num1 := args[0].(type) {
 			case int64:
 				switch num2 := args[1].(type) {
@@ -48,7 +49,8 @@ func (i *Interpreter) defineMathFuncs() {
 				case float64:
 					return util.IntOrFloat(fun(float64(num1), num2)), nil
 				}
-				return nil, loxerror.Error(fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
 			case float64:
 				switch num2 := args[1].(type) {
 				case int64:
@@ -56,9 +58,11 @@ func (i *Interpreter) defineMathFuncs() {
 				case float64:
 					return util.IntOrFloat(fun(num1, num2)), nil
 				}
-				return nil, loxerror.Error(fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
 			}
-			return nil, loxerror.Error(fmt.Sprintf("First argument to 'Math.%v' must be an integer or float.", name))
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("First argument to 'Math.%v' must be an integer or float.", name))
 		})
 	}
 	zeroArgFuncs := map[string]func() float64{
