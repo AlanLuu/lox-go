@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"os/user"
@@ -120,6 +121,42 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, err
 		}
 		return NewLoxStringQuote(hostname), nil
+	})
+	osFunc("listdir", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		var path string
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			path = "."
+		case 1:
+			if _, ok := args[0].(*LoxString); !ok {
+				return argMustBeType("listdir", "string")
+			}
+			path = args[0].(*LoxString).str
+		default:
+			return nil, loxerror.Error(fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		dirList := list.NewList[any]()
+		dir := os.DirFS(path)
+		dirFunc := func(_ string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			name := d.Name()
+			if name == "." {
+				return nil
+			}
+			dirList.Add(NewLoxStringQuote(name))
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		err := fs.WalkDir(dir, ".", dirFunc)
+		if err != nil {
+			return nil, err
+		}
+		return NewLoxList(dirList), nil
 	})
 	osFunc("mkdir", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {

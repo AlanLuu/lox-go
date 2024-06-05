@@ -14,6 +14,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.getuid()`, which returns the user ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.hostname()`, which returns the hostname of the computer as a string
+- `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
 - `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory
 - `os.name`, which is a string that specifies the operating system that the program is running on
 - `os.remove(path)`, which removes the file or empty directory at the specified path string
