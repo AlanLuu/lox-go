@@ -79,6 +79,38 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(cwd), nil
 	})
+	osFunc("getenv", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		var defaultValue any
+		switch argsLen {
+		case 1:
+		case 2:
+			defaultValue = args[1]
+		default:
+			return nil, loxerror.Error(fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		switch arg := args[0].(type) {
+		case *LoxString:
+			value, ok := os.LookupEnv(arg.str)
+			if !ok {
+				return defaultValue, nil
+			}
+			return NewLoxStringQuote(value), nil
+		default:
+			return nil, loxerror.Error("First argument to 'os.getenv' must be a string.")
+		}
+	})
+	osFunc("getenvs", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		envsDict := EmptyLoxDict()
+		envs := os.Environ()
+		for _, env := range envs {
+			envSplit := strings.Split(env, "=")
+			key := envSplit[0]
+			value := envSplit[1]
+			envsDict.setKeyValue(NewLoxStringQuote(key), NewLoxStringQuote(value))
+		}
+		return envsDict, nil
+	})
 	osFunc("getuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getuid()), nil
 	})
@@ -120,6 +152,21 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType("removeAll", "string")
 	})
+	osFunc("setenv", 2, func(_ *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.Error("First argument to 'os.setenv' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.Error("Second argument to 'os.setenv' must be a string.")
+		}
+		key := args[0].(*LoxString).str
+		value := args[1].(*LoxString).str
+		err := os.Setenv(key, value)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
 	osFunc("system", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			var cmd *exec.Cmd
@@ -152,6 +199,16 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, nil
 		}
 		return argMustBeType("touch", "string")
+	})
+	osFunc("unsetenv", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			err := os.Unsetenv(loxStr.str)
+			if err != nil {
+				return nil, err
+			}
+			return nil, nil
+		}
+		return argMustBeType("unsetenv", "string")
 	})
 	osFunc("username", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		currentUser, err := user.Current()
