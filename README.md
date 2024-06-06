@@ -36,6 +36,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `a & b`, `a | b`, and `a ^ b`, which returns the bitwise AND, OR, and XOR of two numbers `a` and `b` respectively.
         - If `a` or `b` are floats, they are converted into integers before the bitwise operation
         - Unlike in C, the precedence of the bitwise operators is higher than the precedence of the comparison operators, so `a & b == value` is equivalent to `(a & b) == value`
+    - The ternary operator `a ? b : c`, which evaluates to `b` if `a` is a truthy value and `c` otherwise
 - Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
 - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`

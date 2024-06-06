@@ -154,6 +154,12 @@ type Super struct {
 	Method  token.Token
 }
 
+type Ternary struct {
+	Condition Expr
+	TrueExpr  Expr
+	FalseExpr Expr
+}
+
 type This struct {
 	Keyword token.Token
 }

@@ -96,6 +96,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return nil
 	case Super:
 		return r.visitSuperExpr(expr)
+	case Ternary:
+		return r.visitTernaryExpr(expr)
 	case This:
 		return r.visitThisExpr(expr)
 	case Unary:
@@ -439,6 +441,18 @@ func (r *Resolver) visitSuperExpr(expr Super) error {
 
 func (r *Resolver) visitThrowStmt(stmt Throw) error {
 	return r.resolveExpr(stmt.Value)
+}
+
+func (r *Resolver) visitTernaryExpr(expr Ternary) error {
+	resolveErr := r.resolveExpr(expr.Condition)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	resolveErr = r.resolveExpr(expr.TrueExpr)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveExpr(expr.FalseExpr)
 }
 
 func (r *Resolver) visitThisExpr(expr This) error {

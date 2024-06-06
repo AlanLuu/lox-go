@@ -27,6 +27,7 @@ const (
 	PERCENT
 	PIPE
 	PLUS
+	QUESTION
 	SEMICOLON
 	SLASH
 	STAR
@@ -103,6 +104,7 @@ var tokenArr = [...]string{
 	"PERCENT",
 	"PIPE",
 	"PLUS",
+	"QUESTION",
 	"SEMICOLON",
 	"SLASH",
 	"STAR",

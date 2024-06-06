@@ -101,6 +101,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitStringExpr(expr)
 	case Super:
 		return i.visitSuperExpr(expr)
+	case Ternary:
+		return i.visitTernaryExpr(expr)
 	case This:
 		return i.visitThisExpr(expr)
 	case Throw:
@@ -1513,6 +1515,18 @@ func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {
 		return nil, loxerror.RuntimeError(expr.Method, "Undefined property '"+expr.Method.Lexeme+"'.")
 	}
 	return method.bind(object), nil
+}
+
+func (i *Interpreter) visitTernaryExpr(expr Ternary) (any, error) {
+	condition, conditionErr := i.evaluate(expr.Condition)
+	if conditionErr != nil {
+		return nil, conditionErr
+	}
+	if i.isTruthy(condition) {
+		return i.evaluate(expr.TrueExpr)
+	} else {
+		return i.evaluate(expr.FalseExpr)
+	}
 }
 
 func (i *Interpreter) visitThisExpr(expr This) (any, error) {

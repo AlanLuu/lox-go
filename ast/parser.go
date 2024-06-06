@@ -547,7 +547,7 @@ func (p *Parser) error(theToken token.Token, message string) error {
 }
 
 func (p *Parser) expression() (Expr, error) {
-	return p.assignment()
+	return p.ternary()
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
@@ -1205,6 +1205,29 @@ func (p *Parser) term() (Expr, error) {
 		}
 	}
 	return expr, nil
+}
+
+func (p *Parser) ternary() (Expr, error) {
+	condition, conditionErr := p.assignment()
+	if conditionErr != nil {
+		return nil, conditionErr
+	}
+	if p.match(token.QUESTION) {
+		trueExpr, trueExprErr := p.expression()
+		if trueExprErr != nil {
+			return nil, trueExprErr
+		}
+		_, colonErr := p.consume(token.COLON, "Expected ':' after second expression in ternary operator.")
+		if colonErr != nil {
+			return nil, colonErr
+		}
+		falseExpr, falseExprErr := p.ternary()
+		if falseExprErr != nil {
+			return nil, falseExprErr
+		}
+		return Ternary{condition, trueExpr, falseExpr}, nil
+	}
+	return condition, nil
 }
 
 func (p *Parser) unary() (Expr, error) {
