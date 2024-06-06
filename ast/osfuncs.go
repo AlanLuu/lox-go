@@ -59,6 +59,13 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("executable", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		exePath, err := os.Executable()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxStringQuote(exePath), nil
+	})
 	osFunc("exit", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		exitCode := 0
 		argsLen := len(args)
@@ -118,6 +125,15 @@ func (i *Interpreter) defineOSFuncs() {
 			envsDict.setKeyValue(NewLoxStringQuote(key), NewLoxStringQuote(value))
 		}
 		return envsDict, nil
+	})
+	osFunc("getgid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(os.Getgid()), nil
+	})
+	osFunc("getpid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(os.Getpid()), nil
+	})
+	osFunc("getppid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(os.Getppid()), nil
 	})
 	osFunc("getuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getuid()), nil

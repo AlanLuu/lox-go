@@ -6,11 +6,16 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.chdir(directory)`, which changes the current working directory to the specified directory string
 - `os.chmod(path, mode)`, which changes the mode of the specified path string to `mode`
     - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable
+- `os.executable()`, which returns the absolute path name of the executable for the current process as a string
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.getcwd()`, which returns the current working directory as a string
 - `os.getenv(key, [default])`, which returns the value of the specified environment variable `key`, which is a string, as a string. If the value doesn't exist, the value of `default` is returned if specified, otherwise `nil` is returned
 - `os.getenvs()`, which returns a dictionary with all environment variable keys as dictionary keys and all environment variable values as dictionary values
+- `os.getgid()`, which returns the group ID of the current process as an integer
+    - On Windows, this method always returns `-1`
+- `os.getpid()`, which returns the process ID of the current process as an integer
+- `os.getppid()`, which returns the process ID of the parent process as an integer
 - `os.getuid()`, which returns the user ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.hostname()`, which returns the hostname of the computer as a string
