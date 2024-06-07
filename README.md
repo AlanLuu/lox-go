@@ -253,6 +253,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
+        - Pressing Ctrl+C will throw a keyboard interrupt runtime error, and pressing Ctrl+D will cause this function to return `nil`
     - `len(element)`, which returns the length of a dictionary, list, set, or string
         - Dictionaries: the length is the number of keys in the dictionary
         - Lists: the length is the number of elements in the list

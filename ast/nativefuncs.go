@@ -96,7 +96,9 @@ func (i *Interpreter) defineNativeFuncs() {
 			var readError error
 			userInput, readError = l.Readline()
 			switch readError {
-			case readline.ErrInterrupt, io.EOF:
+			case readline.ErrInterrupt:
+				return nil, loxerror.RuntimeError(in.callToken, "Keyboard interrupt")
+			case io.EOF:
 				return nil, nil
 			}
 		} else {
