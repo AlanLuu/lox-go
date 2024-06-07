@@ -82,6 +82,7 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
+		CloseInputFuncReadline()
 		os.Exit(exitCode)
 		return nil, nil
 	})

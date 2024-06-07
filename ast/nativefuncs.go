@@ -16,7 +16,14 @@ import (
 	"github.com/chzyer/readline"
 )
 
-var textSc *bufio.Scanner
+var inputSc *bufio.Scanner
+var inputReadline *readline.Instance
+
+func CloseInputFuncReadline() {
+	if inputReadline != nil {
+		inputReadline.Close()
+	}
+}
 
 func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
@@ -87,14 +94,17 @@ func (i *Interpreter) defineNativeFuncs() {
 		var userInput string
 		stat, _ := os.Stdin.Stat()
 		if (stat.Mode() & os.ModeCharDevice) != 0 {
-			l, _ := readline.NewEx(&readline.Config{
-				Prompt:          getResult(prompt, prompt, true),
-				InterruptPrompt: "^C",
-			})
-			defer l.Close()
+			if inputReadline == nil {
+				inputReadline, _ = readline.NewEx(&readline.Config{
+					Prompt:          getResult(prompt, prompt, true),
+					InterruptPrompt: "^C",
+				})
+			} else {
+				inputReadline.SetPrompt(getResult(prompt, prompt, true))
+			}
 
 			var readError error
-			userInput, readError = l.Readline()
+			userInput, readError = inputReadline.Readline()
 			switch readError {
 			case readline.ErrInterrupt:
 				return nil, loxerror.RuntimeError(in.callToken, "Keyboard interrupt")
@@ -102,13 +112,13 @@ func (i *Interpreter) defineNativeFuncs() {
 				return nil, nil
 			}
 		} else {
-			if textSc == nil {
-				textSc = bufio.NewScanner(os.Stdin)
+			if inputSc == nil {
+				inputSc = bufio.NewScanner(os.Stdin)
 			}
-			if !textSc.Scan() {
+			if !inputSc.Scan() {
 				return nil, nil
 			}
-			userInput = textSc.Text()
+			userInput = inputSc.Text()
 		}
 
 		if strings.Contains(userInput, "'") {

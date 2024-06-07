@@ -148,21 +148,25 @@ func main() {
 	exprCLine := flag.String("c", "", "Read code from command line")
 	flag.Parse()
 
+	exitCode := 0
 	if *exprCLine != "" {
 		sc := scanner.NewScanner(*exprCLine)
 		resultError := run(sc, ast.NewInterpreter())
 		if resultError != nil {
 			loxerror.PrintErrorObject(resultError)
-			os.Exit(1)
+			exitCode = 1
 		}
 	} else if len(args) > 1 {
 		possibleError := processFile(args[1])
 		if possibleError != nil {
 			loxerror.PrintErrorObject(possibleError)
-			os.Exit(1)
+			exitCode = 1
 		}
 	} else {
 		util.InteractiveMode = true
-		os.Exit(interactiveMode())
+		exitCode = interactiveMode()
 	}
+
+	ast.CloseInputFuncReadline()
+	os.Exit(exitCode)
 }
