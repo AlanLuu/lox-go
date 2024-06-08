@@ -979,23 +979,6 @@ func (i *Interpreter) visitEnumStmt(stmt Enum) (any, error) {
 func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 	enteredLoop := false
 	loopInterrupted := false
-	catchInterruptSignal := func() {
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, os.Interrupt)
-		defer func() {
-			if !loopInterrupted {
-				sigChan <- loxsignal.LoopSignal{}
-			}
-			signal.Stop(sigChan)
-		}()
-		go func() {
-			sig := <-sigChan
-			switch sig {
-			case os.Interrupt:
-				loopInterrupted = true
-			}
-		}()
-	}
 
 	tempEnvironment := env.NewEnvironmentEnclosing(i.environment)
 	previous := i.environment
@@ -1019,7 +1002,21 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				return nil, loxerror.RuntimeError(stmt.ForToken, "loop interrupted")
 			}
 			if !enteredLoop {
-				catchInterruptSignal()
+				sigChan := make(chan os.Signal, 1)
+				signal.Notify(sigChan, os.Interrupt)
+				defer func() {
+					if !loopInterrupted {
+						sigChan <- loxsignal.LoopSignal{}
+					}
+					signal.Stop(sigChan)
+				}()
+				go func() {
+					sig := <-sigChan
+					switch sig {
+					case os.Interrupt:
+						loopInterrupted = true
+					}
+				}()
 				enteredLoop = true
 			}
 			value, evalErr := i.evaluate(stmt.Body)
@@ -1046,7 +1043,21 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				return nil, loxerror.RuntimeError(stmt.ForToken, "loop interrupted")
 			}
 			if !enteredLoop {
-				catchInterruptSignal()
+				sigChan := make(chan os.Signal, 1)
+				signal.Notify(sigChan, os.Interrupt)
+				defer func() {
+					if !loopInterrupted {
+						sigChan <- loxsignal.LoopSignal{}
+					}
+					signal.Stop(sigChan)
+				}()
+				go func() {
+					sig := <-sigChan
+					switch sig {
+					case os.Interrupt:
+						loopInterrupted = true
+					}
+				}()
 				enteredLoop = true
 			}
 			value, evalErr := i.evaluate(stmt.Body)
