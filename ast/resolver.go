@@ -471,7 +471,7 @@ func (r *Resolver) visitTryCatchFinallyStmt(stmt TryCatchFinally) error {
 
 	if stmt.CatchBlock != nil {
 		r.beginScope()
-		if len(stmt.CatchName.Lexeme) > 0 {
+		if stmt.CatchName != nil {
 			declareErr := r.declare(stmt.CatchName)
 			if declareErr != nil {
 				return declareErr

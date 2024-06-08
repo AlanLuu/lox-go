@@ -1587,7 +1587,7 @@ func (i *Interpreter) visitTryCatchFinallyStmt(stmt TryCatchFinally) (any, error
 		if stmt.CatchBlock != nil {
 			var catchValue any
 			var catchErr error
-			if len(stmt.CatchName.Lexeme) > 0 {
+			if stmt.CatchName != nil {
 				catchBlockEnv := env.NewEnvironmentEnclosing(i.environment)
 				catchBlockEnv.Define(stmt.CatchName.Lexeme, NewLoxError(tryErr))
 				catchValue, catchErr = i.visitBlockStmtEnv(stmt.CatchBlock.(Block), catchBlockEnv)
