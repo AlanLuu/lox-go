@@ -54,7 +54,7 @@ var escapeChars = map[byte]byte{
 
 type Scanner struct {
 	sourceLine   string
-	Tokens       list.List[token.Token]
+	Tokens       list.List[*token.Token]
 	startIndex   int
 	currentIndex int
 	lineNum      int
@@ -63,7 +63,7 @@ type Scanner struct {
 func NewScanner(source string) *Scanner {
 	return &Scanner{
 		sourceLine:   source,
-		Tokens:       list.NewList[token.Token](),
+		Tokens:       list.NewList[*token.Token](),
 		startIndex:   0,
 		currentIndex: 0,
 		lineNum:      1,

@@ -27,7 +27,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		osClass.classProperties[name] = s
 	}
-	argMustBeType := func(callToken token.Token, name string, theType string) (any, error) {
+	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'os.%v' must be a %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}

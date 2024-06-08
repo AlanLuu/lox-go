@@ -58,7 +58,7 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 	return instance, nil
 }
 
-func (c *LoxClass) Get(name token.Token) (any, error) {
+func (c *LoxClass) Get(name *token.Token) (any, error) {
 	item, ok := c.classProperties[name.Lexeme]
 	if ok {
 		switch method := item.(type) {

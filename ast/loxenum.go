@@ -32,7 +32,7 @@ func NewLoxEnum(name string, members map[string]*LoxEnumMember) *LoxEnum {
 	}
 }
 
-func (l *LoxEnum) Get(name token.Token) (any, error) {
+func (l *LoxEnum) Get(name *token.Token) (any, error) {
 	enumMember, ok := l.members[name.Lexeme]
 	if !ok {
 		return nil, loxerror.RuntimeError(name,

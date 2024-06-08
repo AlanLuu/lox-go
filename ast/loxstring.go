@@ -69,7 +69,7 @@ func (l *LoxString) Equals(obj any) bool {
 	}
 }
 
-func (l *LoxString) Get(name token.Token) (any, error) {
+func (l *LoxString) Get(name *token.Token) (any, error) {
 	methodName := name.Lexeme
 	if method, ok := l.methods[methodName]; ok {
 		return method, nil

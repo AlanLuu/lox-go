@@ -10,16 +10,16 @@ import (
 )
 
 type Parser struct {
-	tokens    list.List[token.Token]
+	tokens    list.List[*token.Token]
 	current   int
 	loopDepth int
 }
 
-func NewParser(tokens list.List[token.Token]) *Parser {
+func NewParser(tokens list.List[*token.Token]) *Parser {
 	return &Parser{tokens, 0, 0}
 }
 
-func (p *Parser) advance() token.Token {
+func (p *Parser) advance() *token.Token {
 	if !p.isAtEnd() {
 		p.current++
 	}
@@ -371,11 +371,11 @@ func (p *Parser) comparison() (Expr, error) {
 	return expr, nil
 }
 
-func (p *Parser) consume(tokenType token.TokenType, message string) (token.Token, error) {
+func (p *Parser) consume(tokenType token.TokenType, message string) (*token.Token, error) {
 	if p.check(tokenType) {
 		return p.advance(), nil
 	}
-	return token.Token{}, p.error(p.peek(), message)
+	return nil, p.error(p.peek(), message)
 }
 
 func (p *Parser) continueStatement() (Stmt, error) {
@@ -512,7 +512,7 @@ func (p *Parser) enumDeclaration() (Stmt, error) {
 	}
 
 	trailingComma := false
-	enumMembers := list.NewList[token.Token]()
+	enumMembers := list.NewList[*token.Token]()
 	if !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
 		for cond := true; cond; cond = p.match(token.COMMA) {
 			if p.match(token.RIGHT_BRACE) {
@@ -536,7 +536,7 @@ func (p *Parser) enumDeclaration() (Stmt, error) {
 	return Enum{enumName, enumMembers}, nil
 }
 
-func (p *Parser) error(theToken token.Token, message string) error {
+func (p *Parser) error(theToken *token.Token, message string) error {
 	var theError error
 	if theToken.TokenType == token.EOF {
 		theError = loxerror.GiveError(theToken.Line, " at end", message)
@@ -762,7 +762,7 @@ func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, erro
 		}
 	}
 
-	parameters := list.NewList[token.Token]()
+	parameters := list.NewList[*token.Token]()
 	if !p.check(token.RIGHT_PAREN) {
 		for cond := true; cond; cond = p.match(token.COMMA) {
 			if len(parameters) >= 255 {
@@ -939,11 +939,11 @@ func (p *Parser) Parse() (list.List[Stmt], error) {
 	return statements, nil
 }
 
-func (p *Parser) peek() token.Token {
+func (p *Parser) peek() *token.Token {
 	return p.tokens[p.current]
 }
 
-func (p *Parser) previous() token.Token {
+func (p *Parser) previous() *token.Token {
 	return p.tokens[p.current-1]
 }
 
@@ -1117,7 +1117,7 @@ func (p *Parser) tryCatchFinallyStatement() (Stmt, error) {
 	}
 
 	var catchBlockList list.List[Stmt] = nil
-	var catchName token.Token
+	var catchName *token.Token
 	foundCatchBlock := false
 	if p.match(token.CATCH) {
 		foundCatchBlock = true

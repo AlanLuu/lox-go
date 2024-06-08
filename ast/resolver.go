@@ -30,7 +30,7 @@ func (r *Resolver) beginScope() {
 	r.Scopes.Add(make(map[string]bool))
 }
 
-func (r *Resolver) declare(name token.Token) error {
+func (r *Resolver) declare(name *token.Token) error {
 	if r.Scopes.IsEmpty() {
 		return nil
 	}
@@ -42,7 +42,7 @@ func (r *Resolver) declare(name token.Token) error {
 	return nil
 }
 
-func (r *Resolver) define(name token.Token) {
+func (r *Resolver) define(name *token.Token) {
 	if r.Scopes.IsEmpty() {
 		return
 	}
@@ -169,7 +169,7 @@ func (r *Resolver) resolveFunction(fnExpr FunctionExpr, fnType functiontype.Func
 	return r.Resolve(fnExpr.Body)
 }
 
-func (r *Resolver) resolveLocal(expr Expr, name token.Token) {
+func (r *Resolver) resolveLocal(expr Expr, name *token.Token) {
 	for i := len(r.Scopes) - 1; i >= 0; i-- {
 		scope := r.Scopes[i]
 		if _, ok := scope[name.Lexeme]; ok {

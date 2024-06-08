@@ -17,7 +17,7 @@ func GiveError(line int, where string, message string) error {
 	return errors.New(errorMsg)
 }
 
-func RuntimeError(theToken token.Token, message string) error {
+func RuntimeError(theToken *token.Token, message string) error {
 	errorStr := message + "\n[line " + fmt.Sprint(theToken.Line) + "]"
 	return errors.New(errorStr)
 }

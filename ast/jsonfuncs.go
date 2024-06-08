@@ -25,7 +25,7 @@ func (i *Interpreter) defineJSONFuncs() {
 		}
 		jsonClass.classProperties[name] = s
 	}
-	argMustBeType := func(callToken token.Token, name string, theType string) (any, error) {
+	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'JSON.%v' must be a %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}

@@ -56,7 +56,7 @@ func (l *LoxList) Equals(obj any) bool {
 	}
 }
 
-func (l *LoxList) Get(name token.Token) (any, error) {
+func (l *LoxList) Get(name *token.Token) (any, error) {
 	methodName := name.Lexeme
 	if method, ok := l.methods[methodName]; ok {
 		return method, nil

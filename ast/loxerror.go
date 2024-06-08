@@ -19,7 +19,7 @@ func NewLoxError(theError error) *LoxError {
 	}
 }
 
-func (l *LoxError) Get(name token.Token) (any, error) {
+func (l *LoxError) Get(name *token.Token) (any, error) {
 	propertyName := name.Lexeme
 	if property, ok := l.properties[propertyName]; ok {
 		return property, nil

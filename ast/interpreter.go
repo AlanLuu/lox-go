@@ -25,7 +25,7 @@ type Interpreter struct {
 	globals     *env.Environment
 	locals      map[any]int
 	blockDepth  int
-	callToken   token.Token
+	callToken   *token.Token
 }
 
 func NewInterpreter() *Interpreter {
@@ -33,7 +33,7 @@ func NewInterpreter() *Interpreter {
 		globals:    env.NewEnvironment(),
 		locals:     make(map[any]int),
 		blockDepth: 0,
-		callToken:  token.Token{},
+		callToken:  nil,
 	}
 	interpreter.environment = interpreter.globals
 	interpreter.defineJSONFuncs()   //Defined in jsonfuncs.go
@@ -1553,7 +1553,7 @@ func (i *Interpreter) visitThrowStmt(stmt Throw) (any, error) {
 		//Use string representation of throw expression as error message
 		result, _ := i.visitBinaryExpr(Binary{
 			Literal{NewLoxString("", '\'')},
-			token.Token{
+			&token.Token{
 				TokenType: token.PLUS,
 				Lexeme:    "+",
 			},

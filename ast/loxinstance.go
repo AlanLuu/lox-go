@@ -19,7 +19,7 @@ func NewLoxInstance(class *LoxClass) *LoxInstance {
 	}
 }
 
-func (i *LoxInstance) Get(name token.Token) (any, error) {
+func (i *LoxInstance) Get(name *token.Token) (any, error) {
 	value, ok := i.fields[name.Lexeme]
 	if ok {
 		return value, nil
@@ -32,7 +32,7 @@ func (i *LoxInstance) Get(name token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }
 
-func (i *LoxInstance) Set(name token.Token, value any) {
+func (i *LoxInstance) Set(name *token.Token, value any) {
 	i.fields[name.Lexeme] = value
 }
 

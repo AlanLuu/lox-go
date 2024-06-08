@@ -32,7 +32,7 @@ func (e *Environment) ancestor(distance int) *Environment {
 	return environment
 }
 
-func (e *Environment) Assign(name token.Token, value any) error {
+func (e *Environment) Assign(name *token.Token, value any) error {
 	for tempE := e; tempE != nil; tempE = tempE.enclosing {
 		_, ok := tempE.values[name.Lexeme]
 		if ok {
@@ -43,7 +43,7 @@ func (e *Environment) Assign(name token.Token, value any) error {
 	return loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
 }
 
-func (e *Environment) AssignAt(distance int, name token.Token, value any) {
+func (e *Environment) AssignAt(distance int, name *token.Token, value any) {
 	e.ancestor(distance).Assign(name, value)
 }
 
@@ -51,7 +51,7 @@ func (e *Environment) Define(name string, value any) {
 	e.values[name] = value
 }
 
-func (e *Environment) Get(name token.Token) (any, error) {
+func (e *Environment) Get(name *token.Token) (any, error) {
 	for tempE := e; tempE != nil; tempE = tempE.enclosing {
 		value, ok := tempE.values[name.Lexeme]
 		if ok {
@@ -61,7 +61,7 @@ func (e *Environment) Get(name token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "undefined variable '"+name.Lexeme+"'.")
 }
 
-func (e *Environment) GetAt(distance int, name token.Token) (any, error) {
+func (e *Environment) GetAt(distance int, name *token.Token) (any, error) {
 	value, ok := e.ancestor(distance).values[name.Lexeme]
 	if ok {
 		return value, nil
