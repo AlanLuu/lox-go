@@ -105,6 +105,23 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 		}
 		return -1
 	}
+	removeElements := func(arg any) bool {
+		removed := false
+		for i := int64(len(l.elements)) - 1; i >= 0; i-- {
+			remove := false
+			switch element := l.elements[i].(type) {
+			case interfaces.Equatable:
+				remove = element.Equals(arg)
+			default:
+				remove = element == arg
+			}
+			if remove {
+				removed = true
+				l.elements.RemoveIndex(i)
+			}
+		}
+		return removed
+	}
 	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
 		argList := list.NewListLen[any](int64(numArgs))
 		callbackArity := callback.arity()
@@ -474,6 +491,34 @@ func (l *LoxList) Get(name token.Token) (any, error) {
 				return true, nil
 			}
 			return false, nil
+		})
+	case "removeAll":
+		return listFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			removed := false
+			for _, arg := range args {
+				if removeElements(arg) {
+					removed = true
+				}
+			}
+			return removed, nil
+		})
+	case "removeAllList":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxList, ok := args[0].(*LoxList); ok {
+				if loxList == l {
+					removed := len(l.elements) > 0
+					l.elements.Clear()
+					return removed, nil
+				}
+				removed := false
+				for _, element := range loxList.elements {
+					if removeElements(element) {
+						removed = true
+					}
+				}
+				return removed, nil
+			}
+			return argMustBeType("list")
 		})
 	case "shuffle":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
