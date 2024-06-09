@@ -35,6 +35,16 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		i.globals.Define(name, s)
 	}
+	nativeFunc("Buffer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		buffer := EmptyLoxBuffer()
+		for _, element := range args {
+			addErr := buffer.add(element)
+			if addErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+			}
+		}
+		return buffer, nil
+	})
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return float64(time.Now().UnixMilli()) / 1000, nil
 	})

@@ -13,7 +13,7 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
-func ListIndexMustBeWholeNum(index any) string {
+func IndexMustBeWholeNum(theType string, index any) string {
 	indexVal := index
 	format := "%v"
 	switch index := index.(type) {
@@ -24,7 +24,11 @@ func ListIndexMustBeWholeNum(index any) string {
 			indexVal = util.FormatFloat(index)
 		}
 	}
-	return fmt.Sprintf("List index '"+format+"' must be an integer.", indexVal)
+	return fmt.Sprintf("%v index '"+format+"' must be an integer.", theType, indexVal)
+}
+
+func ListIndexMustBeWholeNum(index any) string {
+	return IndexMustBeWholeNum("List", index)
 }
 
 func ListIndexOutOfRange(index int64) string {

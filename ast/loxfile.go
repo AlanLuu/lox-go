@@ -183,17 +183,23 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				}
 			}
 			if l.isBinary {
-				bufferList := list.NewList[any]()
+				loxBuffer := EmptyLoxBuffer()
 				if argsLen == 0 {
 					for _, element := range buffer {
-						bufferList.Add(int64(element))
+						addErr := loxBuffer.add(int64(element))
+						if addErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+						}
 					}
 				} else {
 					for i := 0; i < bufferSize; i++ {
-						bufferList.Add(int64(buffer[i]))
+						addErr := loxBuffer.add(int64(buffer[i]))
+						if addErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+						}
 					}
 				}
-				return NewLoxList(bufferList), nil
+				return loxBuffer, nil
 			}
 			return NewLoxStringQuote(string(buffer)), nil
 		})

@@ -264,6 +264,22 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
 			}
 		}
+	case *LoxBuffer:
+		sourceLen := len(source.elements)
+		var bufferStr strings.Builder
+		bufferStr.WriteString("Buffer [")
+		for i, element := range source.elements {
+			if element == originalSource {
+				bufferStr.WriteString(selfReferential(originalSource))
+			} else {
+				bufferStr.WriteString(getResult(element, originalSource, false))
+			}
+			if i < sourceLen-1 {
+				bufferStr.WriteString(", ")
+			}
+		}
+		bufferStr.WriteByte(']')
+		return bufferStr.String()
 	case *LoxDict:
 		sourceLen := len(source.entries)
 		var dictStr strings.Builder
@@ -1284,6 +1300,54 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return NewLoxString(str, '\''), nil
 		}
+	case *LoxBuffer:
+		if expr.IsSlice {
+			if indexVal == nil {
+				indexVal = int64(0)
+			}
+			if indexEndVal == nil {
+				indexEndVal = int64(len(indexElement.elements))
+			}
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexMustBeWholeNum(indexVal))
+			}
+			if _, ok := indexEndVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexMustBeWholeNum(indexEndVal))
+			}
+			indexValInt := indexVal.(int64)
+			indexEndValInt := indexEndVal.(int64)
+			originalIndexValInt := indexValInt
+			if indexValInt < 0 {
+				indexValInt += int64(len(indexElement.elements))
+			}
+			if indexEndValInt < 0 {
+				indexEndValInt += int64(len(indexElement.elements))
+			}
+			if indexEndValInt > int64(len(indexElement.elements)) {
+				indexEndValInt = int64(len(indexElement.elements))
+			}
+			if indexValInt < 0 {
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexOutOfRange(originalIndexValInt))
+			}
+			listSlice := list.NewList[any]()
+			for i := indexValInt; i < indexEndValInt; i++ {
+				listSlice.Add(indexElement.elements[i])
+			}
+			return NewLoxBuffer(listSlice), nil
+		} else {
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexMustBeWholeNum(indexVal))
+			}
+			indexValInt := indexVal.(int64)
+			originalIndexValInt := indexValInt
+			if indexValInt < 0 {
+				indexValInt += int64(len(indexElement.elements))
+			}
+			if indexValInt < 0 || indexValInt >= int64(len(indexElement.elements)) {
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexOutOfRange(originalIndexValInt))
+			}
+			return indexElement.elements[indexValInt], nil
+		}
 	case *LoxDict:
 		if expr.IsSlice {
 			return nil, loxerror.RuntimeError(expr.Bracket, "Cannot use slice to index into dictionary.")
@@ -1342,7 +1406,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			return indexElement.elements[indexValInt], nil
 		}
 	}
-	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into dictionaries, lists, and strings.")
+	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into buffers, dictionaries, lists, and strings.")
 }
 
 func (i *Interpreter) visitListExpr(expr List) (any, error) {
@@ -1447,8 +1511,27 @@ func (i *Interpreter) visitSetObjectExpr(expr SetObject) (any, error) {
 	if variableErr != nil {
 		return nil, variableErr
 	}
-	assignErrMsg := "Can only assign to dictionary and list indexes."
+	assignErrMsg := "Can only assign to buffer, dictionary, and list indexes."
 	switch variable := variable.(type) {
+	case *LoxBuffer:
+		value, valueErr := i.evaluate(expr.Value)
+		if valueErr != nil {
+			return nil, valueErr
+		}
+		if len(indexes) > 1 {
+			return nil, loxerror.RuntimeError(expr.Name, BufferNestedElementErrMsg)
+		}
+		index := indexes[len(indexes)-1]
+		switch index := index.(type) {
+		case int64:
+			bufferSetErr := variable.setIndex(index, value)
+			if bufferSetErr != nil {
+				return nil, loxerror.RuntimeError(expr.Name, bufferSetErr.Error())
+			}
+			return value, nil
+		default:
+			return nil, loxerror.RuntimeError(expr.Name, BufferIndexMustBeWholeNum(index))
+		}
 	case *LoxDict:
 		value, valueErr := i.evaluate(expr.Value)
 		if valueErr != nil {
