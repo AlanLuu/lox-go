@@ -194,6 +194,23 @@ func (i *Interpreter) defineOSFuncs() {
 		return argMustBeType(in.callToken, "mkdir", "string")
 	})
 	osClass.classProperties["name"] = NewLoxString(runtime.GOOS, '\'')
+	osFunc("open", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.open' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.open' must be a string.")
+		}
+		path := args[0].(*LoxString).str
+		mode := args[1].(*LoxString).str
+		loxFile, loxFileErr := NewLoxFileModeStr(path, mode)
+		if loxFileErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, loxFileErr.Error())
+		}
+		return loxFile, nil
+	})
 	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
