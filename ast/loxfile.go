@@ -10,6 +10,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 type LoxFile struct {
@@ -107,6 +108,12 @@ func (l *LoxFile) isRead() bool {
 	return l.mode == filemode.READ || l.mode == filemode.READ_WRITE
 }
 
+func (l *LoxFile) isWrite() bool {
+	return l.mode == filemode.WRITE ||
+		l.mode == filemode.APPEND ||
+		l.mode == filemode.READ_WRITE
+}
+
 func (l *LoxFile) Get(name *token.Token) (any, error) {
 	lexemeName := name.Lexeme
 	if field, ok := l.properties[lexemeName]; ok {
@@ -130,6 +137,10 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		}
 		return s, nil
 	}
+	argMustBeType := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'file.%v' must be a %v.", lexemeName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	argMustBeTypeAn := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'file.%v' must be an %v.", lexemeName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
@@ -142,6 +153,14 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "closed":
 		return fileField(l.isClosed)
+	case "flush":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			flushErr := l.file.Sync()
+			if flushErr != nil {
+				return nil, loxerror.RuntimeError(name, flushErr.Error())
+			}
+			return nil, nil
+		})
 	case "isClosed":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isClosed, nil
@@ -151,10 +170,11 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "read":
 		return fileFunc(-1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if l.isClosed {
-				return nil, loxerror.RuntimeError(in.callToken, "Cannot read from a closed file.")
+				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
-				return nil, loxerror.RuntimeError(in.callToken, "Unsupported operation 'read'.")
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'read' for file not in read mode.")
 			}
 			var buffer []byte
 			var bufferErr error
@@ -168,10 +188,14 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 					return argMustBeTypeAn("integer")
 				}
 				numBytes := int(args[0].(int64))
-				buffer = make([]byte, numBytes)
-				bufferSize, bufferErr = io.ReadAtLeast(l.file, buffer, numBytes)
+				if numBytes >= 0 {
+					buffer = make([]byte, numBytes)
+					bufferSize, bufferErr = io.ReadAtLeast(l.file, buffer, numBytes)
+				} else {
+					buffer, bufferErr = io.ReadAll(l.file)
+				}
 			default:
-				return nil, loxerror.RuntimeError(in.callToken,
+				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 			}
 			if bufferErr != nil {
@@ -179,7 +203,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				case argsLen == 1 && (errors.Is(bufferErr, io.ErrUnexpectedEOF) ||
 					errors.Is(bufferErr, io.EOF)):
 				default:
-					return nil, loxerror.RuntimeError(in.callToken, bufferErr.Error())
+					return nil, loxerror.RuntimeError(name, bufferErr.Error())
 				}
 			}
 			if l.isBinary {
@@ -188,20 +212,87 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 					for _, element := range buffer {
 						addErr := loxBuffer.add(int64(element))
 						if addErr != nil {
-							return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+							return nil, loxerror.RuntimeError(name, addErr.Error())
 						}
 					}
 				} else {
 					for i := 0; i < bufferSize; i++ {
 						addErr := loxBuffer.add(int64(buffer[i]))
 						if addErr != nil {
-							return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+							return nil, loxerror.RuntimeError(name, addErr.Error())
 						}
 					}
 				}
 				return loxBuffer, nil
 			}
 			return NewLoxStringQuote(string(buffer)), nil
+		})
+	case "write":
+		return fileFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
+			if l.isClosed {
+				return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
+			}
+			if !l.isWrite() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'write' for file not in write mode.")
+			}
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				if !l.isBinary {
+					return argMustBeType("string")
+				}
+				byteList := list.NewList[byte]()
+				for _, element := range arg.elements {
+					byteList.Add(byte(element.(int64)))
+				}
+				numBytes, writeErr := l.file.Write([]byte(byteList))
+				if writeErr != nil {
+					return nil, loxerror.RuntimeError(name, writeErr.Error())
+				}
+				return int64(numBytes), nil
+			case *LoxString:
+				if l.isBinary {
+					return argMustBeType("buffer")
+				}
+				numBytes, writeErr := l.file.WriteString(arg.str)
+				if writeErr != nil {
+					return nil, loxerror.RuntimeError(name, writeErr.Error())
+				}
+				return int64(numBytes), nil
+			default:
+				if l.isBinary {
+					return argMustBeType("buffer")
+				}
+				return argMustBeType("string")
+			}
+		})
+	case "writeLine":
+		return fileFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				if l.isClosed {
+					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
+				}
+				if !l.isWrite() {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'writeLine' for file not in write mode.")
+				}
+				if l.isBinary {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'writeLine' for file not in binary write mode.")
+				}
+				var numBytes int
+				var writeErr error
+				if util.IsWindows() {
+					numBytes, writeErr = l.file.WriteString(loxStr.str + "\r\n")
+				} else {
+					numBytes, writeErr = l.file.WriteString(loxStr.str + "\n")
+				}
+				if writeErr != nil {
+					return nil, loxerror.RuntimeError(name, writeErr.Error())
+				}
+				return int64(numBytes), nil
+			}
+			return argMustBeType("string")
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Files have no property called '"+lexemeName+"'.")
