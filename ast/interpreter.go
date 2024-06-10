@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/env"
 	"github.com/AlanLuu/lox/interfaces"
@@ -1255,7 +1256,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 				indexVal = int64(0)
 			}
 			if indexEndVal == nil {
-				indexEndVal = int64(len(indexElement.str))
+				indexEndVal = int64(utf8.RuneCountInString(indexElement.str))
 			}
 			if _, ok := indexVal.(int64); !ok {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
@@ -1267,13 +1268,13 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			indexEndValInt := indexEndVal.(int64)
 			originalIndexValInt := indexValInt
 			if indexValInt < 0 {
-				indexValInt += int64(len(indexElement.str))
+				indexValInt += int64(utf8.RuneCountInString(indexElement.str))
 			}
 			if indexEndValInt < 0 {
-				indexEndValInt += int64(len(indexElement.str))
+				indexEndValInt += int64(utf8.RuneCountInString(indexElement.str))
 			}
-			if indexEndValInt > int64(len(indexElement.str)) {
-				indexEndValInt = int64(len(indexElement.str))
+			if indexEndValInt > int64(utf8.RuneCountInString(indexElement.str)) {
+				indexEndValInt = int64(utf8.RuneCountInString(indexElement.str))
 			}
 			if indexValInt < 0 {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexOutOfRange(originalIndexValInt))
@@ -1281,7 +1282,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if indexValInt > indexEndValInt {
 				return EmptyLoxString(), nil
 			}
-			return NewLoxString(indexElement.str[indexValInt:indexEndValInt], '\''), nil
+			return NewLoxString(string([]rune(indexElement.str)[indexValInt:indexEndValInt]), '\''), nil
 		} else {
 			if _, ok := indexVal.(int64); !ok {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
@@ -1289,12 +1290,12 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			indexValInt := indexVal.(int64)
 			originalIndexValInt := indexValInt
 			if indexValInt < 0 {
-				indexValInt += int64(len(indexElement.str))
+				indexValInt += int64(utf8.RuneCountInString(indexElement.str))
 			}
-			if indexValInt < 0 || indexValInt >= int64(len(indexElement.str)) {
+			if indexValInt < 0 || indexValInt >= int64(utf8.RuneCountInString(indexElement.str)) {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexOutOfRange(originalIndexValInt))
 			}
-			str := string(indexElement.str[indexValInt])
+			str := string([]rune(indexElement.str)[indexValInt])
 			if str == "'" {
 				return NewLoxString(str, '"'), nil
 			}

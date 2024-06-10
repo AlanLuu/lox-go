@@ -266,7 +266,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 					}
 					var result int64
 					var resultErr error
-					if len(l.str) > 1 {
+					if utf8.RuneCountInString(l.str) > 1 {
 						if l.str[0] == '0' {
 							if bases[l.str[1]] != 0 && (base == bases[l.str[1]] || base == 0) {
 								//String starts with 0b, 0B, 0o, 0O, 0x, 0X
