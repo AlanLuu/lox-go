@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/AlanLuu/lox/list"
@@ -34,6 +35,15 @@ func NewLoxBuffer(elements list.List[any]) *LoxBuffer {
 
 func EmptyLoxBuffer() *LoxBuffer {
 	return NewLoxBuffer(list.NewList[any]())
+}
+
+func (l *LoxBuffer) Equals(obj any) bool {
+	switch obj := obj.(type) {
+	case *LoxBuffer:
+		return reflect.DeepEqual(l.elements, obj.elements)
+	default:
+		return false
+	}
 }
 
 func (l *LoxBuffer) Get(name *token.Token) (any, error) {
@@ -173,6 +183,14 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 				return NewLoxBuffer(newList), nil
 			}
 			return argMustBeType("function")
+		})
+	case "toList":
+		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newList := list.NewList[any]()
+			for _, element := range l.elements {
+				newList.Add(element)
+			}
+			return NewLoxList(newList), nil
 		})
 	case "with":
 		return bufferFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {

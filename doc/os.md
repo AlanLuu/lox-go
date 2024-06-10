@@ -22,6 +22,13 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
 - `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory
 - `os.name`, which is a string that specifies the operating system that the program is running on
+- `os.open(name, mode)`, which opens a file specified by a path name with the mode specified by the mode string. This method returns a file object if successful
+    - The following file modes are available:
+        - `"r"`, which opens a file for reading and throws a runtime error if the file doesn't exist
+        - `"w"`, which opens a file for writing, creating the file if it doesn't exist and truncating the file if it already exists
+        - `"a"`, which opens a file for writing, creating the file if it doesn't exist and appending to the file if it already exists
+        - Along with the above modes, the letter `"b"` can also be specified to open a file in binary mode, such as `"rb"` for reading a binary file
+            - The ordering doesn't matter, so the mode `"br"` is the same as `"rb"`
 - `os.remove(path)`, which removes the file or empty directory at the specified path string
     - If the directory is not empty, a runtime error is thrown
 - `os.removeAll(path)`, which removes the file or directory at the specified path string

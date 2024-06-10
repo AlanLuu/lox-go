@@ -33,6 +33,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `a << b` and `a >> b`, which returns a number representing the number `a` shifted by `b` bits to the left and right respectively.
         - If `a` or `b` are floats, they are converted into integers before the shift operation
     - `~a`, which returns the bitwise NOT of the number `a`
+        - If `a` is a float, it is converted into an integer before the bitwise operation
     - `a & b`, `a | b`, and `a ^ b`, which returns the bitwise AND, OR, and XOR of two numbers `a` and `b` respectively.
         - If `a` or `b` are floats, they are converted into integers before the bitwise operation
         - Unlike in C, the precedence of the bitwise operators is higher than the precedence of the comparison operators, so `a & b == value` is equivalent to `(a & b) == value`
@@ -182,10 +183,18 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.removeAll(element1, element2, ..., elementN)`, which removes all occurrences of each element passed into this method from the list. Returns `true` if an element was removed and `false` otherwise
         - `list.removeAllList(list2)`, which removes all occurrences of each element that are contained in the specified list argument from the list. If `list == list2`, removes all elements from the list. Returns `true` if an element was removed and `false` otherwise
         - `list.shuffle()`, which shuffles all elements in the list in place
+        - `list.toBuffer()`, which attempts to return a new buffer with the elements from the list. If the list contains an element that cannot belong in a buffer, a runtime error is thrown
         - `list.toSet()`, which attempts to return a new set with the elements from the list. If the list contains an element that cannot belong in a set, a runtime error is thrown
         - `list.with(index, element)`, which returns a new list that is a copy of the original list with the original element at the specified index replaced with the new element
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`
     - Attempting to use an index value larger than the length of the list will cause a runtime error
+- A buffer type is supported in this implementation of Lox, mainly for use in manipulating binary files
+    - Buffers are similar to lists, except they can only contain integers between 0 and 255 inclusive, and attempting to set a buffer element to an invalid value will throw a runtime error
+    - Buffers share the same syntax in regards to getting and setting elements
+    - Buffers share the same methods as lists, except that the usual element restrictions are in place in terms of adding and setting elements, and any shared methods that normally return lists return buffers instead
+        - Notably, the `map` method on buffers throws a runtime error if its callback function ever returns a value that is not an integer or is an integer less than 0 or greater than 255
+    - Besides the methods shared with lists, buffers also have the following methods associated with them:
+        - `buffer.toList()`, which returns a new list with the elements from the buffer
 - Dictionaries are supported in this implementation of Lox
     - Create a dictionary and assign it to a variable: `var dict = {"key": "value"};`
     - Get an element from a dictionary by key: `dict[key]`
@@ -251,6 +260,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - If the specified import file doesn't exist or if the file exists but an error occurred while it was being executed, a runtime error is thrown
     - `import` statements can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.variable`
 - A few other native functions are defined:
+    - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
@@ -263,6 +273,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
+    - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `sleep(duration)`, which pauses the program for the specified duration in seconds
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines

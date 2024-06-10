@@ -531,6 +531,17 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			})
 			return nil, nil
 		})
+	case "toBuffer":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			buffer := EmptyLoxBuffer()
+			for _, element := range l.elements {
+				addErr := buffer.add(element)
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
 	case "toSet":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newSet := EmptyLoxSet()
