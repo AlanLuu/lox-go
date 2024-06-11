@@ -14,6 +14,8 @@ The following methods and fields are defined on file instances:
     - If the file is closed or is not open in read mode, this method throws a runtime error
 - `file.readLine()`, which reads and returns a single line from the file as a string without any trailing newline characters
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
+- `file.readNewLine()`, which reads and returns a single line from the file as a string with any trailing newline characters if they exist
+    - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.seek(offset, whence)`, which sets the position of where to start reading/writing from/to the file to `offset` according to `whence`, which are both integers. Valid integer values for `whence` are the following:
     - `os.SEEK_SET` or `0` – relative to the start of the file
     - `os.SEEK_CUR` or `1` – relative to the file's current offset position

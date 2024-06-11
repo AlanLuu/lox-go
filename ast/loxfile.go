@@ -284,6 +284,38 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxString(builder.String(), quote), nil
 		})
+	case "readNewLine":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed {
+				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readNewLine' for file not in read mode.")
+			}
+			if l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readNewLine' for file in binary mode.")
+			}
+			var quote byte = '\''
+			var builder strings.Builder
+			b := make([]byte, 1)
+			_, readErr := l.file.Read(b)
+			for b[0] != '\n' && readErr == nil {
+				if quote == '\'' && b[0] == '\'' {
+					quote = '"'
+				}
+				builder.WriteByte(b[0])
+				_, readErr = l.file.Read(b)
+			}
+			if readErr != nil && !errors.Is(readErr, io.EOF) {
+				return nil, loxerror.RuntimeError(name, readErr.Error())
+			}
+			if b[0] == '\n' {
+				builder.WriteByte('\n')
+			}
+			return NewLoxString(builder.String(), quote), nil
+		})
 	case "seek":
 		return fileFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if _, ok := args[0].(int64); !ok {
