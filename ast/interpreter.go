@@ -245,10 +245,32 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 				return fmt.Sprintf("%c%c", source.quote, source.quote)
 			}
 		} else {
+			sourceStr := source.str
+			_, originalIsString := originalSource.(*LoxString)
+			if !originalIsString || !isPrintStmt {
+				escapeChars := map[rune]string{
+					'\a': "\\a",
+					'\n': "\\n",
+					'\r': "\\r",
+					'\t': "\\t",
+					'\b': "\\b",
+					'\f': "\\f",
+					'\v': "\\v",
+				}
+				var builder strings.Builder
+				for _, c := range source.str {
+					if escapeString, ok := escapeChars[c]; ok {
+						builder.WriteString(escapeString)
+					} else {
+						builder.WriteRune(c)
+					}
+				}
+				sourceStr = builder.String()
+			}
 			if isPrintStmt {
-				return fmt.Sprint(source.str)
+				return fmt.Sprint(sourceStr)
 			} else {
-				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
+				return fmt.Sprintf("%c%v%c", source.quote, sourceStr, source.quote)
 			}
 		}
 	case LoxStringStr:
