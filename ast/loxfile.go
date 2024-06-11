@@ -187,6 +187,12 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isClosed, nil
 		})
+	case "mode":
+		binaryMode := ""
+		if l.isBinary {
+			binaryMode = "b"
+		}
+		return fileField(NewLoxString(filemode.ModeStrings[l.mode]+binaryMode, '\''))
 	case "name":
 		return fileField(NewLoxStringQuote(l.name))
 	case "read":
@@ -248,6 +254,35 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return loxBuffer, nil
 			}
 			return NewLoxStringQuote(string(buffer)), nil
+		})
+	case "readLine":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed {
+				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readLine' for file not in read mode.")
+			}
+			if l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readLine' for file in binary mode.")
+			}
+			var quote byte = '\''
+			var builder strings.Builder
+			b := make([]byte, 1)
+			_, readErr := l.file.Read(b)
+			for b[0] != '\n' && readErr == nil {
+				if quote == '\'' && b[0] == '\'' {
+					quote = '"'
+				}
+				builder.WriteByte(b[0])
+				_, readErr = l.file.Read(b)
+			}
+			if readErr != nil && !errors.Is(readErr, io.EOF) {
+				return nil, loxerror.RuntimeError(name, readErr.Error())
+			}
+			return NewLoxString(builder.String(), quote), nil
 		})
 	case "seek":
 		return fileFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
