@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"io"
 	"os"
@@ -50,19 +49,12 @@ func processFile(filePath string) error {
 		return openFileError
 	}
 
-	textSc := bufio.NewScanner(file)
-	textSc.Scan()
-	var program strings.Builder
-	for {
-		line := strings.TrimSpace(textSc.Text())
-		program.WriteString(line)
-		if !textSc.Scan() {
-			break
-		}
-		program.WriteByte('\n')
+	program, readErr := io.ReadAll(file)
+	file.Close()
+	if readErr != nil {
+		return readErr
 	}
-
-	sc := scanner.NewScanner(program.String())
+	sc := scanner.NewScanner(string(program))
 	interpreter := ast.NewInterpreter()
 	resultError := run(sc, interpreter)
 	if resultError != nil {
@@ -116,7 +108,6 @@ outer:
 			}
 			userInput = strings.TrimSpace(userInput)
 			program.WriteString(userInput)
-			program.WriteByte('\n')
 			if stdinFromTerminal {
 				leftBraceCount, rightBraceCount := util.CountBraces(userInput)
 				scopeLevel += (leftBraceCount - rightBraceCount)
@@ -124,6 +115,7 @@ outer:
 					break
 				}
 			}
+			program.WriteByte('\n')
 		}
 
 		sc := scanner.NewScanner(program.String())

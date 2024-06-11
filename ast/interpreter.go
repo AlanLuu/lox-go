@@ -1,9 +1,9 @@
 package ast
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"os/signal"
@@ -1169,25 +1169,18 @@ func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
 			fmt.Sprintf("Could not find file '%v'.", importFilePath))
 	}
 
-	importTextSc := bufio.NewScanner(importFile)
-	importTextSc.Scan()
-	var importProgram strings.Builder
-	for {
-		line := strings.TrimSpace(importTextSc.Text())
-		importProgram.WriteString(line)
-		if !importTextSc.Scan() {
-			break
-		}
-		importProgram.WriteByte('\n')
-	}
-
 	importErr := func(e error) (any, error) {
 		return nil, loxerror.RuntimeError(stmt.ImportToken,
 			fmt.Sprintf("Error when importing file '%v':\n%v",
 				importFilePath, e.Error()))
 	}
 
-	importSc := scanner.NewScanner(importProgram.String())
+	importProgram, readErr := io.ReadAll(importFile)
+	importFile.Close()
+	if readErr != nil {
+		return importErr(readErr)
+	}
+	importSc := scanner.NewScanner(string(importProgram))
 	scanErr := importSc.ScanTokens()
 	if scanErr != nil {
 		return importErr(scanErr)
