@@ -33,6 +33,7 @@ The following methods and fields are defined in the built-in `os` class:
     - If the directory is not empty, a runtime error is thrown
 - `os.removeAll(path)`, which removes the file or directory at the specified path string
     - If the directory is not empty, all files and directories inside it are removed recursively
+- `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
 - `os.setenv(key, value)`, which sets an environment variable with the specified key and value, which are both strings
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory

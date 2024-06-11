@@ -11,6 +11,11 @@ The following methods and fields are defined on file instances:
     - If the number of bytes is omitted or negative, the entire file is read until EOF
     - This method returns a buffer instance with integers representing the raw bytes of the file if the file was opened in binary mode, otherwise it returns a string representing the file contents
     - If the file is closed or is not open in read mode, this method throws a runtime error
+- `file.seek(offset, whence)`, which sets the position of where to start reading/writing from/to the file to `offset` according to `whence`, which are both integers. Valid integer values for `whence` are the following:
+    - `os.SEEK_SET` or `0` – relative to the start of the file
+    - `os.SEEK_CUR` or `1` – relative to the file's current offset position
+    - `os.SEEK_END` or `2` – relative to the end of the file
+    - A runtime error is thrown if `whence` is an invalid value or the file is in append mode when calling this method
 - `file.write(buffer/string)`, which writes the contents of the specified buffer or string to the file and returns the number of bytes written as an integer
     - In binary mode, this method's argument must be a buffer, otherwise the argument must be a string
     - If the file is closed or is not open in write mode, this method throws a runtime error

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/AlanLuu/lox/ast/filemode"
 	"github.com/AlanLuu/lox/list"
@@ -93,6 +94,25 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 			isClosed:   false,
 			properties: make(map[string]any),
 		}, nil
+	case 3:
+		if strings.Contains(modeStr, "r") &&
+			strings.Contains(modeStr, "w") &&
+			strings.Contains(modeStr, "b") {
+
+			fileMode := filemode.READ_WRITE
+			file, fileErr := filemode.Open(path, fileMode)
+			if fileErr != nil {
+				return nil, fileErr
+			}
+			return &LoxFile{
+				file:       file,
+				name:       file.Name(),
+				mode:       fileMode,
+				isBinary:   true,
+				isClosed:   false,
+				properties: make(map[string]any),
+			}, nil
+		}
 	}
 	return nil, unknownMode()
 }
@@ -109,9 +129,11 @@ func (l *LoxFile) isRead() bool {
 }
 
 func (l *LoxFile) isWrite() bool {
-	return l.mode == filemode.WRITE ||
-		l.mode == filemode.APPEND ||
-		l.mode == filemode.READ_WRITE
+	return l.mode == filemode.WRITE || l.mode == filemode.READ_WRITE
+}
+
+func (l *LoxFile) isAppend() bool {
+	return l.mode == filemode.APPEND
 }
 
 func (l *LoxFile) Get(name *token.Token) (any, error) {
@@ -168,7 +190,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "name":
 		return fileField(NewLoxStringQuote(l.name))
 	case "read":
-		return fileFunc(-1, func(in *Interpreter, args list.List[any]) (any, error) {
+		return fileFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if l.isClosed {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
@@ -227,14 +249,40 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxStringQuote(string(buffer)), nil
 		})
+	case "seek":
+		return fileFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(int64); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'file.seek' must be an integer.")
+			}
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'file.seek' must be an integer.")
+			}
+			offset := args[0].(int64)
+			whence := int(args[1].(int64))
+			if whence < 0 || whence > 2 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Invalid whence value '%v' for 'file.seek'.", whence))
+			}
+			if l.isAppend() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'seek' for file in append mode.")
+			}
+			position, seekErr := l.file.Seek(offset, whence)
+			if seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			return position, nil
+		})
 	case "write":
-		return fileFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if l.isClosed {
 				return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 			}
-			if !l.isWrite() {
+			if !l.isWrite() && !l.isAppend() {
 				return nil, loxerror.RuntimeError(name,
-					"Unsupported operation 'write' for file not in write mode.")
+					"Unsupported operation 'write' for file not in write or append mode.")
 			}
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
@@ -267,18 +315,18 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 		})
 	case "writeLine":
-		return fileFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				if l.isClosed {
 					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 				}
-				if !l.isWrite() {
+				if !l.isWrite() && !l.isAppend() {
 					return nil, loxerror.RuntimeError(name,
-						"Unsupported operation 'writeLine' for file not in write mode.")
+						"Unsupported operation 'writeLine' for file not in write or append mode.")
 				}
 				if l.isBinary {
 					return nil, loxerror.RuntimeError(name,
-						"Unsupported operation 'writeLine' for file not in binary write mode.")
+						"Unsupported operation 'writeLine' for file in binary mode.")
 				}
 				var numBytes int
 				var writeErr error

@@ -231,6 +231,9 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "removeAll", "string")
 	})
+	osClass.classProperties["SEEK_SET"] = int64(0)
+	osClass.classProperties["SEEK_CUR"] = int64(1)
+	osClass.classProperties["SEEK_END"] = int64(2)
 	osFunc("setenv", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
