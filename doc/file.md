@@ -12,7 +12,9 @@ The following methods and fields are defined on file instances:
     - If the number of bytes is omitted or negative, the entire file is read until EOF
     - This method returns a buffer instance with integers representing the raw bytes of the file if the file was opened in binary mode, otherwise it returns a string representing the file contents
     - If the file is closed or is not open in read mode, this method throws a runtime error
-- `file.readLine()`, which reads and returns a single line from the file as a string without any trailing newline characters
+- `file.readLine()`, which reads a single line from the file, skipping over any blank lines, and returns that line without any trailing newline characters as a string
+    - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
+- `file.readLines([numLines])`, which reads in `numLines` lines from the file, skipping over any blank lines, and returns a list of those lines without any trailing newline characters, where `numLines` is an integer. If `numLines` is omitted or negative, all lines from the file are read into the list
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.readNewLine()`, which reads and returns a single line from the file as a string with any trailing newline characters if they exist
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called

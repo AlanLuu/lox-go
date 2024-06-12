@@ -272,6 +272,9 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			var builder strings.Builder
 			b := make([]byte, 1)
 			_, readErr := l.file.Read(b)
+			for b[0] == '\n' && readErr == nil {
+				_, readErr = l.file.Read(b)
+			}
 			for b[0] != '\n' && readErr == nil {
 				if quote == '\'' && b[0] == '\'' {
 					quote = '"'
@@ -283,6 +286,66 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name, readErr.Error())
 			}
 			return NewLoxString(builder.String(), quote), nil
+		})
+	case "readLines":
+		return fileFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			numLines := -1
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+			case 1:
+				if _, ok := args[0].(int64); !ok {
+					return argMustBeTypeAn("integer")
+				}
+				numLines = int(args[0].(int64))
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+			if l.isClosed {
+				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readLines' for file not in read mode.")
+			}
+			if l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readLines' for file in binary mode.")
+			}
+			lines := list.NewList[any]()
+			if numLines == 0 {
+				return NewLoxList(lines), nil
+			}
+			var quote byte = '\''
+			var builder strings.Builder
+			b := make([]byte, 1)
+			_, readErr := l.file.Read(b)
+			for readErr == nil && (numLines < 0 || len(lines) < numLines) {
+				switch {
+				case quote == '\'' && b[0] == '\'':
+					quote = '"'
+				case b[0] == '\n':
+					if builder.Len() > 0 {
+						lines.Add(NewLoxString(builder.String(), quote))
+						builder.Reset()
+					}
+					quote = '\''
+				default:
+					builder.WriteByte(b[0])
+				}
+				if numLines < 0 || len(lines) < numLines {
+					_, readErr = l.file.Read(b)
+					if readErr != nil && builder.Len() > 0 {
+						lines.Add(NewLoxString(builder.String(), quote))
+					}
+				}
+			}
+			if readErr != nil && !errors.Is(readErr, io.EOF) {
+				lines.Clear()
+				return nil, loxerror.RuntimeError(name, readErr.Error())
+			}
+			return NewLoxList(lines), nil
 		})
 	case "readNewLine":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
