@@ -59,6 +59,10 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("clearenv", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		os.Clearenv()
+		return nil, nil
+	})
 	osFunc("executable", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		exePath, err := os.Executable()
 		if err != nil {
