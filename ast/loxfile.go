@@ -168,6 +168,17 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch lexemeName {
+	case "chmod":
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if mode, ok := args[0].(int64); ok {
+				err := l.file.Chmod(os.FileMode(mode))
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				return nil, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "close":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.close()

@@ -1,6 +1,8 @@
 ## File methods and fields
 
 The following methods and fields are defined on file instances:
+- `file.chmod(mode)`, which changes the mode of the file to `mode`
+    - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable
 - `file.close()`, which flushes and closes the file, causing any attempts to read or write from the file to throw a runtime error
     - If the file is already closed, this method can still be called, with no additional effects occurring when doing so
 - `file.closed`, which is a boolean that is `true` if the file is closed and `false` otherwise
