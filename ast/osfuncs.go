@@ -36,7 +36,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Chdir(loxStr.str)
 			if err != nil {
-				return nil, err
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
 			return nil, nil
 		}
@@ -55,7 +55,7 @@ func (i *Interpreter) defineOSFuncs() {
 		mode := args[1].(int64)
 		err := os.Chmod(file, os.FileMode(mode))
 		if err != nil {
-			return nil, err
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return nil, nil
 	})
@@ -86,10 +86,10 @@ func (i *Interpreter) defineOSFuncs() {
 		os.Exit(exitCode)
 		return nil, nil
 	})
-	osFunc("getcwd", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+	osFunc("getcwd", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		cwd, err := os.Getwd()
 		if err != nil {
-			return nil, err
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return NewLoxStringQuote(cwd), nil
 	})
@@ -139,10 +139,10 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("getuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getuid()), nil
 	})
-	osFunc("hostname", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+	osFunc("hostname", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		hostname, err := os.Hostname()
 		if err != nil {
-			return nil, err
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return NewLoxStringQuote(hostname), nil
 	})
@@ -179,7 +179,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		err := fs.WalkDir(dir, ".", dirFunc)
 		if err != nil {
-			return nil, err
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return NewLoxList(dirList), nil
 	})
@@ -187,7 +187,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Mkdir(loxStr.str, 0777)
 			if err != nil {
-				return nil, err
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
 			return nil, nil
 		}
@@ -215,7 +215,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
 			if err != nil {
-				return nil, err
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
 			return nil, nil
 		}
@@ -225,7 +225,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.RemoveAll(loxStr.str)
 			if err != nil {
-				return nil, err
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
 			return nil, nil
 		}
@@ -247,7 +247,7 @@ func (i *Interpreter) defineOSFuncs() {
 		value := args[1].(*LoxString).str
 		err := os.Setenv(key, value)
 		if err != nil {
-			return nil, err
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return nil, nil
 	})
@@ -266,7 +266,7 @@ func (i *Interpreter) defineOSFuncs() {
 				if exitErr, ok := err.(*exec.ExitError); ok {
 					return int64(exitErr.ExitCode()), nil
 				} else {
-					return nil, err
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
 				}
 			}
 			return int64(0), nil
@@ -277,7 +277,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			file, fileErr := os.Create(loxStr.str)
 			if fileErr != nil {
-				return nil, fileErr
+				return nil, loxerror.RuntimeError(in.callToken, fileErr.Error())
 			}
 			file.Close()
 			return nil, nil
@@ -288,16 +288,16 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Unsetenv(loxStr.str)
 			if err != nil {
-				return nil, err
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
 			return nil, nil
 		}
 		return argMustBeType(in.callToken, "unsetenv", "string")
 	})
-	osFunc("username", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+	osFunc("username", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		currentUser, err := user.Current()
 		if err != nil {
-			return nil, err
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		username := currentUser.Username
 		if util.IsWindows() && strings.Contains(username, "\\") {
