@@ -272,15 +272,35 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			var builder strings.Builder
 			b := make([]byte, 1)
 			_, readErr := l.file.Read(b)
-			for b[0] == '\n' && readErr == nil {
-				_, readErr = l.file.Read(b)
+			for readErr == nil && (b[0] == '\r' || b[0] == '\n') {
+				for b[0] == '\r' && readErr == nil {
+					_, readErr = l.file.Read(b)
+					if readErr != nil {
+						break
+					}
+					if b[0] != '\n' {
+						builder.WriteByte('\r')
+						break
+					}
+					_, readErr = l.file.Read(b)
+				}
+				for b[0] == '\n' && readErr == nil {
+					_, readErr = l.file.Read(b)
+				}
 			}
 			for b[0] != '\n' && readErr == nil {
 				if quote == '\'' && b[0] == '\'' {
 					quote = '"'
 				}
-				builder.WriteByte(b[0])
-				_, readErr = l.file.Read(b)
+				if b[0] == '\r' {
+					_, readErr = l.file.Read(b)
+					if b[0] != '\n' {
+						builder.WriteByte('\r')
+					}
+				} else {
+					builder.WriteByte(b[0])
+					_, readErr = l.file.Read(b)
+				}
 			}
 			if readErr != nil && !errors.Is(readErr, io.EOF) {
 				return nil, loxerror.RuntimeError(name, readErr.Error())
@@ -321,10 +341,24 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			var builder strings.Builder
 			b := make([]byte, 1)
 			_, readErr := l.file.Read(b)
+		outer:
 			for readErr == nil && (numLines < 0 || len(lines) < numLines) {
 				switch {
 				case quote == '\'' && b[0] == '\'':
 					quote = '"'
+				case b[0] == '\r':
+					_, readErr = l.file.Read(b)
+					if b[0] != '\n' {
+						builder.WriteByte('\r')
+						continue
+					} else if builder.Len() > 0 {
+						lines.Add(NewLoxString(builder.String(), quote))
+						builder.Reset()
+					}
+					quote = '\''
+					if readErr != nil {
+						break outer
+					}
 				case b[0] == '\n':
 					if builder.Len() > 0 {
 						lines.Add(NewLoxString(builder.String(), quote))
