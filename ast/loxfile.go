@@ -604,6 +604,34 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return argMustBeType("string")
 			}
 		})
+	case "writeByte":
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if value, ok := args[0].(int64); ok {
+				if l.isClosed {
+					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
+				}
+				if !l.isWrite() && !l.isAppend() {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'writeByte' for file not in write or append mode.")
+				}
+				if !l.isBinary {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'writeByte' for file not in binary mode.")
+				}
+				if value < 0 || value > 255 {
+					return nil, loxerror.RuntimeError(name,
+						fmt.Sprintf("Invalid byte value '%v'.", value))
+				}
+				b := make([]byte, 1)
+				b[0] = byte(value)
+				_, writeErr := l.file.Write([]byte(b))
+				if writeErr != nil {
+					return nil, loxerror.RuntimeError(name, writeErr.Error())
+				}
+				return nil, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "writeLine":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

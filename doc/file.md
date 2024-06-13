@@ -41,6 +41,8 @@ The following methods and fields are defined on file instances:
 - `file.write(buffer/string)`, which writes the contents of the specified buffer or string to the file and returns the number of bytes written as an integer
     - In binary mode, this method's argument must be a buffer, otherwise the argument must be a string
     - If the file is closed or is not open in write or append mode, this method throws a runtime error
+- `file.writeByte(byte)`, which writes the specified byte to the file, where `byte` is an integer ranging from 0 to 255
+    - If the file is closed, is not open in write or append mode, or is not open in binary mode, this method throws a runtime error
 - `file.writeLine(string)`, which writes the contents of the specified string to the file followed by a newline character and returns the number of bytes written as an integer
     - On Windows, CRLF is used as the newline character
     - If the file is closed, is not open in write or append mode, or is open in binary mode, this method throws a runtime error
@@ -48,5 +50,6 @@ The following methods and fields are defined on file instances:
     - If an element in `lines` is not a string, the string representation of that element is used as the string to write to the file
     - If the file is closed, is not open in write or append mode, or is open in binary mode, this method throws a runtime error
 - `file.writeNewLines(lines)`, which writes the elements of `lines` to the file with a newline character following each element, where `lines` is a list of strings, and returns the total number of bytes written as an integer
+    - On Windows, CRLF is used as the newline character
     - If an element in `lines` is not a string, the string representation of that element is used as the string to write to the file
     - If the file is closed, is not open in write or append mode, or is open in binary mode, this method throws a runtime error
