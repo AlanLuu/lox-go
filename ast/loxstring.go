@@ -235,6 +235,20 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
+	case "toBuffer":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			b := make([]byte, 4)
+			buffer := EmptyLoxBuffer()
+			for _, r := range l.str {
+				for i := 0; i < utf8.EncodeRune(b, r); i++ {
+					addErr := buffer.add(int64(b[i]))
+					if addErr != nil {
+						return nil, loxerror.RuntimeError(name, addErr.Error())
+					}
+				}
+			}
+			return buffer, nil
+		})
 	case "toNum":
 		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			useParseFloat := func() (any, error) {
