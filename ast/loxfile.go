@@ -632,6 +632,41 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "writeLines":
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxList, ok := args[0].(*LoxList); ok {
+				if l.isClosed {
+					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
+				}
+				if !l.isWrite() && !l.isAppend() {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'writeLines' for file not in write or append mode.")
+				}
+				if l.isBinary {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'writeLines' for file in binary mode.")
+				}
+				numBytes := 0
+				for _, element := range loxList.elements {
+					var strToWrite string
+					switch element := element.(type) {
+					case *LoxString:
+						strToWrite = element.str
+					case fmt.Stringer:
+						strToWrite = element.String()
+					default:
+						strToWrite = fmt.Sprint(element)
+					}
+					bytes, writeErr := l.file.WriteString(strToWrite)
+					if writeErr != nil {
+						return nil, loxerror.RuntimeError(name, writeErr.Error())
+					}
+					numBytes += bytes
+				}
+				return int64(numBytes), nil
+			}
+			return argMustBeType("list")
+		})
 	}
 	return nil, loxerror.RuntimeError(name, "Files have no property called '"+lexemeName+"'.")
 }

@@ -40,7 +40,10 @@ The following methods and fields are defined on file instances:
     - A runtime error is thrown if `whence` is an invalid value or the file is in append mode when calling this method
 - `file.write(buffer/string)`, which writes the contents of the specified buffer or string to the file and returns the number of bytes written as an integer
     - In binary mode, this method's argument must be a buffer, otherwise the argument must be a string
-    - If the file is closed or is not open in write mode, this method throws a runtime error
+    - If the file is closed or is not open in write or append mode, this method throws a runtime error
 - `file.writeLine(string)`, which writes the contents of the specified string to the file followed by a newline character and returns the number of bytes written as an integer
     - On Windows, CRLF is used as the newline character
-    - If the file is closed, is not open in write mode, or is open in binary mode, this method throws a runtime error
+    - If the file is closed, is not open in write or append mode, or is open in binary mode, this method throws a runtime error
+- `file.writeLines(lines)`, which writes the elements of `lines` to the file, where `lines` is a list of strings, and returns the total number of bytes written as an integer.
+    - If an element in `lines` is not a string, the string representation of that element is used as the string to write to the file
+    - If the file is closed, is not open in write or append mode, or is open in binary mode, this method throws a runtime error
