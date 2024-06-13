@@ -13,14 +13,25 @@ The following methods and fields are defined on file instances:
 - `file.read([numBytes])`, which reads the specified number of bytes from the file
     - If the number of bytes is omitted or negative, the entire file is read until EOF
     - This method returns a buffer instance with integers representing the raw bytes of the file if the file was opened in binary mode, otherwise it returns a string representing the file contents
+        - If the file pointer is at EOF, this method returns an empty buffer instance if the file was opened in binary mode, otherwise it returns an empty string
     - If the file is closed or is not open in read mode, this method throws a runtime error
+- `file.readByte()`, which reads a single byte from the file and returns it as an integer
+    - If the file pointer is at EOF, this method returns `nil`
+    - The file must not be closed and must be in binary read mode, otherwise a runtime error is thrown when this method is called
+- `file.readChar()`, which reads a single character from the file and returns it as a string with that character
+    - If the file pointer is at EOF, this method returns `nil`
+    - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.readLine()`, which reads a single line from the file, skipping over any blank lines, and returns that line without any trailing newline characters as a string
+    - If the file pointer is at EOF, this method returns an empty string
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.readLines([numLines])`, which reads in `numLines` lines from the file, skipping over any blank lines, and returns a list of those lines without any trailing newline characters, where `numLines` is an integer. If `numLines` is omitted or negative, all lines from the file are read into the list
+    - If the file pointer is at EOF, this method returns an empty list
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.readNewLine()`, which reads and returns a single line from the file as a string with any trailing newline characters if they exist
+    - If the file pointer is at EOF, this method returns an empty string
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.readNewLines([numLines])`, which reads in `numLines` lines from the file and returns a list of those lines, where `numLines` is an integer. If `numLines` is omitted or negative, all lines from the file are read into the list
+    - If the file pointer is at EOF, this method returns an empty list
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.seek(offset, whence)`, which sets the position of where to start reading/writing from/to the file to `offset` according to `whence`, which are both integers. Valid integer values for `whence` are the following:
     - `os.SEEK_SET` or `0` – relative to the start of the file

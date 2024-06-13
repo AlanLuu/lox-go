@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/ast/filemode"
 	"github.com/AlanLuu/lox/list"
@@ -265,6 +266,61 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return loxBuffer, nil
 			}
 			return NewLoxStringQuote(string(buffer)), nil
+		})
+	case "readByte":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed {
+				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readByte' for file not in read mode.")
+			}
+			if !l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readByte' for file not in binary mode.")
+			}
+			b := make([]byte, 1)
+			_, readErr := l.file.Read(b)
+			if readErr != nil {
+				if errors.Is(readErr, io.EOF) {
+					return nil, nil
+				}
+				return nil, loxerror.RuntimeError(name, readErr.Error())
+			}
+			return int64(b[0]), nil
+		})
+	case "readChar":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed {
+				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readChar' for file not in read mode.")
+			}
+			if l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'readChar' for file in binary mode.")
+			}
+			var b [4]byte
+			for i := 0; i < len(b); i++ {
+				_, readErr := l.file.Read(b[i : i+1])
+				if readErr != nil {
+					if errors.Is(readErr, io.EOF) {
+						return nil, nil
+					}
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+				if r, _ := utf8.DecodeRune(b[:i+1]); r != utf8.RuneError {
+					if r == '\'' {
+						return NewLoxString(string(r), '"'), nil
+					}
+					return NewLoxString(string(r), '\''), nil
+				}
+			}
+			return nil, loxerror.RuntimeError(name,
+				fmt.Sprintf("Invalid character encoding found with bytes '%v'.", b))
 		})
 	case "readLine":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
