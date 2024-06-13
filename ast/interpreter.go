@@ -226,6 +226,13 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 	switch source := source.(type) {
 	case nil:
 		return "nil"
+	case int64:
+		switch originalSource.(type) {
+		case *LoxBuffer:
+			return fmt.Sprintf("0x%x", source)
+		default:
+			return fmt.Sprint(source)
+		}
 	case float64:
 		switch {
 		case math.IsInf(source, 1):
