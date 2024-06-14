@@ -109,6 +109,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various mathematical methods and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
 - Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
 - Various methods and fields to work with operating system functionality are defined under a built-in class called `os`, which is documented [here](./doc/os.md)
+- Various methods to work with base64 strings are defined under a built-in class called `base64`, where the following methods are defined:
+    - `base64.decode(string)`, which decodes the specified base64-encoded string into a decoded string and returns that string
+        - A runtime error is thrown if the specified string is not properly encoded as base64
+    - `base64.decodeToBuf(string)`, which decodes the specified base64-encoded string into a buffer and returns that buffer
+        - A runtime error is thrown if the specified string is not properly encoded as base64
+    - `base64.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a base64 string and returns that encoded string
 - Strings have some additional features associated with them:
     - Strings can be represented using single quotes as well
     - Strings can be indexed by an integer, which will return a new string with only the character at the specified index: `string[index]`
