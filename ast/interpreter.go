@@ -471,13 +471,21 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		case token.DOUBLE_STAR:
 			result = math.Pow(left, right)
 		case token.DOUBLE_LESS:
-			result = int64(left) << int64(right)
+			if int64(right) >= 0 {
+				result = int64(left) << int64(right)
+			} else {
+				result = math.NaN()
+			}
 		case token.LESS:
 			result = left < right
 		case token.LESS_EQUAL:
 			result = left <= right
 		case token.DOUBLE_GREATER:
-			result = int64(left) >> int64(right)
+			if int64(right) >= 0 {
+				result = int64(left) >> int64(right)
+			} else {
+				result = math.NaN()
+			}
 		case token.GREATER:
 			result = left > right
 		case token.GREATER_EQUAL:
