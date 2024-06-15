@@ -144,11 +144,37 @@ func (sc *Scanner) handleNumber() error {
 		}
 	}
 
+	scientific := false
+	switch sc.peek() {
+	case 'e', 'E':
+		if isBinaryNum || isHexNum || isOctalNum {
+			break
+		}
+		sc.advance()
+		foundSign := false
+		switch sc.peek() {
+		case '-', '+':
+			foundSign = true
+			sc.advance()
+		}
+		if isDigit(sc.peek()) {
+			scientific = true
+			for isDigit(sc.peek()) || sc.peek() == digitSeparator {
+				sc.advance()
+			}
+		} else {
+			sc.currentIndex--
+			if foundSign {
+				sc.currentIndex--
+			}
+		}
+	}
+
 	numStr := sc.sourceLine[sc.startIndex:sc.currentIndex]
 	invalidLiteral := func(numType string) error {
 		return loxerror.GiveError(sc.lineNum, "", "Invalid "+numType+" literal")
 	}
-	if numHasDot {
+	if numHasDot || scientific {
 		num, numErr := strconv.ParseFloat(numStr, 64)
 		if numErr != nil {
 			return invalidLiteral("number")

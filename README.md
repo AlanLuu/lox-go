@@ -47,6 +47,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Hexadecimal literals start with the prefix `0x`
     - Octal literals start with the prefixes `0o` or `0`
     - All letters in prefixes are case-insensitive
+- Scientific notation number literals are supported in this implementation of Lox
+    - Examples: `1e5`, `1e+5`, `1e-5`, `1.5e5`, `1.5e+5`, `1.5e-5`
+    - All scientific notation number literals are floats
 - Number literals support the following features:
     - An underscore character can be used to group digits, such as `1_000_000`, which is equivalent to `1000000`
         - Underscore characters are also allowed in binary, hexadecimal, and octal literals, except for octal literals starting with a `0`
