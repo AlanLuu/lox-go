@@ -224,17 +224,19 @@ func selfReferential(source any) string {
 	return "..."
 }
 
+func getBufferElementHexResult(source any) string {
+	switch source := source.(type) {
+	case int64:
+		return fmt.Sprintf("0x%x", source)
+	default:
+		return fmt.Sprint(source)
+	}
+}
+
 func getResult(source any, originalSource any, isPrintStmt bool) string {
 	switch source := source.(type) {
 	case nil:
 		return "nil"
-	case int64:
-		switch originalSource.(type) {
-		case *LoxBuffer:
-			return fmt.Sprintf("0x%x", source)
-		default:
-			return fmt.Sprint(source)
-		}
 	case float64:
 		switch {
 		case math.IsInf(source, 1):
@@ -304,7 +306,7 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 			if element == originalSource {
 				bufferStr.WriteString(selfReferential(originalSource))
 			} else {
-				bufferStr.WriteString(getResult(element, originalSource, false))
+				bufferStr.WriteString(getBufferElementHexResult(element))
 			}
 			if i < sourceLen-1 {
 				bufferStr.WriteString(", ")
