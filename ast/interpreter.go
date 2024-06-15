@@ -533,6 +533,10 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			switch right := right.(type) {
 			case int64:
 				return left == float64(right), nil
+			case float64:
+				if math.IsNaN(left) && math.IsNaN(right) {
+					return true, nil
+				}
 			}
 		}
 		return left == right, nil
@@ -552,6 +556,10 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			switch right := right.(type) {
 			case int64:
 				return left != float64(right), nil
+			case float64:
+				if math.IsNaN(left) && math.IsNaN(right) {
+					return false, nil
+				}
 			}
 		}
 		return left != right, nil

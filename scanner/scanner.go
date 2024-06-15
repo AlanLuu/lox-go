@@ -24,6 +24,8 @@ var keywords = map[string]token.TokenType{
 	"fun":      token.FUN,
 	"if":       token.IF,
 	"import":   token.IMPORT,
+	"Infinity": token.INFINITY,
+	"NaN":      token.NAN,
 	"nil":      token.NIL,
 	"or":       token.OR,
 	"print":    token.PRINT,

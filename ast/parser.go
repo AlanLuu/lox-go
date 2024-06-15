@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -953,6 +954,10 @@ func (p *Parser) primary() (Expr, error) {
 		return Literal{Value: false}, nil
 	case p.match(token.TRUE):
 		return Literal{Value: true}, nil
+	case p.match(token.INFINITY):
+		return Literal{Value: math.Inf(1)}, nil
+	case p.match(token.NAN):
+		return Literal{Value: math.NaN()}, nil
 	case p.match(token.NIL):
 		return Literal{Value: nil}, nil
 	case p.match(token.NUMBER):

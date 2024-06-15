@@ -63,6 +63,8 @@ const (
 	FUN
 	IF
 	IMPORT
+	INFINITY
+	NAN
 	NIL
 	OR
 	PRINT
@@ -140,6 +142,8 @@ var tokenArr = [...]string{
 	"FUN",
 	"IF",
 	"IMPORT",
+	"INFINITY",
+	"NAN",
 	"NIL",
 	"OR",
 	"PRINT",
