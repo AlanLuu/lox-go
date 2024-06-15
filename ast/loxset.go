@@ -11,7 +11,7 @@ import (
 
 func CanBeSetElementCheck(element any) (bool, string) {
 	switch element := element.(type) {
-	case *LoxDict, *LoxList, *LoxSet:
+	case *LoxBuffer, *LoxDict, *LoxList, *LoxSet:
 		return false, fmt.Sprintf("Type '%v' cannot be used as set element.", getType(element))
 	}
 	return true, ""

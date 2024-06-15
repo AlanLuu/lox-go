@@ -11,7 +11,7 @@ import (
 
 func CanBeDictKeyCheck(key any) (bool, string) {
 	switch key := key.(type) {
-	case *LoxDict, *LoxList, *LoxSet:
+	case *LoxBuffer, *LoxDict, *LoxList, *LoxSet:
 		return false, fmt.Sprintf("Type '%v' cannot be used as dictionary key.", getType(key))
 	}
 	return true, ""

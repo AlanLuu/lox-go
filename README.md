@@ -220,7 +220,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Set an element: `dict[key] = value;`
     - Merge two dictionaries together: `dict | dict2`
         - If a key exists in both `dict` and `dict2`, the key in the merged dictionary becomes associated with the value from `dict2`
-    - The following cannot be used as dictionary keys: dictionary, list, set
+    - The following cannot be used as dictionary keys: buffer, dictionary, list, set
     - Besides these operations, dictionaries also have some methods associated with them:
         - `dictionary.clear()`, which removes all keys from the dictionary
         - `dictionary.containsKey(key)`, which returns `true` if the specified key exists in the dictionary and `false` otherwise
@@ -242,7 +242,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Subset test: `a <= b`
         - Proper superset test: `a > b`
         - Superset test: `a >= b`
-    - The following cannot be used as set elements: dictionary, list, set
+    - The following cannot be used as set elements: buffer, dictionary, list, set
     - Besides these operations, sets also have some methods associated with them:
         - `set.add(element)`, which adds an element to the set if it is not already in the set. This method returns `true` if the element was successfully added, `false` if it was not, and throws a runtime error if the element is an object that cannot be a set element
         - `set.clear()`, which removes all elements from the set
