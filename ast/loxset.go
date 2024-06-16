@@ -216,8 +216,15 @@ func (l *LoxSet) isProperSuperset(other *LoxSet) bool {
 }
 
 func (l *LoxSet) remove(element any) bool {
-	if l.elements[element] {
-		delete(l.elements, element)
+	var theElement any
+	switch element := element.(type) {
+	case *LoxString:
+		theElement = LoxStringStr{element.str, element.quote}
+	default:
+		theElement = element
+	}
+	if l.elements[theElement] {
+		delete(l.elements, theElement)
 		return true
 	}
 	return false
