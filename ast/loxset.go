@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -20,6 +21,21 @@ func CanBeSetElementCheck(element any) (bool, string) {
 type LoxSet struct {
 	elements map[any]bool
 	methods  map[string]*struct{ ProtoLoxCallable }
+}
+
+type LoxSetIterator struct {
+	elements list.List[any]
+	index    int
+}
+
+func (l *LoxSetIterator) HasNext() bool {
+	return l.index < len(l.elements)
+}
+
+func (l *LoxSetIterator) Next() any {
+	element := l.elements[l.index]
+	l.index++
+	return element
 }
 
 func NewLoxSet(elements map[any]bool) *LoxSet {
@@ -254,6 +270,19 @@ func (l *LoxSet) union(other *LoxSet) *LoxSet {
 		newSet.add(element)
 	}
 	return newSet
+}
+
+func (l *LoxSet) Iterator() interfaces.Iterator {
+	elements := list.NewList[any]()
+	for element := range l.elements {
+		switch element := element.(type) {
+		case LoxStringStr:
+			elements.Add(NewLoxString(element.str, element.quote))
+		default:
+			elements.Add(element)
+		}
+	}
+	return &LoxSetIterator{elements, 0}
 }
 
 func (l *LoxSet) Length() int64 {

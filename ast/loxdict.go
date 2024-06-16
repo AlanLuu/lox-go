@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -24,6 +25,21 @@ func UnknownDictKey(key any) string {
 type LoxDict struct {
 	entries map[any]any
 	methods map[string]*struct{ ProtoLoxCallable }
+}
+
+type LoxDictIterator struct {
+	pairs list.List[*LoxList]
+	index int
+}
+
+func (l *LoxDictIterator) HasNext() bool {
+	return l.index < len(l.pairs)
+}
+
+func (l *LoxDictIterator) Next() any {
+	pair := l.pairs[l.index]
+	l.index++
+	return pair
 }
 
 func NewLoxDict(entries map[any]any) *LoxDict {
@@ -164,6 +180,27 @@ func (l *LoxDict) removeKey(key any) any {
 	}
 	delete(l.entries, keyItem)
 	return value
+}
+
+func (l *LoxDict) Iterator() interfaces.Iterator {
+	pairs := list.NewList[*LoxList]()
+	for key, value := range l.entries {
+		pair := list.NewList[any]()
+		switch key := key.(type) {
+		case LoxStringStr:
+			pair.Add(NewLoxString(key.str, key.quote))
+		default:
+			pair.Add(key)
+		}
+		switch value := value.(type) {
+		case LoxStringStr:
+			pair.Add(NewLoxString(value.str, value.quote))
+		default:
+			pair.Add(value)
+		}
+		pairs.Add(NewLoxList(pair))
+	}
+	return &LoxDictIterator{pairs, 0}
 }
 
 func (l *LoxDict) Length() int64 {
