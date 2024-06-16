@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -17,6 +18,21 @@ type LoxString struct {
 	str     string
 	quote   byte
 	methods map[string]*struct{ ProtoLoxCallable }
+}
+
+type LoxStringIterator struct {
+	loxStr *LoxString
+	index  int64
+}
+
+func (l *LoxStringIterator) HasNext() bool {
+	return l.index < l.loxStr.Length()
+}
+
+func (l *LoxStringIterator) Next() any {
+	c := l.loxStr.str[l.index]
+	l.index++
+	return NewLoxStringQuote(string(c))
 }
 
 func NewLoxString(str string, quote byte) *LoxString {
@@ -345,6 +361,10 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Strings have no property called '"+methodName+"'.")
+}
+
+func (l *LoxString) Iterator() interfaces.Iterator {
+	return &LoxStringIterator{l, 0}
 }
 
 func (l *LoxString) Length() int64 {

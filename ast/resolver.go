@@ -124,6 +124,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitEnumStmt(stmt)
 	case For:
 		return r.visitForStmt(stmt)
+	case ForEach:
+		return r.visitForEachStmt(stmt)
 	case Function:
 		return r.visitFunctionStmt(stmt)
 	case Expression:
@@ -329,6 +331,34 @@ func (r *Resolver) visitForStmt(stmt For) error {
 		return resolveErr
 	}
 	return r.resolveStmt(stmt.Body)
+}
+
+func (r *Resolver) visitForEachStmt(stmt ForEach) error {
+	resolveErr := r.resolveExpr(stmt.Iterable)
+	if resolveErr != nil {
+		return resolveErr
+	}
+
+	r.beginScope()
+	defer r.endScope()
+
+	declareErr := r.declare(stmt.VariableName)
+	if declareErr != nil {
+		return declareErr
+	}
+	r.define(stmt.VariableName)
+
+	visitVariableNameErr := r.visitVariableExpr(Variable{stmt.VariableName})
+	if visitVariableNameErr != nil {
+		return visitVariableNameErr
+	}
+
+	switch body := stmt.Body.(type) {
+	case Block:
+		return r.Resolve(body.Statements)
+	default:
+		return r.resolveStmt(body)
+	}
 }
 
 func (r *Resolver) visitFunctionExpr(expr FunctionExpr) error {

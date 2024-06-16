@@ -21,6 +21,7 @@ var keywords = map[string]token.TokenType{
 	"false":    token.FALSE,
 	"finally":  token.FINALLY,
 	"for":      token.FOR,
+	"foreach":  token.FOREACH,
 	"fun":      token.FUN,
 	"if":       token.IF,
 	"import":   token.IMPORT,

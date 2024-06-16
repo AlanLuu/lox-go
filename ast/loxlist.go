@@ -40,6 +40,21 @@ type LoxList struct {
 	methods  map[string]*struct{ ProtoLoxCallable }
 }
 
+type LoxListIterator struct {
+	loxList *LoxList
+	index   int64
+}
+
+func (l *LoxListIterator) HasNext() bool {
+	return l.index < l.loxList.Length()
+}
+
+func (l *LoxListIterator) Next() any {
+	element := l.loxList.elements[l.index]
+	l.index++
+	return element
+}
+
 func NewLoxList(elements list.List[any]) *LoxList {
 	return &LoxList{
 		elements: elements,
@@ -580,6 +595,10 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Lists have no property called '"+methodName+"'.")
+}
+
+func (l *LoxList) Iterator() interfaces.Iterator {
+	return &LoxListIterator{l, 0}
 }
 
 func (l *LoxList) Length() int64 {

@@ -78,6 +78,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitExpressionStmt(expr)
 	case For:
 		return i.visitForStmt(expr)
+	case ForEach:
+		return i.visitForEachStmt(expr)
 	case Function:
 		return i.visitFunctionStmt(expr)
 	case FunctionExpr:
@@ -157,7 +159,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, DoWhile, Call:
+				case While, For, ForEach, DoWhile, Call:
 					continue
 				}
 			}
@@ -182,7 +184,7 @@ func (i *Interpreter) InterpretReturnLast(statements list.List[Stmt]) (any, erro
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, DoWhile, Call:
+				case While, For, ForEach, DoWhile, Call:
 					continue
 				}
 			}
@@ -974,7 +976,7 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, DoWhile:
+				case While, For, ForEach, DoWhile:
 					if _, ok := value.(Return); !ok {
 						continue
 					}
@@ -1141,6 +1143,75 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				if incrementErr != nil {
 					return nil, incrementErr
 				}
+			}
+		}
+	}
+	return nil, nil
+}
+
+func (i *Interpreter) visitForEachStmt(stmt ForEach) (any, error) {
+	inType, inTypeErr := i.evaluate(stmt.Iterable)
+	if inTypeErr != nil {
+		return nil, inTypeErr
+	}
+	if _, ok := inType.(interfaces.Iterable); !ok {
+		return nil, loxerror.RuntimeError(stmt.ForEachToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(inType)))
+	}
+	iterator := inType.(interfaces.Iterable).Iterator()
+
+	tempEnvironment := env.NewEnvironmentEnclosing(i.environment)
+	isBlock := false
+	switch stmt.Body.(type) {
+	case Block:
+		isBlock = true
+	default:
+		previous := i.environment
+		i.environment = tempEnvironment
+		defer func() {
+			i.environment = previous
+		}()
+	}
+
+	enteredLoop := false
+	loopInterrupted := false
+	for iterator.HasNext() {
+		if loopInterrupted {
+			return nil, loxerror.RuntimeError(stmt.ForEachToken, "loop interrupted")
+		}
+		if !enteredLoop {
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt)
+			defer func() {
+				if !loopInterrupted {
+					sigChan <- loxsignal.LoopSignal{}
+				}
+				signal.Stop(sigChan)
+			}()
+			go func() {
+				sig := <-sigChan
+				switch sig {
+				case os.Interrupt:
+					loopInterrupted = true
+				}
+			}()
+			enteredLoop = true
+		}
+		tempEnvironment.Define(stmt.VariableName.Lexeme, iterator.Next())
+		var value any
+		var evalErr error
+		if isBlock {
+			value, evalErr = i.visitBlockStmtEnv(stmt.Body.(Block), tempEnvironment)
+		} else {
+			value, evalErr = i.evaluate(stmt.Body)
+		}
+		if evalErr != nil {
+			switch value := value.(type) {
+			case Break, Return:
+				return value, evalErr
+			case Continue:
+			default:
+				return nil, evalErr
 			}
 		}
 	}

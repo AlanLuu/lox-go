@@ -60,6 +60,7 @@ const (
 	FALSE
 	FINALLY
 	FOR
+	FOREACH
 	FUN
 	IF
 	IMPORT
@@ -139,6 +140,7 @@ var tokenArr = [...]string{
 	"FALSE",
 	"FINALLY",
 	"FOR",
+	"FOREACH",
 	"FUN",
 	"IF",
 	"IMPORT",

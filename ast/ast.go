@@ -70,6 +70,13 @@ type For struct {
 	ForToken    *token.Token
 }
 
+type ForEach struct {
+	VariableName *token.Token
+	Iterable     Expr
+	Body         Stmt
+	ForEachToken *token.Token
+}
+
 type Function struct {
 	Name     *token.Token
 	Function FunctionExpr

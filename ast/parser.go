@@ -724,6 +724,61 @@ func (p *Parser) forStatement() (Stmt, error) {
 	}, nil
 }
 
+func (p *Parser) forEachStatement() (Stmt, error) {
+	p.loopDepth++
+	defer func() {
+		p.loopDepth--
+	}()
+
+	forEachToken := p.previous()
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'foreach'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+
+	_, varErr := p.consume(token.VAR, "Expected 'var' after '('.")
+	if varErr != nil {
+		return nil, varErr
+	}
+
+	variableName, variableNameErr := p.consume(token.IDENTIFIER, "Expected identifier name after 'var'.")
+	if variableNameErr != nil {
+		return nil, variableNameErr
+	}
+
+	inErrMsg := "Expected 'in' after identifier name."
+	if !p.match(token.IDENTIFIER) {
+		return nil, p.error(p.peek(), inErrMsg)
+	}
+
+	inKeyword := p.previous()
+	if inKeyword.Lexeme != "in" {
+		return nil, p.error(inKeyword, inErrMsg)
+	}
+
+	iterable, iterableErr := p.expression()
+	if iterableErr != nil {
+		return nil, iterableErr
+	}
+
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after expression.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+
+	body, bodyErr := p.statement(true)
+	if bodyErr != nil {
+		return nil, bodyErr
+	}
+
+	return ForEach{
+		VariableName: variableName,
+		Iterable:     iterable,
+		Body:         body,
+		ForEachToken: forEachToken,
+	}, nil
+}
+
 func (p *Parser) function(kind string) (Function, error) {
 	emptyFuncNode := Function{}
 	name, nameErr := p.consume(token.IDENTIFIER, fmt.Sprintf("Expected %v name.", kind))
@@ -1039,6 +1094,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.doWhileStatement()
 	case p.match(token.FOR):
 		return p.forStatement()
+	case p.match(token.FOREACH):
+		return p.forEachStatement()
 	case p.match(token.IF):
 		return p.ifStatement()
 	case p.match(token.IMPORT):
