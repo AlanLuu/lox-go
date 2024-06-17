@@ -70,6 +70,25 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         i = i + 1;
     } while (i <= 10);
     ```
+- Foreach loops are supported in this implementation of Lox
+    ```js
+    var iterable = [1, 2, 3, 4, 5];
+    foreach (var element in iterable) {
+        print element;
+    }
+    ```
+    - The target of a foreach loop must be an iterable type. Iterable types are the following:
+        - String
+            - For each iteration, `element` is each character of the string iterated in order
+        - List
+            - For each iteration, `element` is each element of the list iterated in order
+        - Buffer
+            - For each iteration, `element` is each element of the buffer iterated in order
+        - Dictionary
+            - For each iteration, `element` is a list with two elements, with the first element being a dictionary key and the second element being the dictionary value corresponding to that key
+        - Set
+            - For each iteration, `element` is each element of the set
+    - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Try-catch-finally statements are supported in this implementation of Lox
     ```js
     try {
