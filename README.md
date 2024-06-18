@@ -227,7 +227,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Attempting to use an index value larger than the length of the list will cause a runtime error
 - A buffer type is supported in this implementation of Lox, mainly for use in manipulating binary files
     - Buffers are similar to lists, except they can only contain integers between 0 and 255 inclusive, and attempting to set a buffer element to an invalid value will throw a runtime error
-    - Buffers share the same syntax in regards to getting and setting elements
+    - Buffers share the same syntax in regards to getting and setting elements, concatenating two buffers into a new buffer, and getting a new buffer with all elements from the original buffer repeated a number of times
     - Buffers share the same methods as lists, except that the usual element restrictions are in place in terms of adding and setting elements, and any shared methods that normally return lists return buffers instead
         - Notably, the `map` method on buffers throws a runtime error if its callback function ever returns a value that is not an integer or is an integer less than 0 or greater than 255
     - Besides the methods shared with lists, buffers also have the following methods associated with them:

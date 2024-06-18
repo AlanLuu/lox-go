@@ -443,6 +443,25 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 		}
 		return math.NaN(), nil
 	}
+	handleNumBuffer := func(left int64, right *LoxBuffer) (any, error) {
+		switch expr.Operator.TokenType {
+		case token.STAR:
+			if left <= 0 || len(right.elements) == 0 {
+				return EmptyLoxBuffer(), nil
+			}
+			newBuffer := EmptyLoxBuffer()
+			for i := int64(0); i < left; i++ {
+				for _, element := range right.elements {
+					addErr := newBuffer.add(element)
+					if addErr != nil {
+						return nil, runtimeErrorWrapper(addErr.Error())
+					}
+				}
+			}
+			return newBuffer, nil
+		}
+		return math.NaN(), nil
+	}
 	handleNumList := func(left int64, right *LoxList) (any, error) {
 		switch expr.Operator.TokenType {
 		case token.STAR:
@@ -598,6 +617,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(float64(left), boolMap[right], true)
 		case *LoxString:
 			return handleNumString(float64(left), right)
+		case *LoxBuffer:
+			return handleNumBuffer(left, right)
 		case *LoxList:
 			return handleNumList(left, right)
 		case nil:
@@ -631,6 +652,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			case token.STAR:
 				return handleNumString(boolMap[left], right)
 			}
+		case *LoxBuffer:
+			return handleNumBuffer(int64(boolMap[left]), right)
 		case *LoxList:
 			return handleNumList(int64(boolMap[left]), right)
 		case nil:
@@ -656,6 +679,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 					return NewLoxString(left.str+right.str, '"'), nil
 				}
 				return NewLoxString(left.str+right.str, '\''), nil
+			case *LoxBuffer:
+				return left.NewLoxString(left.str + right.String()), nil
 			case *LoxDict:
 				return left.NewLoxString(left.str + right.String()), nil
 			case *LoxList:
@@ -677,6 +702,53 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return repeat(left, int64(boolMap[right]))
 			case nil:
 				return EmptyLoxString(), nil
+			}
+		}
+	case *LoxBuffer:
+		switch expr.Operator.TokenType {
+		case token.PLUS:
+			switch right := right.(type) {
+			case *LoxString:
+				return right.NewLoxString(left.String() + right.str), nil
+			case *LoxBuffer:
+				newBuffer := EmptyLoxBuffer()
+				for _, element := range left.elements {
+					addErr := newBuffer.add(element)
+					if addErr != nil {
+						return nil, runtimeErrorWrapper(addErr.Error())
+					}
+				}
+				for _, element := range right.elements {
+					addErr := newBuffer.add(element)
+					if addErr != nil {
+						return nil, runtimeErrorWrapper(addErr.Error())
+					}
+				}
+				return newBuffer, nil
+			}
+		case token.STAR:
+			repeat := func(left *LoxBuffer, right int64) (*LoxBuffer, error) {
+				if right <= 0 || len(left.elements) == 0 {
+					return EmptyLoxBuffer(), nil
+				}
+				newBuffer := EmptyLoxBuffer()
+				for i := int64(0); i < right; i++ {
+					for _, element := range left.elements {
+						addErr := newBuffer.add(element)
+						if addErr != nil {
+							return nil, runtimeErrorWrapper(addErr.Error())
+						}
+					}
+				}
+				return newBuffer, nil
+			}
+			switch right := right.(type) {
+			case int64:
+				return repeat(left, right)
+			case bool:
+				return repeat(left, int64(boolMap[right]))
+			case nil:
+				return EmptyLoxBuffer(), nil
 			}
 		}
 	case *LoxDict:
@@ -773,6 +845,11 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return right.NewLoxString("nil" + right.str), nil
 			case token.STAR:
 				return EmptyLoxString(), nil
+			}
+		case *LoxBuffer:
+			switch expr.Operator.TokenType {
+			case token.STAR:
+				return EmptyLoxBuffer(), nil
 			}
 		case *LoxList:
 			switch expr.Operator.TokenType {
