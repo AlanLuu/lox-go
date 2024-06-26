@@ -43,6 +43,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineMathFuncs()   //Defined in mathfuncs.go
 	interpreter.defineNativeFuncs() //Defined in nativefuncs.go
 	interpreter.defineOSFuncs()     //Defined in osfuncs.go
+	interpreter.defineRandFuncs()   //Defined in randfuncs.go
 	return interpreter
 }
 
@@ -891,6 +892,10 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 				fmt.Sprintf("Expected %v arguments but got %v.", arity, argsLen),
 			)
 		}
+		switch function := function.(type) {
+		case LoxBuiltInProtoCallable:
+			arguments.AddAt(0, function.instance)
+		}
 		prevToken := i.callToken
 		defer func() {
 			i.callToken = prevToken
@@ -962,6 +967,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		classProperties,
 		instanceFields,
 		true,
+		false,
 	}
 	i.environment.Assign(stmt.Name, loxClass)
 	return nil, nil

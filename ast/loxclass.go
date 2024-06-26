@@ -15,6 +15,28 @@ type LoxClass struct {
 	classProperties map[string]any
 	instanceFields  map[string]any
 	canInstantiate  bool
+	isBuiltin       bool
+}
+
+type LoxBuiltInProtoCallable struct {
+	instance *LoxInstance
+	callable *struct{ ProtoLoxCallable }
+}
+
+func (l LoxBuiltInProtoCallable) arity() int {
+	return l.callable.arity()
+}
+
+func (l LoxBuiltInProtoCallable) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
+	return l.callable.call(interpreter, arguments)
+}
+
+func (l LoxBuiltInProtoCallable) String() string {
+	return l.callable.String()
+}
+
+func (l LoxBuiltInProtoCallable) Type() string {
+	return l.callable.Type()
 }
 
 func NewLoxClass(name string, superClass *LoxClass, canInstantiate bool) *LoxClass {
@@ -25,6 +47,7 @@ func NewLoxClass(name string, superClass *LoxClass, canInstantiate bool) *LoxCla
 		classProperties: make(map[string]any),
 		instanceFields:  make(map[string]any),
 		canInstantiate:  canInstantiate,
+		isBuiltin:       false,
 	}
 }
 
@@ -33,10 +56,18 @@ func (c *LoxClass) arity() int {
 		return -1
 	}
 	initializer, ok := c.findMethod("init")
-	if !ok {
-		return 0
+	if ok {
+		return initializer.arity()
+	} else if c.isBuiltin {
+		initializer, ok := c.instanceFields["init"]
+		if ok {
+			switch initializer := initializer.(type) {
+			case LoxCallable:
+				return initializer.arity()
+			}
+		}
 	}
-	return initializer.arity()
+	return 0
 }
 
 func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
@@ -46,13 +77,30 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 	}
 	instance := NewLoxInstance(c)
 	for name, field := range c.instanceFields {
-		instance.fields[name] = field
+		switch field := field.(type) {
+		case *struct{ ProtoLoxCallable }:
+			instance.fields[name] = LoxBuiltInProtoCallable{instance, field}
+		default:
+			instance.fields[name] = field
+		}
 	}
 	initializer, ok := c.findMethod("init")
 	if ok {
 		call, callErr := initializer.bind(instance).call(interpreter, arguments)
 		if callErr != nil && call == nil {
 			return nil, callErr
+		}
+	} else if c.isBuiltin {
+		initializer, ok := c.instanceFields["init"]
+		if ok {
+			switch initializer := initializer.(type) {
+			case LoxCallable:
+				arguments.AddAt(0, instance)
+				call, callErr := initializer.call(interpreter, arguments)
+				if callErr != nil && call == nil {
+					return nil, callErr
+				}
+			}
 		}
 	}
 	return instance, nil
