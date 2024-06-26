@@ -145,6 +145,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `base32.decodeToBuf(string)`, which decodes the specified base32-encoded string into a buffer and returns that buffer
         - A runtime error is thrown if the specified string is not properly encoded as base32
     - `base32.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a base32 string and returns that encoded string
+- Methods to work with random number generation are defined under a built-in-class called `Rand`, which is documented [here](./doc/Rand.md)
 - Strings have some additional features associated with them:
     - Strings can be represented using single quotes as well
     - Strings can be indexed by an integer, which will return a new string with only the character at the specified index: `string[index]`
