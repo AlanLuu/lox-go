@@ -76,12 +76,14 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 			fmt.Sprintf("Cannot instantiate class '%v'.", c.name))
 	}
 	instance := NewLoxInstance(c)
-	for name, field := range c.instanceFields {
-		switch field := field.(type) {
-		case *struct{ ProtoLoxCallable }:
-			instance.fields[name] = LoxBuiltInProtoCallable{instance, field}
-		default:
-			instance.fields[name] = field
+	for cls := c; cls != nil; cls = cls.superClass {
+		for name, field := range cls.instanceFields {
+			switch field := field.(type) {
+			case *struct{ ProtoLoxCallable }:
+				instance.fields[name] = LoxBuiltInProtoCallable{instance, field}
+			default:
+				instance.fields[name] = field
+			}
 		}
 	}
 	initializer, ok := c.findMethod("init")
