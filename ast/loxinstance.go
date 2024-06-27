@@ -20,14 +20,21 @@ func NewLoxInstance(class *LoxClass) *LoxInstance {
 }
 
 func (i *LoxInstance) Get(name *token.Token) (any, error) {
-	value, ok := i.fields[name.Lexeme]
-	if ok {
-		return value, nil
+	value, foundValue := i.fields[name.Lexeme]
+	if foundValue {
+		switch value.(type) {
+		case LoxBuiltInProtoCallable:
+		default:
+			return value, nil
+		}
 	}
 	var method *LoxFunction
-	method, ok = i.class.findMethod(name.Lexeme)
+	method, ok := i.class.findMethod(name.Lexeme)
 	if ok {
 		return method.bind(i), nil
+	}
+	if foundValue {
+		return value, nil
 	}
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }

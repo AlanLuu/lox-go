@@ -1803,10 +1803,17 @@ func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {
 	superClass := i.environment.GetAtStr(distance, "super").(*LoxClass)
 	object := i.environment.GetAtStr(distance-1, "this").(*LoxInstance)
 	method, ok := superClass.findMethod(expr.Method.Lexeme)
-	if !ok {
-		return nil, loxerror.RuntimeError(expr.Method, "Undefined property '"+expr.Method.Lexeme+"'.")
+	if ok {
+		return method.bind(object), nil
 	}
-	return method.bind(object), nil
+	field, ok := superClass.findInstanceField(expr.Method.Lexeme)
+	if ok {
+		switch method := field.(type) {
+		case *struct{ ProtoLoxCallable }:
+			return LoxBuiltInProtoCallable{object, method}, nil
+		}
+	}
+	return nil, loxerror.RuntimeError(expr.Method, "Undefined property '"+expr.Method.Lexeme+"'.")
 }
 
 func (i *Interpreter) visitTernaryExpr(expr Ternary) (any, error) {

@@ -59,8 +59,8 @@ func (c *LoxClass) arity() int {
 	initializer, ok := c.findMethod("init")
 	if ok {
 		return initializer.arity()
-	} else if c.isBuiltin {
-		initializer, ok := c.instanceFields["init"]
+	} else if c.isChildOfBuiltInClass() {
+		initializer, ok := c.findInstanceField("init")
 		if ok {
 			switch initializer := initializer.(type) {
 			case LoxCallable:
@@ -79,11 +79,13 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 	instance := NewLoxInstance(c)
 	for cls := c; cls != nil; cls = cls.superClass {
 		for name, field := range cls.instanceFields {
-			switch field := field.(type) {
-			case *struct{ ProtoLoxCallable }:
-				instance.fields[name] = LoxBuiltInProtoCallable{instance, field}
-			default:
-				instance.fields[name] = field
+			if _, ok := instance.fields[name]; !ok {
+				switch field := field.(type) {
+				case *struct{ ProtoLoxCallable }:
+					instance.fields[name] = LoxBuiltInProtoCallable{instance, field}
+				default:
+					instance.fields[name] = field
+				}
 			}
 		}
 	}
@@ -93,8 +95,8 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 		if callErr != nil && call == nil {
 			return nil, callErr
 		}
-	} else if c.isBuiltin {
-		initializer, ok := c.instanceFields["init"]
+	} else if c.isChildOfBuiltInClass() {
+		initializer, ok := c.findInstanceField("init")
 		if ok {
 			switch initializer := initializer.(type) {
 			case LoxCallable:
@@ -127,6 +129,17 @@ func (c *LoxClass) Get(name *token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }
 
+func (c *LoxClass) findInstanceField(name string) (any, bool) {
+	value, ok := c.instanceFields[name]
+	if ok {
+		return value, ok
+	}
+	if c.superClass != nil {
+		return c.superClass.findInstanceField(name)
+	}
+	return value, ok
+}
+
 func (c *LoxClass) findMethod(name string) (*LoxFunction, bool) {
 	value, ok := c.methods[name]
 	if ok {
@@ -136,6 +149,15 @@ func (c *LoxClass) findMethod(name string) (*LoxFunction, bool) {
 		return c.superClass.findMethod(name)
 	}
 	return value, ok
+}
+
+func (c *LoxClass) isChildOfBuiltInClass() bool {
+	for cls := c; cls != nil; cls = cls.superClass {
+		if cls.isBuiltin {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *LoxClass) String() string {
