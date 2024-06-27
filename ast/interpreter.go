@@ -964,6 +964,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		stmt.Name.Lexeme,
 		superClass,
 		methods,
+		make(map[string]*LoxFunction),
 		classProperties,
 		instanceFields,
 		true,

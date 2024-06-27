@@ -9,13 +9,14 @@ import (
 )
 
 type LoxClass struct {
-	name            string
-	superClass      *LoxClass
-	methods         map[string]*LoxFunction
-	classProperties map[string]any
-	instanceFields  map[string]any
-	canInstantiate  bool
-	isBuiltin       bool
+	name                string
+	superClass          *LoxClass
+	methods             map[string]*LoxFunction
+	bindedStaticMethods map[string]*LoxFunction
+	classProperties     map[string]any
+	instanceFields      map[string]any
+	canInstantiate      bool
+	isBuiltin           bool
 }
 
 type LoxBuiltInProtoCallable struct {
@@ -109,11 +110,17 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 }
 
 func (c *LoxClass) Get(name *token.Token) (any, error) {
+	staticMethod, ok := c.bindedStaticMethods[name.Lexeme]
+	if ok {
+		return staticMethod, nil
+	}
 	item, ok := c.classProperties[name.Lexeme]
 	if ok {
 		switch method := item.(type) {
 		case *LoxFunction:
-			return method.bind(c), nil
+			bindedMethod := method.bind(c)
+			c.bindedStaticMethods[name.Lexeme] = bindedMethod
+			return bindedMethod, nil
 		}
 		return item, nil
 	}
