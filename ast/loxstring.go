@@ -265,6 +265,14 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
+	case "toList":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newList := list.NewList[any]()
+			for _, c := range l.str {
+				newList.Add(NewLoxStringQuote(string(c)))
+			}
+			return NewLoxList(newList), nil
+		})
 	case "toNum":
 		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			useParseFloat := func() (any, error) {
