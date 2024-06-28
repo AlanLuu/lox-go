@@ -112,21 +112,51 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 }
 
 func (c *LoxClass) Get(name *token.Token) (any, error) {
-	staticMethod, ok := c.bindedStaticMethods[name.Lexeme]
+	staticMethod, ok := c.findBindedStaticMethod(name.Lexeme)
 	if ok {
 		return staticMethod, nil
 	}
-	item, ok := c.classProperties[name.Lexeme]
+	item, ok, depth := c.findClassProperty(name.Lexeme)
 	if ok {
 		switch method := item.(type) {
 		case *LoxFunction:
 			bindedMethod := method.bind(c)
-			c.bindedStaticMethods[name.Lexeme] = bindedMethod
+			cls := c
+			for i := 0; i < depth; i++ {
+				cls = cls.superClass
+			}
+			cls.bindedStaticMethods[name.Lexeme] = bindedMethod
 			return bindedMethod, nil
 		}
 		return item, nil
 	}
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
+}
+
+func (c *LoxClass) findBindedStaticMethod(name string) (*LoxFunction, bool) {
+	value, ok := c.bindedStaticMethods[name]
+	if ok {
+		return value, ok
+	}
+	if c.superClass != nil {
+		return c.superClass.findBindedStaticMethod(name)
+	}
+	return value, ok
+}
+
+func (c *LoxClass) findClassProperty(name string) (any, bool, int) {
+	return c.findClassPropertyHelper(name, 0)
+}
+
+func (c *LoxClass) findClassPropertyHelper(name string, depth int) (any, bool, int) {
+	value, ok := c.classProperties[name]
+	if ok {
+		return value, ok, depth
+	}
+	if c.superClass != nil {
+		return c.superClass.findClassPropertyHelper(name, depth+1)
+	}
+	return value, ok, depth
 }
 
 func (c *LoxClass) findInstanceField(name string) (any, bool) {
