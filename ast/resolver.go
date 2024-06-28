@@ -266,13 +266,10 @@ func (r *Resolver) visitClassStmt(stmt Class) error {
 		}
 	}
 	for _, method := range stmt.ClassMethods {
-		r.beginScope()
-		r.Scopes.Peek()["this"] = true
 		resolveErr := r.resolveFunction(method.Function, functiontype.METHOD)
 		if resolveErr != nil {
 			return resolveErr
 		}
-		r.endScope()
 	}
 	for _, field := range stmt.ClassFields {
 		resolveErr := r.resolveExpr(field)

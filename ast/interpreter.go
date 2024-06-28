@@ -1801,16 +1801,28 @@ func (i *Interpreter) visitStringExpr(expr String) (any, error) {
 func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {
 	distance := i.locals[expr]
 	superClass := i.environment.GetAtStr(distance, "super").(*LoxClass)
-	object := i.environment.GetAtStr(distance-1, "this").(*LoxInstance)
-	method, ok := superClass.findMethod(expr.Method.Lexeme)
-	if ok {
-		return method.bind(object), nil
-	}
-	field, ok := superClass.findInstanceField(expr.Method.Lexeme)
-	if ok {
-		switch method := field.(type) {
-		case *struct{ ProtoLoxCallable }:
-			return LoxBuiltInProtoCallable{object, method}, nil
+	object := i.environment.GetAtStr(distance-1, "this")
+	switch object := object.(type) {
+	case *LoxInstance:
+		method, ok := superClass.findMethod(expr.Method.Lexeme)
+		if ok {
+			return method.bind(object), nil
+		}
+		field, ok := superClass.findInstanceField(expr.Method.Lexeme)
+		if ok {
+			switch method := field.(type) {
+			case *struct{ ProtoLoxCallable }:
+				return LoxBuiltInProtoCallable{object, method}, nil
+			}
+		}
+	case *LoxClass:
+		field, ok := superClass.Get(expr.Method)
+		if ok == nil {
+			switch field := field.(type) {
+			case *LoxFunction:
+				return field.bind(object), nil
+			}
+			return field, nil
 		}
 	}
 	return nil, loxerror.RuntimeError(expr.Method, "Undefined property '"+expr.Method.Lexeme+"'.")
