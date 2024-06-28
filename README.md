@@ -234,6 +234,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Notably, the `map` method on buffers throws a runtime error if its callback function ever returns a value that is not an integer or is an integer less than 0 or greater than 255
     - Besides the methods shared with lists, buffers also have the following methods associated with them:
         - `buffer.toList()`, which returns a new list with the elements from the buffer
+        - `buffer.toString()`, which attempts to convert the elements from the buffer into a string. If a portion of the buffer cannot be converted into a string, a runtime error is thrown, with the error message specifying the portion of the buffer that cannot be converted into a string
 - Dictionaries are supported in this implementation of Lox
     - Create a dictionary and assign it to a variable: `var dict = {"key": "value"};`
     - Get an element from a dictionary by key: `dict[key]`

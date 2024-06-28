@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -191,6 +192,48 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 				newList.Add(element)
 			}
 			return NewLoxList(newList), nil
+		})
+	case "toString":
+		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			var builder strings.Builder
+			var b [4]byte
+			bIndex := 0
+			bToStr := func() string {
+				var builder strings.Builder
+				builder.WriteByte('[')
+				for i := 0; i < bIndex; i++ {
+					builder.WriteString(fmt.Sprint(b[i]))
+					if i < bIndex-1 {
+						builder.WriteString(", ")
+					}
+				}
+				builder.WriteByte(']')
+				return builder.String()
+			}
+			convertErrMsg := "Failed to convert buffer elements '%v' to string."
+			useDoubleQuote := false
+			for _, element := range l.elements {
+				b[bIndex] = byte(element.(int64))
+				if r, _ := utf8.DecodeRune(b[:bIndex+1]); r != utf8.RuneError {
+					bIndex = 0
+					if !useDoubleQuote && r == '\'' {
+						useDoubleQuote = true
+					}
+					builder.WriteRune(r)
+				} else {
+					if bIndex == len(b)-1 {
+						return nil, loxerror.RuntimeError(name, fmt.Sprintf(convertErrMsg, bToStr()))
+					}
+					bIndex++
+				}
+			}
+			if bIndex != 0 {
+				return nil, loxerror.RuntimeError(name, fmt.Sprintf(convertErrMsg, bToStr()))
+			}
+			if useDoubleQuote {
+				return NewLoxString(builder.String(), '"'), nil
+			}
+			return NewLoxString(builder.String(), '\''), nil
 		})
 	case "with":
 		return bufferFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
