@@ -112,17 +112,20 @@ func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any
 }
 
 func (c *LoxClass) Get(name *token.Token) (any, error) {
-	staticMethod, ok := c.findBindedStaticMethod(name.Lexeme)
-	if ok {
+	staticMethod, foundMethod, methodDepth := c.findBindedStaticMethod(name.Lexeme)
+	if foundMethod && methodDepth == 0 {
 		return staticMethod, nil
 	}
-	item, ok, depth := c.findClassProperty(name.Lexeme)
-	if ok {
+	item, foundClassProp, classPropDepth := c.findClassProperty(name.Lexeme)
+	if foundClassProp {
 		switch method := item.(type) {
 		case *LoxFunction:
+			if classPropDepth == methodDepth && foundMethod {
+				return staticMethod, nil
+			}
 			bindedMethod := method.bind(c)
 			cls := c
-			for i := 0; i < depth; i++ {
+			for i := 0; i < classPropDepth; i++ {
 				cls = cls.superClass
 			}
 			cls.bindedStaticMethods[name.Lexeme] = bindedMethod
@@ -133,15 +136,19 @@ func (c *LoxClass) Get(name *token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "Undefined property '"+name.Lexeme+"'.")
 }
 
-func (c *LoxClass) findBindedStaticMethod(name string) (*LoxFunction, bool) {
+func (c *LoxClass) findBindedStaticMethod(name string) (*LoxFunction, bool, int) {
+	return c.findBindedStaticMethodHelper(name, 0)
+}
+
+func (c *LoxClass) findBindedStaticMethodHelper(name string, depth int) (*LoxFunction, bool, int) {
 	value, ok := c.bindedStaticMethods[name]
 	if ok {
-		return value, ok
+		return value, ok, depth
 	}
 	if c.superClass != nil {
-		return c.superClass.findBindedStaticMethod(name)
+		return c.superClass.findBindedStaticMethodHelper(name, depth+1)
 	}
-	return value, ok
+	return value, ok, depth
 }
 
 func (c *LoxClass) findClassProperty(name string) (any, bool, int) {
