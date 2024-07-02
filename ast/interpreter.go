@@ -599,12 +599,12 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 
 	if leftAsStringer, ok := left.(fmt.Stringer); ok {
 		if _, ok := right.(*LoxString); ok && expr.Operator.TokenType == token.PLUS {
-			left = NewLoxString(leftAsStringer.String(), '\'')
+			left = NewLoxStringQuote(leftAsStringer.String())
 		}
 	}
 	if rightAsStringer, ok := right.(fmt.Stringer); ok {
 		if _, ok := left.(*LoxString); ok && expr.Operator.TokenType == token.PLUS {
-			right = NewLoxString(rightAsStringer.String(), '\'')
+			right = NewLoxStringQuote(rightAsStringer.String())
 		}
 	}
 	switch left := left.(type) {
@@ -1479,7 +1479,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if indexValInt > indexEndValInt {
 				return EmptyLoxString(), nil
 			}
-			return NewLoxString(string([]rune(indexElement.str)[indexValInt:indexEndValInt]), '\''), nil
+			return NewLoxStringQuote(string([]rune(indexElement.str)[indexValInt:indexEndValInt])), nil
 		} else {
 			if _, ok := indexVal.(int64); !ok {
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
