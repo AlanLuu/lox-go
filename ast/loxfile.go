@@ -169,6 +169,14 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch lexemeName {
+	case "chdir":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			err := l.file.Chdir()
+			if err != nil {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			return nil, nil
+		})
 	case "chmod":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if mode, ok := args[0].(int64); ok {
