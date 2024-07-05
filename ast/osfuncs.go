@@ -150,6 +150,23 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(hostname), nil
 	})
+	osFunc("link", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.link' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.link' must be a string.")
+		}
+		target := args[0].(*LoxString).str
+		linkName := args[1].(*LoxString).str
+		err := os.Link(target, linkName)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("listdir", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var path string
 		argsLen := len(args)
@@ -250,6 +267,23 @@ func (i *Interpreter) defineOSFuncs() {
 		key := args[0].(*LoxString).str
 		value := args[1].(*LoxString).str
 		err := os.Setenv(key, value)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
+	osFunc("symlink", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.symlink' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.symlink' must be a string.")
+		}
+		target := args[0].(*LoxString).str
+		linkName := args[1].(*LoxString).str
+		err := os.Symlink(target, linkName)
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}

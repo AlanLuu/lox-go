@@ -20,6 +20,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.getuid()`, which returns the user ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.hostname()`, which returns the hostname of the computer as a string
+- `os.link(target, linkName)`, which creates a hard link to `target` with the name `linkName`, which are both strings
 - `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
 - `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory
 - `os.name`, which is a string that specifies the operating system that the program is running on
@@ -36,6 +37,7 @@ The following methods and fields are defined in the built-in `os` class:
     - If the directory is not empty, all files and directories inside it are removed recursively
 - `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
 - `os.setenv(key, value)`, which sets an environment variable with the specified key and value, which are both strings
+- `os.symlink(target, linkName)`, which creates a symbolic link to `target` with the name `linkName`, which are both strings
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
     - If the file already exists, it is truncated
