@@ -43,7 +43,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
     - `NaN` literals are supported using the identifier "NaN"
 - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
-- Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, `""`, `[]`, and `{}` are also falsy values
+- Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, `""`, `[]`, `{}`, `Set()`, and `Buffer()` are also falsy values
 - Binary, hexadecimal, and octal integer literals are supported in this implementation of Lox
     - Binary literals start with the prefix `0b`
     - Hexadecimal literals start with the prefix `0x`
@@ -306,7 +306,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
         - Pressing Ctrl+C will throw a keyboard interrupt runtime error, and pressing Ctrl+D will cause this function to return `nil`
-    - `len(element)`, which returns the length of a dictionary, list, set, or string
+    - `len(element)`, which returns the length of a buffer, dictionary, list, set, or string
+        - Buffers: the length is the number of elements in the buffer
         - Dictionaries: the length is the number of keys in the dictionary
         - Lists: the length is the number of elements in the list
         - Sets: the length is the number of elements in the set

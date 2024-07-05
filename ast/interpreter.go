@@ -205,14 +205,8 @@ func (i *Interpreter) isTruthy(obj any) bool {
 		return obj != 0
 	case float64:
 		return obj != 0.0 && !math.IsNaN(obj)
-	case *LoxDict:
-		return len(obj.entries) > 0
-	case *LoxList:
-		return len(obj.elements) > 0
-	case *LoxSet:
-		return len(obj.elements) > 0
-	case *LoxString:
-		return len(obj.str) > 0
+	case interfaces.Length:
+		return obj.Length() > 0
 	}
 	return true
 }
