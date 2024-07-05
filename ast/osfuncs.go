@@ -252,6 +252,23 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "removeAll", "string")
 	})
+	osFunc("rename", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.rename' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.rename' must be a string.")
+		}
+		oldPath := args[0].(*LoxString).str
+		newPath := args[1].(*LoxString).str
+		err := os.Rename(oldPath, newPath)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osClass.classProperties["SEEK_SET"] = int64(0)
 	osClass.classProperties["SEEK_CUR"] = int64(1)
 	osClass.classProperties["SEEK_END"] = int64(2)

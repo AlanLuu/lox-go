@@ -35,6 +35,7 @@ The following methods and fields are defined in the built-in `os` class:
     - If the directory is not empty, a runtime error is thrown
 - `os.removeAll(path)`, which removes the file or directory at the specified path string
     - If the directory is not empty, all files and directories inside it are removed recursively
+- `os.rename(oldPath, newPath)`, which renames the file at `oldPath` to the name specified by `newPath`, which are both strings. If a file at `newPath` already exists and is not a directory, it is replaced with the file at `oldPath`
 - `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
 - `os.setenv(key, value)`, which sets an environment variable with the specified key and value, which are both strings
 - `os.symlink(target, linkName)`, which creates a symbolic link to `target` with the name `linkName`, which are both strings
