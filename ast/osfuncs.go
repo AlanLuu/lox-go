@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/AlanLuu/lox/ast/filemode"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -231,6 +232,54 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, loxFileErr.Error())
 		}
 		return loxFile, nil
+	})
+	osFunc("pipe", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		r, w, err := os.Pipe()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		files := list.NewList[any]()
+		files.Add(&LoxFile{
+			file:       r,
+			name:       "",
+			mode:       filemode.READ,
+			isBinary:   false,
+			isClosed:   false,
+			properties: make(map[string]any),
+		})
+		files.Add(&LoxFile{
+			file:       w,
+			name:       "",
+			mode:       filemode.WRITE,
+			isBinary:   false,
+			isClosed:   false,
+			properties: make(map[string]any),
+		})
+		return NewLoxList(files), nil
+	})
+	osFunc("pipeBin", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		r, w, err := os.Pipe()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		files := list.NewList[any]()
+		files.Add(&LoxFile{
+			file:       r,
+			name:       "",
+			mode:       filemode.READ,
+			isBinary:   true,
+			isClosed:   false,
+			properties: make(map[string]any),
+		})
+		files.Add(&LoxFile{
+			file:       w,
+			name:       "",
+			mode:       filemode.WRITE,
+			isBinary:   true,
+			isClosed:   false,
+			properties: make(map[string]any),
+		})
+		return NewLoxList(files), nil
 	})
 	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {

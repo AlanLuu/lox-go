@@ -31,6 +31,10 @@ The following methods and fields are defined in the built-in `os` class:
         - `"a"`, which opens a file for writing, creating the file if it doesn't exist and appending to the file if it already exists
         - Along with the above modes, the letter `"b"` can also be specified to open a file in binary mode, such as `"rb"` for reading a binary file
             - The ordering doesn't matter, so the mode `"br"` is the same as `"rb"`
+- `os.pipe()`, which returns a list containing two file objects in text mode that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end
+    - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
+- `os.pipeBin()`, which returns a list containing two file objects in binary mode that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end
+    - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
 - `os.remove(path)`, which removes the file or empty directory at the specified path string
     - If the directory is not empty, a runtime error is thrown
 - `os.removeAll(path)`, which removes the file or directory at the specified path string
