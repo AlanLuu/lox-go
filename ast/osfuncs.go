@@ -32,6 +32,16 @@ func (i *Interpreter) defineOSFuncs() {
 		errStr := fmt.Sprintf("Argument to 'os.%v' must be a %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
+	stdStream := func(stream *os.File, mode filemode.FileMode, isBinary bool) *LoxFile {
+		return &LoxFile{
+			file:       stream,
+			name:       stream.Name(),
+			mode:       mode,
+			isBinary:   isBinary,
+			isClosed:   false,
+			properties: make(map[string]any),
+		}
+	}
 
 	osFunc("chdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
@@ -241,7 +251,7 @@ func (i *Interpreter) defineOSFuncs() {
 		files := list.NewList[any]()
 		files.Add(&LoxFile{
 			file:       r,
-			name:       "",
+			name:       r.Name(),
 			mode:       filemode.READ,
 			isBinary:   false,
 			isClosed:   false,
@@ -249,7 +259,7 @@ func (i *Interpreter) defineOSFuncs() {
 		})
 		files.Add(&LoxFile{
 			file:       w,
-			name:       "",
+			name:       w.Name(),
 			mode:       filemode.WRITE,
 			isBinary:   false,
 			isClosed:   false,
@@ -265,7 +275,7 @@ func (i *Interpreter) defineOSFuncs() {
 		files := list.NewList[any]()
 		files.Add(&LoxFile{
 			file:       r,
-			name:       "",
+			name:       r.Name(),
 			mode:       filemode.READ,
 			isBinary:   true,
 			isClosed:   false,
@@ -273,7 +283,7 @@ func (i *Interpreter) defineOSFuncs() {
 		})
 		files.Add(&LoxFile{
 			file:       w,
-			name:       "",
+			name:       w.Name(),
 			mode:       filemode.WRITE,
 			isBinary:   true,
 			isClosed:   false,
@@ -338,6 +348,12 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osClass.classProperties["stderr"] = stdStream(os.Stderr, filemode.WRITE, false)
+	osClass.classProperties["stdin"] = stdStream(os.Stdin, filemode.READ, false)
+	osClass.classProperties["stdout"] = stdStream(os.Stdout, filemode.WRITE, false)
+	osClass.classProperties["stderrBin"] = stdStream(os.Stderr, filemode.WRITE, true)
+	osClass.classProperties["stdinBin"] = stdStream(os.Stdin, filemode.READ, true)
+	osClass.classProperties["stdoutBin"] = stdStream(os.Stdout, filemode.WRITE, true)
 	osFunc("symlink", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

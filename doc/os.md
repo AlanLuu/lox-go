@@ -42,6 +42,12 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.rename(oldPath, newPath)`, which renames the file at `oldPath` to the name specified by `newPath`, which are both strings. If a file at `newPath` already exists and is not a directory, it is replaced with the file at `oldPath`
 - `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
 - `os.setenv(key, value)`, which sets an environment variable with the specified key and value, which are both strings
+- `os.stderr`, which is a file object that allows for writing text to the standard error stream
+- `os.stdin`, which is a file object that allows for reading text from the standard input stream
+- `os.stdout`, which is a file object that allows for writing text to the standard output stream
+- `os.stderrBin`, which is a file object that allows for writing binary data to the standard error stream
+- `os.stdinBin`, which is a file object that allows for reading binary data from the standard input stream
+- `os.stdoutBin`, which is a file object that allows for writing binary data to the standard output stream
 - `os.symlink(target, linkName)`, which creates a symbolic link to `target` with the name `linkName`, which are both strings
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
