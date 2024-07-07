@@ -70,6 +70,32 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("chown", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.chown' must be a string.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.chown' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'os.chown' must be an integer.")
+		}
+		if util.IsWindows() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"'os.chown' is unsupported on Windows.")
+		}
+		file := args[0].(*LoxString).str
+		uid := int(args[1].(int64))
+		gid := int(args[2].(int64))
+		err := os.Chown(file, uid, gid)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("clearenv", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		os.Clearenv()
 		return nil, nil

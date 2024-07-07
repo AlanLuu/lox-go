@@ -6,6 +6,9 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.chdir(directory)`, which changes the current working directory to the specified directory string
 - `os.chmod(path, mode)`, which changes the mode of the specified path string to `mode`
     - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable
+- `os.chown(path, uid, gid)`, which changes the uid and gid of the specified path string to `uid` and `gid`
+    - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
+    - This method does not work on Windows and throws an error if called on there
 - `os.clearenv()`, which removes all environment variables from the current process
 - `os.executable()`, which returns the absolute path name of the executable for the current process as a string
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
