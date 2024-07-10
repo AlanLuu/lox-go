@@ -172,6 +172,46 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'ord' must be a single character.")
 	})
+	nativeFunc("range", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 1:
+			if stop, ok := args[0].(int64); ok {
+				return NewLoxRangeStop(stop), nil
+			}
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Argument to 'range' must be an integer.")
+		case 2, 3:
+			if _, ok := args[0].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'range' must be an integer.")
+			}
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'range' must be an integer.")
+			}
+			start := args[0].(int64)
+			stop := args[1].(int64)
+			var step int64
+			if argsLen == 3 {
+				if _, ok := args[2].(int64); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Third argument to 'range' must be an integer.")
+				}
+				step = args[2].(int64)
+				if step == 0 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Third argument to 'range' cannot be 0.")
+				}
+			} else {
+				step = 1
+			}
+			return NewLoxRange(start, stop, step), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1, 2, or 3 arguments to 'range' but got %v.", argsLen))
+		}
+	})
 	nativeFunc("Set", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		set := EmptyLoxSet()
 		for _, element := range args {

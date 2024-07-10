@@ -1,0 +1,190 @@
+package ast
+
+import (
+	"fmt"
+
+	"github.com/AlanLuu/lox/interfaces"
+	"github.com/AlanLuu/lox/list"
+	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/token"
+)
+
+type LoxRange struct {
+	start   int64
+	stop    int64
+	step    int64
+	methods map[string]*struct{ ProtoLoxCallable }
+}
+
+type LoxRangeIterator struct {
+	theRange *LoxRange
+	current  int64
+}
+
+func (l *LoxRangeIterator) HasNext() bool {
+	if l.theRange.step == 0 {
+		return false
+	}
+	if l.theRange.step < 0 {
+		return l.current > l.theRange.stop
+	}
+	return l.current < l.theRange.stop
+}
+
+func (l *LoxRangeIterator) Next() any {
+	current := l.current
+	l.current += l.theRange.step
+	return current
+}
+
+func NewLoxRange(start int64, stop int64, step int64) *LoxRange {
+	return &LoxRange{
+		start:   start,
+		stop:    stop,
+		step:    step,
+		methods: make(map[string]*struct{ ProtoLoxCallable }),
+	}
+}
+
+func NewLoxRangeStop(stop int64) *LoxRange {
+	return NewLoxRange(0, stop, 1)
+}
+
+func NewLoxRangeStartStop(start int64, stop int64) *LoxRange {
+	return NewLoxRange(start, stop, 1)
+}
+
+func (l *LoxRange) Equals(obj any) bool {
+	switch obj := obj.(type) {
+	case *LoxRange:
+		return l.start == obj.start &&
+			l.stop == obj.stop &&
+			l.step == obj.step
+	default:
+		return false
+	}
+}
+
+func (l *LoxRange) Get(name *token.Token) (any, error) {
+	methodName := name.Lexeme
+	if method, ok := l.methods[methodName]; ok {
+		return method, nil
+	}
+	rangeFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
+		s := &struct{ ProtoLoxCallable }{}
+		s.arityMethod = func() int { return arity }
+		s.callMethod = method
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native range fn %v at %p>", methodName, s)
+		}
+		if _, ok := l.methods[methodName]; !ok {
+			l.methods[methodName] = s
+		}
+		return s, nil
+	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'range.%v' must be an %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
+	switch methodName {
+	case "contains":
+		return rangeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if value, ok := args[0].(int64); ok {
+				return l.contains(value), nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "index":
+		return rangeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if value, ok := args[0].(int64); ok {
+				return l.index(value), nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "start":
+		return l.start, nil
+	case "step":
+		return l.step, nil
+	case "stop":
+		return l.stop, nil
+	case "toBuffer":
+		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			buffer := EmptyLoxBuffer()
+			it := l.Iterator()
+			for it.HasNext() {
+				addErr := buffer.add(it.Next())
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "toList":
+		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			nums := list.NewList[any]()
+			it := l.Iterator()
+			for it.HasNext() {
+				nums.Add(it.Next())
+			}
+			return NewLoxList(nums), nil
+		})
+	case "toSet":
+		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newSet := EmptyLoxSet()
+			it := l.Iterator()
+			for it.HasNext() {
+				_, errStr := newSet.add(it.Next())
+				if len(errStr) > 0 {
+					return nil, loxerror.RuntimeError(name, errStr)
+				}
+			}
+			return newSet, nil
+		})
+	}
+	return nil, loxerror.RuntimeError(name, "Ranges have no property called '"+methodName+"'.")
+}
+
+func (l *LoxRange) contains(value int64) bool {
+	if l.step == 0 {
+		return false
+	}
+	if l.step < 0 {
+		return value <= l.start &&
+			value > l.stop &&
+			(value-l.start)%l.step == 0
+	}
+	return value >= l.start &&
+		value < l.stop &&
+		(value-l.start)%l.step == 0
+}
+
+func (l *LoxRange) index(value int64) int64 {
+	if !l.contains(value) {
+		return -1
+	}
+	return (value - l.start) / l.step
+}
+
+func (l *LoxRange) Iterator() interfaces.Iterator {
+	return &LoxRangeIterator{l, l.start}
+}
+
+func (l *LoxRange) Length() int64 {
+	if l.step > 0 && l.start < l.stop {
+		return ((l.stop - l.start - 1) / l.step) + 1
+	} else if l.step < 0 && l.stop < l.start {
+		return ((l.start - l.stop - 1) / -l.step) + 1
+	}
+	return 0
+}
+
+func (l *LoxRange) String() string {
+	if l.step == 1 {
+		return fmt.Sprintf("range(%v, %v)", l.start, l.stop)
+	}
+	return fmt.Sprintf("range(%v, %v, %v)", l.start, l.stop, l.step)
+}
+
+func (l *LoxRange) Type() string {
+	return "range"
+}

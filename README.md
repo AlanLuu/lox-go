@@ -86,6 +86,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each element of the buffer iterated in order
         - Dictionary
             - For each iteration, `element` is a list with two elements, with the first element being a dictionary key and the second element being the dictionary value corresponding to that key
+        - Range
+            - For each iteration, `element` is each generated integer from the range object
         - Set
             - For each iteration, `element` is each element of the set
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
@@ -274,6 +276,24 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `set.isEmpty()`, which returns `true` if the set contains no elements and `false` otherwise
         - `set.remove(element)`, which removes the specified element from the set. Returns `true` if the set contained `element`, false if it didn't, and throws a runtime error if the element is an object that cannot be a set element
         - `set.toList()`, which returns a list of all the elements in the set in no particular order
+- A range type is supported in this implementation of Lox
+    - A range is a sequence of integers generated on demand, starting from a start value, stopping at but not including the stop value, and updating the current value using the step value
+    - Ranges are iterables and can be iterated over, yielding the generated integers. For example:
+        - `range(5)` yields the integers [0, 1, 2, 3, 4]
+        - `range(1, 6)` yields the integers [1, 2, 3, 4, 5]
+        - `range(6, 1, -1)` yields the integers [6, 5, 4, 3, 2]
+        - `range(2, 12, 2)` yields the integers [2, 4, 6, 8, 10]
+        - `range(12, 2, -2)` yields the integers [12, 10, 8, 6, 4]
+    - Unlike lists of integers, ranges always take up the same amount of memory no matter what the start, stop, and step values of the range are
+    - Ranges have the following fields and methods associated with them:
+        - `range.contains(num)`, which returns `true` if `num` is in the range based on the start, stop, and step values and `false` otherwise
+        - `range.index(num)`, which returns the index value of `num` in the range or `-1` if `num` is not in the range
+        - `range.start`, which is the range object's start value as an integer
+        - `range.step`, which is the range object's step value as an integer
+        - `range.stop`, which is the range object's stop value as an integer
+        - `range.toBuffer()`, which attempts to return a buffer with all generated integers from the list as buffer elements, throwing an error if an integer generated from the range object is an invalid buffer value
+        - `range.toList()`, which returns a list with all generated integers from the range as list elements
+        - `range.toSet()`, which returns a set with all generated integers from the range as set elements
 - Enums are supported in this implementation of Lox
     ```js
     enum Token {
@@ -310,10 +330,13 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Buffers: the length is the number of elements in the buffer
         - Dictionaries: the length is the number of keys in the dictionary
         - Lists: the length is the number of elements in the list
+        - Ranges: the length is the number of integers in the range object based on its start, stop, and step values
         - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
+    - `range(stop)`, which takes in an integer and returns a range object with a start value of `0`, a stop value of `stop`, and a step value of `1`
+    - `range(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers and returns a range object with the specified parameters. If `step` is omitted, the resulting range object will have a step value of `1`
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `sleep(duration)`, which pauses the program for the specified duration in seconds
     - `type(element)`, which returns a string representing the type of the element
