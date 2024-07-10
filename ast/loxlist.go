@@ -164,7 +164,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 				argList[2] = l
 				for index, element := range l.elements {
 					argList[0] = element
-					argList[1] = index
+					argList[1] = int64(index)
 					result, resultErr := callback.call(i, argList)
 					if resultReturn, ok := result.(Return); ok {
 						result = resultReturn.FinalValue
@@ -187,7 +187,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 				argList[2] = l
 				for index, element := range l.elements {
 					argList[0] = element
-					argList[1] = index
+					argList[1] = int64(index)
 					result, resultErr := callback.call(i, argList)
 					if resultReturn, ok := result.(Return); ok {
 						result = resultReturn.FinalValue
@@ -488,7 +488,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 					}
 					argList[0] = value
 					argList[1] = element
-					argList[2] = index
+					argList[2] = int64(index)
 
 					var valueErr error
 					value, valueErr = callback.call(i, argList)

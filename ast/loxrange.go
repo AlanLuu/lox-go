@@ -90,11 +90,77 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		}
 		return s, nil
 	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
+	}
+	argMustBeType := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'range.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	argMustBeTypeAn := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'range.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
+	case "all":
+		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					argList[0] = it.Next()
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if !i.isTruthy(result) {
+						return false, nil
+					}
+					index++
+				}
+				return true, nil
+			}
+			return argMustBeType("function")
+		})
+	case "any":
+		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					argList[0] = it.Next()
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return true, nil
+					}
+					index++
+				}
+				return false, nil
+			}
+			return argMustBeType("function")
+		})
 	case "contains":
 		return rangeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if value, ok := args[0].(int64); ok {
@@ -115,6 +181,15 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		return l.step, nil
 	case "stop":
 		return l.stop, nil
+	case "sum":
+		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			var sum int64 = 0
+			it := l.Iterator()
+			for it.HasNext() {
+				sum += it.Next().(int64)
+			}
+			return sum, nil
+		})
 	case "toBuffer":
 		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			buffer := EmptyLoxBuffer()

@@ -294,12 +294,15 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `range(12, 2, -2)` yields the integers [12, 10, 8, 6, 4]
     - Unlike lists of integers, ranges always take up the same amount of memory no matter what the start, stop, and step values of the range are
     - Ranges have the following fields and methods associated with them:
+        - `range.all(callback)`, which returns `true` if the callback function returns `true` for all generated integers in the range and `false` otherwise
+        - `range.any(callback)` which returns `true` if the callback function returns `true` for any generated integer in the range and `false` otherwise
         - `range.contains(num)`, which returns `true` if `num` is in the range based on the start, stop, and step values and `false` otherwise
         - `range.index(num)`, which returns the index value of `num` in the range or `-1` if `num` is not in the range
         - `range.start`, which is the range object's start value as an integer
         - `range.step`, which is the range object's step value as an integer
         - `range.stop`, which is the range object's stop value as an integer
-        - `range.toBuffer()`, which attempts to return a buffer with all generated integers from the list as buffer elements, throwing an error if an integer generated from the range object is an invalid buffer value
+        - `range.sum()`, which returns the sum of all generated integers from the range as an integer
+        - `range.toBuffer()`, which attempts to return a buffer with all generated integers from the range as buffer elements, throwing an error if an integer generated from the range is an invalid buffer value
         - `range.toList()`, which returns a list with all generated integers from the range as list elements
         - `range.toSet()`, which returns a set with all generated integers from the range as set elements
 - Enums are supported in this implementation of Lox
