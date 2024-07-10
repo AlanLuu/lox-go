@@ -155,7 +155,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If `start >= end`, a new empty string is returned
         - `start` or `end` can be omitted, in which case the starting index will have a value of `0` if `start` is omitted and the ending index will have a value of `len(string)` if `end` is omitted
     - Negative integers are supported for string indexes, where a negative index `i` is equivalent to the index `i + len(string)`. For example, `string[-1]` refers to the last character in the string
-    - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the string to index into that string
+    - It is a runtime error to use a negative index value whose absolute value is greater than the length of the string or a positive index value greater than or equal to the length of the string to index into that string
     - Get a new string that is the original string repeated `n` times, where `n` is an integer: `string * n`
     - Escape characters in strings are supported:
         - `\'`: single quote
@@ -196,7 +196,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Set an element: `list[index] = value;`
     - Negative integers are supported for list indexes, where a negative index `i` is equivalent to the index `i + len(list)`. For example, `list[-1]` refers to the last element in the list
         - Negative indexes are also supported in list methods that accept integer values for list indexes as a parameter
-    - It is a runtime error to use an index value that is less than 0 or greater than or equal to the length of the list to get or set
+    - It is a runtime error to use a negative index value whose absolute value is greater than the length of the list or a positive index value greater than or equal to the length of the list to get or set
     - Concatenate two lists together into a new list: `list + list2`
     - Get a new list with all elements from the original list repeated `n` times, where `n` is an integer: `list * n`
     - Besides these operations, lists also have some methods associated with them:
@@ -278,6 +278,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `set.toList()`, which returns a list of all the elements in the set in no particular order
 - A range type is supported in this implementation of Lox
     - A range is a sequence of integers generated on demand, starting from a start value, stopping at but not including the stop value, and updating the current value using the step value
+    - Examples of creating range objects and assigning them to variables:
+        - `var x = range(5);`
+        - `var x = range(1, 6);`
+        - `var x = range(6, 1, -1);`
+        - `var x = range(2, 12, 2);`
+        - `var x = range(12, 2, -2);`
+    - Get an integer from a range object by index, where `index` is an integer: `range[index]`
+    - Get a new range object by slicing the original range object from indexes `start` to `end`, where `start` and `end` are integers: `range[start:end]`
     - Ranges are iterables and can be iterated over, yielding the generated integers. For example:
         - `range(5)` yields the integers [0, 1, 2, 3, 4]
         - `range(1, 6)` yields the integers [1, 2, 3, 4, 5]

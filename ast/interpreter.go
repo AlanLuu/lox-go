@@ -1597,6 +1597,48 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return indexElement.elements[indexValInt], nil
 		}
+	case *LoxRange:
+		if expr.IsSlice {
+			rangeLength := indexElement.Length()
+			if indexVal == nil {
+				indexVal = int64(0)
+			}
+			if indexEndVal == nil {
+				indexEndVal = rangeLength
+			}
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexVal))
+			}
+			if _, ok := indexEndVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexEndVal))
+			}
+			indexValInt := indexVal.(int64)
+			indexEndValInt := indexEndVal.(int64)
+			if indexValInt < 0 {
+				indexValInt += rangeLength
+			}
+			if indexEndValInt < 0 {
+				indexEndValInt += rangeLength
+			}
+			if indexEndValInt > rangeLength {
+				indexEndValInt = rangeLength
+			}
+			return indexElement.getRange(indexValInt, indexEndValInt), nil
+		} else {
+			if _, ok := indexVal.(int64); !ok {
+				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexVal))
+			}
+			indexValInt := indexVal.(int64)
+			originalIndexValInt := indexValInt
+			rangeLength := indexElement.Length()
+			if indexValInt < 0 {
+				indexValInt += rangeLength
+			}
+			if indexValInt < 0 || indexValInt >= rangeLength {
+				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexOutOfRange(originalIndexValInt))
+			}
+			return indexElement.get(indexValInt), nil
+		}
 	}
 	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into buffers, dictionaries, lists, and strings.")
 }

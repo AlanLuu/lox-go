@@ -9,6 +9,14 @@ import (
 	"github.com/AlanLuu/lox/token"
 )
 
+func RangeIndexMustBeWholeNum(index any) string {
+	return IndexMustBeWholeNum("Range", index)
+}
+
+func RangeIndexOutOfRange(index int64) string {
+	return fmt.Sprintf("Range index %v out of range.", index)
+}
+
 type LoxRange struct {
 	start   int64
 	stop    int64
@@ -156,6 +164,22 @@ func (l *LoxRange) contains(value int64) bool {
 	return value >= l.start &&
 		value < l.stop &&
 		(value-l.start)%l.step == 0
+}
+
+func (l *LoxRange) get(index int64) int64 {
+	return l.start + (index * l.step)
+}
+
+func (l *LoxRange) getRange(start int64, stop int64) *LoxRange {
+	newStart := l.start + start*l.step
+	if newStart > l.stop {
+		newStart = l.stop
+	}
+	newStop := l.start + stop*l.step
+	if newStop < l.start {
+		newStop = l.start
+	}
+	return NewLoxRange(newStart, newStop, l.step)
 }
 
 func (l *LoxRange) index(value int64) int64 {
