@@ -168,6 +168,27 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeTypeAn("integer")
 		})
+	case "forEach":
+		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					argList[0] = it.Next()
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+					index++
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
 	case "index":
 		return rangeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if value, ok := args[0].(int64); ok {
