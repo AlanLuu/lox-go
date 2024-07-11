@@ -168,6 +168,35 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeTypeAn("integer")
 		})
+	case "filter":
+		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				newList := list.NewList[any]()
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					element := it.Next()
+					argList[0] = element
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						newList.Clear()
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						newList.Add(element)
+					}
+					index++
+				}
+				return NewLoxList(newList), nil
+			}
+			return argMustBeType("function")
+		})
 	case "forEach":
 		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
@@ -195,6 +224,75 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 				return l.index(value), nil
 			}
 			return argMustBeTypeAn("integer")
+		})
+	case "map":
+		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				newList := list.NewList[any]()
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					argList[0] = it.Next()
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						newList.Add(resultReturn.FinalValue)
+					} else if resultErr != nil {
+						newList.Clear()
+						return nil, resultErr
+					} else {
+						newList.Add(result)
+					}
+					index++
+				}
+				return NewLoxList(newList), nil
+			}
+			return argMustBeType("function")
+		})
+	case "reduce":
+		return rangeFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 || argsLen > 2 {
+				return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if callback, ok := args[0].(*LoxFunction); ok {
+				it := l.Iterator()
+				var index int64 = 0
+				var value any
+				switch argsLen {
+				case 1:
+					if !it.HasNext() {
+						return nil, loxerror.RuntimeError(name, "Cannot call 'range.reduce' on empty range without initial value.")
+					}
+					value = it.Next()
+					index++
+				case 2:
+					value = args[1]
+				}
+
+				argList := getArgList(callback, 4)
+				defer argList.Clear()
+				argList[3] = l
+				for it.HasNext() {
+					argList[0] = value
+					argList[1] = it.Next()
+					argList[2] = index
+
+					var valueErr error
+					value, valueErr = callback.call(i, argList)
+					if valueReturn, ok := value.(Return); ok {
+						value = valueReturn.FinalValue
+					} else if valueErr != nil {
+						return nil, valueErr
+					}
+					index++
+				}
+				return value, nil
+			}
+			return nil, loxerror.RuntimeError(name, "First argument to 'range.reduce' must be a function.")
 		})
 	case "start":
 		return l.start, nil
