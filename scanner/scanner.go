@@ -3,6 +3,7 @@ package scanner
 import (
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -42,7 +43,7 @@ var keywords = map[string]token.TokenType{
 	"while":    token.WHILE,
 }
 
-var escapeChars = map[byte]byte{
+var escapeChars = map[rune]rune{
 	'\'': '\'',
 	'"':  '"',
 	'\\': '\\',
@@ -73,19 +74,19 @@ func NewScanner(source string) *Scanner {
 	}
 }
 
-func (sc *Scanner) advance() byte {
-	c := sc.sourceLine[sc.currentIndex]
+func (sc *Scanner) advance() rune {
+	c := []rune(sc.sourceLine)[sc.currentIndex]
 	sc.currentIndex++
 	return c
 }
 
 func (sc *Scanner) addToken(tokenType token.TokenType, literal any, quote byte) {
-	text := sc.sourceLine[sc.startIndex:sc.currentIndex]
+	text := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
 	sc.Tokens.Add(token.NewToken(tokenType, text, literal, sc.lineNum, quote))
 }
 
 func (sc *Scanner) handleNumber() error {
-	var digitSeparator byte = '_'
+	digitSeparator := '_'
 	isBinaryNum := false
 	isHexNum := false
 	isOctalNum := false
@@ -173,7 +174,7 @@ func (sc *Scanner) handleNumber() error {
 		}
 	}
 
-	numStr := sc.sourceLine[sc.startIndex:sc.currentIndex]
+	numStr := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
 	invalidLiteral := func(numType string) error {
 		return loxerror.GiveError(sc.lineNum, "", "Invalid "+numType+" literal")
 	}
@@ -207,7 +208,7 @@ func (sc *Scanner) handleIdentifier() {
 		sc.advance()
 	}
 
-	text := sc.sourceLine[sc.startIndex:sc.currentIndex]
+	text := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
 	tokenType, ok := keywords[text]
 	if !ok {
 		tokenType = token.IDENTIFIER
@@ -215,7 +216,7 @@ func (sc *Scanner) handleIdentifier() {
 	sc.addToken(tokenType, nil, 0)
 }
 
-func (sc *Scanner) handleString(quote byte) error {
+func (sc *Scanner) handleString(quote rune) error {
 	unclosedStringErr := func() error {
 		return loxerror.GiveError(sc.lineNum, "", "Unclosed string")
 	}
@@ -231,7 +232,7 @@ func (sc *Scanner) handleString(quote byte) error {
 		} else if tokenQuote == '"' && sc.peek() == '"' {
 			tokenQuote = '\''
 		}
-		currentChar := sc.sourceLine[sc.currentIndex]
+		currentChar := []rune(sc.sourceLine)[sc.currentIndex]
 		if !foundBackslash && currentChar == '\\' {
 			foundBackslash = true
 		} else if foundBackslash {
@@ -240,10 +241,10 @@ func (sc *Scanner) handleString(quote byte) error {
 				return loxerror.GiveError(sc.lineNum, "",
 					"Unknown escape character '"+string(currentChar)+"'.")
 			}
-			builder.WriteByte(escapeChar)
+			builder.WriteRune(escapeChar)
 			foundBackslash = false
 		} else {
-			builder.WriteByte(sc.sourceLine[sc.currentIndex])
+			builder.WriteRune([]rune(sc.sourceLine)[sc.currentIndex])
 		}
 		sc.advance()
 	}
@@ -258,56 +259,56 @@ func (sc *Scanner) handleString(quote byte) error {
 }
 
 func (sc *Scanner) isAtEnd() bool {
-	return sc.currentIndex >= len(sc.sourceLine)
+	return sc.currentIndex >= utf8.RuneCountInString(sc.sourceLine)
 }
 
-func isAlpha(b byte) bool {
-	return (b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z') || b == '_'
+func isAlpha(r rune) bool {
+	return (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || r == '_'
 }
 
-func isAlphaNumeric(b byte) bool {
-	return isAlpha(b) || isDigit(b)
+func isAlphaNumeric(r rune) bool {
+	return isAlpha(r) || isDigit(r)
 }
 
-func isDigit(b byte) bool {
-	return b >= '0' && b <= '9'
+func isDigit(r rune) bool {
+	return r >= '0' && r <= '9'
 }
 
-func isBinaryDigit(b byte) bool {
-	return b == '0' || b == '1'
+func isBinaryDigit(r rune) bool {
+	return r == '0' || r == '1'
 }
 
-func isHexDigit(b byte) bool {
-	return isDigit(b) || (b >= 'A' && b <= 'F') || (b >= 'a' && b <= 'f')
+func isHexDigit(r rune) bool {
+	return isDigit(r) || (r >= 'A' && r <= 'F') || (r >= 'a' && r <= 'f')
 }
 
-func isOctalDigit(b byte) bool {
-	return b >= '0' && b <= '7'
+func isOctalDigit(r rune) bool {
+	return r >= '0' && r <= '7'
 }
 
-func (sc *Scanner) match(expected byte) bool {
+func (sc *Scanner) match(expected rune) bool {
 	if sc.isAtEnd() {
 		return false
 	}
-	if sc.sourceLine[sc.currentIndex] != expected {
+	if []rune(sc.sourceLine)[sc.currentIndex] != expected {
 		return false
 	}
 	sc.currentIndex++
 	return true
 }
 
-func (sc *Scanner) peek() byte {
+func (sc *Scanner) peek() rune {
 	if sc.isAtEnd() {
 		return 0
 	}
-	return sc.sourceLine[sc.currentIndex]
+	return []rune(sc.sourceLine)[sc.currentIndex]
 }
 
-func (sc *Scanner) previous() byte {
+func (sc *Scanner) previous() rune {
 	if sc.currentIndex == 0 {
 		return 0
 	}
-	return sc.sourceLine[sc.currentIndex-1]
+	return []rune(sc.sourceLine)[sc.currentIndex-1]
 }
 
 func (sc *Scanner) scanToken() error {
@@ -428,7 +429,8 @@ func (sc *Scanner) scanToken() error {
 
 func (sc *Scanner) ScanTokens() error {
 	source := &sc.sourceLine
-	if len(*source) > 1 && (*source)[0] == '#' && (*source)[1] == '!' {
+	sourceLen := utf8.RuneCountInString(*source)
+	if sourceLen > 1 && []rune(*source)[0] == '#' && []rune(*source)[1] == '!' {
 		//Ignore line with "#!" (Unix shebang) at beginning of first line
 		for sc.peek() != '\n' && !sc.isAtEnd() {
 			sc.currentIndex++
