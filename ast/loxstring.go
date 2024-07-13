@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/interfaces"
@@ -182,6 +183,20 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxString(strings.ToLower(l.str), l.quote), nil
 		})
+	case "lstrip":
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				return NewLoxString(strings.TrimLeftFunc(l.str, unicode.IsSpace), l.quote), nil
+			case 1:
+				if loxStr, ok := args[0].(*LoxString); ok {
+					return NewLoxString(strings.TrimLeft(l.str, loxStr.str), l.quote), nil
+				}
+				return argMustBeType("string")
+			}
+			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		})
 	case "padEnd":
 		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if finalStrLen, ok := args[0].(int64); ok {
@@ -217,6 +232,20 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name, "Second argument to 'string.replace' must be a string.")
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.replace' must be a string.")
+		})
+	case "rstrip":
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				return NewLoxString(strings.TrimRightFunc(l.str, unicode.IsSpace), l.quote), nil
+			case 1:
+				if loxStr, ok := args[0].(*LoxString); ok {
+					return NewLoxString(strings.TrimRight(l.str, loxStr.str), l.quote), nil
+				}
+				return argMustBeType("string")
+			}
+			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
 	case "split":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {

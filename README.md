@@ -176,12 +176,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.isEmpty()`, which returns `true` if the length of the string is 0 and `false` otherwise
         - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lower()`, which returns a new string with all lowercase letters
+        - `string.lstrip([chars])`, which returns a new string with all leading characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading whitespace, newlines, and tabs removed
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
         - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
         - `string.replace(oldStr, newStr)`, which returns a new string where all occurrences of `oldStr` in the original string are replaced with `newStr`
+        - `string.rstrip([chars])`, which returns a new string with all trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all trailing whitespace, newlines, and tabs removed
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
-        - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace removed
+        - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace, newlines, and tabs removed
         - `string.toBuffer()`, which converts `string` into a buffer with the raw UTF-8 byte representation of each character in the string as the buffer elements and returns that buffer
         - `string.toList()`, which converts `string` into a list with each character in the string as the list elements and returns that list
         - `string.toNum([base])`, which attempts to convert `string` into an integer or float and returns that value if successful and `NaN` otherwise. If `base` is specified, then this method will attempt to convert `string` that is represented as the specified base into an integer or float and returns that value if the conversion was successful and `NaN` otherwise
