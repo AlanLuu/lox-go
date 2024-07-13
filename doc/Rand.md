@@ -9,3 +9,8 @@ The following methods and fields are defined in the built-in `Rand` class:
 - (instance method) `Rand().randInt(arg1, [arg2])`, which takes in either 1 or 2 integer arguments and returns a random integer based on the arguments passed in
     - If only one argument is passed (only `arg1` is specified), then a random integer between `0` and `arg1` exclusive is returned, otherwise a random integer between `arg1` and `arg2` inclusive is returned
     - If only `arg1` is specified and `arg1` is 0 or negative, or `arg1` and `arg2` are specified and `arg2 < arg1`, a runtime error is thrown
+- (instance method) `Rand().randRange(stop)`, which returns a random integer from a range object with a start value of `0`, the specified stop value, and a step value of `1`
+    - If the range object with the specified parameters has a length of 0, a runtime error is thrown
+- (instance method) `Rand().randRange(start, stop, [step])`, which returns a random integer from a range object with the specified start, stop, and step values
+    - If `step` is omitted, the range object will have a step value of `1`
+    - If the range object with the specified parameters has a length of 0, a runtime error is thrown

@@ -202,6 +202,69 @@ func (i *Interpreter) defineRandFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
 	})
+	randInstanceFunc("randRange", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			invalidRangeLenMsg := "Empty range in Rand().randRange."
+			argsLen := len(args) - 1
+			switch argsLen {
+			case 1:
+				if stop, ok := args[1].(int64); ok {
+					r := NewLoxRangeStop(stop)
+					rangeLen := r.Length()
+					if rangeLen == 0 {
+						return nil, loxerror.RuntimeError(in.callToken, invalidRangeLenMsg)
+					}
+					if randStruct.rand != nil {
+						return r.get(randStruct.rand.Int63n(rangeLen)), nil
+					}
+					return r.get(rand.Int63n(rangeLen)), nil
+				}
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'Rand().randRange' must be an integer.")
+			case 2, 3:
+				if _, ok := args[1].(int64); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"First argument to 'Rand().randRange' must be an integer.")
+				}
+				if _, ok := args[2].(int64); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Rand().randRange' must be an integer.")
+				}
+				start := args[1].(int64)
+				stop := args[2].(int64)
+				var step int64
+				if argsLen == 3 {
+					if _, ok := args[3].(int64); !ok {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Third argument to 'Rand().randRange' must be an integer.")
+					}
+					step = args[3].(int64)
+					if step == 0 {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Third argument to 'Rand().randRange' cannot be 0.")
+					}
+				} else {
+					step = 1
+				}
+				r := NewLoxRange(start, stop, step)
+				rangeLen := r.Length()
+				if rangeLen == 0 {
+					return nil, loxerror.RuntimeError(in.callToken, invalidRangeLenMsg)
+				}
+				if randStruct.rand != nil {
+					return r.get(randStruct.rand.Int63n(rangeLen)), nil
+				}
+				return r.get(rand.Int63n(rangeLen)), nil
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Expected 1, 2, or 3 arguments but got %v.", argsLen))
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 
 	i.globals.Define(className, randClass)
 }

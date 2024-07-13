@@ -209,7 +209,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return NewLoxRange(start, stop, step), nil
 		default:
 			return nil, loxerror.RuntimeError(in.callToken,
-				fmt.Sprintf("Expected 1, 2, or 3 arguments to 'range' but got %v.", argsLen))
+				fmt.Sprintf("Expected 1, 2, or 3 arguments but got %v.", argsLen))
 		}
 	})
 	nativeFunc("Set", -1, func(in *Interpreter, args list.List[any]) (any, error) {
