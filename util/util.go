@@ -57,6 +57,9 @@ func IsWindows() bool {
 }
 
 func StdinFromTerminal() bool {
-	stat, _ := os.Stdin.Stat()
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
 	return InteractiveMode && (stat.Mode()&os.ModeCharDevice) != 0
 }
