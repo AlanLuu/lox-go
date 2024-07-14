@@ -56,4 +56,6 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
     - If the file already exists, it is truncated
 - `os.unsetenv(key)`, which unsets the environment variable `key`, which is a string
+- `os.urandom(size)`, which returns a buffer of `size` random bytes that are cryptographically secure, where `size` is an integer
+    - If `size` is negative, a runtime error is thrown
 - `os.username()`, which returns the username of the user running the current process as a string

@@ -1,8 +1,10 @@
 package ast
 
 import (
+	crand "crypto/rand"
 	"fmt"
 	"io/fs"
+	"math/big"
 	"os"
 	"os/exec"
 	"os/user"
@@ -439,6 +441,28 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, nil
 		}
 		return argMustBeType(in.callToken, "unsetenv", "string")
+	})
+	osFunc("urandom", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if numBytes, ok := args[0].(int64); ok {
+			if numBytes < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'os.urandom' cannot be negative.")
+			}
+			buffer := EmptyLoxBuffer()
+			for i := int64(0); i < numBytes; i++ {
+				numBig, numErr := crand.Int(crand.Reader, big.NewInt(256))
+				if numErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, numErr.Error())
+				}
+				addErr := buffer.add(numBig.Int64())
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+				}
+			}
+			return buffer, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'os.urandom' must be an integer.")
 	})
 	osFunc("username", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		currentUser, err := user.Current()
