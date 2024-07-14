@@ -68,6 +68,39 @@ func (i *Interpreter) defineRandFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
 	})
+	randInstanceFunc("randBytes", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			if numBytes, ok := args[1].(int64); ok {
+				if numBytes < 0 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Argument to 'Rand().randBytes' cannot be negative.")
+				}
+				buffer := EmptyLoxBuffer()
+				if randStruct.rand != nil {
+					for i := int64(0); i < numBytes; i++ {
+						addErr := buffer.add(randStruct.rand.Int63n(256))
+						if addErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+						}
+					}
+				} else {
+					for i := int64(0); i < numBytes; i++ {
+						addErr := buffer.add(rand.Int63n(256))
+						if addErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+						}
+					}
+				}
+				return buffer, nil
+			}
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Argument to 'Rand().randBytes' must be an integer.")
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 	randInstanceFunc("randFloat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {
