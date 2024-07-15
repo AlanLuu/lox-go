@@ -154,8 +154,29 @@ func getType(element any) string {
 	}
 }
 
-func (i *Interpreter) Interpret(statements list.List[Stmt]) error {
+func (i *Interpreter) Interpret(statements list.List[Stmt], makeHandler bool) error {
+	interrupted := false
+	if util.StdinFromTerminal() && makeHandler {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt)
+		defer func() {
+			if !interrupted {
+				sigChan <- loxsignal.LoopSignal{}
+			}
+			signal.Stop(sigChan)
+		}()
+		go func() {
+			sig := <-sigChan
+			switch sig {
+			case os.Interrupt:
+				interrupted = true
+			}
+		}()
+	}
 	for _, statement := range statements {
+		if interrupted {
+			return nil
+		}
 		value, evalErr := i.evaluate(statement)
 		if evalErr != nil {
 			if value != nil {
@@ -1407,7 +1428,7 @@ func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
 		return importErr(resolverErr)
 	}
 
-	valueErr := i.Interpret(exprList)
+	valueErr := i.Interpret(exprList, false)
 	if valueErr != nil {
 		return importErr(valueErr)
 	}

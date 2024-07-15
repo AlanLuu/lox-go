@@ -35,7 +35,7 @@ func run(sc *scanner.Scanner, interpreter *ast.Interpreter) error {
 		return resolverErr
 	}
 
-	valueErr := interpreter.Interpret(exprList)
+	valueErr := interpreter.Interpret(exprList, true)
 	if valueErr != nil {
 		return valueErr
 	}
