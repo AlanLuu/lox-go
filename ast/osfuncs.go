@@ -15,6 +15,7 @@ import (
 	"github.com/AlanLuu/lox/ast/filemode"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/syscalls"
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
@@ -310,6 +311,16 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, nil
 		}
 		return argMustBeType(in.callToken, "mkdir", "string")
+	})
+	osFunc("mkfifo", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			err := syscalls.Mkfifo(loxStr.str, 0666)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "mkfifo", "string")
 	})
 	osClass.classProperties["name"] = NewLoxString(runtime.GOOS, '\'')
 	osFunc("open", 2, func(in *Interpreter, args list.List[any]) (any, error) {
