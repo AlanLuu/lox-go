@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"runtime"
 	"strings"
+	"syscall"
 
 	"github.com/AlanLuu/lox/ast/filemode"
 	"github.com/AlanLuu/lox/list"
@@ -188,6 +189,63 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return NewLoxStringQuote(hostname), nil
+	})
+	osFunc("kill", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			if pid, ok := args[0].(int64); ok {
+				if argsLen == 2 {
+					if _, ok := args[1].(int64); !ok {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Second argument to 'os.kill' must be an integer.")
+					}
+				}
+				noSuchProcessMsg := "No such process with PID %v."
+				process, err := os.FindProcess(int(pid))
+				if err != nil {
+					if util.IsWindows() {
+						return nil, loxerror.RuntimeError(in.callToken,
+							fmt.Sprintf(noSuchProcessMsg, pid))
+					}
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
+				}
+
+				/*
+					os.FindProcess always returns a process object on Unix systems
+					regardless of whether a process with the specified PID actually
+					exists, so check for its existence by checking if there is a
+					process with the specified PID running or not
+				*/
+				if !util.IsWindows() {
+					err = process.Signal(syscall.Signal(0))
+					if err != nil {
+						return nil, loxerror.RuntimeError(in.callToken,
+							fmt.Sprintf(noSuchProcessMsg, pid))
+					}
+				}
+
+				if argsLen == 2 {
+					sigNum := args[1].(int64)
+					err = process.Signal(syscall.Signal(sigNum))
+				} else {
+					err = process.Kill()
+				}
+
+				if err != nil {
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
+				}
+				return nil, nil
+			} else if argsLen == 2 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'os.kill' must be an integer.")
+			}
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Argument to 'os.kill' must be an integer.")
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
 	})
 	osFunc("link", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
