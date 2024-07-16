@@ -138,6 +138,9 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(cwd), nil
 	})
+	osFunc("getegid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(os.Getegid()), nil
+	})
 	osFunc("getenv", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		var defaultValue any
@@ -171,6 +174,9 @@ func (i *Interpreter) defineOSFuncs() {
 			envsDict.setKeyValue(NewLoxStringQuote(key), NewLoxStringQuote(value))
 		}
 		return envsDict, nil
+	})
+	osFunc("geteuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(os.Geteuid()), nil
 	})
 	osFunc("getgid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getgid()), nil

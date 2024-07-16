@@ -14,8 +14,12 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.getcwd()`, which returns the current working directory as a string
+- `os.getegid()`, which returns the extended group ID of the current process as an integer
+    - On Windows, this method always returns `-1`
 - `os.getenv(key, [default])`, which returns the value of the specified environment variable `key`, which is a string, as a string. If the value doesn't exist, the value of `default` is returned if specified, otherwise `nil` is returned
 - `os.getenvs()`, which returns a dictionary with all environment variable keys as dictionary keys and all environment variable values as dictionary values
+- `os.geteuid()`, which returns the extended user ID of the current process as an integer
+    - On Windows, this method always returns `-1`
 - `os.getgid()`, which returns the group ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.getpid()`, which returns the process ID of the current process as an integer
