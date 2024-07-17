@@ -10,6 +10,14 @@ func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }
 
+func Setegid(egid int) error {
+	return unsupported("setegid")
+}
+
+func Seteuid(euid int) error {
+	return unsupported("seteuid")
+}
+
 func Setgid(gid int) error {
 	return unsupported("setgid")
 }

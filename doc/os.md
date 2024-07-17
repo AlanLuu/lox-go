@@ -51,7 +51,11 @@ The following methods and fields are defined in the built-in `os` class:
     - If the directory is not empty, all files and directories inside it are removed recursively
 - `os.rename(oldPath, newPath)`, which renames the file at `oldPath` to the name specified by `newPath`, which are both strings. If a file at `newPath` already exists and is not a directory, it is replaced with the file at `oldPath`
 - `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
+- `os.setegid(egid)`, which sets the effective group ID of the current process to the specified effective group ID, which is an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.setenv(key, value)`, which sets an environment variable with the specified key and value, which are both strings
+- `os.seteuid(euid)`, which sets the effective user ID of the current process to the specified effective user ID, which is an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.setgid(gid)`, which sets the group ID of the current process to the specified group ID, which is an integer
     - This method does not work on Windows and throws an error if called on there
 - `os.setuid(uid)`, which sets the user ID of the current process to the specified user ID, which is an integer

@@ -438,6 +438,16 @@ func (i *Interpreter) defineOSFuncs() {
 	osClass.classProperties["SEEK_SET"] = int64(0)
 	osClass.classProperties["SEEK_CUR"] = int64(1)
 	osClass.classProperties["SEEK_END"] = int64(2)
+	osFunc("setegid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if egid, ok := args[0].(int64); ok {
+			err := syscalls.Setegid(int(egid))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "setegid", "integer")
+	})
 	osFunc("setenv", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -454,6 +464,16 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return nil, nil
+	})
+	osFunc("seteuid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if euid, ok := args[0].(int64); ok {
+			err := syscalls.Seteuid(int(euid))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "seteuid", "integer")
 	})
 	osFunc("setgid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if gid, ok := args[0].(int64); ok {
