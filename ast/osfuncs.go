@@ -104,6 +104,16 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("chroot", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			err := syscalls.Chroot(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "chroot", "string")
+	})
 	osFunc("clearenv", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		os.Clearenv()
 		return nil, nil

@@ -9,6 +9,8 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.chown(path, uid, gid)`, which changes the uid and gid of the specified path string to `uid` and `gid`
     - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
     - This method does not work on Windows and throws an error if called on there
+- `os.chroot(path)`, which changes the root directory of the current process to the specified path string
+    - This method does not work on Windows and throws an error if called on there
 - `os.clearenv()`, which removes all environment variables from the current process
 - `os.executable()`, which returns the absolute path name of the executable for the current process as a string
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0

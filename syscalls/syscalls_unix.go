@@ -9,6 +9,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+func Chroot(path string) error {
+	return syscall.Chroot(path)
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return syscall.Mkfifo(path, mode)
 }

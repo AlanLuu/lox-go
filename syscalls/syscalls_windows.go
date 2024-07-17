@@ -6,6 +6,10 @@ func unsupported(name string) error {
 	return loxerror.Error("'os." + name + "' is unsupported on Windows.")
 }
 
+func Chroot(path string) error {
+	return unsupported("chroot")
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }
