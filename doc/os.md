@@ -14,11 +14,11 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.getcwd()`, which returns the current working directory as a string
-- `os.getegid()`, which returns the extended group ID of the current process as an integer
+- `os.getegid()`, which returns the effective group ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.getenv(key, [default])`, which returns the value of the specified environment variable `key`, which is a string, as a string. If the value doesn't exist, the value of `default` is returned if specified, otherwise `nil` is returned
 - `os.getenvs()`, which returns a dictionary with all environment variable keys as dictionary keys and all environment variable values as dictionary values
-- `os.geteuid()`, which returns the extended user ID of the current process as an integer
+- `os.geteuid()`, which returns the effective user ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.getgid()`, which returns the group ID of the current process as an integer
     - On Windows, this method always returns `-1`
@@ -52,6 +52,10 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.rename(oldPath, newPath)`, which renames the file at `oldPath` to the name specified by `newPath`, which are both strings. If a file at `newPath` already exists and is not a directory, it is replaced with the file at `oldPath`
 - `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
 - `os.setenv(key, value)`, which sets an environment variable with the specified key and value, which are both strings
+- `os.setgid(gid)`, which sets the group ID of the current process to the specified group ID, which is an integer
+    - This method does not work on Windows and throws an error if called on there
+- `os.setuid(uid)`, which sets the user ID of the current process to the specified user ID, which is an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.stderr`, which is a file object that allows for writing text to the standard error stream
 - `os.stdin`, which is a file object that allows for reading text from the standard input stream
 - `os.stdout`, which is a file object that allows for writing text to the standard output stream

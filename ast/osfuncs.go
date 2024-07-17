@@ -36,6 +36,10 @@ func (i *Interpreter) defineOSFuncs() {
 		errStr := fmt.Sprintf("Argument to 'os.%v' must be a %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
+	argMustBeTypeAn := func(callToken *token.Token, name string, theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'os.%v' must be an %v.", name, theType)
+		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
 	stdStream := func(stream *os.File, mode filemode.FileMode, isBinary bool) *LoxFile {
 		return &LoxFile{
 			file:       stream,
@@ -450,6 +454,26 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return nil, nil
+	})
+	osFunc("setgid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if gid, ok := args[0].(int64); ok {
+			err := syscalls.Setgid(int(gid))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "setgid", "integer")
+	})
+	osFunc("setuid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if uid, ok := args[0].(int64); ok {
+			err := syscalls.Setuid(int(uid))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "setuid", "integer")
 	})
 	osClass.classProperties["stderr"] = stdStream(os.Stderr, filemode.WRITE, false)
 	osClass.classProperties["stdin"] = stdStream(os.Stdin, filemode.READ, false)

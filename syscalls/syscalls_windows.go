@@ -9,3 +9,11 @@ func unsupported(name string) error {
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }
+
+func Setgid(gid int) error {
+	return unsupported("setgid")
+}
+
+func Setuid(uid int) error {
+	return unsupported("setuid")
+}
