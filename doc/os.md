@@ -70,6 +70,14 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
     - If the file already exists, it is truncated
+- `os.uname()`, which returns a dictionary containing information about the current Unix operating system
+    - The returned dictionary contains the following keys and values, which are all strings:
+        - `sysname`: name of the operating system
+        - `nodename`: name of the current machine on the network
+        - `release`: release of the operating system
+        - `version`: version of the operating system
+        - `machine`: architecture of the current machine
+    - This method does not work on Windows and throws an error if called on there
 - `os.unsetenv(key)`, which unsets the environment variable `key`, which is a string
 - `os.urandom(size)`, which returns a buffer of `size` random bytes that are cryptographically secure, where `size` is an integer
     - If `size` is negative, a runtime error is thrown

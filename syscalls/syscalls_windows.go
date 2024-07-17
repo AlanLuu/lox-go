@@ -25,3 +25,15 @@ func Setgid(gid int) error {
 func Setuid(uid int) error {
 	return unsupported("setuid")
 }
+
+type UnameResult struct {
+	Sysname  string
+	Nodename string
+	Release  string
+	Version  string
+	Machine  string
+}
+
+func Uname() (UnameResult, error) {
+	return UnameResult{}, unsupported("uname")
+}

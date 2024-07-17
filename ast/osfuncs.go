@@ -551,6 +551,22 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "touch", "string")
 	})
+	osFunc("uname", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		result, err := syscalls.Uname()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		dict := EmptyLoxDict()
+		setDict := func(key string, value string) {
+			dict.setKeyValue(NewLoxString(key, '\''), NewLoxStringQuote(value))
+		}
+		setDict("sysname", result.Sysname)
+		setDict("nodename", result.Nodename)
+		setDict("release", result.Release)
+		setDict("version", result.Version)
+		setDict("machine", result.Machine)
+		return dict, nil
+	})
 	osFunc("unsetenv", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Unsetenv(loxStr.str)
