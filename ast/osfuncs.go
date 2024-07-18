@@ -125,6 +125,35 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(exePath), nil
 	})
+	osFunc("execvp", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.execvp' must be a string.")
+		}
+		if _, ok := args[1].(*LoxList); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.execvp' must be a list.")
+		}
+
+		argvList := args[1].(*LoxList).elements
+		argv := list.NewList[string]()
+		for _, element := range argvList {
+			switch element := element.(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'os.execvp' must be a list of strings.")
+			}
+		}
+		file := args[0].(*LoxString).str
+		err := syscalls.Execvp(file, argv)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("exit", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		exitCode := 0
 		argsLen := len(args)
