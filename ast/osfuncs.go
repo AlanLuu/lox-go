@@ -467,6 +467,33 @@ func (i *Interpreter) defineOSFuncs() {
 		})
 		return NewLoxList(files), nil
 	})
+	osFunc("read", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.read' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.read' must be an integer.")
+		}
+
+		fd := args[0].(int64)
+		numBytes := args[1].(int64)
+		bytes := make([]byte, numBytes)
+		_, err := syscalls.Read(int(fd), bytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+
+		buffer := EmptyLoxBuffer()
+		for _, element := range bytes {
+			bufErr := buffer.add(int64(element))
+			if bufErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, bufErr.Error())
+			}
+		}
+		return buffer, nil
+	})
 	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
@@ -679,6 +706,29 @@ func (i *Interpreter) defineOSFuncs() {
 			return NewLoxStringQuote(contents[len(contents)-1]), nil
 		}
 		return NewLoxStringQuote(username), nil
+	})
+	osFunc("write", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.write' must be an integer.")
+		}
+		if _, ok := args[1].(*LoxBuffer); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.write' must be a buffer.")
+		}
+
+		fd := args[0].(int64)
+		buffer := args[1].(*LoxBuffer)
+		bytes := list.NewList[byte]()
+		for _, element := range buffer.elements {
+			bytes.Add(byte(element.(int64)))
+		}
+
+		numBytesWritten, err := syscalls.Write(int(fd), bytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(numBytesWritten), nil
 	})
 
 	i.globals.Define(className, osClass)

@@ -17,6 +17,10 @@ func Mkfifo(path string, mode uint32) error {
 	return syscall.Mkfifo(path, mode)
 }
 
+func Read(fd int, p []byte) (int, error) {
+	return syscall.Read(fd, p)
+}
+
 func Setegid(egid int) error {
 	return syscall.Setegid(egid)
 }
@@ -63,4 +67,8 @@ func Uname() (UnameResult, error) {
 		toString(buf.Version[:]),
 		toString(buf.Machine[:]),
 	}, nil
+}
+
+func Write(fd int, p []byte) (int, error) {
+	return syscall.Write(fd, p)
 }

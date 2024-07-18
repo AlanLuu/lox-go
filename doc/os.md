@@ -54,6 +54,7 @@ The following methods and fields are defined in the built-in `os` class:
     - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
 - `os.pipeBin()`, which returns a list containing two file objects in binary mode that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end
     - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
+- `os.read(fd, numBytes)`, which reads at most `numBytes` bytes from the specified integer file descriptor into a buffer and returns that buffer
 - `os.remove(path)`, which removes the file or empty directory at the specified path string
     - If the directory is not empty, a runtime error is thrown
 - `os.removeAll(path)`, which removes the file or directory at the specified path string
@@ -91,3 +92,4 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.urandom(size)`, which returns a buffer of `size` random bytes that are cryptographically secure, where `size` is an integer
     - If `size` is negative, a runtime error is thrown
 - `os.username()`, which returns the username of the user running the current process as a string
+- `os.write(fd, buffer)`, which writes the contents of the specified buffer to the specified integer file descriptor and returns the number of bytes written as an integer

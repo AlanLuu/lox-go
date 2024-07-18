@@ -7,6 +7,7 @@ The following methods and fields are defined on file instances:
 - `file.close()`, which flushes and closes the file, causing any attempts to read or write from the file to throw a runtime error
     - If the file is already closed, this method can still be called, with no additional effects occurring when doing so
 - `file.closed`, which is a boolean that is `true` if the file is closed and `false` otherwise
+- `file.fd`, which is the file descriptor number of the file as an integer
 - `file.flush()`, which flushes the file by writing all buffered output to disk
 - `file.isClosed()`, which is a function that returns the value of `file.closed`
 - `file.mode`, which is a string representing the mode of the file

@@ -1,6 +1,10 @@
 package syscalls
 
-import "github.com/AlanLuu/lox/loxerror"
+import (
+	"syscall"
+
+	"github.com/AlanLuu/lox/loxerror"
+)
 
 func unsupported(name string) error {
 	return loxerror.Error("'os." + name + "' is unsupported on Windows.")
@@ -12,6 +16,10 @@ func Chroot(path string) error {
 
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
+}
+
+func Read(fd int, p []byte) (int, error) {
+	return syscall.Read(syscall.Handle(fd), p)
 }
 
 func Setegid(egid int) error {
@@ -40,4 +48,8 @@ type UnameResult struct {
 
 func Uname() (UnameResult, error) {
 	return UnameResult{}, unsupported("uname")
+}
+
+func Write(fd int, p []byte) (int, error) {
+	return syscall.Write(syscall.Handle(fd), p)
 }

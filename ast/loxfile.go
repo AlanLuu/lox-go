@@ -195,6 +195,8 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "closed":
 		return fileField(l.isClosed)
+	case "fd":
+		return int64(l.file.Fd()), nil
 	case "flush":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			flushErr := l.file.Sync()
