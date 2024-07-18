@@ -4,13 +4,29 @@ package syscalls
 
 import (
 	"bytes"
+	"fmt"
+	"os"
+	"os/exec"
 	"syscall"
 
+	"github.com/AlanLuu/lox/loxerror"
 	"golang.org/x/sys/unix"
 )
 
+func execCommandNotFound(funcName string, path string) error {
+	return loxerror.Error(fmt.Sprintf("os.%v: %v: command not found", funcName, path))
+}
+
 func Chroot(path string) error {
 	return syscall.Chroot(path)
+}
+
+func Execvp(file string, argv []string) error {
+	fullPath, err := exec.LookPath(file)
+	if err != nil {
+		return execCommandNotFound("execvp", file)
+	}
+	return syscall.Exec(fullPath, argv, os.Environ())
 }
 
 func Mkfifo(path string, mode uint32) error {

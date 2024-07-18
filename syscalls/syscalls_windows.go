@@ -14,6 +14,10 @@ func Chroot(path string) error {
 	return unsupported("chroot")
 }
 
+func Execvp(file string, argv []string) error {
+	return unsupported("execvp")
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }
