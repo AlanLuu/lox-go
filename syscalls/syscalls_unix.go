@@ -49,6 +49,14 @@ func Setgid(gid int) error {
 	return syscall.Setgid(gid)
 }
 
+func Setregid(rgid int, egid int) error {
+	return syscall.Setregid(rgid, egid)
+}
+
+func Setreuid(ruid int, euid int) error {
+	return syscall.Setreuid(ruid, euid)
+}
+
 func Setuid(uid int) error {
 	return syscall.Setuid(uid)
 }

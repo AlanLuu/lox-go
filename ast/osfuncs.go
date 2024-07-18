@@ -581,6 +581,40 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "setgid", "integer")
 	})
+	osFunc("setregid", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.setregid' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.setregid' must be an integer.")
+		}
+		rgid := args[0].(int64)
+		egid := args[1].(int64)
+		err := syscalls.Setregid(int(rgid), int(egid))
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
+	osFunc("setreuid", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.setreuid' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.setreuid' must be an integer.")
+		}
+		ruid := args[0].(int64)
+		euid := args[1].(int64)
+		err := syscalls.Setreuid(int(ruid), int(euid))
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("setuid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if uid, ok := args[0].(int64); ok {
 			err := syscalls.Setuid(int(uid))

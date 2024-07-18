@@ -38,6 +38,14 @@ func Setgid(gid int) error {
 	return unsupported("setgid")
 }
 
+func Setregid(rgid int, egid int) error {
+	return unsupported("setregid")
+}
+
+func Setreuid(ruid int, euid int) error {
+	return unsupported("setreuid")
+}
+
 func Setuid(uid int) error {
 	return unsupported("setuid")
 }
