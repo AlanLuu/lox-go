@@ -118,6 +118,36 @@ func (i *Interpreter) defineOSFuncs() {
 		os.Clearenv()
 		return nil, nil
 	})
+	osFunc("execlp", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen == 0 || argsLen == 1 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected at least 2 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.execlp' must be a string.")
+		}
+
+		argv := list.NewList[string]()
+		for i := 1; i < argsLen; i++ {
+			switch element := args[i].(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken,
+					"All arguments to 'os.execlp' after the first must be strings.")
+			}
+		}
+		file := args[0].(*LoxString).str
+		err := syscalls.Execvp(file, argv)
+		if err != nil {
+			errMsg := strings.Replace(err.Error(), "execvp", "execlp", 1)
+			return nil, loxerror.RuntimeError(in.callToken, errMsg)
+		}
+		return nil, nil
+	})
 	osFunc("executable", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		exePath, err := os.Executable()
 		if err != nil {
