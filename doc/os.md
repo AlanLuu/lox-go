@@ -3,6 +3,9 @@
 Any method that fails will throw a runtime error with a message describing the error.
 
 The following methods and fields are defined in the built-in `os` class:
+- `os.argv`, which is a list containing the command line arguments passed to the current script
+    - `os.argv[0]` contains the absolute path name of the executable for the current process as a string or an empty string if the path name cannot be determined
+    - When executing a script from a file, `os.argv[1]` contains the name of the script file that is being executed
 - `os.chdir(directory)`, which changes the current working directory to the specified directory string
 - `os.chmod(path, mode)`, which changes the mode of the specified path string to `mode`
     - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable

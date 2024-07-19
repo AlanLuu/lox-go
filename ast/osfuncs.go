@@ -2,6 +2,7 @@ package ast
 
 import (
 	crand "crypto/rand"
+	"flag"
 	"fmt"
 	"io/fs"
 	"math/big"
@@ -19,6 +20,23 @@ import (
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
+
+func cmdArgsToLoxList() *LoxList {
+	argvList := list.NewList[any]()
+	execPath, err := os.Executable()
+	if err == nil {
+		argvList.Add(NewLoxStringQuote(execPath))
+	} else {
+		argvList.Add(EmptyLoxString())
+	}
+
+	args := flag.Args()
+	for _, arg := range args {
+		argvList.Add(NewLoxStringQuote(arg))
+	}
+
+	return NewLoxList(argvList)
+}
 
 func (i *Interpreter) defineOSFuncs() {
 	className := "os"
@@ -51,6 +69,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 	}
 
+	osClass.classProperties["argv"] = cmdArgsToLoxList()
 	osFunc("chdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Chdir(loxStr.str)

@@ -146,7 +146,7 @@ func main() {
 			loxerror.PrintErrorObject(resultError)
 			exitCode = 1
 		}
-	} else if len(args) > 1 {
+	} else if len(args) > 1 && args[1] != "-" {
 		possibleError := processFile(args[1])
 		if possibleError != nil {
 			loxerror.PrintErrorObject(possibleError)
