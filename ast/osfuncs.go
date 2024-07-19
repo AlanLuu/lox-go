@@ -17,6 +17,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/syscalls"
+	"github.com/AlanLuu/lox/syscalls/linuxsyscalls"
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
 )
@@ -612,6 +613,50 @@ func (i *Interpreter) defineOSFuncs() {
 		rgid := args[0].(int64)
 		egid := args[1].(int64)
 		err := syscalls.Setregid(int(rgid), int(egid))
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
+	osFunc("setresgid", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.setresgid' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.setresgid' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'os.setresgid' must be an integer.")
+		}
+		rgid := args[0].(int64)
+		egid := args[1].(int64)
+		sgid := args[2].(int64)
+		err := linuxsyscalls.Setresgid(int(rgid), int(egid), int(sgid))
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
+	osFunc("setresuid", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.setresuid' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.setresuid' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'os.setresuid' must be an integer.")
+		}
+		ruid := args[0].(int64)
+		euid := args[1].(int64)
+		suid := args[2].(int64)
+		err := linuxsyscalls.Setresuid(int(ruid), int(euid), int(suid))
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}

@@ -74,6 +74,12 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.setregid(rgid, egid)`, which sets the group ID and effective group ID of the current process to the specified group ID and effective group ID, which are both integers
     - Passing in `-1` for `rgid` or `egid` will result in the group ID or the effective group ID being unchanged respectively
     - This method does not work on Windows and throws an error if called on there
+- `os.setresgid(rgid, egid, sgid)`, which sets the group ID, effective group ID, and saved group ID of the current process to the specified group ID, effective group ID, and saved group ID, which are all integers
+    - Passing in `-1` for `rgid`, `egid`, or `sgid` will result in the group ID, the effective group ID, or the saved group ID being unchanged respectively
+    - This method only works on Linux and throws an error if called on any other operating system
+- `os.setresuid(ruid, euid, suid)`, which sets the user ID, effective user ID, and saved user ID of the current process to the specified user ID, effective user ID, and saved user ID, which are all integers
+    - Passing in `-1` for `ruid`, `euid`, or `suid` will result in the user ID, the effective user ID, or the saved user ID being unchanged respectively
+    - This method only works on Linux and throws an error if called on any other operating system
 - `os.setreuid(ruid, euid)`, which sets the user ID and effective user ID of the current process to the specified user ID and effective user ID, which are both integers
     - Passing in `-1` for `ruid` or `euid` will result in the user ID or the effective user ID being unchanged respectively
     - This method does not work on Windows and throws an error if called on there
