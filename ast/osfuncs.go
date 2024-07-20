@@ -215,7 +215,11 @@ func (i *Interpreter) defineOSFuncs() {
 				"Second argument to 'os.execv' must be a list.")
 		}
 
+		strListErrMsg := "Second argument to 'os.execv' must be a list of strings."
 		argvList := args[1].(*LoxList).elements
+		if argvList.IsEmpty() {
+			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
+		}
 		argv := list.NewList[string]()
 		for _, element := range argvList {
 			switch element := element.(type) {
@@ -223,8 +227,7 @@ func (i *Interpreter) defineOSFuncs() {
 				argv.Add(element.str)
 			default:
 				argv.Clear()
-				return nil, loxerror.RuntimeError(in.callToken,
-					"Second argument to 'os.execv' must be a list of strings.")
+				return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
 			}
 		}
 		path := args[0].(*LoxString).str
@@ -244,7 +247,11 @@ func (i *Interpreter) defineOSFuncs() {
 				"Second argument to 'os.execvp' must be a list.")
 		}
 
+		strListErrMsg := "Second argument to 'os.execvp' must be a list of strings."
 		argvList := args[1].(*LoxList).elements
+		if argvList.IsEmpty() {
+			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
+		}
 		argv := list.NewList[string]()
 		for _, element := range argvList {
 			switch element := element.(type) {
@@ -252,8 +259,7 @@ func (i *Interpreter) defineOSFuncs() {
 				argv.Add(element.str)
 			default:
 				argv.Clear()
-				return nil, loxerror.RuntimeError(in.callToken,
-					"Second argument to 'os.execvp' must be a list of strings.")
+				return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
 			}
 		}
 		file := args[0].(*LoxString).str
