@@ -138,6 +138,36 @@ func (i *Interpreter) defineOSFuncs() {
 		os.Clearenv()
 		return nil, nil
 	})
+	osFunc("execl", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen == 0 || argsLen == 1 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected at least 2 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.execl' must be a string.")
+		}
+
+		argv := list.NewList[string]()
+		for i := 1; i < argsLen; i++ {
+			switch element := args[i].(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken,
+					"All arguments to 'os.execl' after the first must be strings.")
+			}
+		}
+		path := args[0].(*LoxString).str
+		err := syscalls.Execv(path, argv)
+		if err != nil {
+			errMsg := strings.Replace(err.Error(), "execv", "execl", 1)
+			return nil, loxerror.RuntimeError(in.callToken, errMsg)
+		}
+		return nil, nil
+	})
 	osFunc("execlp", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		if argsLen == 0 || argsLen == 1 {
@@ -174,6 +204,35 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return NewLoxStringQuote(exePath), nil
+	})
+	osFunc("execv", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.execv' must be a string.")
+		}
+		if _, ok := args[1].(*LoxList); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.execv' must be a list.")
+		}
+
+		argvList := args[1].(*LoxList).elements
+		argv := list.NewList[string]()
+		for _, element := range argvList {
+			switch element := element.(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'os.execv' must be a list of strings.")
+			}
+		}
+		path := args[0].(*LoxString).str
+		err := syscalls.Execv(path, argv)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
 	})
 	osFunc("execvp", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {

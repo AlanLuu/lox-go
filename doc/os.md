@@ -15,14 +15,23 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.chroot(path)`, which changes the root directory of the current process to the specified path string
     - This method does not work on Windows and throws an error if called on there
 - `os.clearenv()`, which removes all environment variables from the current process
+- `os.execl(path, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `path` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
+    - All arguments to this method after `path`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
+    - `arg1` is required, while all arguments after `arg1` are optional
+    - This method does not work on Windows and throws an error if called on there
 - `os.execlp(file, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `file` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - All arguments to this method after `file`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional
     - The `PATH` environment variable is used when searching for the program to execute
+    - This method does not work on Windows and throws an error if called on there
 - `os.executable()`, which returns the absolute path name of the executable for the current process as a string
+- `os.execv(path, argv)`, which executes the program given by the string argument `path` and the list argument `argv`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
+    - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
+    - This method does not work on Windows and throws an error if called on there
 - `os.execvp(file, argv)`, which executes the program given by the string argument `file` and the list argument `argv`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - The `PATH` environment variable is used when searching for the program to execute
+    - This method does not work on Windows and throws an error if called on there
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.getcwd()`, which returns the current working directory as a string

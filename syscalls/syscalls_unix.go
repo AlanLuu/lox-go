@@ -21,6 +21,10 @@ func Chroot(path string) error {
 	return syscall.Chroot(path)
 }
 
+func Execv(path string, argv []string) error {
+	return syscall.Exec(path, argv, os.Environ())
+}
+
 func Execvp(file string, argv []string) error {
 	fullPath, err := exec.LookPath(file)
 	if err != nil {
