@@ -34,7 +34,7 @@ func Execvp(file string, argv []string) error {
 }
 
 func Mkfifo(path string, mode uint32) error {
-	return syscall.Mkfifo(path, mode)
+	return unix.Mkfifo(path, mode)
 }
 
 func Read(fd int, p []byte) (int, error) {
@@ -62,7 +62,7 @@ func Setreuid(ruid int, euid int) error {
 }
 
 func Setuid(uid int) error {
-	return syscall.Setuid(uid)
+	return unix.Setuid(uid)
 }
 
 type UnameResult struct {
