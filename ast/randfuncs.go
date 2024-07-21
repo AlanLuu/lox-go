@@ -116,6 +116,33 @@ func (i *Interpreter) defineRandFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
 	})
+	randInstanceFunc("choices", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			if _, ok := args[2].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().choices' must be an integer.")
+			}
+			numChoices := args[2].(int64)
+			if numChoices < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().choices' cannot be negative.")
+			}
+			arg := args[1]
+			choices := list.NewList[any]()
+			for i := int64(0); i < numChoices; i++ {
+				element, err := randElement(randStruct, arg)
+				if err != nil {
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
+				}
+				choices.Add(element)
+			}
+			return NewLoxList(choices), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 	randInstanceFunc("rand", 0, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {

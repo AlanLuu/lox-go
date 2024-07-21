@@ -7,6 +7,9 @@ The following methods and fields are defined in the built-in `Rand` class:
 - (instance method) `Rand().choice(sequence)`, which returns a random element from `sequence`, where `sequence` is a buffer, list, or string
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `sequence` is empty, a runtime error is thrown
+- (instance method) `Rand().choices(sequence, numChoices)`, which returns a list of `numChoices` random elements from `sequence` with replacement, where `sequence` is a buffer, list, or string and `numChoices` is an integer
+    - If `sequence` is a string, the random element is a random character from the string as a new string
+    - If `numChoices` is negative or `sequence` is empty and `numChoices` is not `0`, a runtime error is thrown
 - (instance method) `Rand().rand()`, which returns a random float between `0` and `1` exclusive
 - (instance method) `Rand().randBytes(size)`, which returns a buffer of `size` random bytes, where `size` is an integer
     - If `size` is negative, a runtime error is thrown
