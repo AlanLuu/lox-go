@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math/rand"
+	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -34,6 +35,52 @@ func (i *Interpreter) defineRandFuncs() {
 		errStr := fmt.Sprintf("Argument to 'Rand().%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
+	randElement := func(randStruct LoxRand, arg any) (any, error) {
+		emptyErr := func(theType string) (any, error) {
+			return nil, loxerror.Error(
+				"Cannot get random element from empty " + theType + ".",
+			)
+		}
+		switch arg := arg.(type) {
+		case *LoxBuffer:
+			if arg.elements.IsEmpty() {
+				return emptyErr("buffer")
+			}
+			var randIndex int
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Intn(len(arg.elements))
+			} else {
+				randIndex = rand.Intn(len(arg.elements))
+			}
+			return arg.elements[randIndex], nil
+		case *LoxList:
+			if arg.elements.IsEmpty() {
+				return emptyErr("list")
+			}
+			var randIndex int
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Intn(len(arg.elements))
+			} else {
+				randIndex = rand.Intn(len(arg.elements))
+			}
+			return arg.elements[randIndex], nil
+		case *LoxString:
+			if len(arg.str) == 0 {
+				return emptyErr("string")
+			}
+			var randIndex int
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Intn(utf8.RuneCountInString(arg.str))
+			} else {
+				randIndex = rand.Intn(utf8.RuneCountInString(arg.str))
+			}
+			return NewLoxStringQuote(string([]rune(arg.str)[randIndex])), nil
+		default:
+			return nil, loxerror.Error(
+				fmt.Sprintf("Cannot get random element from type '%v'.", getType(arg)),
+			)
+		}
+	}
 
 	randStr := "randObj"
 	randInstanceFunc("init", -1, func(in *Interpreter, args list.List[any]) (any, error) {
@@ -56,6 +103,19 @@ func (i *Interpreter) defineRandFuncs() {
 	})
 
 	randFieldTypeErrMsg := "'Rand().rand' field is not the correct type."
+	randInstanceFunc("choice", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			element, err := randElement(randStruct, args[1])
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return element, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 	randInstanceFunc("rand", 0, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {
