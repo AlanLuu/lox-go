@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -35,6 +36,25 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		i.globals.Define(name, s)
 	}
+	numToBaseStr := func(num int64, prefix string, base int) (*LoxString, error) {
+		var builder strings.Builder
+		if num < 0 {
+			builder.WriteRune('-')
+			builder.WriteString(prefix)
+			builder.WriteString(strconv.FormatInt(num, base)[1:])
+		} else {
+			builder.WriteString(prefix)
+			builder.WriteString(strconv.FormatInt(num, base))
+		}
+		return NewLoxString(builder.String(), '\''), nil
+	}
+	nativeFunc("bin", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if num, ok := args[0].(int64); ok {
+			return numToBaseStr(num, "0b", 2)
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'bin' must be an integer.")
+	})
 	nativeFunc("Buffer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		buffer := EmptyLoxBuffer()
 		for _, element := range args {
@@ -88,6 +108,13 @@ func (i *Interpreter) defineNativeFuncs() {
 			return evalValue, nil
 		}
 		return args[0], nil
+	})
+	nativeFunc("hex", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if num, ok := args[0].(int64); ok {
+			return numToBaseStr(num, "0x", 16)
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'hex' must be an integer.")
 	})
 	nativeFunc("input", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var prompt any = ""
@@ -157,6 +184,13 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'List' must be an integer.")
+	})
+	nativeFunc("oct", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if num, ok := args[0].(int64); ok {
+			return numToBaseStr(num, "0o", 8)
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'oct' must be an integer.")
 	})
 	nativeFunc("ord", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {

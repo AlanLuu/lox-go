@@ -338,10 +338,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - If the specified import file doesn't exist or if the file exists but an error occurred while it was being executed, a runtime error is thrown
     - `import` statements can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.variable`
 - A few other native functions are defined:
+    - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
+    - `hex(num)`, which converts the specified integer `num` into its hexadecimal representation as a string prefixed with "0x"
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
         - Pressing Ctrl+C will throw a keyboard interrupt runtime error, and pressing Ctrl+D will cause this function to return `nil`
     - `len(element)`, which returns the length of a buffer, dictionary, list, set, or string
@@ -352,6 +354,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
+    - `oct(num)`, which converts the specified integer `num` into its octal representation as a string prefixed with "0o"
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
     - `range(stop)`, which takes in an integer and returns a range object with a start value of `0`, a stop value of `stop`, and a step value of `1`
     - `range(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers and returns a range object with the specified parameters. If `step` is omitted, the resulting range object will have a step value of `1`
