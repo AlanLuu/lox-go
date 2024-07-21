@@ -233,6 +233,23 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.replace' must be a string.")
 		})
+	case "rot13":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			uppercase := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			lowercase := "abcdefghijklmnopqrstuvwxyz"
+			var upperA, upperZ, lowerA, lowerZ rune = 65, 90, 97, 122
+			var builder strings.Builder
+			for _, c := range l.str {
+				if c >= upperA && c <= upperZ {
+					builder.WriteByte(uppercase[((c-upperA)+13)%26])
+				} else if c >= lowerA && c <= lowerZ {
+					builder.WriteByte(lowercase[((c-lowerA)+13)%26])
+				} else {
+					builder.WriteRune(c)
+				}
+			}
+			return NewLoxString(builder.String(), l.quote), nil
+		})
 	case "rstrip":
 		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
