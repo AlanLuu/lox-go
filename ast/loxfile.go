@@ -209,6 +209,14 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isClosed, nil
 		})
+	case "isDir":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			stat, statErr := l.file.Stat()
+			if statErr != nil {
+				return nil, loxerror.RuntimeError(name, statErr.Error())
+			}
+			return stat.IsDir(), nil
+		})
 	case "mode":
 		binaryMode := ""
 		if l.isBinary {

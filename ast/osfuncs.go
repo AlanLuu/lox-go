@@ -4,11 +4,13 @@ import (
 	crand "crypto/rand"
 	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"math/big"
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -137,6 +139,65 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("clearenv", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		os.Clearenv()
 		return nil, nil
+	})
+	osFunc("copy", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.copy' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.copy' must be a string.")
+		}
+
+		sourceStr := args[0].(*LoxString).str
+		sourceStat, sourceStatErr := os.Stat(sourceStr)
+		if sourceStatErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, sourceStatErr.Error())
+		}
+		if sourceStat.IsDir() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Cannot use 'os.copy' to copy directory.")
+		}
+
+		destStr := args[1].(*LoxString).str
+		destStat, destStatErr := os.Stat(destStr)
+		if destStatErr == nil && destStat.IsDir() {
+			var pathSep string
+			if strings.Contains(sourceStr, "/") {
+				pathSep = "/"
+			} else if util.IsWindows() && strings.Contains(sourceStr, "\\") {
+				pathSep = "\\"
+			}
+			if len(pathSep) > 0 {
+				splitList := strings.Split(sourceStr, pathSep)
+				index := len(splitList) - 1
+				for index > 0 && splitList[index] == "" {
+					index--
+				}
+				destStr = filepath.Join(destStr, splitList[index])
+			} else {
+				destStr = filepath.Join(destStr, sourceStr)
+			}
+		}
+
+		source, sourceErr := os.Open(sourceStr)
+		if sourceErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, sourceErr.Error())
+		}
+		defer source.Close()
+
+		dest, destErr := os.OpenFile(destStr, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+		if destErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, destErr.Error())
+		}
+		defer dest.Close()
+
+		numBytes, copyErr := io.Copy(dest, source)
+		if copyErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, copyErr.Error())
+		}
+		return numBytes, nil
 	})
 	osFunc("execl", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)

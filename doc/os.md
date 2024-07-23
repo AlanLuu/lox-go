@@ -15,6 +15,9 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.chroot(path)`, which changes the root directory of the current process to the specified path string
     - This method does not work on Windows and throws an error if called on there
 - `os.clearenv()`, which removes all environment variables from the current process
+- `os.copy(source, dest)`, which copies the file at the `source` path string to the destination specified by the path string `dest` and returns the total number of bytes copied
+    - If the file at `source` doesn't exist or `source` refers to a directory, a runtime error is thrown
+    - If `dest` refers to a directory, the file at `source` will be copied into the directory given by `dest` with the copied file having the same name as the source file's original name
 - `os.execl(path, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `path` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - All arguments to this method after `path`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional
