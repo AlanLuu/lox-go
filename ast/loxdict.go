@@ -126,8 +126,10 @@ func (l *LoxDict) Get(name *token.Token) (any, error) {
 	case "keys":
 		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			keys := list.NewList[any]()
-			for key := range l.entries {
-				keys.Add(key)
+			it := l.Iterator()
+			for it.HasNext() {
+				pair := it.Next().(*LoxList).elements
+				keys.Add(pair[0])
 			}
 			return NewLoxList(keys), nil
 		})
@@ -138,8 +140,10 @@ func (l *LoxDict) Get(name *token.Token) (any, error) {
 	case "values":
 		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			values := list.NewList[any]()
-			for _, value := range l.entries {
-				values.Add(value)
+			it := l.Iterator()
+			for it.HasNext() {
+				pair := it.Next().(*LoxList).elements
+				values.Add(pair[1])
 			}
 			return NewLoxList(values), nil
 		})
