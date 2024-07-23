@@ -22,6 +22,10 @@ func Execvp(file string, argv []string) error {
 	return unsupported("execvp")
 }
 
+func Execvpe(file string, argv []string, envp []string) error {
+	return unsupported("execvpe")
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }

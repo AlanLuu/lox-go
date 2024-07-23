@@ -33,6 +33,14 @@ func Execvp(file string, argv []string) error {
 	return syscall.Exec(fullPath, argv, os.Environ())
 }
 
+func Execvpe(file string, argv []string, envp []string) error {
+	fullPath, err := exec.LookPath(file)
+	if err != nil {
+		return execCommandNotFound("execvpe", file)
+	}
+	return syscall.Exec(fullPath, argv, envp)
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unix.Mkfifo(path, mode)
 }
