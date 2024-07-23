@@ -330,9 +330,6 @@ func (i *Interpreter) defineOSFuncs() {
 
 		strDictErrMsg := "Third argument to 'os.execve' must be a dictionary with only strings."
 		envDict := args[2].(*LoxDict)
-		if envDict.Length() == 0 {
-			return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-		}
 		envp := list.NewList[string]()
 		it := envDict.Iterator()
 		for it.HasNext() {
@@ -427,9 +424,6 @@ func (i *Interpreter) defineOSFuncs() {
 
 		strDictErrMsg := "Third argument to 'os.execvpe' must be a dictionary with only strings."
 		envDict := args[2].(*LoxDict)
-		if envDict.Length() == 0 {
-			return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-		}
 		envp := list.NewList[string]()
 		it := envDict.Iterator()
 		for it.HasNext() {
