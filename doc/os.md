@@ -31,6 +31,10 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.execv(path, argv)`, which executes the program given by the string argument `path` and the list argument `argv`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - This method does not work on Windows and throws an error if called on there
+- `os.execve(path, argv, envp)`, which executes the program given by the string argument `path`, the list argument `argv`, and the dictionary argument `envp`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
+    - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must only contain strings or else a runtime error is thrown
+    - This method does not work on Windows and throws an error if called on there
 - `os.execvp(file, argv)`, which executes the program given by the string argument `file` and the list argument `argv`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - The `PATH` environment variable is used when searching for the program to execute

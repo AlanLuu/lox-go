@@ -18,6 +18,10 @@ func Execv(path string, argv []string) error {
 	return unsupported("execv")
 }
 
+func Execve(path string, argv []string, envp []string) error {
+	return unsupported("execve")
+}
+
 func Execvp(file string, argv []string) error {
 	return unsupported("execvp")
 }

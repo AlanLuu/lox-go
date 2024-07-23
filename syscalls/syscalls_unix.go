@@ -25,6 +25,10 @@ func Execv(path string, argv []string) error {
 	return syscall.Exec(path, argv, os.Environ())
 }
 
+func Execve(path string, argv []string, envp []string) error {
+	return syscall.Exec(path, argv, envp)
+}
+
 func Execvp(file string, argv []string) error {
 	fullPath, err := exec.LookPath(file)
 	if err != nil {
