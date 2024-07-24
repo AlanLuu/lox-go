@@ -32,6 +32,12 @@ The following methods and fields are defined in the built-in `os` class:
     - `arg1` is required, while all arguments after `arg1` are optional
     - The `PATH` environment variable is used when searching for the program to execute
     - This method does not work on Windows and throws an error if called on there
+- `os.execlpe(file, arg1, [arg2, ..., argN], envp)`, which executes the program given by the string argument `file`, the arguments from `arg1` to `argN`, and the dictionary argument `envp`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
+    - All arguments to this method after `file` other than `envp`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
+    - `arg1` is required, while all arguments after `arg1` except for `envp` are optional
+    - The `PATH` environment variable is used when searching for the program to execute
+    - This method does not work on Windows and throws an error if called on there
 - `os.executable()`, which returns the absolute path name of the executable for the current process as a string
 - `os.execv(path, argv)`, which executes the program given by the string argument `path` and the list argument `argv`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown

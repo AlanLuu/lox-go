@@ -339,6 +339,86 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("execlpe", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen < 3 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected at least 3 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.execlpe' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.execlpe' must be a string.")
+		}
+
+		argv := list.NewList[string]()
+		lastArgErrMsg := "Last argument to 'os.execlpe' must be a dictionary."
+		envDictIndex := -1
+		for i := 1; i <= argsLen; i++ {
+			if i != argsLen && envDictIndex != -1 {
+				argv.Clear()
+				for ; i < argsLen; i++ {
+					switch args[i].(type) {
+					case *LoxDict:
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Only one dictionary argument can be passed to 'os.execlpe'.")
+					}
+				}
+				return nil, loxerror.RuntimeError(in.callToken, lastArgErrMsg)
+			} else if i == argsLen {
+				if envDictIndex == -1 {
+					argv.Clear()
+					return nil, loxerror.RuntimeError(in.callToken, lastArgErrMsg)
+				}
+				break
+			}
+			switch element := args[i].(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			case *LoxDict:
+				envDictIndex = i
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken,
+					"All arguments to 'os.execlpe' after the second must be strings or a dictionary.")
+			}
+		}
+
+		strDictErrMsg := "Environment dictionary in 'os.execlpe' must only have strings."
+		envDict := args[envDictIndex].(*LoxDict)
+		envp := list.NewList[string]()
+		it := envDict.Iterator()
+		for it.HasNext() {
+			var builder strings.Builder
+			pair := it.Next().(*LoxList).elements
+			switch key := pair[0].(type) {
+			case *LoxString:
+				builder.WriteString(key.str)
+			default:
+				envp.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+			}
+			builder.WriteRune('=')
+			switch value := pair[1].(type) {
+			case *LoxString:
+				builder.WriteString(value.str)
+			default:
+				envp.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+			}
+			envp.Add(builder.String())
+		}
+
+		file := args[0].(*LoxString).str
+		err := syscalls.Execvpe(file, argv, envp)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("executable", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		exePath, err := os.Executable()
 		if err != nil {
