@@ -22,6 +22,11 @@ The following methods and fields are defined in the built-in `os` class:
     - All arguments to this method after `path`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional
     - This method does not work on Windows and throws an error if called on there
+- `os.execle(path, arg1, [arg2, ..., argN], envp)`, which executes the program given by the string argument `path`, the arguments from `arg1` to `argN`, and the dictionary argument `envp`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
+    - All arguments to this method after `path` other than `envp`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
+    - `arg1` is required, while all arguments after `arg1` except for `envp` are optional
+    - This method does not work on Windows and throws an error if called on there
 - `os.execlp(file, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `file` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - All arguments to this method after `file`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional
@@ -33,7 +38,7 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.execve(path, argv, envp)`, which executes the program given by the string argument `path`, the list argument `argv`, and the dictionary argument `envp`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
-    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must only contain strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
     - This method does not work on Windows and throws an error if called on there
 - `os.execvp(file, argv)`, which executes the program given by the string argument `file` and the list argument `argv`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
@@ -41,7 +46,7 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.execvpe(file, argv, envp)`, which executes the program given by the string argument `file`, the list argument `argv`, and the dictionary argument `envp`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
-    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must only contain strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
     - The `PATH` environment variable is used when searching for the program to execute
     - This method does not work on Windows and throws an error if called on there
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
