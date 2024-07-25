@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -393,6 +394,67 @@ func (i *Interpreter) defineRandFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					fmt.Sprintf("Expected 1, 2, or 3 arguments but got %v.", argsLen))
 			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
+	randInstanceFunc("sample", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			if _, ok := args[2].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().sample' must be an integer.")
+			}
+			numSamples := args[2].(int64)
+			if numSamples < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().sample' cannot be negative.")
+			}
+			if _, ok := args[1].(interfaces.Length); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Cannot get random element from type '%v'.", getType(args[1])))
+			}
+			arg := args[1].(interfaces.Length)
+			argLen := arg.Length()
+			if numSamples > argLen {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().sample' cannot be greater than the first argument's length.")
+			}
+			getIndex := func(index int) any {
+				switch arg := arg.(type) {
+				case *LoxBuffer:
+					return arg.elements[index]
+				case *LoxList:
+					return arg.elements[index]
+				case *LoxRange:
+					return arg.get(int64(index))
+				case *LoxString:
+					return NewLoxStringQuote(string([]rune(arg.str)[index]))
+				default:
+					return loxerror.Error(
+						fmt.Sprintf("Cannot get random element from type '%v'.", getType(arg)),
+					)
+				}
+			}
+			samples := list.NewList[any]()
+			var randIndexes []int
+			if randStruct.rand != nil {
+				randIndexes = randStruct.rand.Perm(int(argLen))
+			} else {
+				randIndexes = rand.Perm(int(argLen))
+			}
+			for i := int64(0); i < numSamples; i++ {
+				element := getIndex(randIndexes[i])
+				if i == 0 {
+					switch element := element.(type) {
+					case error:
+						return nil, loxerror.RuntimeError(in.callToken, element.Error())
+					}
+				}
+				samples.Add(element)
+			}
+			return NewLoxList(samples), nil
 		default:
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}

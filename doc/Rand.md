@@ -24,3 +24,6 @@ The following methods and fields are defined in the built-in `Rand` class:
 - (instance method) `Rand().randRange(start, stop, [step])`, which returns a random integer from a range object with the specified start, stop, and step values
     - If `step` is omitted, the range object will have a step value of `1`
     - If the range object with the specified parameters has a length of 0, a runtime error is thrown
+- (instance method) `Rand().sample(sequence, k)`, which returns a list of `k` random elements from `sequence` without replacement, where `sequence` is a buffer, list, range, or string and `k` is an integer
+    - If `sequence` is a string, the random element is a random character from the string as a new string
+    - If `k` is negative or `k` is greater than the number of elements in `sequence` or `sequence` is empty and `k` is not `0`, a runtime error is thrown
