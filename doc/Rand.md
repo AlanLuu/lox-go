@@ -4,10 +4,10 @@ None of the following methods are suitable for security or cryptographic purpose
 
 The following methods and fields are defined in the built-in `Rand` class:
 - (constructor) `Rand([seed])`, which creates a new `Rand` instance with the specified integer seed. If the seed is omitted, the returned `Rand` instance will have a random seed
-- (instance method) `Rand().choice(sequence)`, which returns a random element from `sequence`, where `sequence` is a buffer, list, or string
+- (instance method) `Rand().choice(sequence)`, which returns a random element from `sequence`, where `sequence` is a buffer, list, range, or string
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `sequence` is empty, a runtime error is thrown
-- (instance method) `Rand().choices(sequence, numChoices)`, which returns a list of `numChoices` random elements from `sequence` with replacement, where `sequence` is a buffer, list, or string and `numChoices` is an integer
+- (instance method) `Rand().choices(sequence, numChoices)`, which returns a list of `numChoices` random elements from `sequence` with replacement, where `sequence` is a buffer, list, range, or string and `numChoices` is an integer
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `numChoices` is negative or `sequence` is empty and `numChoices` is not `0`, a runtime error is thrown
 - (instance method) `Rand().rand()`, which returns a random float between `0` and `1` exclusive

@@ -64,6 +64,18 @@ func (i *Interpreter) defineRandFuncs() {
 				randIndex = rand.Intn(len(arg.elements))
 			}
 			return arg.elements[randIndex], nil
+		case *LoxRange:
+			rangeLen := arg.Length()
+			if rangeLen == 0 {
+				return emptyErr("range")
+			}
+			var randIndex int64
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Int63n(rangeLen)
+			} else {
+				randIndex = rand.Int63n(rangeLen)
+			}
+			return arg.get(randIndex), nil
 		case *LoxString:
 			if len(arg.str) == 0 {
 				return emptyErr("string")
