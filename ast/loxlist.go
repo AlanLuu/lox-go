@@ -559,6 +559,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return nil, nil
 		})
+	case "reversed":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			reversedList := list.NewList[any]()
+			for i := len(l.elements) - 1; i >= 0; i-- {
+				reversedList.Add(l.elements[i])
+			}
+			return NewLoxList(reversedList), nil
+		})
 	case "shuffle":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			rand.Shuffle(len(l.elements), func(a int, b int) {
