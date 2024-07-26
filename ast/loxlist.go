@@ -217,6 +217,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return indexOf(args[0]) >= 0, nil
 		})
+	case "copy":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newList := list.NewList[any]()
+			for _, element := range l.elements {
+				newList.Add(element)
+			}
+			return NewLoxList(newList), nil
+		})
 	case "count":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			obj := args[0]
