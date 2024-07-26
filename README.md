@@ -226,6 +226,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.remove(element)`, which removes the first occurrence of `element` from the list. Returns `true` if the list contained `element` and `false` otherwise
         - `list.removeAll(element1, element2, ..., elementN)`, which removes all occurrences of each element passed into this method from the list. Returns `true` if an element was removed and `false` otherwise
         - `list.removeAllList(list2)`, which removes all occurrences of each element that are contained in the specified list argument from the list. If `list == list2`, removes all elements from the list. Returns `true` if an element was removed and `false` otherwise
+        - `list.reverse()`, which reverses all elements in the list in place
         - `list.shuffle()`, which shuffles all elements in the list in place
         - `list.sort(callback)`, which sorts all elements in the list in place based on the results of the callback function
             - The callback function is called with two arguments `a` and `b`, which are the first and second elements from the list to compare respectively
