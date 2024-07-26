@@ -230,6 +230,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.reverse()`, which reverses all elements in the list in place
         - `list.reversed()`, which returns a new list with all elements from the original list in reversed order
         - `list.shuffle()`, which shuffles all elements in the list in place
+        - `list.shuffled()`, which returns a new list with all elements from the original list in shuffled order
         - `list.sort(callback)`, which sorts all elements in the list in place based on the results of the callback function
             - The callback function is called with two arguments `a` and `b`, which are the first and second elements from the list to compare respectively
             - The callback function should return an integer or float where

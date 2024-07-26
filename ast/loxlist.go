@@ -574,6 +574,17 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			})
 			return nil, nil
 		})
+	case "shuffled":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			shuffledList := list.NewList[any]()
+			for _, element := range l.elements {
+				shuffledList.Add(element)
+			}
+			rand.Shuffle(len(shuffledList), func(a int, b int) {
+				shuffledList[a], shuffledList[b] = shuffledList[b], shuffledList[a]
+			})
+			return NewLoxList(shuffledList), nil
+		})
 	case "sort":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
