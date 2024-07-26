@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/AlanLuu/lox/interfaces"
@@ -545,6 +546,54 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 				l.elements[a], l.elements[b] = l.elements[b], l.elements[a]
 			})
 			return nil, nil
+		})
+	case "sort":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				errorChan := make(chan error, 1)
+				go func() {
+					foundError := false
+					slices.SortFunc(l.elements, func(a any, b any) int {
+						if !foundError {
+							argList[0] = a
+							argList[1] = b
+
+							result, resultErr := callback.call(i, argList)
+							var value any
+							if resultReturn, ok := result.(Return); ok {
+								value = resultReturn.FinalValue
+							} else if resultErr != nil {
+								errorChan <- resultErr
+								foundError = true
+								return 0
+							} else {
+								value = result
+							}
+
+							switch value := value.(type) {
+							case int64:
+								return int(value)
+							case float64:
+								if value < 0.0 {
+									return -1
+								} else if value > 0.0 {
+									return 1
+								}
+							}
+						}
+						return 0
+					})
+					close(errorChan)
+				}()
+				err, ok := <-errorChan
+				if ok && err != nil {
+					return nil, err
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
 		})
 	case "toBuffer":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

@@ -227,6 +227,13 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.removeAll(element1, element2, ..., elementN)`, which removes all occurrences of each element passed into this method from the list. Returns `true` if an element was removed and `false` otherwise
         - `list.removeAllList(list2)`, which removes all occurrences of each element that are contained in the specified list argument from the list. If `list == list2`, removes all elements from the list. Returns `true` if an element was removed and `false` otherwise
         - `list.shuffle()`, which shuffles all elements in the list in place
+        - `list.sort(callback)`, which sorts all elements in the list in place based on the results of the callback function
+            - The callback function is called with two arguments `a` and `b`, which are the first and second elements from the list to compare respectively
+            - The callback function should return an integer or float where
+                - A negative value means that `a` goes before `b`
+                - A positive value means that `a` goes after `b`
+                - `0` or `0.0` means that `a` and `b` remain at the same places
+            - If the callback function does not return an integer or float, it is equivalent to returning `0` from the function
         - `list.toBuffer()`, which attempts to return a new buffer with the elements from the list. If the list contains an element that cannot belong in a buffer, a runtime error is thrown
         - `list.toSet()`, which attempts to return a new set with the elements from the list. If the list contains an element that cannot belong in a set, a runtime error is thrown
         - `list.with(index, element)`, which returns a new list that is a copy of the original list with the original element at the specified index replaced with the new element
