@@ -156,6 +156,69 @@ func (i *Interpreter) defineRandFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
 	})
+	randInstanceFunc("perm", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			argsLen := len(args) - 1
+			switch argsLen {
+			case 1:
+				if num, ok := args[1].(int64); ok {
+					if num <= 0 {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Argument to 'Rand().perm' cannot be 0 or negative.")
+					}
+					permsList := list.NewList[any]()
+					var randPerms []int
+					if randStruct.rand != nil {
+						randPerms = randStruct.rand.Perm(int(num))
+					} else {
+						randPerms = rand.Perm(int(num))
+					}
+					for _, perm := range randPerms {
+						permsList.Add(int64(perm))
+					}
+					return NewLoxList(permsList), nil
+				}
+				return argMustBeTypeAn(in.callToken, "perm", "integer")
+			case 2:
+				if _, ok := args[1].(int64); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"First argument to 'Rand().perm' must be an integer.")
+				}
+				if _, ok := args[2].(int64); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Rand().perm' must be an integer.")
+				}
+
+				start := args[1].(int64)
+				stop := args[2].(int64)
+				if stop < start {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Rand().perm' cannot be less than first argument.")
+				}
+				permsList := list.NewList[any]()
+				loxRange := NewLoxRangeStartStop(start, stop+1)
+				it := loxRange.Iterator()
+				for it.HasNext() {
+					permsList.Add(it.Next())
+				}
+				shuffleFunc := func(a int, b int) {
+					permsList[a], permsList[b] = permsList[b], permsList[a]
+				}
+				if randStruct.rand != nil {
+					randStruct.rand.Shuffle(len(permsList), shuffleFunc)
+				} else {
+					rand.Shuffle(len(permsList), shuffleFunc)
+				}
+				return NewLoxList(permsList), nil
+			default:
+				return nil, loxerror.RuntimeError(in.callToken, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 	randInstanceFunc("rand", 0, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {

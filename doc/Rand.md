@@ -10,6 +10,8 @@ The following methods and fields are defined in the built-in `Rand` class:
 - (instance method) `Rand().choices(sequence, numChoices)`, which returns a list of `numChoices` random elements from `sequence` with replacement, where `sequence` is a buffer, list, range, or string and `numChoices` is an integer
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `numChoices` is negative or `sequence` is empty and `numChoices` is not `0`, a runtime error is thrown
+- (instance method) `Rand().perm(arg1, [arg2])`, which returns a list of a random permutation of all the integers from `arg1` to `arg2` inclusive. If `arg2` is omitted, a random permutation of all the integers from `0` to `arg1` exclusive is returned
+    - If only `arg1` is specified and `arg1` is 0 or negative, or `arg1` and `arg2` are specified and `arg2 < arg1`, a runtime error is thrown
 - (instance method) `Rand().rand()`, which returns a random float between `0` and `1` exclusive
 - (instance method) `Rand().randBytes(size)`, which returns a buffer of `size` random bytes, where `size` is an integer
     - If `size` is negative, a runtime error is thrown
