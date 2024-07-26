@@ -633,6 +633,60 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "sorted":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				sortedList := list.NewList[any]()
+				for _, element := range l.elements {
+					sortedList.Add(element)
+				}
+
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				errorChan := make(chan error, 1)
+				go func() {
+					foundError := false
+					slices.SortFunc(sortedList, func(a any, b any) int {
+						if !foundError {
+							argList[0] = a
+							argList[1] = b
+
+							result, resultErr := callback.call(i, argList)
+							var value any
+							if resultReturn, ok := result.(Return); ok {
+								value = resultReturn.FinalValue
+							} else if resultErr != nil {
+								errorChan <- resultErr
+								foundError = true
+								return 0
+							} else {
+								value = result
+							}
+
+							switch value := value.(type) {
+							case int64:
+								return int(value)
+							case float64:
+								if value < 0.0 {
+									return -1
+								} else if value > 0.0 {
+									return 1
+								}
+							}
+						}
+						return 0
+					})
+					close(errorChan)
+				}()
+				err, ok := <-errorChan
+				if ok && err != nil {
+					sortedList.Clear()
+					return nil, err
+				}
+				return NewLoxList(sortedList), nil
+			}
+			return argMustBeType("function")
+		})
 	case "toBuffer":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			buffer := EmptyLoxBuffer()
