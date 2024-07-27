@@ -511,6 +511,48 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'list.reduce' must be a function.")
 		})
+	case "reduceRight":
+		return listFunc(-1, func(in *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 || argsLen > 2 {
+				return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if callback, ok := args[0].(*LoxFunction); ok {
+				elementsLen := len(l.elements)
+				var value any
+				switch argsLen {
+				case 1:
+					if elementsLen == 0 {
+						return nil, loxerror.RuntimeError(name, "Cannot call 'list.reduceRight' on empty list without initial value.")
+					}
+					value = l.elements[elementsLen-1]
+				case 2:
+					value = args[1]
+				}
+
+				argList := getArgList(callback, 4)
+				defer argList.Clear()
+				argList[3] = l
+				for i := elementsLen - 1; i >= 0; i-- {
+					if i == elementsLen-1 && argsLen == 1 {
+						continue
+					}
+					argList[0] = value
+					argList[1] = l.elements[i]
+					argList[2] = int64(i)
+
+					var valueErr error
+					value, valueErr = callback.call(in, argList)
+					if valueReturn, ok := value.(Return); ok {
+						value = valueReturn.FinalValue
+					} else if valueErr != nil {
+						return nil, valueErr
+					}
+				}
+				return value, nil
+			}
+			return nil, loxerror.RuntimeError(name, "First argument to 'list.reduceRight' must be a function.")
+		})
 	case "remove":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			index := indexOf(args[0])

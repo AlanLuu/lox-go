@@ -224,6 +224,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
         - `list.reduce(callback, [initialValue])`, which applies a reducer callback function on every element in the list from left to right and returns a single value
+        - `list.reduceRight(callback, [initialValue])`, which applies a reducer callback function on every element in the list from right to left and returns a single value
         - `list.remove(element)`, which removes the first occurrence of `element` from the list. Returns `true` if the list contained `element` and `false` otherwise
         - `list.removeAll(element1, element2, ..., elementN)`, which removes all occurrences of each element passed into this method from the list. Returns `true` if an element was removed and `false` otherwise
         - `list.removeAllList(list2)`, which removes all occurrences of each element that are contained in the specified list argument from the list. If `list == list2`, removes all elements from the list. Returns `true` if an element was removed and `false` otherwise
