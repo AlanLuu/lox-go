@@ -566,9 +566,6 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 		}
 	} else {
 		p.consume(token.SEMICOLON, "")
-		if !p.isAtEnd() {
-			return nil, p.error(p.peek(), "Unexpected token.")
-		}
 	}
 	return Expression{Expression: expr}, nil
 }
