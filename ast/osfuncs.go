@@ -934,6 +934,33 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return buffer, nil
 	})
+	osFunc("readFile", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			bytes, err := os.ReadFile(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return NewLoxStringQuote(string(bytes)), nil
+		}
+		return argMustBeType(in.callToken, "readFile", "string")
+	})
+	osFunc("readFileBin", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			bytes, err := os.ReadFile(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			loxBuffer := EmptyLoxBuffer()
+			for _, element := range bytes {
+				addErr := loxBuffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+				}
+			}
+			return loxBuffer, nil
+		}
+		return argMustBeType(in.callToken, "readFileBin", "string")
+	})
 	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
