@@ -75,6 +75,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.link(target, linkName)`, which creates a hard link to `target` with the name `linkName`, which are both strings
 - `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
 - `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory
+- `os.mkdirp(path)`, which creates a new directory with the specified path name along with any necessary parent directories
 - `os.mkfifo(name)`, which creates a FIFO (named pipe) with the specified name in the current working directory
     - This method does not work on Windows and throws an error if called on there
 - `os.name`, which is a string that specifies the operating system that the program is running on

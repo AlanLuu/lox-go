@@ -821,6 +821,16 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "mkdir", "string")
 	})
+	osFunc("mkdirp", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			err := os.MkdirAll(loxStr.str, 0777)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "mkdirp", "string")
+	})
 	osFunc("mkfifo", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := syscalls.Mkfifo(loxStr.str, 0666)
