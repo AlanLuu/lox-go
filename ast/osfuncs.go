@@ -961,6 +961,16 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "readFileBin", "string")
 	})
+	osFunc("readLink", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			dest, err := os.Readlink(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return NewLoxStringQuote(dest), nil
+		}
+		return argMustBeType(in.callToken, "readLink", "string")
+	})
 	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
