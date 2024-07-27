@@ -614,6 +614,12 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("expandEnv", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			return NewLoxStringQuote(os.ExpandEnv(loxStr.str)), nil
+		}
+		return argMustBeType(in.callToken, "expandEnv", "string")
+	})
 	osFunc("exit", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		exitCode := 0
 		argsLen := len(args)

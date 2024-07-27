@@ -55,6 +55,8 @@ The following methods and fields are defined in the built-in `os` class:
     - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
     - The `PATH` environment variable is used when searching for the program to execute
     - This method does not work on Windows and throws an error if called on there
+- `os.expandEnv(string)`, which returns a new string with all occurrences of `$var` and `${var}` in `string` replaced with the value of `var` itself, where `var` is an environment variable
+    - If `var` is not an environment variable, it is replaced with an empty string
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.getcwd()`, which returns the current working directory as a string
