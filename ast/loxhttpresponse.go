@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/AlanLuu/lox/list"
@@ -62,6 +63,15 @@ func LoxHTTPPostUrl(url string) (*LoxHTTPResponse, error) {
 func LoxHTTPPostForm(urlStr string, form url.Values) (*LoxHTTPResponse, error) {
 	return LoxHTTPResHelper(urlStr, func() (*http.Response, error) {
 		return http.PostForm(urlStr, form)
+	})
+}
+
+func LoxHTTPPostText(url string, body string) (*LoxHTTPResponse, error) {
+	return LoxHTTPResHelper(url, func() (*http.Response, error) {
+		if len(body) == 0 {
+			return http.Post(url, "", nil)
+		}
+		return http.Post(url, "text/plain", strings.NewReader(body))
 	})
 }
 

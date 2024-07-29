@@ -302,6 +302,71 @@ func (i *Interpreter) defineHTTPFuncs() {
 		}
 		return res, nil
 	})
+	httpFunc("postText", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 2 && argsLen != 3 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'http.postText' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'http.postText' must be a string.")
+		}
+		if argsLen == 3 {
+			if _, ok := args[2].(*LoxDict); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Third argument to 'http.postText' must be a dictionary.")
+			}
+		}
+
+		urlStr := args[0].(*LoxString).str
+		bodyStr := args[1].(*LoxString).str
+		var res *LoxHTTPResponse
+		var resErr error
+		if argsLen == 3 {
+			headers := args[2].(*LoxDict)
+			req, reqErr := http.NewRequest("POST", urlStr, strings.NewReader(bodyStr))
+			if reqErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+			}
+			if len(bodyStr) > 0 {
+				req.Header.Set("Content-Type", "text/plain")
+			}
+
+			strDictErrMsg := "Headers dictionary in 'http.postText' must only have strings."
+			it := headers.Iterator()
+			for it.HasNext() {
+				pair := it.Next().(*LoxList).elements
+				var key, value string
+				switch pairKey := pair[0].(type) {
+				case *LoxString:
+					key = pairKey.str
+				default:
+					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+				}
+				switch pairValue := pair[1].(type) {
+				case *LoxString:
+					value = pairValue.str
+				default:
+					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+				}
+				req.Header.Set(key, value)
+			}
+
+			res, resErr = LoxHTTPSendRequest(req)
+		} else {
+			res, resErr = LoxHTTPPostText(urlStr, bodyStr)
+		}
+
+		if resErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, resErr.Error())
+		}
+		return res, nil
+	})
 
 	i.globals.Define(className, httpClass)
 }

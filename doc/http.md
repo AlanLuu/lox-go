@@ -13,6 +13,9 @@ The following methods are defined in the built-in `http` class:
     - Form data is sent with a `Content-Type` of `application/x-www-form-urlencoded`
     - The form dictionary's keys must only be strings and its values must either be strings or lists or else a runtime error is thrown
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.postText(url, text, [headers])`, which sends an HTTP POST request to the specified URL along with the body text specified as a string and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
+    - The body text is sent with a `Content-Type` of `text/plain` if it is nonempty
+    - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 
 HTTP response objects have the following methods and fields associated with them:
 - `response.close()`, which closes the underlying response content stream, preventing access to `response.raw` and `response.text` if any of them haven't been accessed before from the caller before closing the response
