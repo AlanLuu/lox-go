@@ -27,7 +27,7 @@ func NewLoxHTTPResponse(res *http.Response) *LoxHTTPResponse {
 	}
 }
 
-func LoxHTTPHelper(url string, reqFunc func() (*http.Response, error)) (*LoxHTTPResponse, error) {
+func LoxHTTPResHelper(url string, reqFunc func() (*http.Response, error)) (*LoxHTTPResponse, error) {
 	startTime := float64(time.Now().UnixMilli()) / 1000
 	res, err := reqFunc()
 	endTime := float64(time.Now().UnixMilli()) / 1000
@@ -41,19 +41,25 @@ func LoxHTTPHelper(url string, reqFunc func() (*http.Response, error)) (*LoxHTTP
 }
 
 func LoxHTTPGetUrl(url string) (*LoxHTTPResponse, error) {
-	return LoxHTTPHelper(url, func() (*http.Response, error) {
+	return LoxHTTPResHelper(url, func() (*http.Response, error) {
 		return http.Get(url)
 	})
 }
 
 func LoxHTTPHeadUrl(url string) (*LoxHTTPResponse, error) {
-	return LoxHTTPHelper(url, func() (*http.Response, error) {
+	return LoxHTTPResHelper(url, func() (*http.Response, error) {
 		return http.Head(url)
 	})
 }
 
+func LoxHTTPPostUrl(url string) (*LoxHTTPResponse, error) {
+	return LoxHTTPResHelper(url, func() (*http.Response, error) {
+		return http.Post(url, "", nil)
+	})
+}
+
 func LoxHTTPSendRequest(req *http.Request) (*LoxHTTPResponse, error) {
-	return LoxHTTPHelper(req.URL.String(), func() (*http.Response, error) {
+	return LoxHTTPResHelper(req.URL.String(), func() (*http.Response, error) {
 		return http.DefaultClient.Do(req)
 	})
 }

@@ -7,6 +7,8 @@ The following methods are defined in the built-in `http` class:
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.head(url, [headers])`, which sends an HTTP HEAD request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.post(url, [headers])`, which sends an HTTP POST request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
+    - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 
 HTTP response objects have the following methods and fields associated with them:
 - `response.close()`, which closes the underlying response content stream, preventing access to `response.raw` and `response.text` if any of them haven't been accessed before from the caller before closing the response
