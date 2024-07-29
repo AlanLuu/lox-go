@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/AlanLuu/lox/list"
@@ -55,6 +56,12 @@ func LoxHTTPHeadUrl(url string) (*LoxHTTPResponse, error) {
 func LoxHTTPPostUrl(url string) (*LoxHTTPResponse, error) {
 	return LoxHTTPResHelper(url, func() (*http.Response, error) {
 		return http.Post(url, "", nil)
+	})
+}
+
+func LoxHTTPPostForm(urlStr string, form url.Values) (*LoxHTTPResponse, error) {
+	return LoxHTTPResHelper(urlStr, func() (*http.Response, error) {
+		return http.PostForm(urlStr, form)
 	})
 }
 
