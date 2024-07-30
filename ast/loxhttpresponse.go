@@ -75,6 +75,15 @@ func LoxHTTPPostText(url string, body string) (*LoxHTTPResponse, error) {
 	})
 }
 
+func LoxHTTPPostJSONText(url string, body string) (*LoxHTTPResponse, error) {
+	return LoxHTTPResHelper(url, func() (*http.Response, error) {
+		if len(body) == 0 {
+			return http.Post(url, "", nil)
+		}
+		return http.Post(url, "application/json", strings.NewReader(body))
+	})
+}
+
 func LoxHTTPSendRequest(req *http.Request) (*LoxHTTPResponse, error) {
 	return LoxHTTPResHelper(req.URL.String(), func() (*http.Response, error) {
 		return http.DefaultClient.Do(req)

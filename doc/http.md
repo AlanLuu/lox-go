@@ -13,6 +13,11 @@ The following methods are defined in the built-in `http` class:
     - Form data is sent with a `Content-Type` of `application/x-www-form-urlencoded`
     - The form dictionary's keys must only be strings and its values must either be strings or lists or else a runtime error is thrown
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.postJSON(url, json, [headers])`, which sends an HTTP POST request to the specified URL along with the JSON data specified as a string or dictionary and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
+    - JSON data is sent with a `Content-Type` of `application/json`
+    - If `json` is a dictionary, the JSON dictionary's keys must only be strings and its values must be valid JSON values or else a runtime error is thrown
+        - This method utilizes `JSON.stringify` to convert the JSON dictionary into a string, so a runtime error is thrown if that method is missing
+    - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.postText(url, text, [headers])`, which sends an HTTP POST request to the specified URL along with the body text specified as a string and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body text is sent with a `Content-Type` of `text/plain` if it is nonempty
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown

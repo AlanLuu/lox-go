@@ -73,6 +73,16 @@ func (e *Environment) GetAtStr(distance int, name string) any {
 	return e.ancestor(distance).values[name]
 }
 
+func (e *Environment) GetFromStr(name string) (any, error) {
+	for tempE := e; tempE != nil; tempE = tempE.enclosing {
+		value, ok := tempE.values[name]
+		if ok {
+			return value, nil
+		}
+	}
+	return nil, loxerror.Error("undefined variable '" + name + "'.")
+}
+
 func (e *Environment) Values() map[string]any {
 	return e.values
 }
