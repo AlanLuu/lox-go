@@ -157,6 +157,8 @@ func (l *LoxDict) getValueByKey(key any) (any, bool) {
 	switch key := key.(type) {
 	case *LoxString:
 		value, ok = l.entries[LoxStringStr{key.str, key.quote}]
+	case *LoxRange:
+		value, ok = l.entries[LoxRangeDictSetKey{key.start, key.stop, key.step}]
 	default:
 		value, ok = l.entries[key]
 	}
@@ -167,6 +169,8 @@ func (l *LoxDict) setKeyValue(key any, value any) {
 	switch key := key.(type) {
 	case *LoxString:
 		l.entries[LoxStringStr{key.str, key.quote}] = value
+	case *LoxRange:
+		l.entries[LoxRangeDictSetKey{key.start, key.stop, key.step}] = value
 	default:
 		l.entries[key] = value
 	}
@@ -177,6 +181,8 @@ func (l *LoxDict) removeKey(key any) any {
 	switch key := key.(type) {
 	case *LoxString:
 		keyItem = LoxStringStr{key.str, key.quote}
+	case *LoxRange:
+		keyItem = LoxRangeDictSetKey{key.start, key.stop, key.step}
 	}
 	value, ok := l.entries[keyItem]
 	if !ok {
@@ -193,12 +199,16 @@ func (l *LoxDict) Iterator() interfaces.Iterator {
 		switch key := key.(type) {
 		case LoxStringStr:
 			pair.Add(NewLoxString(key.str, key.quote))
+		case LoxRangeDictSetKey:
+			pair.Add(NewLoxRange(key.start, key.stop, key.step))
 		default:
 			pair.Add(key)
 		}
 		switch value := value.(type) {
 		case LoxStringStr:
 			pair.Add(NewLoxString(value.str, value.quote))
+		case LoxRangeDictSetKey:
+			pair.Add(NewLoxRange(value.start, value.stop, value.step))
 		default:
 			pair.Add(value)
 		}

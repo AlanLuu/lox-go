@@ -147,6 +147,8 @@ func (l *LoxSet) add(element any) (bool, string) {
 	switch element := element.(type) {
 	case *LoxString:
 		theElement = LoxStringStr{element.str, element.quote}
+	case *LoxRange:
+		theElement = LoxRangeDictSetKey{element.start, element.stop, element.step}
 	default:
 		canBeElement, elementErr := CanBeSetElementCheck(element)
 		if !canBeElement {
@@ -166,6 +168,8 @@ func (l *LoxSet) contains(element any) bool {
 	switch element := element.(type) {
 	case *LoxString:
 		theElement = LoxStringStr{element.str, element.quote}
+	case *LoxRange:
+		theElement = LoxRangeDictSetKey{element.start, element.stop, element.step}
 	default:
 		theElement = element
 	}
@@ -236,6 +240,8 @@ func (l *LoxSet) remove(element any) bool {
 	switch element := element.(type) {
 	case *LoxString:
 		theElement = LoxStringStr{element.str, element.quote}
+	case *LoxRange:
+		theElement = LoxRangeDictSetKey{element.start, element.stop, element.step}
 	default:
 		theElement = element
 	}
@@ -278,6 +284,8 @@ func (l *LoxSet) Iterator() interfaces.Iterator {
 		switch element := element.(type) {
 		case LoxStringStr:
 			elements.Add(NewLoxString(element.str, element.quote))
+		case LoxRangeDictSetKey:
+			elements.Add(NewLoxRange(element.start, element.stop, element.step))
 		default:
 			elements.Add(element)
 		}
