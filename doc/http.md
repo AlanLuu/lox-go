@@ -21,6 +21,8 @@ The following methods are defined in the built-in `http` class:
 - `http.postText(url, text, [headers])`, which sends an HTTP POST request to the specified URL along with the body text specified as a string and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body text is sent with a `Content-Type` of `text/plain` if it is nonempty
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.serve([path], port)`, which starts an HTTP server that serves all files and directories in the specified directory path on the specified port number. If the path is omitted, the current working directory's path is used as the path to serve
+    - On success, this method blocks until it is interrupted using Ctrl+C, in which case the server is shut down and a runtime error is thrown
 
 HTTP response objects have the following methods and fields associated with them:
 - `response.close()`, which closes the underlying response content stream, preventing access to `response.raw` and `response.text` if any of them haven't been accessed before from the caller before closing the response

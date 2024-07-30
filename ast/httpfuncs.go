@@ -1,9 +1,12 @@
 package ast
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"strings"
 
 	"github.com/AlanLuu/lox/list"
@@ -25,6 +28,10 @@ func (i *Interpreter) defineHTTPFuncs() {
 	}
 	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'http.%v' must be a %v.", name, theType)
+		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
+	argMustBeTypeAn := func(callToken *token.Token, name string, theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'http.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
@@ -473,6 +480,85 @@ func (i *Interpreter) defineHTTPFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, resErr.Error())
 		}
 		return res, nil
+	})
+	httpFunc("serve", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var dir string
+		var port int64
+
+		argsLen := len(args)
+		switch argsLen {
+		case 1:
+			if portNum, ok := args[0].(int64); ok {
+				cwd, cwdErr := os.Getwd()
+				if cwdErr != nil {
+					dir = "."
+				} else {
+					dir = cwd
+				}
+				port = portNum
+			} else {
+				return argMustBeTypeAn(in.callToken, "serve", "integer")
+			}
+		case 2:
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'http.serve' must be a string.")
+			}
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'http.serve' must be an integer.")
+			}
+			dir = args[0].(*LoxString).str
+			port = args[1].(int64)
+			stat, statErr := os.Stat(dir)
+			if statErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+			}
+			if !stat.IsDir() {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"'"+dir+"' is not a directory.")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+
+		serveMux := NewLoxServeMux()
+		fs := http.FileServer(http.Dir(dir))
+		serveMux.Handle("/", fs)
+
+		sigChan := make(chan os.Signal, 1)
+		closeChan := make(chan struct{}, 1)
+		serveChan := make(chan struct{}, 1)
+		signal.Notify(sigChan, os.Interrupt)
+		defer signal.Stop(sigChan)
+
+		srv := &http.Server{
+			Addr:    fmt.Sprintf(":%d", port),
+			Handler: serveMux,
+		}
+		fmt.Printf("Serving path '%v' at http://localhost:%d\n", dir, port)
+		var serveErr error
+		go func() {
+			serveErr = srv.ListenAndServe()
+			if errors.Is(serveErr, http.ErrServerClosed) {
+				closeChan <- struct{}{}
+			} else {
+				serveChan <- struct{}{}
+			}
+		}()
+		select {
+		case <-sigChan:
+			srv.Close()
+			<-closeChan
+		case <-serveChan:
+		}
+
+		serveMux.RemoveHandler("/")
+		if serveErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, serveErr.Error())
+		}
+		return nil, nil
 	})
 
 	i.globals.Define(className, httpClass)
