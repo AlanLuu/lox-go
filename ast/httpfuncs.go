@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -33,6 +34,41 @@ func (i *Interpreter) defineHTTPFuncs() {
 	argMustBeTypeAn := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'http.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
+	jsonDictToStr := func(in *Interpreter, dict *LoxDict) (string, error) {
+		jsonClassErrStr := "Could not find JSON class for stringifying JSON dictionary."
+		jsonClassAny, jsonClassErr := in.globals.GetFromStr("JSON")
+		if jsonClassErr != nil {
+			return "", loxerror.RuntimeError(in.callToken, jsonClassErrStr)
+		}
+		if _, ok := jsonClassAny.(*LoxClass); !ok {
+			return "", loxerror.RuntimeError(in.callToken, jsonClassErrStr)
+		}
+
+		jsonClass := jsonClassAny.(*LoxClass)
+		jsonStringifyErrStr := "Could not find 'stringify' method in JSON class for stringifying JSON dictionary."
+		jsonStringifyFuncAny, foundJsonFunc := jsonClass.classProperties["stringify"]
+		if !foundJsonFunc {
+			return "", loxerror.RuntimeError(in.callToken, jsonStringifyErrStr)
+		}
+		if _, ok := jsonStringifyFuncAny.(LoxCallable); !ok {
+			return "", loxerror.RuntimeError(in.callToken, jsonStringifyErrStr)
+		}
+
+		jsonStringifyFunc := jsonStringifyFuncAny.(LoxCallable)
+		argList := list.NewList[any]()
+		argList.Add(dict)
+		result, resultErr := jsonStringifyFunc.call(in, argList)
+		if resultErr != nil {
+			errMsg := resultErr.Error()
+			index := strings.LastIndex(errMsg, "\n")
+			if index > 0 {
+				errMsg = errMsg[:index]
+			}
+			return "", loxerror.RuntimeError(in.callToken,
+				"Error occurred when stringifying JSON dictionary:\n"+errMsg)
+		}
+		return result.(*LoxString).str, nil
 	}
 
 	httpFunc("get", -1, func(in *Interpreter, args list.List[any]) (any, error) {
@@ -339,39 +375,11 @@ func (i *Interpreter) defineHTTPFuncs() {
 		case *LoxString:
 			jsonStr = secondArg.str
 		case *LoxDict:
-			jsonClassErrStr := "Could not find JSON class for stringifying JSON dictionary."
-			jsonClassAny, jsonClassErr := in.globals.GetFromStr("JSON")
-			if jsonClassErr != nil {
-				return nil, loxerror.RuntimeError(in.callToken, jsonClassErrStr)
+			var jsonStrErr error
+			jsonStr, jsonStrErr = jsonDictToStr(in, secondArg)
+			if jsonStrErr != nil {
+				return nil, jsonStrErr
 			}
-			if _, ok := jsonClassAny.(*LoxClass); !ok {
-				return nil, loxerror.RuntimeError(in.callToken, jsonClassErrStr)
-			}
-
-			jsonClass := jsonClassAny.(*LoxClass)
-			jsonStringifyErrStr := "Could not find 'stringify' method in JSON class for stringifying JSON dictionary."
-			jsonStringifyFuncAny, foundJsonFunc := jsonClass.classProperties["stringify"]
-			if !foundJsonFunc {
-				return nil, loxerror.RuntimeError(in.callToken, jsonStringifyErrStr)
-			}
-			if _, ok := jsonStringifyFuncAny.(LoxCallable); !ok {
-				return nil, loxerror.RuntimeError(in.callToken, jsonStringifyErrStr)
-			}
-
-			jsonStringifyFunc := jsonStringifyFuncAny.(LoxCallable)
-			argList := list.NewList[any]()
-			argList.Add(secondArg)
-			result, resultErr := jsonStringifyFunc.call(in, argList)
-			if resultErr != nil {
-				errMsg := resultErr.Error()
-				index := strings.LastIndex(errMsg, "\n")
-				if index > 0 {
-					errMsg = errMsg[:index]
-				}
-				return nil, loxerror.RuntimeError(in.callToken,
-					"Error occurred when stringifying JSON dictionary:\n"+errMsg)
-			}
-			jsonStr = result.(*LoxString).str
 		}
 
 		var res *LoxHTTPResponse
@@ -480,6 +488,136 @@ func (i *Interpreter) defineHTTPFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, resErr.Error())
 		}
 		return res, nil
+	})
+	httpFunc("request", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 3, 4:
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'http.request' must be a string.")
+			}
+			if _, ok := args[1].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'http.request' must be a string.")
+			}
+
+			method := strings.ToUpper(args[0].(*LoxString).str)
+			url := args[1].(*LoxString).str
+			var req *http.Request
+			switch method {
+			case "GET", "HEAD":
+				if args[2] != nil {
+					return nil, loxerror.RuntimeError(in.callToken,
+						fmt.Sprintf("Third argument to 'http.request' must be nil for %v requests.", method))
+				}
+				if argsLen == 4 {
+					if _, ok := args[3].(*LoxDict); !ok {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Fourth argument to 'http.request' must be a dictionary.")
+					}
+				}
+				var reqErr error
+				req, reqErr = http.NewRequest(method, url, nil)
+				if reqErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+				}
+			default:
+				switch args[2].(type) {
+				case *LoxBuffer:
+				case *LoxDict:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Third argument to 'http.request' must be a buffer, dictionary, or string.")
+				}
+				if argsLen == 4 {
+					if _, ok := args[3].(*LoxDict); !ok {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Fourth argument to 'http.request' must be a dictionary.")
+					}
+				}
+
+				switch thirdArg := args[2].(type) {
+				case *LoxBuffer:
+					byteArr := list.NewList[byte]()
+					for _, element := range thirdArg.elements {
+						byteArr.Add(byte(element.(int64)))
+					}
+					var reqErr error
+					if len(byteArr) > 0 {
+						req, reqErr = http.NewRequest(method, url, bytes.NewBuffer(byteArr))
+						if reqErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+						}
+						req.Header.Set("Content-Type", "application/octet-stream")
+					} else {
+						req, reqErr = http.NewRequest(method, url, nil)
+						if reqErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+						}
+					}
+				case *LoxDict:
+					body, bodyErr := jsonDictToStr(in, thirdArg)
+					if bodyErr != nil {
+						return nil, bodyErr
+					}
+					var reqErr error
+					req, reqErr = http.NewRequest(method, url, strings.NewReader(body))
+					if reqErr != nil {
+						return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+					}
+					req.Header.Set("Content-Type", "application/json")
+				case *LoxString:
+					body := thirdArg.str
+					var reqErr error
+					if len(body) > 0 {
+						req, reqErr = http.NewRequest(method, url, strings.NewReader(body))
+						if reqErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+						}
+						req.Header.Set("Content-Type", "text/plain")
+					} else {
+						req, reqErr = http.NewRequest(method, url, nil)
+						if reqErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+						}
+					}
+				}
+			}
+
+			if argsLen == 4 {
+				headers := args[3].(*LoxDict)
+				strDictErrMsg := "Headers dictionary in 'http.request' must only have strings."
+				it := headers.Iterator()
+				for it.HasNext() {
+					pair := it.Next().(*LoxList).elements
+					var key, value string
+					switch pairKey := pair[0].(type) {
+					case *LoxString:
+						key = pairKey.str
+					default:
+						return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+					}
+					switch pairValue := pair[1].(type) {
+					case *LoxString:
+						value = pairValue.str
+					default:
+						return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+					}
+					req.Header.Set(key, value)
+				}
+			}
+
+			res, resErr := LoxHTTPSendRequest(req)
+			if resErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, resErr.Error())
+			}
+			return res, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 3 or 4 arguments but got %v.", argsLen))
+		}
 	})
 	httpFunc("serve", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var dir string
