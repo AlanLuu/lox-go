@@ -62,6 +62,9 @@ func LoxHTTPPostUrl(url string) (*LoxHTTPResponse, error) {
 
 func LoxHTTPPostForm(urlStr string, form url.Values) (*LoxHTTPResponse, error) {
 	return LoxHTTPResHelper(urlStr, func() (*http.Response, error) {
+		if len(form) == 0 {
+			return http.Post(urlStr, "", nil)
+		}
 		return http.PostForm(urlStr, form)
 	})
 }

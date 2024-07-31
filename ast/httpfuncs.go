@@ -343,11 +343,21 @@ func (i *Interpreter) defineHTTPFuncs() {
 		var resErr error
 		if argsLen == 3 {
 			headers := args[2].(*LoxDict)
-			req, reqErr := http.NewRequest("POST", urlStr, strings.NewReader(formValues.Encode()))
-			if reqErr != nil {
-				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+			var req *http.Request
+			if len(formValues) > 0 {
+				var reqErr error
+				req, reqErr = http.NewRequest("POST", urlStr, strings.NewReader(formValues.Encode()))
+				if reqErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+				}
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			} else {
+				var reqErr error
+				req, reqErr = http.NewRequest("POST", urlStr, nil)
+				if reqErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+				}
 			}
-			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 			headersErr := populateHeaders(in, headers, req, "postForm")
 			if headersErr != nil {
