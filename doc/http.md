@@ -31,6 +31,7 @@ The following methods are defined in the built-in `http` class:
             - The dictionary's keys must only be strings and its values must be valid JSON values or else a runtime error is thrown
             - `JSON.stringify` is used to convert the dictionary into a JSON string, so a runtime error is thrown if that method is missing
         - String, which is sent with a `Content-Type` of `text/plain` if it is nonempty
+        - `nil`, in which case an empty body is sent with the request
         - If the method is equal to `GET` or `HEAD`, the body parameter must be `nil` or else a runtime error is thrown
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.requestForm(method, url, form, [headers])`, which sends an HTTP request with the specified method string to the specified URL along with the form data specified as a dictionary and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request

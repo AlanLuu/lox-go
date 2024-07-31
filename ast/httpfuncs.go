@@ -526,9 +526,10 @@ func (i *Interpreter) defineHTTPFuncs() {
 				case *LoxBuffer:
 				case *LoxDict:
 				case *LoxString:
+				case nil:
 				default:
 					return nil, loxerror.RuntimeError(in.callToken,
-						"Third argument to 'http.request' must be a buffer, dictionary, or string.")
+						"Third argument to 'http.request' must be a buffer, dictionary, string, or nil.")
 				}
 				if argsLen == 4 {
 					if _, ok := args[3].(*LoxDict); !ok {
@@ -581,6 +582,12 @@ func (i *Interpreter) defineHTTPFuncs() {
 						if reqErr != nil {
 							return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
 						}
+					}
+				case nil:
+					var reqErr error
+					req, reqErr = http.NewRequest(method, url, nil)
+					if reqErr != nil {
+						return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
 					}
 				}
 			}
