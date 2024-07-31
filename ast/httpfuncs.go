@@ -603,6 +603,103 @@ func (i *Interpreter) defineHTTPFuncs() {
 				fmt.Sprintf("Expected 3 or 4 arguments but got %v.", argsLen))
 		}
 	})
+	httpFunc("requestForm", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 3, 4:
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'http.requestForm' must be a string.")
+			}
+			if _, ok := args[1].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'http.requestForm' must be a string.")
+			}
+			if _, ok := args[2].(*LoxDict); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Third argument to 'http.requestForm' must be a dictionary.")
+			}
+			if argsLen == 4 {
+				if _, ok := args[3].(*LoxDict); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Fourth argument to 'http.requestForm' must be a dictionary.")
+				}
+			}
+
+			method := strings.ToUpper(args[0].(*LoxString).str)
+			urlStr := args[1].(*LoxString).str
+			formDict := args[2].(*LoxDict)
+			switch method {
+			case "GET", "HEAD":
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("%v requests are not supported in 'http.requestForm'.", method))
+			}
+
+			formValues := url.Values{}
+			formDictErrMsg := "Form dictionary in 'http.requestForm' must only have strings or lists of strings."
+			formDictIterator := formDict.Iterator()
+			for formDictIterator.HasNext() {
+				pair := formDictIterator.Next().(*LoxList).elements
+				var key string
+
+				switch pairKey := pair[0].(type) {
+				case *LoxString:
+					key = pairKey.str
+				default:
+					return nil, loxerror.RuntimeError(in.callToken, formDictErrMsg)
+				}
+
+				switch pairValue := pair[1].(type) {
+				case *LoxString:
+					formValues.Add(key, pairValue.str)
+				case *LoxList:
+					for _, element := range pairValue.elements {
+						switch element := element.(type) {
+						case *LoxString:
+							formValues.Add(key, element.str)
+						default:
+							return nil, loxerror.RuntimeError(in.callToken, formDictErrMsg)
+						}
+					}
+				default:
+					return nil, loxerror.RuntimeError(in.callToken, formDictErrMsg)
+				}
+			}
+
+			var req *http.Request
+			if len(formValues) > 0 {
+				var reqErr error
+				req, reqErr = http.NewRequest(method, urlStr, strings.NewReader(formValues.Encode()))
+				if reqErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+				}
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			} else {
+				var reqErr error
+				req, reqErr = http.NewRequest(method, urlStr, nil)
+				if reqErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+				}
+			}
+
+			if argsLen == 4 {
+				headers := args[3].(*LoxDict)
+				headersErr := populateHeaders(in, headers, req, "requestForm")
+				if headersErr != nil {
+					return nil, headersErr
+				}
+			}
+
+			res, resErr := LoxHTTPSendRequest(req)
+			if resErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, resErr.Error())
+			}
+			return res, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 3 or 4 arguments but got %v.", argsLen))
+		}
+	})
 	httpFunc("serve", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var dir string
 		var port int64

@@ -13,7 +13,7 @@ The following methods are defined in the built-in `http` class:
     - The binary data in the buffer is sent with a `Content-Type` of `application/octet-stream` if it is nonempty
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.postForm(url, form, [headers])`, which sends an HTTP POST request to the specified URL along with the form data specified as a dictionary and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
-    - Form data is sent with a `Content-Type` of `application/x-www-form-urlencoded`
+    - Form data is sent with a `Content-Type` of `application/x-www-form-urlencoded` if it is nonempty
     - The form dictionary's keys must only be strings and its values must either be strings or lists or else a runtime error is thrown
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.postJSON(url, json, [headers])`, which sends an HTTP POST request to the specified URL along with the JSON data specified as a string or dictionary and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
@@ -24,7 +24,7 @@ The following methods are defined in the built-in `http` class:
 - `http.postText(url, text, [headers])`, which sends an HTTP POST request to the specified URL along with the body text specified as a string and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body text is sent with a `Content-Type` of `text/plain` if it is nonempty
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
-- `http.request(method, url, body, [headers])`, which sends an HTTP request with the specified method as a string to the specified URL along with the body parameter. If the headers dictionary is specified, all headers in the dictionary are sent with the request
+- `http.request(method, url, body, [headers])`, which sends an HTTP request with the specified method string to the specified URL along with the body parameter. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body parameter can be one of the following types:
         - Buffer, which is sent with a `Content-Type` of `application/octet-stream` if it is nonempty
         - Dictionary, which is sent with a `Content-Type` of `application/json`
@@ -32,6 +32,11 @@ The following methods are defined in the built-in `http` class:
             - `JSON.stringify` is used to convert the dictionary into a JSON string, so a runtime error is thrown if that method is missing
         - String, which is sent with a `Content-Type` of `text/plain` if it is nonempty
         - If the method is equal to `GET` or `HEAD`, the body parameter must be `nil` or else a runtime error is thrown
+    - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.requestForm(method, url, form, [headers])`, which sends an HTTP request with the specified method string to the specified URL along with the form data specified as a dictionary and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
+    - This method does not support `GET` or `HEAD` requests and throws a runtime error if one of those request methods is specified in this method
+    - Form data is sent with a `Content-Type` of `application/x-www-form-urlencoded` if it is nonempty
+    - The form dictionary's keys must only be strings and its values must either be strings or lists or else a runtime error is thrown
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.serve([path], port)`, which starts an HTTP server that serves all files and directories in the specified directory path on the specified port number. If the path is omitted, the current working directory's path is used as the path to serve
     - On success, this method blocks until it is interrupted using Ctrl+C, in which case the server is shut down and a runtime error is thrown
