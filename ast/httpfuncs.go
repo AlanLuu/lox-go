@@ -70,6 +70,28 @@ func (i *Interpreter) defineHTTPFuncs() {
 		}
 		return result.(*LoxString).str, nil
 	}
+	populateHeaders := func(in *Interpreter, headers *LoxDict, req *http.Request, name string) error {
+		errMsg := "Headers dictionary in 'http." + name + "' must only have strings."
+		it := headers.Iterator()
+		for it.HasNext() {
+			pair := it.Next().(*LoxList).elements
+			var key, value string
+			switch pairKey := pair[0].(type) {
+			case *LoxString:
+				key = pairKey.str
+			default:
+				return loxerror.RuntimeError(in.callToken, errMsg)
+			}
+			switch pairValue := pair[1].(type) {
+			case *LoxString:
+				value = pairValue.str
+			default:
+				return loxerror.RuntimeError(in.callToken, errMsg)
+			}
+			req.Header.Set(key, value)
+		}
+		return nil
+	}
 
 	httpFunc("get", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
@@ -101,24 +123,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
 			}
 
-			strDictErrMsg := "Headers dictionary in 'http.get' must only have strings."
-			it := headers.Iterator()
-			for it.HasNext() {
-				pair := it.Next().(*LoxList).elements
-				var key, value string
-				switch pairKey := pair[0].(type) {
-				case *LoxString:
-					key = pairKey.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				switch pairValue := pair[1].(type) {
-				case *LoxString:
-					value = pairValue.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				req.Header.Set(key, value)
+			headersErr := populateHeaders(in, headers, req, "get")
+			if headersErr != nil {
+				return nil, headersErr
 			}
 
 			res, resErr := LoxHTTPSendRequest(req)
@@ -161,24 +168,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
 			}
 
-			strDictErrMsg := "Headers dictionary in 'http.head' must only have strings."
-			it := headers.Iterator()
-			for it.HasNext() {
-				pair := it.Next().(*LoxList).elements
-				var key, value string
-				switch pairKey := pair[0].(type) {
-				case *LoxString:
-					key = pairKey.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				switch pairValue := pair[1].(type) {
-				case *LoxString:
-					value = pairValue.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				req.Header.Set(key, value)
+			headersErr := populateHeaders(in, headers, req, "head")
+			if headersErr != nil {
+				return nil, headersErr
 			}
 
 			res, resErr := LoxHTTPSendRequest(req)
@@ -221,24 +213,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
 			}
 
-			strDictErrMsg := "Headers dictionary in 'http.post' must only have strings."
-			it := headers.Iterator()
-			for it.HasNext() {
-				pair := it.Next().(*LoxList).elements
-				var key, value string
-				switch pairKey := pair[0].(type) {
-				case *LoxString:
-					key = pairKey.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				switch pairValue := pair[1].(type) {
-				case *LoxString:
-					value = pairValue.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				req.Header.Set(key, value)
+			headersErr := populateHeaders(in, headers, req, "post")
+			if headersErr != nil {
+				return nil, headersErr
 			}
 
 			res, resErr := LoxHTTPSendRequest(req)
@@ -315,24 +292,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 			}
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-			strDictErrMsg := "Headers dictionary in 'http.postForm' must only have strings."
-			it := headers.Iterator()
-			for it.HasNext() {
-				pair := it.Next().(*LoxList).elements
-				var key, value string
-				switch pairKey := pair[0].(type) {
-				case *LoxString:
-					key = pairKey.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				switch pairValue := pair[1].(type) {
-				case *LoxString:
-					value = pairValue.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				req.Header.Set(key, value)
+			headersErr := populateHeaders(in, headers, req, "postForm")
+			if headersErr != nil {
+				return nil, headersErr
 			}
 
 			res, resErr = LoxHTTPSendRequest(req)
@@ -394,24 +356,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 				req.Header.Set("Content-Type", "application/json")
 			}
 
-			strDictErrMsg := "Headers dictionary in 'http.postJSON' must only have strings."
-			it := headers.Iterator()
-			for it.HasNext() {
-				pair := it.Next().(*LoxList).elements
-				var key, value string
-				switch pairKey := pair[0].(type) {
-				case *LoxString:
-					key = pairKey.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				switch pairValue := pair[1].(type) {
-				case *LoxString:
-					value = pairValue.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				req.Header.Set(key, value)
+			headersErr := populateHeaders(in, headers, req, "postJSON")
+			if headersErr != nil {
+				return nil, headersErr
 			}
 
 			res, resErr = LoxHTTPSendRequest(req)
@@ -459,24 +406,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 				req.Header.Set("Content-Type", "text/plain")
 			}
 
-			strDictErrMsg := "Headers dictionary in 'http.postText' must only have strings."
-			it := headers.Iterator()
-			for it.HasNext() {
-				pair := it.Next().(*LoxList).elements
-				var key, value string
-				switch pairKey := pair[0].(type) {
-				case *LoxString:
-					key = pairKey.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				switch pairValue := pair[1].(type) {
-				case *LoxString:
-					value = pairValue.str
-				default:
-					return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-				}
-				req.Header.Set(key, value)
+			headersErr := populateHeaders(in, headers, req, "postText")
+			if headersErr != nil {
+				return nil, headersErr
 			}
 
 			res, resErr = LoxHTTPSendRequest(req)
@@ -588,24 +520,9 @@ func (i *Interpreter) defineHTTPFuncs() {
 
 			if argsLen == 4 {
 				headers := args[3].(*LoxDict)
-				strDictErrMsg := "Headers dictionary in 'http.request' must only have strings."
-				it := headers.Iterator()
-				for it.HasNext() {
-					pair := it.Next().(*LoxList).elements
-					var key, value string
-					switch pairKey := pair[0].(type) {
-					case *LoxString:
-						key = pairKey.str
-					default:
-						return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-					}
-					switch pairValue := pair[1].(type) {
-					case *LoxString:
-						value = pairValue.str
-					default:
-						return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
-					}
-					req.Header.Set(key, value)
+				headersErr := populateHeaders(in, headers, req, "request")
+				if headersErr != nil {
+					return nil, headersErr
 				}
 			}
 
