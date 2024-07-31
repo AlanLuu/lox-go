@@ -228,6 +228,63 @@ func (i *Interpreter) defineHTTPFuncs() {
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
 	})
+	httpFunc("postBin", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 2 && argsLen != 3 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'http.postBin' must be a string.")
+		}
+		if _, ok := args[1].(*LoxBuffer); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'http.postBin' must be a buffer.")
+		}
+		if argsLen == 3 {
+			if _, ok := args[2].(*LoxDict); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Third argument to 'http.postBin' must be a dictionary.")
+			}
+		}
+
+		urlStr := args[0].(*LoxString).str
+		buffer := args[1].(*LoxBuffer)
+		byteArr := list.NewList[byte]()
+		for _, element := range buffer.elements {
+			byteArr.Add(byte(element.(int64)))
+		}
+
+		var req *http.Request
+		var reqErr error
+		if len(byteArr) > 0 {
+			req, reqErr = http.NewRequest("POST", urlStr, bytes.NewBuffer(byteArr))
+			if reqErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+			}
+			req.Header.Set("Content-Type", "application/octet-stream")
+		} else {
+			req, reqErr = http.NewRequest("POST", urlStr, nil)
+			if reqErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, reqErr.Error())
+			}
+		}
+
+		if argsLen == 3 {
+			headers := args[2].(*LoxDict)
+			headersErr := populateHeaders(in, headers, req, "postBin")
+			if headersErr != nil {
+				return nil, headersErr
+			}
+		}
+
+		res, resErr := LoxHTTPSendRequest(req)
+		if resErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, resErr.Error())
+		}
+		return res, nil
+	})
 	httpFunc("postForm", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		if argsLen != 2 && argsLen != 3 {

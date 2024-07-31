@@ -9,6 +9,9 @@ The following methods are defined in the built-in `http` class:
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.post(url, [headers])`, which sends an HTTP POST request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.postBin(url, data, [headers])`, which sends an HTTP POST request to the specified URL along with the binary data specified as a buffer and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
+    - The binary data in the buffer is sent with a `Content-Type` of `application/octet-stream` if it is nonempty
+    - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.postForm(url, form, [headers])`, which sends an HTTP POST request to the specified URL along with the form data specified as a dictionary and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - Form data is sent with a `Content-Type` of `application/x-www-form-urlencoded`
     - The form dictionary's keys must only be strings and its values must either be strings or lists or else a runtime error is thrown
