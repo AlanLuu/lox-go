@@ -39,6 +39,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.environment = interpreter.globals
 	interpreter.defineBase32Funcs() //Defined in base32funcs.go
 	interpreter.defineBase64Funcs() //Defined in base64funcs.go
+	interpreter.defineCryptoFuncs() //Defined in cryptofuncs.go
 	interpreter.defineHTTPFuncs()   //Defined in httpfuncs.go
 	interpreter.defineJSONFuncs()   //Defined in jsonfuncs.go
 	interpreter.defineMathFuncs()   //Defined in mathfuncs.go
