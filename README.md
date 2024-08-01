@@ -136,6 +136,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
 - Various methods and fields to work with operating system functionality are defined under a built-in class called `os`, which is documented [here](./doc/os.md)
 - Various methods to work with HTTP requests are defined under a built-in class called `http`, which is documented [here](./doc/http.md)
+- Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
 - Various methods to work with base64 strings are defined under a built-in class called `base64`, where the following methods are defined:
     - `base64.decode(string)`, which decodes the specified base64-encoded string into a decoded string and returns that string
         - A runtime error is thrown if the specified string is not properly encoded as base64
