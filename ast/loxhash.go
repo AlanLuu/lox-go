@@ -12,20 +12,26 @@ import (
 type LoxHash struct {
 	hash       hash.Hash
 	hashType   string
-	properties map[string]*struct{ ProtoLoxCallable }
+	properties map[string]any
 }
 
 func NewLoxHash(theHash hash.Hash, hashType string) *LoxHash {
 	return &LoxHash{
 		hash:       theHash,
 		hashType:   hashType,
-		properties: make(map[string]*struct{ ProtoLoxCallable }),
+		properties: make(map[string]any),
 	}
 }
 
 func (l *LoxHash) Get(name *token.Token) (any, error) {
 	lexemeName := name.Lexeme
 	if field, ok := l.properties[lexemeName]; ok {
+		return field, nil
+	}
+	hashField := func(field any) (any, error) {
+		if _, ok := l.properties[lexemeName]; !ok {
+			l.properties[lexemeName] = field
+		}
 		return field, nil
 	}
 	hashFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
@@ -73,6 +79,8 @@ func (l *LoxHash) Get(name *token.Token) (any, error) {
 		})
 	case "size":
 		return int64(l.hash.Size()), nil
+	case "type":
+		return hashField(NewLoxString(l.hashType, '\''))
 	case "update":
 		return hashFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			switch arg := args[0].(type) {

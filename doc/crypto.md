@@ -15,4 +15,9 @@ Hash objects have the following methods and fields associated with them:
 - `hash.hexDigest()`, which returns a string that is the hexadecimal representation of the current hash based on the hash object's hash algorithm and the current data in the hash object
 - `hash.reset()`, which clears all the current data from the hash object, resetting it to its initial state
 - `hash.size`, which is the number of bytes the final hash will have as an integer
+- `hash.type`, which is the type of the hash object's hash algorithm as a string, with the following values:
+    - `md5` for MD5
+    - `sha1` for SHA-1
+    - `sha256` for SHA-256
+    - `sha512` for SHA-512
 - `hash.update(data)`, which updates the hash object with the specified data, which must be a buffer or string
