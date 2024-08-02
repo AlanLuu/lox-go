@@ -11,6 +11,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (i *Interpreter) defineCryptoFuncs() {
@@ -30,6 +31,35 @@ func (i *Interpreter) defineCryptoFuncs() {
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
+	cryptoFunc("bcrypt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var password []byte
+		var cost int
+		argsLen := len(args)
+		switch argsLen {
+		case 1:
+			if _, ok := args[0].(*LoxString); !ok {
+				return argMustBeType(in.callToken, "bcrypt", "string")
+			}
+			password = []byte(args[0].(*LoxString).str)
+			cost = bcrypt.DefaultCost
+		case 2:
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'crypto.bcrypt' must be a string.")
+			}
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'crypto.bcrypt' must be an integer.")
+			}
+			password = []byte(args[0].(*LoxString).str)
+			cost = int(args[1].(int64))
+		}
+		hash, hashErr := bcrypt.GenerateFromPassword(password, cost)
+		if hashErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, hashErr.Error())
+		}
+		return NewLoxString(string(hash), '\''), nil
+	})
 	cryptoFunc("md5", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
 		argsLen := len(args)
