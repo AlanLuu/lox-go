@@ -3,7 +3,9 @@
 The following methods are defined in the built-in `crypto` class:
 - `crypto.bcrypt(password, [cost])`, which returns a string of the bcrypt hash of the specified password as a string with the specified cost as an integer. If the cost is omitted, the resulting bcrypt hash will have a cost of 10
     - If the cost is less than 4, the cost is set to 10
+    - If the cost is greater than 31, a runtime error is thrown
     - If the password is larger than 72 bytes, a runtime error is thrown
+- `crypto.bcryptVerify(password, hash)`, which takes in the specified password and bcrypt hash as strings and returns `true` if the password matches the hash and `false` otherwise
 - `crypto.md5([data])`, which returns a hash object that computes the MD5 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
     - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
 - `crypto.sha1([data])`, which returns a hash object that computes the SHA-1 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it

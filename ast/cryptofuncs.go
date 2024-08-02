@@ -60,6 +60,19 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return NewLoxString(string(hash), '\''), nil
 	})
+	cryptoFunc("bcryptVerify", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.bcryptVerify' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.bcryptVerify' must be a string.")
+		}
+		password := []byte(args[0].(*LoxString).str)
+		hash := []byte(args[1].(*LoxString).str)
+		return bcrypt.CompareHashAndPassword(hash, password) == nil, nil
+	})
 	cryptoFunc("md5", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
 		argsLen := len(args)
