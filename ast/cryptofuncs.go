@@ -127,6 +127,33 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return NewLoxHash(hashObj, "sha1"), nil
 	})
+	cryptoFunc("sha224", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var hashObj hash.Hash
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			hashObj = sha256.New224()
+		case 1:
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				hashObj = sha256.New224()
+				bytes := []byte{}
+				for _, element := range arg.elements {
+					bytes = append(bytes, byte(element.(int64)))
+				}
+				hashObj.Write(bytes)
+			case *LoxString:
+				hashObj = sha256.New224()
+				hashObj.Write([]byte(arg.str))
+			default:
+				return argMustBeType(in.callToken, "sha224", "buffer or string")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		return NewLoxHash(hashObj, "sha224"), nil
+	})
 	cryptoFunc("sha256", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
 		argsLen := len(args)
@@ -153,6 +180,33 @@ func (i *Interpreter) defineCryptoFuncs() {
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
 		return NewLoxHash(hashObj, "sha256"), nil
+	})
+	cryptoFunc("sha384", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var hashObj hash.Hash
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			hashObj = sha512.New384()
+		case 1:
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				hashObj = sha512.New384()
+				bytes := []byte{}
+				for _, element := range arg.elements {
+					bytes = append(bytes, byte(element.(int64)))
+				}
+				hashObj.Write(bytes)
+			case *LoxString:
+				hashObj = sha512.New384()
+				hashObj.Write([]byte(arg.str))
+			default:
+				return argMustBeType(in.callToken, "sha384", "buffer or string")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		return NewLoxHash(hashObj, "sha384"), nil
 	})
 	cryptoFunc("sha512", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
