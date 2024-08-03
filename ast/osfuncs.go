@@ -22,6 +22,7 @@ import (
 	"github.com/AlanLuu/lox/syscalls/linuxsyscalls"
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
+	"github.com/mattn/go-isatty"
 )
 
 func cmdArgsToLoxList() *LoxList {
@@ -705,6 +706,13 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return NewLoxStringQuote(hostname), nil
+	})
+	osFunc("isatty", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if num, ok := args[0].(int64); ok {
+			fd := uintptr(num)
+			return isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd), nil
+		}
+		return argMustBeTypeAn(in.callToken, "isatty", "integer")
 	})
 	osFunc("kill", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)

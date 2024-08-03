@@ -73,6 +73,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.getuid()`, which returns the user ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.hostname()`, which returns the hostname of the computer as a string
+- `os.isatty(fd)`, which returns `true` if the specified integer file descriptor is open and refers to a terminal and `false` otherwise
 - `os.kill(pid, [signalNum])`, which sends the signal corresponding to the integer `signalNum` to the process corresponding to `pid`, which is the process ID as an integer. If `signalNum` is omitted, this method kills the process corresponding to `pid` without letting it terminate gracefully
 - `os.link(target, linkName)`, which creates a hard link to `target` with the name `linkName`, which are both strings
 - `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
