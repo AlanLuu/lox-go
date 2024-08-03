@@ -15,6 +15,7 @@ import (
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/scanner"
 	"github.com/chzyer/readline"
+	"github.com/mattn/go-isatty"
 )
 
 var inputSc *bufio.Scanner
@@ -129,8 +130,8 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 
 		var userInput string
-		stat, _ := os.Stdin.Stat()
-		if (stat.Mode() & os.ModeCharDevice) != 0 {
+		fd := os.Stdin.Fd()
+		if isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd) {
 			if inputReadline == nil {
 				inputReadline, _ = readline.NewEx(&readline.Config{
 					Prompt:          getResult(prompt, prompt, true),

@@ -4,6 +4,8 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+
+	"github.com/mattn/go-isatty"
 )
 
 var InteractiveMode = false
@@ -57,9 +59,6 @@ func IsWindows() bool {
 }
 
 func StdinFromTerminal() bool {
-	stat, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-	return InteractiveMode && (stat.Mode()&os.ModeCharDevice) != 0
+	fd := os.Stdin.Fd()
+	return InteractiveMode && (isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd))
 }
