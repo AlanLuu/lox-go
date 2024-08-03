@@ -194,7 +194,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			return nil, nil
 		})
 	case "closed":
-		return fileField(l.isClosed)
+		return l.isClosed, nil
 	case "fd":
 		return int64(l.file.Fd()), nil
 	case "flush":
