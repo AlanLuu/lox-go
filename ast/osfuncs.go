@@ -68,7 +68,6 @@ func (i *Interpreter) defineOSFuncs() {
 			name:       stream.Name(),
 			mode:       mode,
 			isBinary:   isBinary,
-			isClosed:   false,
 			properties: make(map[string]any),
 		}
 	}
@@ -894,7 +893,6 @@ func (i *Interpreter) defineOSFuncs() {
 			name:       r.Name(),
 			mode:       filemode.READ,
 			isBinary:   false,
-			isClosed:   false,
 			properties: make(map[string]any),
 		})
 		files.Add(&LoxFile{
@@ -902,7 +900,6 @@ func (i *Interpreter) defineOSFuncs() {
 			name:       w.Name(),
 			mode:       filemode.WRITE,
 			isBinary:   false,
-			isClosed:   false,
 			properties: make(map[string]any),
 		})
 		return NewLoxList(files), nil
@@ -918,7 +915,6 @@ func (i *Interpreter) defineOSFuncs() {
 			name:       r.Name(),
 			mode:       filemode.READ,
 			isBinary:   true,
-			isClosed:   false,
 			properties: make(map[string]any),
 		})
 		files.Add(&LoxFile{
@@ -926,7 +922,6 @@ func (i *Interpreter) defineOSFuncs() {
 			name:       w.Name(),
 			mode:       filemode.WRITE,
 			isBinary:   true,
-			isClosed:   false,
 			properties: make(map[string]any),
 		})
 		return NewLoxList(files), nil

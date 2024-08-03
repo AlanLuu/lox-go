@@ -21,7 +21,6 @@ type LoxFile struct {
 	name       string
 	mode       filemode.FileMode
 	isBinary   bool
-	isClosed   bool
 	properties map[string]any
 }
 
@@ -44,7 +43,6 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 				name:       file.Name(),
 				mode:       fileMode,
 				isBinary:   false,
-				isClosed:   false,
 				properties: make(map[string]any),
 			}, nil
 		}
@@ -93,7 +91,6 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 			name:       file.Name(),
 			mode:       fileMode,
 			isBinary:   isBinary,
-			isClosed:   false,
 			properties: make(map[string]any),
 		}, nil
 	case 3:
@@ -111,7 +108,6 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 				name:       file.Name(),
 				mode:       fileMode,
 				isBinary:   true,
-				isClosed:   false,
 				properties: make(map[string]any),
 			}, nil
 		}
@@ -120,10 +116,14 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 }
 
 func (l *LoxFile) close() {
-	if !l.isClosed {
+	if !l.isClosed() {
 		l.file.Close()
-		l.isClosed = true
 	}
+}
+
+func (l *LoxFile) isClosed() bool {
+	_, err := l.file.Stat()
+	return err != nil
 }
 
 func (l *LoxFile) isRead() bool {
@@ -195,7 +195,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			return nil, nil
 		})
 	case "closed":
-		return l.isClosed, nil
+		return l.isClosed(), nil
 	case "fd":
 		return int64(l.file.Fd()), nil
 	case "flush":
@@ -213,7 +213,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "isClosed":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return l.isClosed, nil
+			return l.isClosed(), nil
 		})
 	case "isDir":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
@@ -233,7 +233,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return fileField(NewLoxStringQuote(l.name))
 	case "read":
 		return fileFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -293,7 +293,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "readByte":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -316,7 +316,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "readChar":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -348,7 +348,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "readLine":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -413,7 +413,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 			}
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -474,7 +474,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "readNewLine":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -519,7 +519,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 			}
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot read from a closed file.")
 			}
 			if !l.isRead() {
@@ -591,7 +591,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	case "write":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
-			if l.isClosed {
+			if l.isClosed() {
 				return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 			}
 			if !l.isWrite() && !l.isAppend() {
@@ -631,7 +631,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "writeByte":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if value, ok := args[0].(int64); ok {
-				if l.isClosed {
+				if l.isClosed() {
 					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 				}
 				if !l.isWrite() && !l.isAppend() {
@@ -659,7 +659,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "writeLine":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
-				if l.isClosed {
+				if l.isClosed() {
 					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 				}
 				if !l.isWrite() && !l.isAppend() {
@@ -687,7 +687,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "writeLines":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxList, ok := args[0].(*LoxList); ok {
-				if l.isClosed {
+				if l.isClosed() {
 					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 				}
 				if !l.isWrite() && !l.isAppend() {
@@ -722,7 +722,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "writeNewLines":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxList, ok := args[0].(*LoxList); ok {
-				if l.isClosed {
+				if l.isClosed() {
 					return nil, loxerror.RuntimeError(name, "Cannot write to a closed file.")
 				}
 				if !l.isWrite() && !l.isAppend() {
