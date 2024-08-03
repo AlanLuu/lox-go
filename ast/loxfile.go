@@ -13,6 +13,7 @@ import (
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
 	"github.com/AlanLuu/lox/util"
+	"github.com/mattn/go-isatty"
 )
 
 type LoxFile struct {
@@ -204,6 +205,11 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name, flushErr.Error())
 			}
 			return nil, nil
+		})
+	case "isatty":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			fd := l.file.Fd()
+			return isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd), nil
 		})
 	case "isClosed":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
