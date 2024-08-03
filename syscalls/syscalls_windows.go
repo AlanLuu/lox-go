@@ -10,6 +10,10 @@ func unsupported(name string) error {
 	return loxerror.Error("'os." + name + "' is unsupported on Windows.")
 }
 
+func Close(fd int) error {
+	return syscall.Close(syscall.Handle(fd))
+}
+
 func Chroot(path string) error {
 	return unsupported("chroot")
 }

@@ -15,6 +15,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.chroot(path)`, which changes the root directory of the current process to the specified path string
     - This method does not work on Windows and throws an error if called on there
 - `os.clearenv()`, which removes all environment variables from the current process
+- `os.close(fd)`, which closes the specified integer file descriptor
 - `os.copy(source, dest)`, which copies the file at the `source` path string to the destination specified by the path string `dest` and returns the total number of bytes copied
     - If the file at `source` doesn't exist or `source` refers to a directory, a runtime error is thrown
     - If `dest` refers to a directory, the file at `source` will be copied into the directory given by `dest` with the copied file having the same name as the source file's original name

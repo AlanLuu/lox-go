@@ -141,6 +141,16 @@ func (i *Interpreter) defineOSFuncs() {
 		os.Clearenv()
 		return nil, nil
 	})
+	osFunc("close", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if fd, ok := args[0].(int64); ok {
+			err := syscalls.Close(int(fd))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "close", "integer")
+	})
 	osFunc("copy", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

@@ -17,6 +17,10 @@ func execCommandNotFound(funcName string, path string) error {
 	return loxerror.Error(fmt.Sprintf("os.%v: %v: command not found", funcName, path))
 }
 
+func Close(fd int) error {
+	return syscall.Close(fd)
+}
+
 func Chroot(path string) error {
 	return syscall.Chroot(path)
 }
