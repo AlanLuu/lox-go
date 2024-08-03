@@ -235,15 +235,13 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		})
 	case "rot13":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			uppercase := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			lowercase := "abcdefghijklmnopqrstuvwxyz"
 			var upperA, upperZ, lowerA, lowerZ rune = 65, 90, 97, 122
 			var builder strings.Builder
 			for _, c := range l.str {
 				if c >= upperA && c <= upperZ {
-					builder.WriteByte(uppercase[((c-upperA)+13)%26])
+					builder.WriteRune(((c-upperA)+13)%26 + upperA)
 				} else if c >= lowerA && c <= lowerZ {
-					builder.WriteByte(lowercase[((c-lowerA)+13)%26])
+					builder.WriteRune(((c-lowerA)+13)%26 + lowerA)
 				} else {
 					builder.WriteRune(c)
 				}
