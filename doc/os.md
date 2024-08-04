@@ -87,6 +87,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.mktemp([directory])`, which creates a temporary file with the name `lox.tmp.` followed by a random number in the specified directory and returns a file object open in read-write mode if successful. If the directory is omitted, the temporary file is created in the default temporary file directory of the operating system
     - Any temporary files created using this method must be manually deleted, which can be done with the following method call: `os.remove(tempFile.name)`, where `tempFile` is the variable that refers to the temporary file's file object
+- `os.mktempBin([directory])`, which creates a temporary file with the name `lox.tmp.` followed by a random number in the specified directory and returns a file object open in read-write binary mode if successful. If the directory is omitted, the temporary file is created in the default temporary file directory of the operating system
+    - Any temporary files created using this method must be manually deleted, which can be done with the following method call: `os.remove(tempFile.name)`, where `tempFile` is the variable that refers to the temporary file's file object
 - `os.name`, which is a string that specifies the operating system that the program is running on
 - `os.open(name, mode)`, which opens a file specified by a path name with the mode specified by the mode string. This method returns a file object if successful, which itself is documented [here](./doc/file.md)
     - The following file modes are available:
