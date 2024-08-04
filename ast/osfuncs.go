@@ -891,6 +891,33 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "mkfifo", "string")
 	})
+	osFunc("mktemp", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		dir := ""
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+		case 1:
+			if loxStr, ok := args[0].(*LoxString); ok {
+				dir = loxStr.str
+			} else {
+				return argMustBeType(in.callToken, "mktemp", "string")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		tempFile, err := os.CreateTemp(dir, "lox.tmp.")
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return &LoxFile{
+			file:       tempFile,
+			name:       tempFile.Name(),
+			mode:       filemode.READ_WRITE,
+			isBinary:   false,
+			properties: make(map[string]any),
+		}, nil
+	})
 	osClass.classProperties["name"] = NewLoxString(runtime.GOOS, '\'')
 	osFunc("open", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
