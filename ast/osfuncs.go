@@ -1291,6 +1291,9 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "system", "string")
 	})
+	osFunc("tempdir", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return NewLoxStringQuote(os.TempDir()), nil
+	})
 	osFunc("touch", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			file, fileErr := os.Create(loxStr.str)
