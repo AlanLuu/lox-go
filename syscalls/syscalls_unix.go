@@ -25,6 +25,26 @@ func Chroot(path string) error {
 	return syscall.Chroot(path)
 }
 
+func Dup(oldfd int) (int, error) {
+	return unix.Dup(oldfd)
+}
+
+func Dup2(oldfd int, newfd int) error {
+	//if oldfd == newfd and oldfd is a valid file descriptor, do nothing
+	if oldfd == newfd {
+		err := unix.FcntlFlock(uintptr(oldfd), unix.F_GETFD, nil)
+		if err == nil {
+			return nil
+		}
+		if errno, ok := err.(syscall.Errno); ok {
+			if errno != unix.EBADF {
+				return nil
+			}
+		}
+	}
+	return unix.Dup2(oldfd, newfd)
+}
+
 func Execv(path string, argv []string) error {
 	return syscall.Exec(path, argv, os.Environ())
 }

@@ -18,6 +18,14 @@ func Chroot(path string) error {
 	return unsupported("chroot")
 }
 
+func Dup(oldfd int) (int, error) {
+	return -1, unsupported("dup")
+}
+
+func Dup2(oldfd int, newfd int) error {
+	return unsupported("dup2")
+}
+
 func Execv(path string, argv []string) error {
 	return unsupported("execv")
 }

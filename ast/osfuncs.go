@@ -209,6 +209,33 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return numBytes, nil
 	})
+	osFunc("dup", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if fd, ok := args[0].(int64); ok {
+			newFd, err := syscalls.Dup(int(fd))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return int64(newFd), nil
+		}
+		return argMustBeTypeAn(in.callToken, "dup", "integer")
+	})
+	osFunc("dup2", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.dup2' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.dup2' must be an integer.")
+		}
+		oldfd := args[0].(int64)
+		newfd := args[1].(int64)
+		err := syscalls.Dup2(int(oldfd), int(newfd))
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return newfd, nil
+	})
 	osFunc("execl", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		if argsLen == 0 || argsLen == 1 {

@@ -19,6 +19,9 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.copy(source, dest)`, which copies the file at the `source` path string to the destination specified by the path string `dest` and returns the total number of bytes copied
     - If the file at `source` doesn't exist or `source` refers to a directory, a runtime error is thrown
     - If `dest` refers to a directory, the file at `source` will be copied into the directory given by `dest` with the copied file having the same name as the source file's original name
+- `os.dup(oldfd)`, which creates and returns a new file descriptor integer that refers to the file associated with `oldfd`, which is an integer
+- `os.dup2(oldfd, newfd)`, which duplicates the file descriptor `oldfd` to the file descriptor `newfd`, closing `newfd` in the process, where `oldfd` and `newfd` are both integers, and returns the value of `newfd` as an integer
+    - If `oldfd == newfd` and `oldfd` is a valid file descriptor, this function does nothing and simply returns the value of `newfd` as an integer
 - `os.execl(path, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `path` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - All arguments to this method after `path`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional
