@@ -65,6 +65,9 @@ The following methods and fields are defined in the built-in `os` class:
     - This method uses the value of the `HOME` environment variable as the home directory on non-Windows systems if it exists
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
+- `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
+    - If `size` is less than the file size in bytes, the extra data is lost
+    - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes
 - `os.getcwd()`, which returns the current working directory as a string
 - `os.getegid()`, which returns the effective group ID of the current process as an integer
     - On Windows, this method always returns `-1`

@@ -42,6 +42,10 @@ func Execvpe(file string, argv []string, envp []string) error {
 	return unsupported("execvpe")
 }
 
+func Ftruncate(fd int, length int64) error {
+	return syscall.Ftruncate(syscall.Handle(fd), length)
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }
