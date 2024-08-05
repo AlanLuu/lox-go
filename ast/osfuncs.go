@@ -709,6 +709,23 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "fchdir", "integer")
 	})
+	osFunc("fchmod", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.fchmod' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.fchmod' must be an integer.")
+		}
+		fd := int(args[0].(int64))
+		mode := uint32(args[1].(int64))
+		err := syscalls.Fchmod(fd, mode)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("ftruncate", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

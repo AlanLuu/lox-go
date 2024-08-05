@@ -73,6 +73,10 @@ func Fchdir(fd int) error {
 	return unix.Fchdir(fd)
 }
 
+func Fchmod(fd int, mode uint32) error {
+	return unix.Fchmod(fd, mode)
+}
+
 func Ftruncate(fd int, length int64) error {
 	return unix.Ftruncate(fd, length)
 }

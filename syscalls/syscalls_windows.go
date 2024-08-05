@@ -46,6 +46,10 @@ func Fchdir(fd int) error {
 	return unsupported("fchdir")
 }
 
+func Fchmod(fd int, mode uint32) error {
+	return unsupported("fchmod")
+}
+
 func Ftruncate(fd int, length int64) error {
 	return syscall.Ftruncate(syscall.Handle(fd), length)
 }

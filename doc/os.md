@@ -69,6 +69,8 @@ The following methods and fields are defined in the built-in `os` class:
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.fchdir(fd)`, which changes the current working directory to the specified directory file descriptor
     - This method does not work on Windows and throws an error if called on there
+- `os.fchmod(fd, mode)`, which changes the mode of the specified file descriptor to `mode`
+    - This method does not work on Windows and throws an error if called on there
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost
     - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes
