@@ -42,6 +42,10 @@ The following methods and fields are defined on file instances:
     - `os.SEEK_CUR` or `1` – relative to the file's current offset position
     - `os.SEEK_END` or `2` – relative to the end of the file
     - A runtime error is thrown if `whence` is an invalid value or the file is in append mode when calling this method
+- `file.truncate(size)`, which changes the size of the file to `size` bytes specified as an integer
+    - If the file is open in read mode (excluding read-write mode), this method throws a runtime error
+    - If `size` is less than the file size in bytes, the extra data is lost
+    - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes
 - `file.write(buffer/string)`, which writes the contents of the specified buffer or string to the file and returns the number of bytes written as an integer
     - In binary mode, this method's argument must be a buffer, otherwise the argument must be a string
     - If the file is closed or is not open in write or append mode, this method throws a runtime error

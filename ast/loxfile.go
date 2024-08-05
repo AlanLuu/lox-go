@@ -589,6 +589,21 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return position, nil
 		})
+	case "truncate":
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if size, ok := args[0].(int64); ok {
+				if l.mode == filemode.READ {
+					return nil, loxerror.RuntimeError(name,
+						"Unsupported operation 'truncate' for file in read mode.")
+				}
+				err := l.file.Truncate(size)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				return nil, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "write":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if l.isClosed() {
