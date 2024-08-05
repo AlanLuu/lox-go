@@ -699,6 +699,16 @@ func (i *Interpreter) defineOSFuncs() {
 		os.Exit(exitCode)
 		return nil, nil
 	})
+	osFunc("fchdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if fd, ok := args[0].(int64); ok {
+			err := syscalls.Fchdir(int(fd))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "fchdir", "integer")
+	})
 	osFunc("ftruncate", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

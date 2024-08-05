@@ -42,6 +42,10 @@ func Execvpe(file string, argv []string, envp []string) error {
 	return unsupported("execvpe")
 }
 
+func Fchdir(fd int) error {
+	return unsupported("fchdir")
+}
+
 func Ftruncate(fd int, length int64) error {
 	return syscall.Ftruncate(syscall.Handle(fd), length)
 }

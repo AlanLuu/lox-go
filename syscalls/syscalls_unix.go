@@ -69,6 +69,10 @@ func Execvpe(file string, argv []string, envp []string) error {
 	return syscall.Exec(fullPath, argv, envp)
 }
 
+func Fchdir(fd int) error {
+	return unix.Fchdir(fd)
+}
+
 func Ftruncate(fd int, length int64) error {
 	return unix.Ftruncate(fd, length)
 }

@@ -20,8 +20,10 @@ The following methods and fields are defined in the built-in `os` class:
     - If the file at `source` doesn't exist or `source` refers to a directory, a runtime error is thrown
     - If `dest` refers to a directory, the file at `source` will be copied into the directory given by `dest` with the copied file having the same name as the source file's original name
 - `os.dup(oldfd)`, which creates and returns a new file descriptor integer that refers to the file associated with `oldfd`, which is an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.dup2(oldfd, newfd)`, which duplicates the file descriptor `oldfd` to the file descriptor `newfd`, closing `newfd` in the process, where `oldfd` and `newfd` are both integers, and returns the value of `newfd` as an integer
     - If `oldfd == newfd` and `oldfd` is a valid file descriptor, this function does nothing and simply returns the value of `newfd` as an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.execl(path, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `path` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - All arguments to this method after `path`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional
@@ -65,6 +67,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method uses the value of the `HOME` environment variable as the home directory on non-Windows systems if it exists
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
+- `os.fchdir(fd)`, which changes the current working directory to the specified directory file descriptor
+    - This method does not work on Windows and throws an error if called on there
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost
     - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes
