@@ -61,6 +61,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.expandEnv(string)`, which returns a new string with all occurrences of `$var` and `${var}` in `string` replaced with the value of `var` itself, where `var` is an environment variable
     - If `var` is not an environment variable, it is replaced with an empty string
+- `os.expandHome(string)`, which returns a new string with the characters `~` or `~/` at the beginning of the original string replaced with the path of the user's home directory
+    - This method uses the value of the `HOME` environment variable as the home directory on non-Windows systems if it exists
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
 - `os.getcwd()`, which returns the current working directory as a string

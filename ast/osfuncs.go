@@ -657,6 +657,28 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "expandEnv", "string")
 	})
+	osFunc("expandHome", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			pathStr := loxStr.str
+			if pathStr == "~" || strings.HasPrefix(pathStr, "~/") {
+				homeDir, homeIsSet := os.LookupEnv("HOME")
+				if !homeIsSet || util.IsWindows() {
+					currentUser, err := user.Current()
+					if err != nil {
+						return nil, loxerror.RuntimeError(in.callToken, err.Error())
+					}
+					homeDir = currentUser.HomeDir
+				}
+				if pathStr == "~" {
+					pathStr = homeDir
+				} else {
+					pathStr = filepath.Join(homeDir, pathStr[2:])
+				}
+			}
+			return NewLoxStringQuote(pathStr), nil
+		}
+		return argMustBeType(in.callToken, "expandHome", "string")
+	})
 	osFunc("exit", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		exitCode := 0
 		argsLen := len(args)
