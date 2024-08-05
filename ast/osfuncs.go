@@ -1305,6 +1305,23 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "touch", "string")
 	})
+	osFunc("truncate", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.truncate' must be a string.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.truncate' must be an integer.")
+		}
+		path := args[0].(*LoxString).str
+		size := args[1].(int64)
+		err := os.Truncate(path, size)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("uname", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		result, err := syscalls.Uname()
 		if err != nil {

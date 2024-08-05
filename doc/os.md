@@ -143,6 +143,9 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.tempdir()`, which returns the path of the default temporary file directory of the operating system as a string
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
     - If the file already exists, it is truncated
+- `os.truncate(path, size)`, which changes the size of the file specified by the path string to `size` bytes specified as an integer
+    - If `size` is less than the file size in bytes, the extra data is lost
+    - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes
 - `os.uname()`, which returns a dictionary containing information about the current Unix operating system
     - The returned dictionary contains the following keys and values, which are all strings:
         - `sysname`: name of the operating system
