@@ -71,6 +71,9 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.fchmod(fd, mode)`, which changes the mode of the specified file descriptor to `mode`
     - This method does not work on Windows and throws an error if called on there
+- `os.fchown(fd, uid, gid)`, which changes the uid and gid of the specified file descriptor to `uid` and `gid`
+    - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
+    - This method does not work on Windows and throws an error if called on there
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost
     - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes

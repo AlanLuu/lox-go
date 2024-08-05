@@ -77,6 +77,10 @@ func Fchmod(fd int, mode uint32) error {
 	return unix.Fchmod(fd, mode)
 }
 
+func Fchown(fd int, uid int, gid int) error {
+	return unix.Fchown(fd, uid, gid)
+}
+
 func Ftruncate(fd int, length int64) error {
 	return unix.Ftruncate(fd, length)
 }

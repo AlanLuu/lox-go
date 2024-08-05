@@ -726,6 +726,28 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("fchown", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.fchown' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.fchown' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'os.fchown' must be an integer.")
+		}
+		fd := int(args[0].(int64))
+		uid := int(args[1].(int64))
+		gid := int(args[2].(int64))
+		err := syscalls.Fchown(fd, uid, gid)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("ftruncate", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

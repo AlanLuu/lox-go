@@ -50,6 +50,10 @@ func Fchmod(fd int, mode uint32) error {
 	return unsupported("fchmod")
 }
 
+func Fchown(fd int, uid int, gid int) error {
+	return unsupported("fchown")
+}
+
 func Ftruncate(fd int, length int64) error {
 	return syscall.Ftruncate(syscall.Handle(fd), length)
 }
