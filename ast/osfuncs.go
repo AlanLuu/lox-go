@@ -1410,6 +1410,16 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("umask", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if mask, ok := args[0].(int64); ok {
+			if util.IsWindows() {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"'os.umask' is unsupported on Windows.")
+			}
+			return int64(syscalls.Umask(int(mask))), nil
+		}
+		return argMustBeTypeAn(in.callToken, "umask", "integer")
+	})
 	osFunc("uname", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		result, err := syscalls.Uname()
 		if err != nil {

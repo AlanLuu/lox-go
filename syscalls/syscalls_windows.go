@@ -90,6 +90,10 @@ func Setuid(uid int) error {
 	return unsupported("setuid")
 }
 
+func Umask(mask int) int {
+	return 0
+}
+
 type UnameResult struct {
 	Sysname  string
 	Nodename string

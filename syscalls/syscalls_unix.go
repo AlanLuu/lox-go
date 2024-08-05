@@ -117,6 +117,10 @@ func Setuid(uid int) error {
 	return unix.Setuid(uid)
 }
 
+func Umask(mask int) int {
+	return unix.Umask(mask)
+}
+
 type UnameResult struct {
 	Sysname  string
 	Nodename string
