@@ -21,6 +21,7 @@ type LoxFile struct {
 	name       string
 	mode       filemode.FileMode
 	isBinary   bool
+	stat       os.FileInfo
 	properties map[string]any
 }
 
@@ -43,6 +44,7 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 				name:       file.Name(),
 				mode:       fileMode,
 				isBinary:   false,
+				stat:       nil,
 				properties: make(map[string]any),
 			}, nil
 		}
@@ -91,6 +93,7 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 			name:       file.Name(),
 			mode:       fileMode,
 			isBinary:   isBinary,
+			stat:       nil,
 			properties: make(map[string]any),
 		}, nil
 	case 3:
@@ -108,6 +111,7 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 				name:       file.Name(),
 				mode:       fileMode,
 				isBinary:   true,
+				stat:       nil,
 				properties: make(map[string]any),
 			}, nil
 		}
@@ -219,9 +223,13 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			stat, statErr := l.file.Stat()
 			if statErr != nil {
-				return nil, loxerror.RuntimeError(name, statErr.Error())
+				if l.stat == nil {
+					return nil, loxerror.RuntimeError(name, statErr.Error())
+				}
+			} else {
+				l.stat = stat
 			}
-			return stat.IsDir(), nil
+			return l.stat.IsDir(), nil
 		})
 	case "mode":
 		binaryMode := ""
@@ -592,9 +600,13 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 	case "size":
 		stat, statErr := l.file.Stat()
 		if statErr != nil {
-			return nil, loxerror.RuntimeError(name, statErr.Error())
+			if l.stat == nil {
+				return nil, loxerror.RuntimeError(name, statErr.Error())
+			}
+		} else {
+			l.stat = stat
 		}
-		return stat.Size(), nil
+		return l.stat.Size(), nil
 	case "truncate":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if size, ok := args[0].(int64); ok {
