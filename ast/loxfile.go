@@ -589,6 +589,12 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return position, nil
 		})
+	case "size":
+		stat, statErr := l.file.Stat()
+		if statErr != nil {
+			return nil, loxerror.RuntimeError(name, statErr.Error())
+		}
+		return stat.Size(), nil
 	case "truncate":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if size, ok := args[0].(int64); ok {

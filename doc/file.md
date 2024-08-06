@@ -42,6 +42,7 @@ The following methods and fields are defined on file instances:
     - `os.SEEK_CUR` or `1` – relative to the file's current offset position
     - `os.SEEK_END` or `2` – relative to the end of the file
     - A runtime error is thrown if `whence` is an invalid value or the file is in append mode when calling this method
+- `file.size`, which is the size of the file in bytes as an integer
 - `file.truncate(size)`, which changes the size of the file to `size` bytes specified as an integer
     - If the file is open in read mode (excluding read-write mode), this method throws a runtime error
     - If `size` is less than the file size in bytes, the extra data is lost
