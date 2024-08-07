@@ -1264,6 +1264,27 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "setgid", "integer")
 	})
+	osFunc("setgroups", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxList, ok := args[0].(*LoxList); ok {
+			gids := list.NewList[int]()
+			for _, element := range loxList.elements {
+				switch element := element.(type) {
+				case int64:
+					gids.Add(int(element))
+				default:
+					gids.Clear()
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Argument to 'os.setgroups' must be a list of integers.")
+				}
+			}
+			err := syscalls.Setgroups(gids)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "setgroups", "list")
+	})
 	osFunc("setregid", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

@@ -134,6 +134,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.setgid(gid)`, which sets the group ID of the current process to the specified group ID, which is an integer
     - This method does not work on Windows and throws an error if called on there
+- `os.setgroups(gids)`, which sets the supplementary group IDs for the current process to the values in `gids`, which must be an empty list or a list of integers
+    - This method does not work on Windows and throws an error if called on there
 - `os.setregid(rgid, egid)`, which sets the group ID and effective group ID of the current process to the specified group ID and effective group ID, which are both integers
     - Passing in `-1` for `rgid` or `egid` will result in the group ID or the effective group ID being unchanged respectively
     - This method does not work on Windows and throws an error if called on there

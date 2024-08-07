@@ -82,6 +82,10 @@ func Setgid(gid int) error {
 	return unsupported("setgid")
 }
 
+func Setgroups(gids []int) error {
+	return unsupported("setgroups")
+}
+
 func Setregid(rgid int, egid int) error {
 	return unsupported("setregid")
 }

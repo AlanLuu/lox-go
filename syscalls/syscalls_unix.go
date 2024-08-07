@@ -109,6 +109,10 @@ func Setgid(gid int) error {
 	return syscall.Setgid(gid)
 }
 
+func Setgroups(gids []int) error {
+	return unix.Setgroups(gids)
+}
+
 func Setregid(rgid int, egid int) error {
 	return syscall.Setregid(rgid, egid)
 }
