@@ -81,6 +81,10 @@ func Fchown(fd int, uid int, gid int) error {
 	return unix.Fchown(fd, uid, gid)
 }
 
+func Fsync(fd int) error {
+	return unix.Fsync(fd)
+}
+
 func Ftruncate(fd int, length int64) error {
 	return unix.Ftruncate(fd, length)
 }

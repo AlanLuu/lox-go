@@ -54,6 +54,10 @@ func Fchown(fd int, uid int, gid int) error {
 	return unsupported("fchown")
 }
 
+func Fsync(fd int) error {
+	return syscall.FlushFileBuffers(syscall.Handle(fd))
+}
+
 func Ftruncate(fd int, length int64) error {
 	return syscall.Ftruncate(syscall.Handle(fd), length)
 }
