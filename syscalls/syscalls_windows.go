@@ -58,6 +58,10 @@ func Ftruncate(fd int, length int64) error {
 	return syscall.Ftruncate(syscall.Handle(fd), length)
 }
 
+func Getgroups() ([]int, error) {
+	return nil, unsupported("getgroups")
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }

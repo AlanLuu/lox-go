@@ -85,6 +85,10 @@ func Ftruncate(fd int, length int64) error {
 	return unix.Ftruncate(fd, length)
 }
 
+func Getgroups() ([]int, error) {
+	return unix.Getgroups()
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unix.Mkfifo(path, mode)
 }

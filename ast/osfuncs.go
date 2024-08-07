@@ -816,6 +816,17 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("getgid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getgid()), nil
 	})
+	osFunc("getgroups", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		groups, err := syscalls.Getgroups()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		groupsList := list.NewList[any]()
+		for _, group := range groups {
+			groupsList.Add(int64(group))
+		}
+		return NewLoxList(groupsList), nil
+	})
 	osFunc("getpid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getpid()), nil
 	})
