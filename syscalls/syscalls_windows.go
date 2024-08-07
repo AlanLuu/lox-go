@@ -98,6 +98,8 @@ func Setuid(uid int) error {
 	return unsupported("setuid")
 }
 
+func Sync() {}
+
 func Umask(mask int) int {
 	return 0
 }

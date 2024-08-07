@@ -1396,6 +1396,14 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("sync", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		if util.IsWindows() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"'os.sync' is unsupported on Windows.")
+		}
+		syscalls.Sync()
+		return nil, nil
+	})
 	osFunc("system", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			var cmd *exec.Cmd

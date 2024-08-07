@@ -125,6 +125,10 @@ func Setuid(uid int) error {
 	return unix.Setuid(uid)
 }
 
+func Sync() {
+	unix.Sync()
+}
+
 func Umask(mask int) int {
 	return unix.Umask(mask)
 }

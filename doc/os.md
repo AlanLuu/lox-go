@@ -157,6 +157,8 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.stdinBin`, which is a file object that allows for reading binary data from the standard input stream
 - `os.stdoutBin`, which is a file object that allows for writing binary data to the standard output stream
 - `os.symlink(target, linkName)`, which creates a symbolic link to `target` with the name `linkName`, which are both strings
+- `os.sync()`, which forces a write of all data to disk
+    - This method does not work on Windows and throws an error if called on there
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.tempdir()`, which returns the path of the default temporary file directory of the operating system as a string
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
