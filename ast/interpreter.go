@@ -40,6 +40,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineBase32Funcs() //Defined in base32funcs.go
 	interpreter.defineBase64Funcs() //Defined in base64funcs.go
 	interpreter.defineCryptoFuncs() //Defined in cryptofuncs.go
+	interpreter.defineCSVFuncs()    //Defined in csvfuncs.go
 	interpreter.defineHexFuncs()    //Defined in hexfuncs.go
 	interpreter.defineHTTPFuncs()   //Defined in httpfuncs.go
 	interpreter.defineJSONFuncs()   //Defined in jsonfuncs.go
