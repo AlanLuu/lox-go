@@ -69,6 +69,46 @@ func (i *Interpreter) defineCSVFuncs() {
 		}
 		return argMustBeType(in.callToken, "reader", "file or string")
 	})
+	csvFunc("writer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 1 && argsLen != 2 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v", argsLen))
+		}
+		delimiter := ','
+		if argsLen == 2 {
+			switch args[0].(type) {
+			case *LoxFile:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'csv.writer' must be a file.")
+			}
+			if loxStr, ok := args[1].(*LoxString); ok {
+				if utf8.RuneCountInString(loxStr.str) != 1 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'csv.writer' must be a single-character string.")
+				}
+				delimiter = []rune(loxStr.str)[0]
+			} else {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'csv.writer' must be a string.")
+			}
+		}
+		switch arg := args[0].(type) {
+		case *LoxFile:
+			if !arg.isWrite() && !arg.isAppend() {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Cannot create CSV writer for file not in write mode.")
+			}
+			if arg.isBinary {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Cannot create CSV writer for file in binary write mode.")
+			}
+			return NewLoxCSVWriterDelimiter(arg.file, delimiter), nil
+		}
+		return argMustBeType(in.callToken, "writer", "file")
+	})
 
 	i.globals.Define(className, csvClass)
 }
