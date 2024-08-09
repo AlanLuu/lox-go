@@ -93,16 +93,16 @@ func (l *LoxCSVWriter) Get(name *token.Token) (any, error) {
 			if loxList, ok := args[0].(*LoxList); ok {
 				record := list.NewList[string]()
 				for _, element := range loxList.elements {
-					var entry string
+					var value string
 					switch element := element.(type) {
 					case *LoxString:
-						entry = element.str
+						value = element.str
 					case fmt.Stringer:
-						entry = element.String()
+						value = element.String()
 					default:
-						entry = fmt.Sprint(element)
+						value = fmt.Sprint(element)
 					}
-					record.Add(entry)
+					record.Add(value)
 				}
 				err := l.writer.Write(record)
 				if err != nil {
@@ -128,16 +128,16 @@ func (l *LoxCSVWriter) Get(name *token.Token) (any, error) {
 						it := outer.Iterator()
 						for it.HasNext() {
 							inner := it.Next()
-							var entry string
+							var value string
 							switch inner := inner.(type) {
 							case *LoxString:
-								entry = inner.str
+								value = inner.str
 							case fmt.Stringer:
-								entry = inner.String()
+								value = inner.String()
 							default:
-								entry = fmt.Sprint(inner)
+								value = fmt.Sprint(inner)
 							}
-							record = append(record, entry)
+							record = append(record, value)
 						}
 						records = append(records, record)
 					default:
