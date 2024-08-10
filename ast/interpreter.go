@@ -48,6 +48,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineNativeFuncs() //Defined in nativefuncs.go
 	interpreter.defineOSFuncs()     //Defined in osfuncs.go
 	interpreter.defineRandFuncs()   //Defined in randfuncs.go
+	interpreter.defineRegexFuncs()  //Defined in regexfuncs.go
 	return interpreter
 }
 
