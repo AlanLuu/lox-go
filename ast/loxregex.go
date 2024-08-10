@@ -10,14 +10,14 @@ import (
 )
 
 type LoxRegex struct {
-	regex   *regexp.Regexp
-	methods map[string]*struct{ ProtoLoxCallable }
+	regex      *regexp.Regexp
+	properties map[string]any
 }
 
 func NewLoxRegex(regex *regexp.Regexp) *LoxRegex {
 	return &LoxRegex{
-		regex:   regex,
-		methods: make(map[string]*struct{ ProtoLoxCallable }),
+		regex:      regex,
+		properties: make(map[string]any),
 	}
 }
 
@@ -30,27 +30,33 @@ func NewLoxRegexStr(pattern string) (*LoxRegex, error) {
 }
 
 func (l *LoxRegex) Get(name *token.Token) (any, error) {
-	methodName := name.Lexeme
-	if method, ok := l.methods[methodName]; ok {
+	lexemeName := name.Lexeme
+	if method, ok := l.properties[lexemeName]; ok {
 		return method, nil
+	}
+	regexField := func(field any) (any, error) {
+		if _, ok := l.properties[lexemeName]; !ok {
+			l.properties[lexemeName] = field
+		}
+		return field, nil
 	}
 	regexFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
 		s := &struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
 		s.callMethod = method
 		s.stringMethod = func() string {
-			return fmt.Sprintf("<native regex fn %v at %p>", methodName, s)
+			return fmt.Sprintf("<native regex fn %v at %p>", lexemeName, s)
 		}
-		if _, ok := l.methods[methodName]; !ok {
-			l.methods[methodName] = s
+		if _, ok := l.properties[lexemeName]; !ok {
+			l.properties[lexemeName] = s
 		}
 		return s, nil
 	}
 	argMustBeType := func(theType string) (any, error) {
-		errStr := fmt.Sprintf("Argument to 'regex.%v' must be a %v.", methodName, theType)
+		errStr := fmt.Sprintf("Argument to 'regex.%v' must be a %v.", lexemeName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
-	switch methodName {
+	switch lexemeName {
 	case "findAll":
 		return regexFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
@@ -80,7 +86,9 @@ func (l *LoxRegex) Get(name *token.Token) (any, error) {
 			return argMustBeType("string")
 		})
 	case "numSubexp":
-		return int64(l.regex.NumSubexp()), nil
+		return regexField(int64(l.regex.NumSubexp()))
+	case "pattern":
+		return regexField(NewLoxStringQuote(l.regex.String()))
 	case "replace":
 		return regexFunc(2, func(in *Interpreter, args list.List[any]) (any, error) {
 			if _, ok := args[0].(*LoxString); !ok {
@@ -137,7 +145,7 @@ func (l *LoxRegex) Get(name *token.Token) (any, error) {
 			return argMustBeType("string")
 		})
 	}
-	return nil, loxerror.RuntimeError(name, "Regexes have no property called '"+methodName+"'.")
+	return nil, loxerror.RuntimeError(name, "Regexes have no property called '"+lexemeName+"'.")
 }
 
 func (l *LoxRegex) String() string {
