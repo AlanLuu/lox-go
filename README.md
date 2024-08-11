@@ -138,6 +138,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with HTTP requests are defined under a built-in class called `http`, which is documented [here](./doc/http.md)
 - Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
 - Various methods to work with CSV files are defined under a built-in class called `csv`, which is documented [here](./doc/csv.md)
+- Various methods to work with regular expressions are defined under a built-in class called `regex`, which is documented [here](./doc/regex.md)
 - Various methods to work with base64 strings are defined under a built-in class called `base64`, where the following methods are defined:
     - `base64.decode(string)`, which decodes the specified base64-encoded string into a decoded string and returns that string
         - A runtime error is thrown if the specified string is not properly encoded as base64
