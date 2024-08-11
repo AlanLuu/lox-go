@@ -96,6 +96,10 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.hostname()`, which returns the hostname of the computer as a string
 - `os.isatty(fd)`, which returns `true` if the specified integer file descriptor is open and refers to a terminal and `false` otherwise
 - `os.kill(pid, [signalNum])`, which sends the signal corresponding to the integer `signalNum` to the process corresponding to `pid`, which is the process ID as an integer. If `signalNum` is omitted, this method kills the process corresponding to `pid` without letting it terminate gracefully
+- `os.lchown(path, uid, gid)`, which changes the uid and gid of the specified path string to `uid` and `gid`
+    - If `path` refers to a symbolic link, the uid and gid of the link itself is changed
+    - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
+    - This method does not work on Windows and throws an error if called on there
 - `os.link(target, linkName)`, which creates a hard link to `target` with the name `linkName`, which are both strings
 - `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
 - `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory

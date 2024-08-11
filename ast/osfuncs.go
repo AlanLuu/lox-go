@@ -917,6 +917,32 @@ func (i *Interpreter) defineOSFuncs() {
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
 	})
+	osFunc("lchown", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.lchown' must be a string.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.lchown' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'os.lchown' must be an integer.")
+		}
+		if util.IsWindows() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"'os.lchown' is unsupported on Windows.")
+		}
+		link := args[0].(*LoxString).str
+		uid := int(args[1].(int64))
+		gid := int(args[2].(int64))
+		err := os.Lchown(link, uid, gid)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 	osFunc("link", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
