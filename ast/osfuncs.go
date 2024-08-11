@@ -1603,6 +1603,29 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("writeFileBin", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.writeFileBin' must be a string.")
+		}
+		if _, ok := args[1].(*LoxBuffer); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.writeFileBin' must be a buffer.")
+		}
+
+		name := args[0].(*LoxString).str
+		buffer := args[1].(*LoxBuffer)
+		data := []byte{}
+		for _, element := range buffer.elements {
+			data = append(data, byte(element.(int64)))
+		}
+
+		err := os.WriteFile(name, data, 0666)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 
 	i.globals.Define(className, osClass)
 }
