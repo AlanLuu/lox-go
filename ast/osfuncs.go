@@ -1586,6 +1586,23 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return int64(numBytesWritten), nil
 	})
+	osFunc("writeFile", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.writeFile' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.writeFile' must be a string.")
+		}
+		name := args[0].(*LoxString).str
+		data := args[1].(*LoxString).str
+		err := os.WriteFile(name, []byte(data), 0666)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return nil, nil
+	})
 
 	i.globals.Define(className, osClass)
 }
