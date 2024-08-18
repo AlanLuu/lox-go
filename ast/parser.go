@@ -1017,6 +1017,12 @@ func (p *Parser) primary() (Expr, error) {
 		return Literal{Value: nil}, nil
 	case p.match(token.NUMBER):
 		return Literal{Value: p.previous().Literal}, nil
+	case p.match(token.BIG_NUMBER):
+		previous := p.previous()
+		return BigNum{
+			NumStr:  previous.Literal.(string),
+			IsFloat: previous.Quote == 255,
+		}, nil
 	case p.match(token.STRING):
 		previous := p.previous()
 		return String{Str: previous.Literal.(string), Quote: previous.Quote}, nil

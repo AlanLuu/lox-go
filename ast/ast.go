@@ -13,6 +13,11 @@ type Assign struct {
 	Value Expr
 }
 
+type BigNum struct {
+	NumStr  string
+	IsFloat bool
+}
+
 type Binary struct {
 	Left     Expr
 	Operator *token.Token

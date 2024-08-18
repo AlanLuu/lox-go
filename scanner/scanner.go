@@ -148,6 +148,7 @@ func (sc *Scanner) handleNumber() error {
 		}
 	}
 
+	bigNum := false
 	scientific := false
 	switch sc.peek() {
 	case 'e', 'E':
@@ -172,13 +173,26 @@ func (sc *Scanner) handleNumber() error {
 				sc.currentIndex--
 			}
 		}
+	case 'n':
+		bigNum = true
+		sc.advance()
 	}
 
 	numStr := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
 	invalidLiteral := func(numType string) error {
 		return loxerror.GiveError(sc.lineNum, "", "Invalid "+numType+" literal")
 	}
-	if numHasDot || scientific {
+	if bigNum {
+		tokenStr := numStr[:len(numStr)-1]
+		if strings.Contains(tokenStr, "__") {
+			return invalidLiteral("number")
+		}
+		if numHasDot {
+			sc.addToken(token.BIG_NUMBER, tokenStr, 255)
+		} else {
+			sc.addToken(token.BIG_NUMBER, tokenStr, 0)
+		}
+	} else if numHasDot || scientific {
 		num, numErr := strconv.ParseFloat(numStr, 64)
 		if numErr != nil {
 			return invalidLiteral("number")

@@ -47,6 +47,7 @@ const (
 	IDENTIFIER
 	STRING
 	NUMBER
+	BIG_NUMBER
 
 	//Reserved keywords
 	AND
@@ -127,6 +128,7 @@ var tokenArr = [...]string{
 	"IDENTIFIER",
 	"STRING",
 	"NUMBER",
+	"BIG_NUMBER",
 
 	//Reserved keywords
 	"AND",

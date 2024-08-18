@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/big"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/bignum/bigfloat"
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/env"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
@@ -56,6 +59,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 	switch expr := expr.(type) {
 	case Assign:
 		return i.visitAssignExpr(expr)
+	case BigNum:
+		return i.visitBigNumExpr(expr)
 	case Block:
 		return i.visitBlockStmt(expr)
 	case Break:
@@ -150,6 +155,10 @@ func getType(element any) string {
 		return "integer"
 	case float64:
 		return "float"
+	case *big.Int:
+		return "bigint"
+	case *big.Float:
+		return "bigfloat"
 	case bool:
 		return "boolean"
 	case interfaces.Type:
@@ -231,6 +240,10 @@ func (i *Interpreter) isTruthy(obj any) bool {
 		return obj != 0
 	case float64:
 		return obj != 0.0 && !math.IsNaN(obj)
+	case *big.Int:
+		return !bigint.IsZero(obj)
+	case *big.Float:
+		return !bigfloat.IsZero(obj)
 	case interfaces.Length:
 		return obj.Length() > 0
 	}
@@ -260,6 +273,10 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 	switch source := source.(type) {
 	case nil:
 		return "nil"
+	case *big.Int:
+		return bigint.String(source)
+	case *big.Float:
+		return bigfloat.String(source)
 	case float64:
 		switch {
 		case math.IsInf(source, 1):
@@ -437,6 +454,18 @@ func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
 	return value, nil
 }
 
+func (i *Interpreter) visitBigNumExpr(expr BigNum) (any, error) {
+	if expr.IsFloat {
+		bigFloat := &big.Float{}
+		bigFloat.SetString(expr.NumStr)
+		return bigFloat, nil
+	} else {
+		bigInt := &big.Int{}
+		bigInt.SetString(expr.NumStr, 0)
+		return bigInt, nil
+	}
+}
+
 func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	runtimeErrorWrapper := func(message string) error {
 		return loxerror.RuntimeError(expr.Operator, message)
@@ -444,6 +473,11 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	unknownOpStr := "unknown operator"
 	unknownOp := func() error {
 		return runtimeErrorWrapper(fmt.Sprintf("%v '%v'.", unknownOpStr, expr.Operator.Lexeme))
+	}
+	unknownOpOn := func(str string) error {
+		return runtimeErrorWrapper(
+			fmt.Sprintf("%v '%v' on %v.", unknownOpStr, expr.Operator.Lexeme, str),
+		)
 	}
 	handleNumString := func(left float64, right *LoxString) (any, error) {
 		switch expr.Operator.TokenType {
@@ -498,6 +532,138 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return NewLoxList(newList), nil
 		}
 		return math.NaN(), nil
+	}
+	handleTwoBigInts := func(left *big.Int, right *big.Int) (any, error) {
+		divideByZeroMsg := "Cannot divide bigint by 0."
+		switch expr.Operator.TokenType {
+		case token.PLUS:
+			return new(big.Int).Add(left, right), nil
+		case token.MINUS:
+			return new(big.Int).Sub(left, right), nil
+		case token.STAR:
+			return new(big.Int).Mul(left, right), nil
+		case token.SLASH:
+			if bigint.IsZero(right) {
+				return nil, runtimeErrorWrapper(divideByZeroMsg)
+			}
+			return new(big.Int).Div(left, right), nil
+		case token.PERCENT:
+			if bigint.IsZero(right) {
+				return nil, runtimeErrorWrapper(divideByZeroMsg)
+			}
+			return new(big.Int).Mod(left, right), nil
+		case token.DOUBLE_STAR:
+			return new(big.Int).Exp(left, right, nil), nil
+		case token.DOUBLE_LESS:
+			if bigint.IsNegative(right) {
+				return math.NaN(), nil
+			}
+			return new(big.Int).Lsh(left, uint(right.Uint64())), nil
+		case token.LESS:
+			return left.Cmp(right) < 0, nil
+		case token.LESS_EQUAL:
+			return left.Cmp(right) <= 0, nil
+		case token.DOUBLE_GREATER:
+			if bigint.IsNegative(right) {
+				return math.NaN(), nil
+			}
+			return new(big.Int).Rsh(left, uint(right.Uint64())), nil
+		case token.GREATER:
+			return left.Cmp(right) > 0, nil
+		case token.GREATER_EQUAL:
+			return left.Cmp(right) >= 0, nil
+		case token.AMPERSAND:
+			return new(big.Int).And(left, right), nil
+		case token.PIPE:
+			return new(big.Int).Or(left, right), nil
+		case token.CARET:
+			return new(big.Int).Xor(left, right), nil
+		default:
+			return nil, unknownOpOn("bigints")
+		}
+	}
+	handleTwoBigFloats := func(left *big.Float, right *big.Float) (any, error) {
+		switch expr.Operator.TokenType {
+		case token.PLUS:
+			return new(big.Float).Add(left, right), nil
+		case token.MINUS:
+			return new(big.Float).Sub(left, right), nil
+		case token.STAR:
+			return new(big.Float).Mul(left, right), nil
+		case token.SLASH:
+			if (bigfloat.IsZero(left) && bigfloat.IsZero(right)) ||
+				(left.IsInf() && right.IsInf()) {
+				return math.NaN(), nil
+			}
+			result := new(big.Float).Quo(left, right)
+			if result.IsInf() {
+				if bigfloat.IsPositive(left) {
+					return math.Inf(1), nil
+				} else {
+					return math.Inf(-1), nil
+				}
+			}
+			return result, nil
+		case token.PERCENT:
+			if (bigfloat.IsZero(left) && bigfloat.IsZero(right)) ||
+				(left.IsInf() && right.IsInf()) {
+				return math.NaN(), nil
+			}
+
+			//mod(a, b) = a - (b * floor(a / b))
+			quotient := new(big.Float).Quo(left, right)
+			flooredQuotient := &big.Int{}
+			quotient.Int(flooredQuotient)
+			quotient.SetInt(flooredQuotient)
+			quotient.Mul(quotient, right)
+			return new(big.Float).Sub(left, quotient), nil
+		case token.DOUBLE_LESS:
+			leftInt := &big.Int{}
+			rightInt := &big.Int{}
+			left.Int(leftInt)
+			right.Int(rightInt)
+			if bigint.IsNegative(rightInt) {
+				return math.NaN(), nil
+			}
+			return new(big.Int).Lsh(leftInt, uint(rightInt.Uint64())), nil
+		case token.LESS:
+			return left.Cmp(right) < 0, nil
+		case token.LESS_EQUAL:
+			return left.Cmp(right) <= 0, nil
+		case token.DOUBLE_GREATER:
+			leftInt := &big.Int{}
+			rightInt := &big.Int{}
+			left.Int(leftInt)
+			right.Int(rightInt)
+			if bigint.IsNegative(rightInt) {
+				return math.NaN(), nil
+			}
+			return new(big.Int).Rsh(leftInt, uint(rightInt.Uint64())), nil
+		case token.GREATER:
+			return left.Cmp(right) > 0, nil
+		case token.GREATER_EQUAL:
+			return left.Cmp(right) >= 0, nil
+		case token.AMPERSAND:
+			leftInt := &big.Int{}
+			rightInt := &big.Int{}
+			left.Int(leftInt)
+			right.Int(rightInt)
+			return new(big.Int).And(leftInt, rightInt), nil
+		case token.PIPE:
+			leftInt := &big.Int{}
+			rightInt := &big.Int{}
+			left.Int(leftInt)
+			right.Int(rightInt)
+			return new(big.Int).Or(leftInt, rightInt), nil
+		case token.CARET:
+			leftInt := &big.Int{}
+			rightInt := &big.Int{}
+			left.Int(leftInt)
+			right.Int(rightInt)
+			return new(big.Int).Xor(leftInt, rightInt), nil
+		default:
+			return nil, unknownOpOn("bigfloats")
+		}
 	}
 	handleTwoFloats := func(left float64, right float64, bothInts bool) (any, error) {
 		var result any
@@ -580,6 +746,11 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			switch right := right.(type) {
 			case float64:
 				return float64(left) == right, nil
+			case *big.Int:
+				return right.Cmp(big.NewInt(left)) == 0, nil
+			case *big.Float:
+				leftFloat := new(big.Float).SetInt(big.NewInt(left))
+				return leftFloat.Cmp(right) == 0, nil
 			}
 		case float64:
 			switch right := right.(type) {
@@ -589,6 +760,37 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				if math.IsNaN(left) && math.IsNaN(right) {
 					return true, nil
 				}
+			case *big.Int:
+				rightFloat := new(big.Float).SetInt(right)
+				return rightFloat.Cmp(bigfloat.New(left)) == 0, nil
+			case *big.Float:
+				return right.Cmp(bigfloat.New(left)) == 0, nil
+			}
+		case *big.Int:
+			switch right := right.(type) {
+			case int64:
+				return left.Cmp(big.NewInt(right)) == 0, nil
+			case float64:
+				leftFloat := new(big.Float).SetInt(left)
+				return leftFloat.Cmp(bigfloat.New(right)) == 0, nil
+			case *big.Int:
+				return left.Cmp(right) == 0, nil
+			case *big.Float:
+				leftFloat := new(big.Float).SetInt(left)
+				return leftFloat.Cmp(right) == 0, nil
+			}
+		case *big.Float:
+			switch right := right.(type) {
+			case int64:
+				rightFloat := new(big.Float).SetInt(big.NewInt(right))
+				return left.Cmp(rightFloat) == 0, nil
+			case float64:
+				return left.Cmp(bigfloat.New(right)) == 0, nil
+			case *big.Int:
+				rightFloat := new(big.Float).SetInt(right)
+				return left.Cmp(rightFloat) == 0, nil
+			case *big.Float:
+				return left.Cmp(right) == 0, nil
 			}
 		}
 		return left == right, nil
@@ -603,6 +805,11 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			switch right := right.(type) {
 			case float64:
 				return float64(left) != right, nil
+			case *big.Int:
+				return right.Cmp(big.NewInt(left)) != 0, nil
+			case *big.Float:
+				leftFloat := new(big.Float).SetInt(big.NewInt(left))
+				return leftFloat.Cmp(right) != 0, nil
 			}
 		case float64:
 			switch right := right.(type) {
@@ -612,6 +819,37 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				if math.IsNaN(left) && math.IsNaN(right) {
 					return false, nil
 				}
+			case *big.Int:
+				rightFloat := new(big.Float).SetInt(right)
+				return rightFloat.Cmp(bigfloat.New(left)) != 0, nil
+			case *big.Float:
+				return right.Cmp(bigfloat.New(left)) != 0, nil
+			}
+		case *big.Int:
+			switch right := right.(type) {
+			case int64:
+				return left.Cmp(big.NewInt(right)) != 0, nil
+			case float64:
+				leftFloat := new(big.Float).SetInt(left)
+				return leftFloat.Cmp(bigfloat.New(right)) != 0, nil
+			case *big.Int:
+				return left.Cmp(right) != 0, nil
+			case *big.Float:
+				leftFloat := new(big.Float).SetInt(left)
+				return leftFloat.Cmp(right) != 0, nil
+			}
+		case *big.Float:
+			switch right := right.(type) {
+			case int64:
+				rightFloat := new(big.Float).SetInt(big.NewInt(right))
+				return left.Cmp(rightFloat) != 0, nil
+			case float64:
+				return left.Cmp(bigfloat.New(right)) != 0, nil
+			case *big.Int:
+				rightFloat := new(big.Float).SetInt(right)
+				return left.Cmp(rightFloat) != 0, nil
+			case *big.Float:
+				return left.Cmp(right) != 0, nil
 			}
 		}
 		return left != right, nil
@@ -634,6 +872,10 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(float64(left), float64(right), true)
 		case float64:
 			return handleTwoFloats(float64(left), right, false)
+		case *big.Int:
+			return handleTwoBigInts(big.NewInt(left), right)
+		case *big.Float:
+			return handleTwoBigFloats(bigfloat.New(float64(left)), right)
 		case bool:
 			return handleTwoFloats(float64(left), boolMap[right], true)
 		case *LoxString:
@@ -651,12 +893,38 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoFloats(left, float64(right), false)
 		case float64:
 			return handleTwoFloats(left, right, false)
+		case *big.Int:
+			return handleTwoBigFloats(bigfloat.New(left), new(big.Float).SetInt(right))
+		case *big.Float:
+			return handleTwoBigFloats(bigfloat.New(left), right)
 		case bool:
 			return handleTwoFloats(left, boolMap[right], false)
 		case *LoxString:
 			return handleNumString(float64(left), right)
 		case nil:
 			return handleTwoFloats(left, 0, false)
+		}
+	case *big.Int:
+		switch right := right.(type) {
+		case int64:
+			return handleTwoBigInts(left, big.NewInt(right))
+		case float64:
+			return handleTwoBigFloats(new(big.Float).SetInt(left), bigfloat.New(right))
+		case *big.Int:
+			return handleTwoBigInts(left, right)
+		case *big.Float:
+			return handleTwoBigFloats(new(big.Float).SetInt(left), right)
+		}
+	case *big.Float:
+		switch right := right.(type) {
+		case int64:
+			return handleTwoBigFloats(left, bigfloat.New(float64(right)))
+		case float64:
+			return handleTwoBigFloats(left, bigfloat.New(right))
+		case *big.Int:
+			return handleTwoBigFloats(left, new(big.Float).SetInt(right))
+		case *big.Float:
+			return handleTwoBigFloats(left, right)
 		}
 	case bool:
 		switch right := right.(type) {
@@ -1993,6 +2261,10 @@ func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 			return -right, nil
 		case float64:
 			return -right, nil
+		case *big.Int:
+			return new(big.Int).Neg(right), nil
+		case *big.Float:
+			return new(big.Float).Neg(right), nil
 		case bool:
 			if right {
 				return int64(-1), nil
@@ -2010,6 +2282,13 @@ func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 			return ^right, nil
 		case float64:
 			return ^int64(right), nil
+		case *big.Int:
+			return new(big.Int).Not(right), nil
+		case *big.Float:
+			rightCopy := new(big.Float).Copy(right)
+			bigInt := &big.Int{}
+			rightCopy.Int(bigInt)
+			return new(big.Int).Not(bigInt), nil
 		case bool:
 			if right {
 				return ^int64(1), nil

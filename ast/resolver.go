@@ -70,6 +70,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitAssignExpr(expr)
 	case Binary:
 		return r.visitBinaryExpr(expr)
+	case BigNum:
+		return nil
 	case Call:
 		return r.visitCallExpr(expr)
 	case Dict:
