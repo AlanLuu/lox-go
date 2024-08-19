@@ -376,6 +376,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
+    - `ListZero(length)`, which returns a new list of the specified length, where each initial element is `0`
     - `oct(num)`, which converts the specified integer `num` into its octal representation as a string prefixed with "0o"
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
     - `range(stop)`, which takes in an integer and returns a range object with a start value of `0`, a stop value of `stop`, and a step value of `1`

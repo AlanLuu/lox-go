@@ -186,6 +186,21 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'List' must be an integer.")
 	})
+	nativeFunc("ListZero", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if size, ok := args[0].(int64); ok {
+			if size < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'ListZero' cannot be negative.")
+			}
+			lst := list.NewList[any]()
+			for index := int64(0); index < size; index++ {
+				lst.Add(int64(0))
+			}
+			return NewLoxList(lst), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'ListZero' must be an integer.")
+	})
 	nativeFunc("oct", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if num, ok := args[0].(int64); ok {
 			return numToBaseStr(num, "0o", 8)
