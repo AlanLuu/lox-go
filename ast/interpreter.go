@@ -501,7 +501,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 	handleBigNumString := func(left *big.Int, right *LoxString) (any, error) {
 		switch expr.Operator.TokenType {
 		case token.STAR:
-			if bigint.IsZeroOrLess(left) {
+			if bigint.IsZeroOrLess(left) || len(right.str) == 0 {
 				return EmptyLoxString(), nil
 			}
 			var builder strings.Builder
@@ -521,6 +521,26 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			}
 			newBuffer := EmptyLoxBuffer()
 			for i := int64(0); i < left; i++ {
+				for _, element := range right.elements {
+					addErr := newBuffer.add(element)
+					if addErr != nil {
+						return nil, runtimeErrorWrapper(addErr.Error())
+					}
+				}
+			}
+			return newBuffer, nil
+		}
+		return math.NaN(), nil
+	}
+	handleBigNumBuffer := func(left *big.Int, right *LoxBuffer) (any, error) {
+		switch expr.Operator.TokenType {
+		case token.STAR:
+			if bigint.IsZeroOrLess(left) || len(right.elements) == 0 {
+				return EmptyLoxBuffer(), nil
+			}
+			newBuffer := EmptyLoxBuffer()
+			one := bigint.BoolMap[true]
+			for i := big.NewInt(0); i.Cmp(left) < 0; i.Add(i, one) {
 				for _, element := range right.elements {
 					addErr := newBuffer.add(element)
 					if addErr != nil {
@@ -948,6 +968,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoBigInts(left, bigint.BoolMap[right])
 		case *LoxString:
 			return handleBigNumString(left, right)
+		case *LoxBuffer:
+			return handleBigNumBuffer(left, right)
 		case *LoxList:
 			return handleBigNumList(left, right)
 		case nil:
@@ -1082,6 +1104,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			switch right := right.(type) {
 			case int64:
 				return repeat(left, right)
+			case *big.Int:
+				return handleBigNumBuffer(right, left)
 			case bool:
 				return repeat(left, int64(boolMap[right]))
 			case nil:
