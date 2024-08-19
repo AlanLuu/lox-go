@@ -6,6 +6,11 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
+var BoolMap = map[bool]*big.Float{
+	true:  New(1),
+	false: New(0),
+}
+
 func New(x float64) *big.Float {
 	bigFloat := &big.Float{}
 	bigFloat.SetString(util.FormatFloat(x))

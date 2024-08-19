@@ -2,6 +2,11 @@ package bigint
 
 import "math/big"
 
+var BoolMap = map[bool]*big.Int{
+	true:  big.NewInt(1),
+	false: big.NewInt(0),
+}
+
 func IsNegative(x *big.Int) bool {
 	return x.Sign() < 0
 }
