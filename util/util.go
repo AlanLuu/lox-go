@@ -47,6 +47,13 @@ func FormatFloat(f float64) string {
 	return strconv.FormatFloat(f, 'f', -1, 64)
 }
 
+func FormatFloatZero(f float64) string {
+	if FloatIsInt(f) {
+		return FormatFloat(f) + ".0"
+	}
+	return FormatFloat(f)
+}
+
 func IntOrFloat(f float64) any {
 	if FloatIsInt(f) {
 		return int64(f)

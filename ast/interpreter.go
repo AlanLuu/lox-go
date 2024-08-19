@@ -952,6 +952,11 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			return handleTwoBigFloats(bigfloat.New(left), right)
 		case bool:
 			return handleTwoFloats(left, boolMap[right], false)
+		case *LoxString:
+			switch expr.Operator.TokenType {
+			case token.PLUS:
+				return handleNumString(left, right)
+			}
 		case nil:
 			return handleTwoFloats(left, 0, false)
 		}

@@ -2,12 +2,16 @@ package ast
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 
+	"github.com/AlanLuu/lox/bignum/bigfloat"
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 func CanBeDictKeyCheck(key any) (bool, string) {
@@ -19,7 +23,17 @@ func CanBeDictKeyCheck(key any) (bool, string) {
 }
 
 func UnknownDictKey(key any) string {
-	return fmt.Sprintf("Unknown key '%v'.", key)
+	formatStr := "Unknown key '%v'."
+	switch key := key.(type) {
+	case float64:
+		return fmt.Sprintf(formatStr, util.FormatFloatZero(key))
+	case *big.Int:
+		return fmt.Sprintf(formatStr, bigint.String(key))
+	case *big.Float:
+		return fmt.Sprintf(formatStr, bigfloat.String(key))
+	default:
+		return fmt.Sprintf(formatStr, key)
+	}
 }
 
 type LoxDict struct {
@@ -155,6 +169,10 @@ func (l *LoxDict) getValueByKey(key any) (any, bool) {
 	var value any
 	var ok bool
 	switch key := key.(type) {
+	case *big.Int:
+		value, ok = l.entries[NewLoxBigIntKey(key)]
+	case *big.Float:
+		value, ok = l.entries[NewLoxBigFloatKey(key)]
 	case *LoxString:
 		value, ok = l.entries[LoxStringStr{key.str, key.quote}]
 	case *LoxRange:
@@ -167,6 +185,10 @@ func (l *LoxDict) getValueByKey(key any) (any, bool) {
 
 func (l *LoxDict) setKeyValue(key any, value any) {
 	switch key := key.(type) {
+	case *big.Int:
+		l.entries[NewLoxBigIntKey(key)] = value
+	case *big.Float:
+		l.entries[NewLoxBigFloatKey(key)] = value
 	case *LoxString:
 		l.entries[LoxStringStr{key.str, key.quote}] = value
 	case *LoxRange:
@@ -179,6 +201,10 @@ func (l *LoxDict) setKeyValue(key any, value any) {
 func (l *LoxDict) removeKey(key any) any {
 	keyItem := key
 	switch key := key.(type) {
+	case *big.Int:
+		keyItem = NewLoxBigIntKey(key)
+	case *big.Float:
+		keyItem = NewLoxBigFloatKey(key)
 	case *LoxString:
 		keyItem = LoxStringStr{key.str, key.quote}
 	case *LoxRange:
@@ -197,6 +223,8 @@ func (l *LoxDict) Iterator() interfaces.Iterator {
 	for key, value := range l.entries {
 		pair := list.NewList[any]()
 		switch key := key.(type) {
+		case LoxBigNumKey:
+			pair.Add(key.getBigNum())
 		case LoxStringStr:
 			pair.Add(NewLoxString(key.str, key.quote))
 		case LoxRangeDictSetKey:
@@ -205,6 +233,8 @@ func (l *LoxDict) Iterator() interfaces.Iterator {
 			pair.Add(key)
 		}
 		switch value := value.(type) {
+		case LoxBigNumKey:
+			pair.Add(value.getBigNum())
 		case LoxStringStr:
 			pair.Add(NewLoxString(value.str, value.quote))
 		case LoxRangeDictSetKey:

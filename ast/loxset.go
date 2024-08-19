@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 
 	"github.com/AlanLuu/lox/interfaces"
@@ -145,6 +146,10 @@ func (l *LoxSet) Get(name *token.Token) (any, error) {
 func (l *LoxSet) add(element any) (bool, string) {
 	var theElement any
 	switch element := element.(type) {
+	case *big.Int:
+		theElement = NewLoxBigIntKey(element)
+	case *big.Float:
+		theElement = NewLoxBigFloatKey(element)
 	case *LoxString:
 		theElement = LoxStringStr{element.str, element.quote}
 	case *LoxRange:
@@ -166,6 +171,10 @@ func (l *LoxSet) add(element any) (bool, string) {
 func (l *LoxSet) contains(element any) bool {
 	var theElement any
 	switch element := element.(type) {
+	case *big.Int:
+		theElement = NewLoxBigIntKey(element)
+	case *big.Float:
+		theElement = NewLoxBigFloatKey(element)
 	case *LoxString:
 		theElement = LoxStringStr{element.str, element.quote}
 	case *LoxRange:
@@ -238,6 +247,10 @@ func (l *LoxSet) isProperSuperset(other *LoxSet) bool {
 func (l *LoxSet) remove(element any) bool {
 	var theElement any
 	switch element := element.(type) {
+	case *big.Int:
+		theElement = NewLoxBigIntKey(element)
+	case *big.Float:
+		theElement = NewLoxBigFloatKey(element)
 	case *LoxString:
 		theElement = LoxStringStr{element.str, element.quote}
 	case *LoxRange:
@@ -282,6 +295,8 @@ func (l *LoxSet) Iterator() interfaces.Iterator {
 	elements := list.NewList[any]()
 	for element := range l.elements {
 		switch element := element.(type) {
+		case LoxBigNumKey:
+			elements.Add(element.getBigNum())
 		case LoxStringStr:
 			elements.Add(NewLoxString(element.str, element.quote))
 		case LoxRangeDictSetKey:
