@@ -19,6 +19,10 @@ func IsZero(x *big.Int) bool {
 	return len(x.Bits()) == 0
 }
 
+func IsZeroOrLess(x *big.Int) bool {
+	return IsZero(x) || IsNegative(x)
+}
+
 func String(x *big.Int) string {
 	return x.String() + "n"
 }
