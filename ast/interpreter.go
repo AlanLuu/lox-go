@@ -176,14 +176,15 @@ func (i *Interpreter) Interpret(statements list.List[Stmt], makeHandler bool) er
 		defer func() {
 			if !interrupted {
 				sigChan <- loxsignal.LoopSignal{}
+				signal.Stop(sigChan)
 			}
-			signal.Stop(sigChan)
 		}()
 		go func() {
 			sig := <-sigChan
 			switch sig {
 			case os.Interrupt:
 				interrupted = true
+				signal.Stop(sigChan)
 			}
 		}()
 	}
@@ -1382,14 +1383,15 @@ func (i *Interpreter) visitDoWhileStmt(stmt DoWhile) (any, error) {
 			defer func() {
 				if !loopInterrupted {
 					sigChan <- loxsignal.LoopSignal{}
+					signal.Stop(sigChan)
 				}
-				signal.Stop(sigChan)
 			}()
 			go func() {
 				sig := <-sigChan
 				switch sig {
 				case os.Interrupt:
 					loopInterrupted = true
+					signal.Stop(sigChan)
 				}
 			}()
 			enteredLoop = true
@@ -1525,14 +1527,15 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				defer func() {
 					if !loopInterrupted {
 						sigChan <- loxsignal.LoopSignal{}
+						signal.Stop(sigChan)
 					}
-					signal.Stop(sigChan)
 				}()
 				go func() {
 					sig := <-sigChan
 					switch sig {
 					case os.Interrupt:
 						loopInterrupted = true
+						signal.Stop(sigChan)
 					}
 				}()
 				enteredLoop = true
@@ -1566,14 +1569,15 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 				defer func() {
 					if !loopInterrupted {
 						sigChan <- loxsignal.LoopSignal{}
+						signal.Stop(sigChan)
 					}
-					signal.Stop(sigChan)
 				}()
 				go func() {
 					sig := <-sigChan
 					switch sig {
 					case os.Interrupt:
 						loopInterrupted = true
+						signal.Stop(sigChan)
 					}
 				}()
 				enteredLoop = true
@@ -1635,14 +1639,15 @@ func (i *Interpreter) visitForEachStmt(stmt ForEach) (any, error) {
 			defer func() {
 				if !loopInterrupted {
 					sigChan <- loxsignal.LoopSignal{}
+					signal.Stop(sigChan)
 				}
-				signal.Stop(sigChan)
 			}()
 			go func() {
 				sig := <-sigChan
 				switch sig {
 				case os.Interrupt:
 					loopInterrupted = true
+					signal.Stop(sigChan)
 				}
 			}()
 			enteredLoop = true
@@ -2419,14 +2424,15 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 			defer func() {
 				if !loopInterrupted {
 					sigChan <- loxsignal.LoopSignal{}
+					signal.Stop(sigChan)
 				}
-				signal.Stop(sigChan)
 			}()
 			go func() {
 				sig := <-sigChan
 				switch sig {
 				case os.Interrupt:
 					loopInterrupted = true
+					signal.Stop(sigChan)
 				}
 			}()
 			enteredLoop = true
