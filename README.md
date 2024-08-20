@@ -55,6 +55,11 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Number literals support the following features:
     - An underscore character can be used to group digits, such as `1_000_000`, which is equivalent to `1000000`
         - Underscore characters are also allowed in binary, hexadecimal, and octal literals, except for octal literals starting with a `0`
+- Arbitrary-precision integers and floats are supported in this implementation of Lox, which are called bigints and bigfloats respectively
+    - Examples: `1n`, `1.5n`
+    - bigints and bigfloats support the same operations as integers and floats, with the following notes:
+        - bigfloats do not support the `**` operator
+        - Dividing a bigint by `0` or `0n` throws a runtime error
 - A new statement called `put` prints an expression without a newline character at the end
     - Syntax: `put <expression>;`
     - Note: in REPL mode, there is an issue where printed expressions without a newline at the end are not printed at all
