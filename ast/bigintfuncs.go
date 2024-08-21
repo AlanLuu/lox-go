@@ -48,6 +48,12 @@ func (i *Interpreter) defineBigIntFuncs() {
 			return argMustBeTypeAn(in.callToken, "new", "integer, float, or string")
 		}
 	})
+	bigIntFunc("isInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if bigInt, ok := args[0].(*big.Int); ok {
+			return bigInt.IsInt64(), nil
+		}
+		return argMustBeType(in.callToken, "isInt", "bigint")
+	})
 	bigIntFunc("toBigFloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if bigInt, ok := args[0].(*big.Int); ok {
 			return new(big.Float).SetInt(bigInt), nil
