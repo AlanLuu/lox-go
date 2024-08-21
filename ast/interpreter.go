@@ -42,6 +42,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.environment = interpreter.globals
 	interpreter.defineBase32Funcs() //Defined in base32funcs.go
 	interpreter.defineBase64Funcs() //Defined in base64funcs.go
+	interpreter.defineBigIntFuncs() //Defined in bigintfuncs.go
 	interpreter.defineCryptoFuncs() //Defined in cryptofuncs.go
 	interpreter.defineCSVFuncs()    //Defined in csvfuncs.go
 	interpreter.defineHexFuncs()    //Defined in hexfuncs.go
