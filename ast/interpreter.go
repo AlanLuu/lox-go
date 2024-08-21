@@ -40,19 +40,20 @@ func NewInterpreter() *Interpreter {
 		callToken:  nil,
 	}
 	interpreter.environment = interpreter.globals
-	interpreter.defineBase32Funcs() //Defined in base32funcs.go
-	interpreter.defineBase64Funcs() //Defined in base64funcs.go
-	interpreter.defineBigIntFuncs() //Defined in bigintfuncs.go
-	interpreter.defineCryptoFuncs() //Defined in cryptofuncs.go
-	interpreter.defineCSVFuncs()    //Defined in csvfuncs.go
-	interpreter.defineHexFuncs()    //Defined in hexfuncs.go
-	interpreter.defineHTTPFuncs()   //Defined in httpfuncs.go
-	interpreter.defineJSONFuncs()   //Defined in jsonfuncs.go
-	interpreter.defineMathFuncs()   //Defined in mathfuncs.go
-	interpreter.defineNativeFuncs() //Defined in nativefuncs.go
-	interpreter.defineOSFuncs()     //Defined in osfuncs.go
-	interpreter.defineRandFuncs()   //Defined in randfuncs.go
-	interpreter.defineRegexFuncs()  //Defined in regexfuncs.go
+	interpreter.defineBase32Funcs()   //Defined in base32funcs.go
+	interpreter.defineBase64Funcs()   //Defined in base64funcs.go
+	interpreter.defineBigFloatFuncs() //Defined in bigfloatfuncs.go
+	interpreter.defineBigIntFuncs()   //Defined in bigintfuncs.go
+	interpreter.defineCryptoFuncs()   //Defined in cryptofuncs.go
+	interpreter.defineCSVFuncs()      //Defined in csvfuncs.go
+	interpreter.defineHexFuncs()      //Defined in hexfuncs.go
+	interpreter.defineHTTPFuncs()     //Defined in httpfuncs.go
+	interpreter.defineJSONFuncs()     //Defined in jsonfuncs.go
+	interpreter.defineMathFuncs()     //Defined in mathfuncs.go
+	interpreter.defineNativeFuncs()   //Defined in nativefuncs.go
+	interpreter.defineOSFuncs()       //Defined in osfuncs.go
+	interpreter.defineRandFuncs()     //Defined in randfuncs.go
+	interpreter.defineRegexFuncs()    //Defined in regexfuncs.go
 	return interpreter
 }
 
@@ -2374,10 +2375,9 @@ func (i *Interpreter) visitUnaryExpr(expr Unary) (any, error) {
 		case *big.Int:
 			return new(big.Int).Not(right), nil
 		case *big.Float:
-			rightCopy := new(big.Float).Copy(right)
 			bigInt := &big.Int{}
-			rightCopy.Int(bigInt)
-			return new(big.Int).Not(bigInt), nil
+			right.Int(bigInt)
+			return bigInt.Not(bigInt), nil
 		case bool:
 			if right {
 				return ^int64(1), nil
