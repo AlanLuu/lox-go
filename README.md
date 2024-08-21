@@ -184,6 +184,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `\f`: form feed
         - `\v`: vertical tab
     - Besides these features, strings also have some methods associated with them:
+        - `string.capitalize()`, which returns a new string with the first character from the original string capitalized if possible and the rest of the characters in lowercase if possible
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise

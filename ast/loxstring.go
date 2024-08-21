@@ -140,6 +140,18 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
+	case "capitalize":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			switch utf8.RuneCountInString(l.str) {
+			case 0:
+				return EmptyLoxString(), nil
+			case 1:
+				return NewLoxString(strings.ToUpper(l.str), l.quote), nil
+			}
+			runes := []rune(l.str)
+			newStr := strings.ToUpper(string(runes[0])) + strings.ToLower(string(runes[1:]))
+			return NewLoxString(newStr, l.quote), nil
+		})
 	case "compare":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
