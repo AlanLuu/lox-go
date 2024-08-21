@@ -161,6 +161,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hexstr.decodeToStr(hexStr)` which decodes the specified hexadecimal string into a decoded string and returns that string
     - `hexstr.dump(arg)`, which returns a string containing the hex dump of the specified argument, which is either a string or a buffer
     - `hexstr.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a hexadecimal string and returns that encoded string
+- Various methods to work with bigints and bigfloats are defined under built-in classes called `bigint` and `bigfloat` respectively, which are documented [here](./doc/bignum.md)
 - Methods to work with random number generation are defined under a built-in-class called `Rand`, which is documented [here](./doc/Rand.md)
 - Strings have some additional features associated with them:
     - Strings can be represented using single quotes as well
