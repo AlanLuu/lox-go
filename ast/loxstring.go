@@ -373,7 +373,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				if resultErr != nil {
 					return math.NaN(), nil
 				}
-				if util.FloatIsInt(result) {
+				if util.FloatIsInt(result) && !strings.Contains(l.str, ".") {
 					return int64(result), nil
 				}
 				return result, nil
