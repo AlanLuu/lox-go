@@ -41,6 +41,12 @@ func (i *Interpreter) defineIntFuncs() {
 		}
 		return argMustBeType(in.callToken, "parseInt", "string")
 	})
+	intFunc("toFloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if value, ok := args[0].(int64); ok {
+			return float64(value), nil
+		}
+		return argMustBeTypeAn(in.callToken, "toFloat", "integer")
+	})
 	intFunc("toString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if value, ok := args[0].(int64); ok {
 			return NewLoxString(fmt.Sprint(value), '\''), nil

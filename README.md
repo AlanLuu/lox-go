@@ -163,6 +163,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hexstr.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a hexadecimal string and returns that encoded string
 - Various methods to work with integers are defined under a built-in class called `Integer`, where the following methods are defined:
     - `Integer.parseInt(string)`, which attempts to convert the specified string argument into an integer and returns that integer if successful, otherwise a runtime error is thrown
+    - `Integer.toFloat(integer)`, which converts the specified integer argument into a float and returns that float
     - `Integer.toString(integer)`, which returns the string representation of the specified integer argument
 - Various methods to work with floats are defined under a built-in class called `Float`, where the following methods are defined:
     - `Float.parseFloat(string)`, which attempts to convert the specified string argument into a float and returns that float if successful, otherwise a runtime error is thrown
