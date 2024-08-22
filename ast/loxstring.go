@@ -307,6 +307,27 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
+	case "title":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			words := strings.Split(l.str, " ")
+			wordsLen := len(words)
+			var builder strings.Builder
+			for index, word := range words {
+				switch utf8.RuneCountInString(word) {
+				case 0:
+				case 1:
+					builder.WriteString(strings.ToUpper(word))
+				default:
+					runes := []rune(word)
+					finalWord := strings.ToUpper(string(runes[0])) + strings.ToLower(string(runes[1:]))
+					builder.WriteString(finalWord)
+				}
+				if index < wordsLen-1 {
+					builder.WriteRune(' ')
+				}
+			}
+			return NewLoxString(builder.String(), l.quote), nil
+		})
 	case "toBuffer":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			b := make([]byte, 4)
