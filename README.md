@@ -161,6 +161,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hexstr.decodeToStr(hexStr)` which decodes the specified hexadecimal string into a decoded string and returns that string
     - `hexstr.dump(arg)`, which returns a string containing the hex dump of the specified argument, which is either a string or a buffer
     - `hexstr.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a hexadecimal string and returns that encoded string
+- Various methods to work with integers are defined under a built-in class called `Integer`, where the following methods are defined:
+    - `Integer.parseInt(string)`, which attempts to convert the specified string argument into an integer and returns that integer if successful, otherwise a runtime error is thrown
+    - `Integer.toString(integer)`, which returns the string representation of the specified integer argument
+- Various methods to work with floats are defined under a built-in class called `Float`, where the following methods are defined:
+    - `Float.parseFloat(string)`, which attempts to convert the specified string argument into a float and returns that float if successful, otherwise a runtime error is thrown
+    - `Float.toString(float)`, which returns the string representation of the specified float argument
 - Various methods to work with bigints and bigfloats are defined under built-in classes called `bigint` and `bigfloat` respectively, which are documented [here](./doc/bignum.md)
 - Methods to work with random number generation are defined under a built-in-class called `Rand`, which is documented [here](./doc/Rand.md)
 - Strings have some additional features associated with them:
