@@ -66,6 +66,21 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return buffer, nil
 	})
+	nativeFunc("BufferZero", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if size, ok := args[0].(int64); ok {
+			if size < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'BufferZero' cannot be negative.")
+			}
+			buffer := EmptyLoxBufferCap(size)
+			for index := int64(0); index < size; index++ {
+				buffer.add(int64(0))
+			}
+			return buffer, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BufferZero' must be an integer.")
+	})
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return float64(time.Now().UnixMilli()) / 1000, nil
 	})

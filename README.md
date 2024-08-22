@@ -379,6 +379,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - A few other native functions are defined:
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
+    - `BufferZero(length)`, which returns a new buffer of the specified length, where each initial element is `0`
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution

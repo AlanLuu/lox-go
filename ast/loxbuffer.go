@@ -38,6 +38,10 @@ func EmptyLoxBuffer() *LoxBuffer {
 	return NewLoxBuffer(list.NewList[any]())
 }
 
+func EmptyLoxBufferCap(cap int64) *LoxBuffer {
+	return NewLoxBuffer(list.NewListCap[any](cap))
+}
+
 func (l *LoxBuffer) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxBuffer:
