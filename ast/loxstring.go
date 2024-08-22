@@ -307,6 +307,22 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
+	case "swapcase":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			var upperA, upperZ, lowerA, lowerZ rune = 65, 90, 97, 122
+			var offset rune = 32
+			var builder strings.Builder
+			for _, c := range l.str {
+				if c >= upperA && c <= upperZ {
+					builder.WriteRune(c + offset)
+				} else if c >= lowerA && c <= lowerZ {
+					builder.WriteRune(c - offset)
+				} else {
+					builder.WriteRune(c)
+				}
+			}
+			return NewLoxString(builder.String(), l.quote), nil
+		})
 	case "title":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			words := strings.Split(l.str, " ")
