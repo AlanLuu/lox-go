@@ -167,6 +167,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Integer.toString(integer)`, which returns the string representation of the specified integer argument
 - Various methods to work with floats are defined under a built-in class called `Float`, where the following methods are defined:
     - `Float.parseFloat(string)`, which attempts to convert the specified string argument into a float and returns that float if successful, otherwise a runtime error is thrown
+    - `Float.toInt(float)`, which converts the specified float argument into an integer and returns that integer
     - `Float.toString(float)`, which returns the string representation of the specified float argument
 - Various methods to work with bigints and bigfloats are defined under built-in classes called `bigint` and `bigfloat` respectively, which are documented [here](./doc/bignum.md)
 - Methods to work with random number generation are defined under a built-in-class called `Rand`, which is documented [here](./doc/Rand.md)

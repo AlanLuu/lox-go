@@ -38,6 +38,12 @@ func (i *Interpreter) defineFloatFuncs() {
 		}
 		return argMustBeType(in.callToken, "parseFloat", "string")
 	})
+	floatFunc("toInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if value, ok := args[0].(float64); ok {
+			return int64(value), nil
+		}
+		return argMustBeType(in.callToken, "toInt", "float")
+	})
 	floatFunc("toString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if value, ok := args[0].(float64); ok {
 			return NewLoxString(util.FormatFloatZero(value), '\''), nil
