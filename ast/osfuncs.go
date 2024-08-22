@@ -1575,7 +1575,7 @@ func (i *Interpreter) defineOSFuncs() {
 
 		fd := args[0].(int64)
 		buffer := args[1].(*LoxBuffer)
-		bytes := list.NewList[byte]()
+		bytes := list.NewListCap[byte](int64(len(buffer.elements)))
 		for _, element := range buffer.elements {
 			bytes.Add(byte(element.(int64)))
 		}

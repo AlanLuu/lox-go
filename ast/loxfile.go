@@ -636,7 +636,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				if !l.isBinary {
 					return argMustBeType("string")
 				}
-				byteList := list.NewList[byte]()
+				byteList := list.NewListCap[byte](int64(len(arg.elements)))
 				for _, element := range arg.elements {
 					byteList.Add(byte(element.(int64)))
 				}
