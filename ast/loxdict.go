@@ -219,9 +219,9 @@ func (l *LoxDict) removeKey(key any) any {
 }
 
 func (l *LoxDict) Iterator() interfaces.Iterator {
-	pairs := list.NewList[*LoxList]()
+	pairs := list.NewListCap[*LoxList](int64(len(l.entries)))
 	for key, value := range l.entries {
-		pair := list.NewList[any]()
+		pair := list.NewListCap[any](2)
 		switch key := key.(type) {
 		case LoxBigNumKey:
 			pair.Add(key.getBigNum())

@@ -54,7 +54,7 @@ func (l *LoxCSVReader) Get(name *token.Token) (any, error) {
 			if err != nil && !errors.Is(err, io.EOF) {
 				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
-			fieldsList := list.NewList[any]()
+			fieldsList := list.NewListCap[any](int64(len(fields)))
 			for _, field := range fields {
 				fieldsList.Add(NewLoxStringQuote(field))
 			}
@@ -66,9 +66,9 @@ func (l *LoxCSVReader) Get(name *token.Token) (any, error) {
 			if err != nil {
 				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
-			allFieldsList := list.NewList[any]()
+			allFieldsList := list.NewListCap[any](int64(len(allFields)))
 			for _, fields := range allFields {
-				fieldsList := list.NewList[any]()
+				fieldsList := list.NewListCap[any](int64(len(fields)))
 				for _, field := range fields {
 					fieldsList.Add(NewLoxStringQuote(field))
 				}

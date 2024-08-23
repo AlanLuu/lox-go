@@ -134,7 +134,7 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 	case "headers":
 		dict := EmptyLoxDict()
 		for key, value := range l.res.Header {
-			valuesList := list.NewList[any]()
+			valuesList := list.NewListCap[any](int64(len(value)))
 			for _, str := range value {
 				valuesList.Add(NewLoxStringQuote(str))
 			}
