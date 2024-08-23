@@ -563,7 +563,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if left <= 0 || len(right.elements) == 0 {
 				return EmptyLoxList(), nil
 			}
-			newList := list.NewList[any]()
+			newList := list.NewListCap[any](int64(len(right.elements)) * left)
 			for i := int64(0); i < left; i++ {
 				for _, element := range right.elements {
 					newList.Add(element)
@@ -1149,7 +1149,8 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			case *LoxString:
 				return right.NewLoxString(left.String() + right.str), nil
 			case *LoxList:
-				newList := list.NewList[any]()
+				capacity := int64(len(left.elements)) + int64(len(right.elements))
+				newList := list.NewListCap[any](capacity)
 				for _, element := range left.elements {
 					newList.Add(element)
 				}
@@ -1163,7 +1164,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				if right <= 0 || len(left.elements) == 0 {
 					return EmptyLoxList(), nil
 				}
-				newList := list.NewList[any]()
+				newList := list.NewListCap[any](int64(len(left.elements)) * right)
 				for i := int64(0); i < right; i++ {
 					for _, element := range left.elements {
 						newList.Add(element)
@@ -1246,7 +1247,7 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 	if calleeErr != nil {
 		return nil, calleeErr
 	}
-	arguments := list.NewList[any]()
+	arguments := list.NewListCap[any](int64(len(expr.Arguments)))
 	for _, argument := range expr.Arguments {
 		result, resultErr := i.evaluate(argument)
 		if resultErr != nil {
@@ -1907,7 +1908,11 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if indexValInt < 0 {
 				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexOutOfRange(originalIndexValInt))
 			}
-			listSlice := list.NewList[any]()
+			capacity := indexEndValInt - indexValInt
+			if capacity < 0 {
+				capacity = 0
+			}
+			listSlice := list.NewListCap[any](capacity)
 			for i := indexValInt; i < indexEndValInt; i++ {
 				listSlice.Add(indexElement.elements[i])
 			}
@@ -1964,7 +1969,11 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if indexValInt < 0 {
 				return nil, loxerror.RuntimeError(expr.Bracket, ListIndexOutOfRange(originalIndexValInt))
 			}
-			listSlice := list.NewList[any]()
+			capacity := indexEndValInt - indexValInt
+			if capacity < 0 {
+				capacity = 0
+			}
+			listSlice := list.NewListCap[any](capacity)
 			for i := indexValInt; i < indexEndValInt; i++ {
 				listSlice.Add(indexElement.elements[i])
 			}
@@ -2030,10 +2039,11 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 }
 
 func (i *Interpreter) visitListExpr(expr List) (any, error) {
-	elements := list.NewList[any]()
+	elements := list.NewListCap[any](int64(len(expr.Elements)))
 	for _, element := range expr.Elements {
 		evalResult, evalErr := i.evaluate(element)
 		if evalErr != nil {
+			elements.Clear()
 			return nil, evalErr
 		}
 		elements.Add(evalResult)
