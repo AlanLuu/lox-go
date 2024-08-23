@@ -278,7 +278,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				splitSlice := strings.Split(l.str, loxStr.str)
-				loxList := list.NewList[any]()
+				loxList := list.NewListCap[any](int64(len(splitSlice)))
 				for _, str := range splitSlice {
 					loxList.Add(NewLoxString(str, '\''))
 				}
@@ -360,7 +360,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewList[any]()
+			newList := list.NewListCap[any](int64(len(l.str)))
 			for _, c := range l.str {
 				newList.Add(NewLoxStringQuote(string(c)))
 			}

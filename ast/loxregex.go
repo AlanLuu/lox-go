@@ -61,7 +61,7 @@ func (l *LoxRegex) Get(name *token.Token) (any, error) {
 		return regexFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				matches := l.regex.FindAllString(loxStr.str, -1)
-				matchesList := list.NewList[any]()
+				matchesList := list.NewListCap[any](int64(len(matches)))
 				for _, match := range matches {
 					matchesList.Add(NewLoxStringQuote(match))
 				}
@@ -73,9 +73,9 @@ func (l *LoxRegex) Get(name *token.Token) (any, error) {
 		return regexFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				matches := l.regex.FindAllStringSubmatch(loxStr.str, -1)
-				matchesList := list.NewList[any]()
+				matchesList := list.NewListCap[any](int64(len(matches)))
 				for _, match := range matches {
-					innerList := list.NewList[any]()
+					innerList := list.NewListCap[any](int64(len(match)))
 					for _, str := range match {
 						innerList.Add(NewLoxStringQuote(str))
 					}
@@ -120,7 +120,7 @@ func (l *LoxRegex) Get(name *token.Token) (any, error) {
 				replaceCount++
 				return repl
 			})
-			elements := list.NewList[any]()
+			elements := list.NewListCap[any](2)
 			elements.Add(NewLoxStringQuote(replaced))
 			elements.Add(replaceCount)
 			return NewLoxList(elements), nil
@@ -129,7 +129,7 @@ func (l *LoxRegex) Get(name *token.Token) (any, error) {
 		return regexFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				split := l.regex.Split(loxStr.str, -1)
-				splitList := list.NewList[any]()
+				splitList := list.NewListCap[any](int64(len(split)))
 				for _, str := range split {
 					splitList.Add(NewLoxStringQuote(str))
 				}
