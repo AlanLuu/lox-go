@@ -143,10 +143,11 @@ func (i *Interpreter) defineRandFuncs() {
 					"Second argument to 'Rand().choices' cannot be negative.")
 			}
 			arg := args[1]
-			choices := list.NewList[any]()
+			choices := list.NewListCap[any](numChoices)
 			for i := int64(0); i < numChoices; i++ {
 				element, err := randElement(randStruct, arg)
 				if err != nil {
+					choices.Clear()
 					return nil, loxerror.RuntimeError(in.callToken, err.Error())
 				}
 				choices.Add(element)
@@ -168,13 +169,13 @@ func (i *Interpreter) defineRandFuncs() {
 						return nil, loxerror.RuntimeError(in.callToken,
 							"Argument to 'Rand().perm' cannot be 0 or negative.")
 					}
-					permsList := list.NewList[any]()
 					var randPerms []int
 					if randStruct.rand != nil {
 						randPerms = randStruct.rand.Perm(int(num))
 					} else {
 						randPerms = rand.Perm(int(num))
 					}
+					permsList := list.NewListCap[any](int64(len(randPerms)))
 					for _, perm := range randPerms {
 						permsList.Add(int64(perm))
 					}
@@ -197,8 +198,8 @@ func (i *Interpreter) defineRandFuncs() {
 					return nil, loxerror.RuntimeError(in.callToken,
 						"Second argument to 'Rand().perm' cannot be less than first argument.")
 				}
-				permsList := list.NewList[any]()
 				loxRange := NewLoxRangeStartStop(start, stop+1)
+				permsList := list.NewListCap[any](loxRange.Length())
 				it := loxRange.Iterator()
 				for it.HasNext() {
 					permsList.Add(it.Next())
@@ -500,7 +501,7 @@ func (i *Interpreter) defineRandFuncs() {
 					)
 				}
 			}
-			samples := list.NewList[any]()
+			samples := list.NewListCap[any](numSamples)
 			var randIndexes []int
 			if randStruct.rand != nil {
 				randIndexes = randStruct.rand.Perm(int(argLen))
@@ -512,6 +513,7 @@ func (i *Interpreter) defineRandFuncs() {
 				if i == 0 {
 					switch element := element.(type) {
 					case error:
+						samples.Clear()
 						return nil, loxerror.RuntimeError(in.callToken, element.Error())
 					}
 				}

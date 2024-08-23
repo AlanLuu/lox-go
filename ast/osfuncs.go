@@ -26,7 +26,8 @@ import (
 )
 
 func cmdArgsToLoxList() *LoxList {
-	argvList := list.NewList[any]()
+	args := flag.Args()
+	argvList := list.NewListCap[any](int64(len(args)) + 1)
 	execPath, err := os.Executable()
 	if err == nil {
 		argvList.Add(NewLoxStringQuote(execPath))
@@ -34,7 +35,6 @@ func cmdArgsToLoxList() *LoxList {
 		argvList.Add(EmptyLoxString())
 	}
 
-	args := flag.Args()
 	for _, arg := range args {
 		argvList.Add(NewLoxStringQuote(arg))
 	}
@@ -831,7 +831,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
-		groupsList := list.NewList[any]()
+		groupsList := list.NewListCap[any](int64(len(groups)))
 		for _, group := range groups {
 			groupsList.Add(int64(group))
 		}
@@ -1106,7 +1106,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
-		files := list.NewList[any]()
+		files := list.NewListCap[any](2)
 		files.Add(&LoxFile{
 			file:       r,
 			name:       r.Name(),
@@ -1130,7 +1130,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
-		files := list.NewList[any]()
+		files := list.NewListCap[any](2)
 		files.Add(&LoxFile{
 			file:       r,
 			name:       r.Name(),
