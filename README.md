@@ -214,6 +214,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.toBuffer()`, which converts `string` into a buffer with the raw UTF-8 byte representation of each character in the string as the buffer elements and returns that buffer
         - `string.toList()`, which converts `string` into a list with each character in the string as the list elements and returns that list
         - `string.toNum([base])`, which attempts to convert `string` into an integer or float and returns that value if successful and `NaN` otherwise. If `base` is specified, then this method will attempt to convert `string` that is represented as the specified base into an integer or float and returns that value if the conversion was successful and `NaN` otherwise
+        - `string.toSet()`, which converts `string` into a set with each unique character in the string as the set elements and returns that set
         - `string.upper()`, which returns a new string with all uppercase letters
         - `string.zfill(length)`, which returns a new string where the character `'0'` is padded to the left until the new string is of length `length`. If a leading `'+'` or `'-'` sign is part of the original string, the `'0'` padding is inserted after the leading sign instead of before
 - Lists are supported in this implementation of Lox

@@ -426,6 +426,17 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
+	case "toSet":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newSet := EmptyLoxSet()
+			for _, c := range l.str {
+				_, errStr := newSet.add(NewLoxStringQuote(string(c)))
+				if len(errStr) > 0 {
+					return nil, loxerror.RuntimeError(name, errStr)
+				}
+			}
+			return newSet, nil
+		})
 	case "upper":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxString(strings.ToUpper(l.str), l.quote), nil
