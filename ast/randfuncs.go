@@ -143,7 +143,7 @@ func (i *Interpreter) defineRandFuncs() {
 					"Second argument to 'Rand().choices' cannot be negative.")
 			}
 			arg := args[1]
-			choices := list.NewListCap[any](numChoices)
+			choices := list.NewListCapDouble[any](numChoices)
 			for i := int64(0); i < numChoices; i++ {
 				element, err := randElement(randStruct, arg)
 				if err != nil {
@@ -175,7 +175,7 @@ func (i *Interpreter) defineRandFuncs() {
 					} else {
 						randPerms = rand.Perm(int(num))
 					}
-					permsList := list.NewListCap[any](int64(len(randPerms)))
+					permsList := list.NewListCapDouble[any](int64(len(randPerms)))
 					for _, perm := range randPerms {
 						permsList.Add(int64(perm))
 					}
@@ -199,7 +199,7 @@ func (i *Interpreter) defineRandFuncs() {
 						"Second argument to 'Rand().perm' cannot be less than first argument.")
 				}
 				loxRange := NewLoxRangeStartStop(start, stop+1)
-				permsList := list.NewListCap[any](loxRange.Length())
+				permsList := list.NewListCapDouble[any](loxRange.Length())
 				it := loxRange.Iterator()
 				for it.HasNext() {
 					permsList.Add(it.Next())
@@ -241,7 +241,7 @@ func (i *Interpreter) defineRandFuncs() {
 					return nil, loxerror.RuntimeError(in.callToken,
 						"Argument to 'Rand().randBytes' cannot be negative.")
 				}
-				buffer := EmptyLoxBufferCap(numBytes)
+				buffer := EmptyLoxBufferCapDouble(numBytes)
 				if randStruct.rand != nil {
 					for i := int64(0); i < numBytes; i++ {
 						addErr := buffer.add(randStruct.rand.Int63n(256))
@@ -501,7 +501,7 @@ func (i *Interpreter) defineRandFuncs() {
 					)
 				}
 			}
-			samples := list.NewListCap[any](numSamples)
+			samples := list.NewListCapDouble[any](numSamples)
 			var randIndexes []int
 			if randStruct.rand != nil {
 				randIndexes = randStruct.rand.Perm(int(argLen))

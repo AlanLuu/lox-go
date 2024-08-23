@@ -251,7 +251,7 @@ func (i *Interpreter) defineHTTPFuncs() {
 
 		urlStr := args[0].(*LoxString).str
 		buffer := args[1].(*LoxBuffer)
-		byteArr := list.NewListCap[byte](int64(len(buffer.elements)))
+		byteArr := list.NewListCapDouble[byte](int64(len(buffer.elements)))
 		for _, element := range buffer.elements {
 			byteArr.Add(byte(element.(int64)))
 		}
@@ -540,7 +540,7 @@ func (i *Interpreter) defineHTTPFuncs() {
 
 				switch thirdArg := args[2].(type) {
 				case *LoxBuffer:
-					byteArr := list.NewListCap[byte](int64(len(thirdArg.elements)))
+					byteArr := list.NewListCapDouble[byte](int64(len(thirdArg.elements)))
 					for _, element := range thirdArg.elements {
 						byteArr.Add(byte(element.(int64)))
 					}

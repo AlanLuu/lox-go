@@ -134,7 +134,7 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 	case "headers":
 		dict := EmptyLoxDict()
 		for key, value := range l.res.Header {
-			valuesList := list.NewListCap[any](int64(len(value)))
+			valuesList := list.NewListCapDouble[any](int64(len(value)))
 			for _, str := range value {
 				valuesList.Add(NewLoxStringQuote(str))
 			}
@@ -149,7 +149,7 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 		if _, ok := l.properties["text"]; !ok {
 			l.properties["text"] = NewLoxStringQuote(string(bytes))
 		}
-		buffer := EmptyLoxBufferCap(int64(len(bytes)))
+		buffer := EmptyLoxBufferCapDouble(int64(len(bytes)))
 		for _, element := range bytes {
 			addErr := buffer.add(int64(element))
 			if addErr != nil {
@@ -165,7 +165,7 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 			return nil, loxerror.RuntimeError(name, err.Error())
 		}
 		if _, ok := l.properties["raw"]; !ok {
-			buffer := EmptyLoxBufferCap(int64(len(bytes)))
+			buffer := EmptyLoxBufferCapDouble(int64(len(bytes)))
 			for _, element := range bytes {
 				addErr := buffer.add(int64(element))
 				if addErr != nil {

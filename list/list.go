@@ -10,6 +10,10 @@ func NewListCap[T any](cap int64) List[T] {
 	return NewListLenCap[T](0, cap)
 }
 
+func NewListCapDouble[T any](cap int64) List[T] {
+	return NewListLenCap[T](0, cap*2)
+}
+
 func NewListLen[T any](len int64) List[T] {
 	return NewListLenCap[T](len, len)
 }

@@ -133,7 +133,7 @@ func (l *LoxSet) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return setFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCap[any](int64(len(l.elements)))
+			newList := list.NewListCapDouble[any](int64(len(l.elements)))
 			for element := range l.elements {
 				newList.Add(element)
 			}
@@ -292,7 +292,7 @@ func (l *LoxSet) union(other *LoxSet) *LoxSet {
 }
 
 func (l *LoxSet) Iterator() interfaces.Iterator {
-	elements := list.NewListCap[any](int64(len(l.elements)))
+	elements := list.NewListCapDouble[any](int64(len(l.elements)))
 	for element := range l.elements {
 		switch element := element.(type) {
 		case LoxBigNumKey:

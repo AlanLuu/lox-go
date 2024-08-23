@@ -278,7 +278,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				splitSlice := strings.Split(l.str, loxStr.str)
-				loxList := list.NewListCap[any](int64(len(splitSlice)))
+				loxList := list.NewListCapDouble[any](int64(len(splitSlice)))
 				for _, str := range splitSlice {
 					loxList.Add(NewLoxString(str, '\''))
 				}
@@ -347,7 +347,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 	case "toBuffer":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			b := make([]byte, 4)
-			buffer := EmptyLoxBufferCap(int64(len(l.str)))
+			buffer := EmptyLoxBufferCapDouble(int64(len(l.str)))
 			for _, r := range l.str {
 				for i := 0; i < utf8.EncodeRune(b, r); i++ {
 					addErr := buffer.add(int64(b[i]))
@@ -360,7 +360,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCap[any](int64(utf8.RuneCountInString(l.str)))
+			newList := list.NewListCapDouble[any](int64(utf8.RuneCountInString(l.str)))
 			for _, c := range l.str {
 				newList.Add(NewLoxStringQuote(string(c)))
 			}

@@ -42,7 +42,7 @@ func (i *Interpreter) defineBase64Funcs() {
 			if decodeErr != nil {
 				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
 			}
-			buffer := EmptyLoxBufferCap(int64(len(result)))
+			buffer := EmptyLoxBufferCapDouble(int64(len(result)))
 			for _, value := range result {
 				addErr := buffer.add(int64(value))
 				if addErr != nil {
@@ -59,7 +59,7 @@ func (i *Interpreter) defineBase64Funcs() {
 			encodedStr := base64.StdEncoding.EncodeToString([]byte(arg.str))
 			return NewLoxString(encodedStr, '\''), nil
 		case *LoxBuffer:
-			byteList := list.NewListCap[byte](int64(len(arg.elements)))
+			byteList := list.NewListCapDouble[byte](int64(len(arg.elements)))
 			for _, element := range arg.elements {
 				byteList.Add(byte(element.(int64)))
 			}

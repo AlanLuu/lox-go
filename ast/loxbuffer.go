@@ -42,6 +42,10 @@ func EmptyLoxBufferCap(cap int64) *LoxBuffer {
 	return NewLoxBuffer(list.NewListCap[any](cap))
 }
 
+func EmptyLoxBufferCapDouble(cap int64) *LoxBuffer {
+	return NewLoxBuffer(list.NewListCapDouble[any](cap))
+}
+
 func (l *LoxBuffer) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxBuffer:
@@ -129,7 +133,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		})
 	case "flatten":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCap[any](int64(len(l.elements)))
+			newList := list.NewListCapDouble[any](int64(len(l.elements)))
 			for _, element := range l.elements {
 				newList.Add(element)
 			}
@@ -161,7 +165,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				newList := list.NewListCap[any](int64(len(l.elements)))
+				newList := list.NewListCapDouble[any](int64(len(l.elements)))
 				for index, element := range l.elements {
 					argList[0] = element
 					argList[1] = int64(index)
@@ -191,7 +195,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCap[any](int64(len(l.elements)))
+			newList := list.NewListCapDouble[any](int64(len(l.elements)))
 			for _, element := range l.elements {
 				newList.Add(element)
 			}
@@ -254,7 +258,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 				if rangeErr != nil {
 					return nil, loxerror.RuntimeError(name, rangeErr.Error())
 				}
-				newList := list.NewListCap[any](int64(len(l.elements)))
+				newList := list.NewListCapDouble[any](int64(len(l.elements)))
 				for oldIndex, oldElement := range l.elements {
 					if int64(oldIndex) != newIndex {
 						newList.Add(oldElement)

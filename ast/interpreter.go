@@ -524,7 +524,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if left <= 0 || len(right.elements) == 0 {
 				return EmptyLoxBuffer(), nil
 			}
-			newBuffer := EmptyLoxBufferCap(int64(len(right.elements)) * left)
+			newBuffer := EmptyLoxBufferCapDouble(int64(len(right.elements)) * left)
 			for i := int64(0); i < left; i++ {
 				for _, element := range right.elements {
 					addErr := newBuffer.add(element)
@@ -563,7 +563,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if left <= 0 || len(right.elements) == 0 {
 				return EmptyLoxList(), nil
 			}
-			newList := list.NewListCap[any](int64(len(right.elements)) * left)
+			newList := list.NewListCapDouble[any](int64(len(right.elements)) * left)
 			for i := int64(0); i < left; i++ {
 				for _, element := range right.elements {
 					newList.Add(element)
@@ -1081,7 +1081,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return right.NewLoxString(left.String() + right.str), nil
 			case *LoxBuffer:
 				capacity := int64(len(left.elements)) + int64(len(right.elements))
-				newBuffer := EmptyLoxBufferCap(capacity)
+				newBuffer := EmptyLoxBufferCapDouble(capacity)
 				for _, element := range left.elements {
 					addErr := newBuffer.add(element)
 					if addErr != nil {
@@ -1101,7 +1101,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				if right <= 0 || len(left.elements) == 0 {
 					return EmptyLoxBuffer(), nil
 				}
-				newBuffer := EmptyLoxBufferCap(int64(len(left.elements)) * right)
+				newBuffer := EmptyLoxBufferCapDouble(int64(len(left.elements)) * right)
 				for i := int64(0); i < right; i++ {
 					for _, element := range left.elements {
 						addErr := newBuffer.add(element)
@@ -1151,7 +1151,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return right.NewLoxString(left.String() + right.str), nil
 			case *LoxList:
 				capacity := int64(len(left.elements)) + int64(len(right.elements))
-				newList := list.NewListCap[any](capacity)
+				newList := list.NewListCapDouble[any](capacity)
 				for _, element := range left.elements {
 					newList.Add(element)
 				}
@@ -1165,7 +1165,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				if right <= 0 || len(left.elements) == 0 {
 					return EmptyLoxList(), nil
 				}
-				newList := list.NewListCap[any](int64(len(left.elements)) * right)
+				newList := list.NewListCapDouble[any](int64(len(left.elements)) * right)
 				for i := int64(0); i < right; i++ {
 					for _, element := range left.elements {
 						newList.Add(element)
@@ -1248,7 +1248,7 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 	if calleeErr != nil {
 		return nil, calleeErr
 	}
-	arguments := list.NewListCap[any](int64(len(expr.Arguments)))
+	arguments := list.NewListCapDouble[any](int64(len(expr.Arguments)))
 	for _, argument := range expr.Arguments {
 		result, resultErr := i.evaluate(argument)
 		if resultErr != nil {
@@ -1913,7 +1913,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if capacity < 0 {
 				capacity = 0
 			}
-			listSlice := list.NewListCap[any](capacity)
+			listSlice := list.NewListCapDouble[any](capacity)
 			for i := indexValInt; i < indexEndValInt; i++ {
 				listSlice.Add(indexElement.elements[i])
 			}
@@ -1974,7 +1974,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if capacity < 0 {
 				capacity = 0
 			}
-			listSlice := list.NewListCap[any](capacity)
+			listSlice := list.NewListCapDouble[any](capacity)
 			for i := indexValInt; i < indexEndValInt; i++ {
 				listSlice.Add(indexElement.elements[i])
 			}
@@ -2040,7 +2040,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 }
 
 func (i *Interpreter) visitListExpr(expr List) (any, error) {
-	elements := list.NewListCap[any](int64(len(expr.Elements)))
+	elements := list.NewListCapDouble[any](int64(len(expr.Elements)))
 	for _, element := range expr.Elements {
 		evalResult, evalErr := i.evaluate(element)
 		if evalErr != nil {

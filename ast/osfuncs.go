@@ -27,7 +27,7 @@ import (
 
 func cmdArgsToLoxList() *LoxList {
 	args := flag.Args()
-	argvList := list.NewListCap[any](int64(len(args)) + 1)
+	argvList := list.NewListCapDouble[any](int64(len(args)) + 1)
 	execPath, err := os.Executable()
 	if err == nil {
 		argvList.Add(NewLoxStringQuote(execPath))
@@ -831,7 +831,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
-		groupsList := list.NewListCap[any](int64(len(groups)))
+		groupsList := list.NewListCapDouble[any](int64(len(groups)))
 		for _, group := range groups {
 			groupsList.Add(int64(group))
 		}
@@ -1167,7 +1167,7 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 
-		buffer := EmptyLoxBufferCap(int64(len(bytes)))
+		buffer := EmptyLoxBufferCapDouble(int64(len(bytes)))
 		for _, element := range bytes {
 			bufErr := buffer.add(int64(element))
 			if bufErr != nil {
@@ -1192,7 +1192,7 @@ func (i *Interpreter) defineOSFuncs() {
 			if err != nil {
 				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
-			loxBuffer := EmptyLoxBufferCap(int64(len(bytes)))
+			loxBuffer := EmptyLoxBufferCapDouble(int64(len(bytes)))
 			for _, element := range bytes {
 				addErr := loxBuffer.add(int64(element))
 				if addErr != nil {
@@ -1535,7 +1535,7 @@ func (i *Interpreter) defineOSFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Argument to 'os.urandom' cannot be negative.")
 			}
-			buffer := EmptyLoxBufferCap(numBytes)
+			buffer := EmptyLoxBufferCapDouble(numBytes)
 			for i := int64(0); i < numBytes; i++ {
 				numBig, numErr := crand.Int(crand.Reader, big.NewInt(256))
 				if numErr != nil {
@@ -1575,7 +1575,7 @@ func (i *Interpreter) defineOSFuncs() {
 
 		fd := args[0].(int64)
 		buffer := args[1].(*LoxBuffer)
-		bytes := list.NewListCap[byte](int64(len(buffer.elements)))
+		bytes := list.NewListCapDouble[byte](int64(len(buffer.elements)))
 		for _, element := range buffer.elements {
 			bytes.Add(byte(element.(int64)))
 		}
