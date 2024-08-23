@@ -57,7 +57,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			"Argument to 'bin' must be an integer.")
 	})
 	nativeFunc("Buffer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
-		buffer := EmptyLoxBuffer()
+		buffer := EmptyLoxBufferCap(int64(len(args)))
 		for _, element := range args {
 			addErr := buffer.add(element)
 			if addErr != nil {

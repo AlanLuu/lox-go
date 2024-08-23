@@ -311,7 +311,11 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		})
 	case "toBuffer":
 		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			buffer := EmptyLoxBuffer()
+			capacity := l.Length()
+			if capacity > 256 {
+				capacity = 256
+			}
+			buffer := EmptyLoxBufferCap(capacity)
 			it := l.Iterator()
 			for it.HasNext() {
 				addErr := buffer.add(it.Next())

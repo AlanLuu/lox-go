@@ -241,7 +241,7 @@ func (i *Interpreter) defineRandFuncs() {
 					return nil, loxerror.RuntimeError(in.callToken,
 						"Argument to 'Rand().randBytes' cannot be negative.")
 				}
-				buffer := EmptyLoxBuffer()
+				buffer := EmptyLoxBufferCap(numBytes)
 				if randStruct.rand != nil {
 					for i := int64(0); i < numBytes; i++ {
 						addErr := buffer.add(randStruct.rand.Int63n(256))
