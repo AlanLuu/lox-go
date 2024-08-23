@@ -731,7 +731,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "toBuffer":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			buffer := EmptyLoxBuffer()
+			buffer := EmptyLoxBufferCap(int64(len(l.elements)))
 			for _, element := range l.elements {
 				addErr := buffer.add(element)
 				if addErr != nil {

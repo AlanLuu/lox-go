@@ -149,7 +149,7 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 		if _, ok := l.properties["text"]; !ok {
 			l.properties["text"] = NewLoxStringQuote(string(bytes))
 		}
-		buffer := EmptyLoxBuffer()
+		buffer := EmptyLoxBufferCap(int64(len(bytes)))
 		for _, element := range bytes {
 			addErr := buffer.add(int64(element))
 			if addErr != nil {
@@ -165,7 +165,7 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 			return nil, loxerror.RuntimeError(name, err.Error())
 		}
 		if _, ok := l.properties["raw"]; !ok {
-			buffer := EmptyLoxBuffer()
+			buffer := EmptyLoxBufferCap(int64(len(bytes)))
 			for _, element := range bytes {
 				addErr := buffer.add(int64(element))
 				if addErr != nil {

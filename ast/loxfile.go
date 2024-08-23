@@ -279,23 +279,25 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				}
 			}
 			if l.isBinary {
-				loxBuffer := EmptyLoxBuffer()
 				if argsLen == 0 {
+					loxBuffer := EmptyLoxBufferCap(int64(len(buffer)))
 					for _, element := range buffer {
 						addErr := loxBuffer.add(int64(element))
 						if addErr != nil {
 							return nil, loxerror.RuntimeError(name, addErr.Error())
 						}
 					}
+					return loxBuffer, nil
 				} else {
+					loxBuffer := EmptyLoxBufferCap(int64(bufferSize))
 					for i := 0; i < bufferSize; i++ {
 						addErr := loxBuffer.add(int64(buffer[i]))
 						if addErr != nil {
 							return nil, loxerror.RuntimeError(name, addErr.Error())
 						}
 					}
+					return loxBuffer, nil
 				}
-				return loxBuffer, nil
 			}
 			return NewLoxStringQuote(string(buffer)), nil
 		})
