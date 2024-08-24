@@ -43,7 +43,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
     - `NaN` literals are supported using the identifier "NaN"
 - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
-- Besides `false` and `nil`, the values `0`, `0.0`, `NaN`, `""`, `[]`, `{}`, `Set()`, and `Buffer()` are also falsy values
+- Besides `false` and `nil`, the values `0`, `0.0`, `0n`, `0.0n`, `NaN`, `""`, `[]`, `{}`, `Set()`, and `Buffer()` are also falsy values
+- The `&&` and `||` operators are supported for the logical AND and OR operations respectively
 - Binary, hexadecimal, and octal integer literals are supported in this implementation of Lox
     - Binary literals start with the prefix `0b`
     - Hexadecimal literals start with the prefix `0x`

@@ -352,9 +352,17 @@ func (sc *Scanner) scanToken() error {
 	case '?':
 		addToken(token.QUESTION)
 	case '&':
-		addToken(token.AMPERSAND)
+		if sc.match('&') { //handle "&&"
+			addToken(token.AND)
+		} else {
+			addToken(token.AMPERSAND)
+		}
 	case '|':
-		addToken(token.PIPE)
+		if sc.match('|') { //handle "||"
+			addToken(token.OR)
+		} else {
+			addToken(token.PIPE)
+		}
 	case '^':
 		addToken(token.CARET)
 	case '-':
