@@ -66,6 +66,17 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return buffer, nil
 	})
+	nativeFunc("BufferCap", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if capacity, ok := args[0].(int64); ok {
+			if capacity < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'BufferCap' cannot be negative.")
+			}
+			return EmptyLoxBufferCap(capacity), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BufferCap' must be an integer.")
+	})
 	nativeFunc("BufferZero", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if size, ok := args[0].(int64); ok {
 			if size < 0 {
@@ -200,6 +211,17 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'List' must be an integer.")
+	})
+	nativeFunc("ListCap", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if capacity, ok := args[0].(int64); ok {
+			if capacity < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'ListCap' cannot be negative.")
+			}
+			return NewLoxList(list.NewListCap[any](capacity)), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'ListCap' must be an integer.")
 	})
 	nativeFunc("ListZero", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if size, ok := args[0].(int64); ok {

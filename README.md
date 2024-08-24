@@ -381,6 +381,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - A few other native functions are defined:
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
+    - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
     - `BufferZero(length)`, which returns a new buffer of the specified length, where each initial element is `0`
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
@@ -396,6 +397,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
+    - `ListCap(capacity)`, which returns a new list of the specified capacity, which is the number of elements the list can store before having to internally resize the underlying array that stores the list elements when a new element is added
     - `ListZero(length)`, which returns a new list of the specified length, where each initial element is `0`
     - `oct(num)`, which converts the specified integer `num` into its octal representation as a string prefixed with "0o"
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
