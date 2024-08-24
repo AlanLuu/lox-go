@@ -329,6 +329,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "first":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.elements.IsEmpty() {
+				return nil, loxerror.RuntimeError(name,
+					"Cannot call 'list.first' on empty list.")
+			}
+			return l.elements[0], nil
+		})
 	case "flatten":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newList := list.NewList[any]()
@@ -418,6 +426,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 				return NewLoxString(builder.String(), quote), nil
 			}
 			return argMustBeType("string")
+		})
+	case "last":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.elements.IsEmpty() {
+				return nil, loxerror.RuntimeError(name,
+					"Cannot call 'list.last' on empty list.")
+			}
+			return l.elements[len(l.elements)-1], nil
 		})
 	case "lastIndex":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {

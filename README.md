@@ -242,12 +242,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.filter(callback)`, which returns a new list containing only the elements from the original list where the callback function returns a truthy value for them
         - `list.find(callback)`, which returns the first element in the list where the callback function returns `true`, or `nil` if the callback returns `false` for every element in the list
         - `list.findIndex(callback)`, which returns the index of the first element in the list where the callback function returns `true`, or `-1` if the callback returns `false` for every element in the list
+        - `list.first()`, which returns the first element in the list. If the list is empty, a runtime error is thrown
         - `list.flatten()`, which returns a new list where all elements contained within nested lists are flattened into a list without any nested lists
         - `list.forEach(callback)`, which executes the callback function for each element in the list
         - `list.index(element)`, which returns the index value of the element's position in the list, or `-1` if the element is not in the list
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.isEmpty()`, which returns `true` if the list contains no elements and `false` otherwise
         - `list.join(separator)`, which concatenates all elements in the list into a string where each element is separated by a separator string
+        - `list.last()`, which returns the last element in the list. If the list is empty, a runtime error is thrown
         - `list.lastIndex(element)`, which returns the index value of the last occurrence of the element in the list, or `-1` if the element is not in the list
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
