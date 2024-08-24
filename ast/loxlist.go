@@ -67,6 +67,10 @@ func EmptyLoxList() *LoxList {
 	return NewLoxList(list.NewList[any]())
 }
 
+func (l *LoxList) Capacity() int64 {
+	return int64(cap(l.elements))
+}
+
 func (l *LoxList) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxList:

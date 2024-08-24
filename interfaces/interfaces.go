@@ -1,5 +1,9 @@
 package interfaces
 
+type Capacity interface {
+	Capacity() int64
+}
+
 type Equatable interface {
 	Equals(obj any) bool
 }

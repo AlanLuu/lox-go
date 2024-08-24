@@ -92,8 +92,12 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'BufferZero' must be an integer.")
 	})
-	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-		return float64(time.Now().UnixMilli()) / 1000, nil
+	nativeFunc("cap", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Capacity); ok {
+			return element.Capacity(), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Cannot get capacity of type '%v'.", getType(args[0])))
 	})
 	nativeFunc("chr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if codePointNum, ok := args[0].(int64); ok {
@@ -106,6 +110,9 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'chr' must be an integer.")
+	})
+	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return float64(time.Now().UnixMilli()) / 1000, nil
 	})
 	nativeFunc("eval", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if codeStr, ok := args[0].(*LoxString); ok {

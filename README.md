@@ -383,6 +383,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
     - `BufferZero(length)`, which returns a new buffer of the specified length, where each initial element is `0`
+    - `cap(item)`, which returns the capacity of a buffer or list, which is the number of elements the buffer or list can store before having to internally resize the underlying array that stores the buffer or list elements when a new element is added
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
