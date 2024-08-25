@@ -2,6 +2,11 @@ package bigint
 
 import "math/big"
 
+var (
+	Zero = big.NewInt(0)
+	One  = big.NewInt(1)
+)
+
 var BoolMap = map[bool]*big.Int{
 	true:  big.NewInt(1),
 	false: big.NewInt(0),

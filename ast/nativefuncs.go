@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -49,6 +51,66 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return NewLoxString(builder.String(), '\''), nil
 	}
+	nativeFunc("bigrange", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 1:
+			switch stop := args[0].(type) {
+			case int64:
+				return NewLoxBigRangeStop(big.NewInt(stop)), nil
+			case *big.Int:
+				return NewLoxBigRangeStop(stop), nil
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'bigrange' must be an integer or bigint.")
+			}
+		case 2, 3:
+			var start, stop, step *big.Int
+			switch arg1 := args[0].(type) {
+			case int64:
+				start = big.NewInt(arg1)
+			case *big.Int:
+				start = arg1
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'bigrange' must be an integer or bigint.")
+			}
+			switch arg2 := args[1].(type) {
+			case int64:
+				stop = big.NewInt(arg2)
+			case *big.Int:
+				stop = arg2
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'bigrange' must be an integer or bigint.")
+			}
+			if argsLen == 3 {
+				switch arg3 := args[2].(type) {
+				case int64:
+					if arg3 == 0 {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Third argument to 'bigrange' cannot be 0.")
+					}
+					step = big.NewInt(arg3)
+				case *big.Int:
+					if arg3.Cmp(bigint.Zero) == 0 {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Third argument to 'bigrange' cannot be 0n.")
+					}
+					step = arg3
+				default:
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Third argument to 'bigrange' must be an integer or bigint.")
+				}
+			} else {
+				step = big.NewInt(1)
+			}
+			return NewLoxBigRange(start, stop, step), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1, 2, or 3 arguments but got %v.", argsLen))
+		}
+	})
 	nativeFunc("bin", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if num, ok := args[0].(int64); ok {
 			return numToBaseStr(num, "0b", 2)
