@@ -327,7 +327,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return rangeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			nums := list.NewList[any]()
+			nums := list.NewListCapDouble[any](l.Length())
 			it := l.Iterator()
 			for it.HasNext() {
 				nums.Add(it.Next())
