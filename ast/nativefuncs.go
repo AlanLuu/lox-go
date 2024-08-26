@@ -70,7 +70,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			case int64:
 				start = big.NewInt(arg1)
 			case *big.Int:
-				start = arg1
+				start = new(big.Int).Set(arg1)
 			default:
 				return nil, loxerror.RuntimeError(in.callToken,
 					"First argument to 'bigrange' must be an integer or bigint.")
@@ -79,7 +79,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			case int64:
 				stop = big.NewInt(arg2)
 			case *big.Int:
-				stop = arg2
+				stop = new(big.Int).Set(arg2)
 			default:
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Second argument to 'bigrange' must be an integer or bigint.")
@@ -97,7 +97,7 @@ func (i *Interpreter) defineNativeFuncs() {
 						return nil, loxerror.RuntimeError(in.callToken,
 							"Third argument to 'bigrange' cannot be 0n.")
 					}
-					step = arg3
+					step = new(big.Int).Set(arg3)
 				default:
 					return nil, loxerror.RuntimeError(in.callToken,
 						"Third argument to 'bigrange' must be an integer or bigint.")

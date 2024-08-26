@@ -15,7 +15,7 @@ func BigRangeIndexMustBeWholeNum(index any) string {
 	return IndexMustBeWholeNum("Bigrange", index)
 }
 
-func BigRangeIndexOutOfRange(index int64) string {
+func BigRangeIndexOutOfRange(index *big.Int) string {
 	return fmt.Sprintf("Bigrange index %v out of range.", index)
 }
 
@@ -213,14 +213,6 @@ func (l *LoxBigRange) getRange(start *big.Int, stop *big.Int) *LoxBigRange {
 		newStop.Set(l.start)
 	}
 	return NewLoxBigRange(newStart, newStop, new(big.Int).Set(l.step))
-}
-
-func (l *LoxBigRange) getFromInt(index int64) *big.Int {
-	return l.get(big.NewInt(index))
-}
-
-func (l *LoxBigRange) getRangeFromInts(start int64, stop int64) *LoxBigRange {
-	return l.getRange(big.NewInt(start), big.NewInt(stop))
 }
 
 func (l *LoxBigRange) index(value *big.Int) *big.Int {

@@ -2037,45 +2037,70 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		}
 	case *LoxBigRange:
 		if expr.IsSlice {
-			rangeLength := indexElement.Length()
+			rangeLength := big.NewInt(indexElement.Length())
+			setIndexVal, setEndIndexVal := false, false
 			if indexVal == nil {
-				indexVal = int64(0)
+				setIndexVal = true
+				indexVal = big.NewInt(0)
 			}
 			if indexEndVal == nil {
+				setEndIndexVal = true
 				indexEndVal = rangeLength
 			}
-			if _, ok := indexVal.(int64); !ok {
-				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexVal))
+			var indexValInt, indexEndValInt *big.Int
+			switch indexVal := indexVal.(type) {
+			case int64:
+				indexValInt = big.NewInt(indexVal)
+			case *big.Int:
+				if setIndexVal {
+					indexValInt = indexVal
+				} else {
+					indexValInt = new(big.Int).Set(indexVal)
+				}
+			default:
+				return nil, loxerror.RuntimeError(expr.Bracket, BigRangeIndexMustBeWholeNum(indexVal))
 			}
-			if _, ok := indexEndVal.(int64); !ok {
-				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexEndVal))
+			switch indexEndVal := indexEndVal.(type) {
+			case int64:
+				indexEndValInt = big.NewInt(indexEndVal)
+			case *big.Int:
+				if setEndIndexVal {
+					indexEndValInt = indexEndVal
+				} else {
+					indexEndValInt = new(big.Int).Set(indexEndVal)
+				}
+			default:
+				return nil, loxerror.RuntimeError(expr.Bracket, BigRangeIndexMustBeWholeNum(indexVal))
 			}
-			indexValInt := indexVal.(int64)
-			indexEndValInt := indexEndVal.(int64)
-			if indexValInt < 0 {
-				indexValInt += rangeLength
+			if indexValInt.Cmp(bigint.Zero) < 0 {
+				indexValInt.Add(indexValInt, rangeLength)
 			}
-			if indexEndValInt < 0 {
-				indexEndValInt += rangeLength
+			if indexEndValInt.Cmp(bigint.Zero) < 0 {
+				indexEndValInt.Add(indexEndValInt, rangeLength)
 			}
-			if indexEndValInt > rangeLength {
+			if indexEndValInt.Cmp(rangeLength) > 0 {
 				indexEndValInt = rangeLength
 			}
-			return indexElement.getRangeFromInts(indexValInt, indexEndValInt), nil
+			return indexElement.getRange(indexValInt, indexEndValInt), nil
 		} else {
-			if _, ok := indexVal.(int64); !ok {
-				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexVal))
+			var indexValInt *big.Int
+			switch indexVal := indexVal.(type) {
+			case int64:
+				indexValInt = big.NewInt(indexVal)
+			case *big.Int:
+				indexValInt = new(big.Int).Set(indexVal)
+			default:
+				return nil, loxerror.RuntimeError(expr.Bracket, BigRangeIndexMustBeWholeNum(indexVal))
 			}
-			indexValInt := indexVal.(int64)
-			originalIndexValInt := indexValInt
-			rangeLength := indexElement.Length()
-			if indexValInt < 0 {
-				indexValInt += rangeLength
+			originalIndexValInt := new(big.Int).Set(indexValInt)
+			rangeLength := big.NewInt(indexElement.Length())
+			if indexValInt.Cmp(bigint.Zero) < 0 {
+				indexValInt.Add(indexValInt, rangeLength)
 			}
-			if indexValInt < 0 || indexValInt >= rangeLength {
-				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexOutOfRange(originalIndexValInt))
+			if indexValInt.Cmp(bigint.Zero) < 0 || indexValInt.Cmp(rangeLength) >= 0 {
+				return nil, loxerror.RuntimeError(expr.Bracket, BigRangeIndexOutOfRange(originalIndexValInt))
 			}
-			return indexElement.getFromInt(indexValInt), nil
+			return indexElement.get(indexValInt), nil
 		}
 	}
 	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into buffers, dictionaries, lists, and strings.")
