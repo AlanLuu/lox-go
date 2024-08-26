@@ -93,11 +93,77 @@ func (l *LoxBigRange) Get(name *token.Token) (any, error) {
 		}
 		return s, nil
 	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
+	}
+	argMustBeType := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'bigrange.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	argMustBeTypeAn := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'bigrange.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
+	case "all":
+		return bigRangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					argList[0] = it.Next()
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if !i.isTruthy(result) {
+						return false, nil
+					}
+					index++
+				}
+				return true, nil
+			}
+			return argMustBeType("function")
+		})
+	case "any":
+		return bigRangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var index int64 = 0
+				it := l.Iterator()
+				for it.HasNext() {
+					argList[0] = it.Next()
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return true, nil
+					}
+					index++
+				}
+				return false, nil
+			}
+			return argMustBeType("function")
+		})
 	case "contains":
 		return bigRangeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			switch arg := args[0].(type) {
