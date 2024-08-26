@@ -12,7 +12,8 @@ import (
 )
 
 func BigRangeIndexMustBeWholeNum(index any) string {
-	return IndexMustBeWholeNum("Bigrange", index)
+	msg := IndexMustBeWholeNum("Bigrange", index)
+	return msg[:len(msg)-1] + " or bigint."
 }
 
 func BigRangeIndexOutOfRange(index *big.Int) string {
