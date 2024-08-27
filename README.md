@@ -355,6 +355,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `range.toBuffer()`, which attempts to return a buffer with all generated integers from the range as buffer elements, throwing an error if an integer generated from the range is an invalid buffer value
         - `range.toList()`, which returns a list with all generated integers from the range as list elements
         - `range.toSet()`, which returns a set with all generated integers from the range as set elements
+- A bigrange type is supported in this implementation of Lox
+    - Bigranges are like ranges except their start, stop, and step values are bigints instead of integers
+    - They are created using the `bigrange` function, which takes the same integer arguments as `range` as well as bigint arguments
+    - They share the same methods as ranges
 - Enums are supported in this implementation of Lox
     ```js
     enum Token {
@@ -381,6 +385,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - If the specified import file doesn't exist or if the file exists but an error occurred while it was being executed, a runtime error is thrown
     - `import` statements can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.variable`
 - A few other native functions are defined:
+    - `bigrange(stop)`, which takes in an integer or bigint and returns a bigrange object with a start value of `0n`, a stop value of `stop`, and a step value of `1n`
+    - `bigrange(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers or bigints and returns a bigrange object with the specified parameters. If `step` is omitted, the resulting bigrange object will have a step value of `1n`
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
