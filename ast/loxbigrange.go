@@ -180,7 +180,7 @@ func (l *LoxBigRange) Get(name *token.Token) (any, error) {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				newList := list.NewList[any]()
+				newList := list.NewListCap[any](l.Length())
 				var index int64 = 0
 				it := l.Iterator()
 				for it.HasNext() {

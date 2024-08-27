@@ -112,7 +112,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				newList := list.NewList[any]()
+				newList := list.NewListCap[any](int64(len(l.elements)))
 				for index, element := range l.elements {
 					argList[0] = element
 					argList[1] = int64(index)
