@@ -24,16 +24,16 @@ func (i *Interpreter) defineMathFuncs() {
 	}
 	zeroArgFunc := func(name string, fun func() float64) {
 		mathFunc(name, 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return util.IntOrFloat(fun()), nil
+			return fun(), nil
 		})
 	}
 	oneArgFunc := func(name string, fun func(float64) float64) {
 		mathFunc(name, 1, func(in *Interpreter, args list.List[any]) (any, error) {
 			switch num := args[0].(type) {
 			case int64:
-				return util.IntOrFloat(fun(float64(num))), nil
+				return fun(float64(num)), nil
 			case float64:
-				return util.IntOrFloat(fun(num)), nil
+				return fun(num), nil
 			}
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Argument to 'Math.%v' must be an integer or float.", name))
@@ -45,18 +45,18 @@ func (i *Interpreter) defineMathFuncs() {
 			case int64:
 				switch num2 := args[1].(type) {
 				case int64:
-					return util.IntOrFloat(fun(float64(num1), float64(num2))), nil
+					return fun(float64(num1), float64(num2)), nil
 				case float64:
-					return util.IntOrFloat(fun(float64(num1), num2)), nil
+					return fun(float64(num1), num2), nil
 				}
 				return nil, loxerror.RuntimeError(in.callToken,
 					fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
 			case float64:
 				switch num2 := args[1].(type) {
 				case int64:
-					return util.IntOrFloat(fun(num1, float64(num2))), nil
+					return fun(num1, float64(num2)), nil
 				case float64:
-					return util.IntOrFloat(fun(num1, num2)), nil
+					return fun(num1, num2), nil
 				}
 				return nil, loxerror.RuntimeError(in.callToken,
 					fmt.Sprintf("Second argument to 'Math.%v' must be an integer or float.", name))
@@ -80,7 +80,6 @@ func (i *Interpreter) defineMathFuncs() {
 		"cos":   math.Cos,
 		"cosh":  math.Cosh,
 		"exp":   math.Exp,
-		"floor": math.Floor,
 		"log":   math.Log,
 		"log10": math.Log10,
 		"log1p": math.Log1p,
@@ -91,7 +90,6 @@ func (i *Interpreter) defineMathFuncs() {
 		"sqrt":  math.Sqrt,
 		"tan":   math.Tan,
 		"tanh":  math.Tanh,
-		"trunc": math.Trunc,
 	}
 	twoArgFuncs := map[string]func(float64, float64) float64{
 		"atan2": math.Atan2,
@@ -128,10 +126,20 @@ func (i *Interpreter) defineMathFuncs() {
 			}
 			return num, nil
 		case float64:
-			return util.IntOrFloat(math.Abs(num)), nil
+			return math.Abs(num), nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'Math.abs' must be an integer or float.")
+	})
+	mathFunc("floor", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch num := args[0].(type) {
+		case int64:
+			return num, nil
+		case float64:
+			return util.IntOrFloat(math.Floor(num)), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'Math.floor' must be an integer or float.")
 	})
 	mathFunc("max", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		fun := math.Max
@@ -145,15 +153,15 @@ func (i *Interpreter) defineMathFuncs() {
 				}
 				return num2, nil
 			case float64:
-				return util.IntOrFloat(fun(float64(num1), num2)), nil
+				return fun(float64(num1), num2), nil
 			}
 			return nil, loxerror.RuntimeError(in.callToken, secondArgMsg)
 		case float64:
 			switch num2 := args[1].(type) {
 			case int64:
-				return util.IntOrFloat(fun(num1, float64(num2))), nil
+				return fun(num1, float64(num2)), nil
 			case float64:
-				return util.IntOrFloat(fun(num1, num2)), nil
+				return fun(num1, num2), nil
 			}
 			return nil, loxerror.RuntimeError(in.callToken, secondArgMsg)
 		}
@@ -172,20 +180,30 @@ func (i *Interpreter) defineMathFuncs() {
 				}
 				return num2, nil
 			case float64:
-				return util.IntOrFloat(fun(float64(num1), num2)), nil
+				return fun(float64(num1), num2), nil
 			}
 			return nil, loxerror.RuntimeError(in.callToken, secondArgMsg)
 		case float64:
 			switch num2 := args[1].(type) {
 			case int64:
-				return util.IntOrFloat(fun(num1, float64(num2))), nil
+				return fun(num1, float64(num2)), nil
 			case float64:
-				return util.IntOrFloat(fun(num1, num2)), nil
+				return fun(num1, num2), nil
 			}
 			return nil, loxerror.RuntimeError(in.callToken, secondArgMsg)
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"First argument to 'Math.min' must be an integer or float.")
+	})
+	mathFunc("trunc", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch num := args[0].(type) {
+		case int64:
+			return num, nil
+		case float64:
+			return util.IntOrFloat(math.Trunc(num)), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'Math.trunc' must be an integer or float.")
 	})
 
 	i.globals.Define(className, mathClass)
