@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/AlanLuu/lox/list"
@@ -30,6 +31,8 @@ func (i *Interpreter) defineIntFuncs() {
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
+	intClass.classProperties["MAX"] = int64(math.MaxInt64)
+	intClass.classProperties["MIN"] = int64(math.MinInt64)
 	intFunc("parseInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			result, resultErr := strconv.ParseInt(loxStr.str, 0, 64)
