@@ -26,6 +26,11 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 
 # Differences from Lox
 - Concatenating a string with another data type will convert that type into a string and concatenate them together
+- Integers and floats are distinct types in this implementation of Lox
+    - Integers are signed 64-bit values and floats are double-precision floating-point values
+    - A binary operation on an integer and float converts the integer into a float before performing the specified operation
+    - The `/` operation on two integers converts both operands to floats before performing the division. If the result of the division can be represented as an integer, the final result is an integer, otherwise it is a float
+    - The `**` operation on two integers converts both operands to floats before performing the exponentiation. After the operation, the result of the exponentiation is converted into an integer, which is used as the final result
 - The following additional operations are supported in this implementation of Lox:
     - `a % b`, which returns the remainder of two numbers `a` and `b`
     - `a ** b`, which returns `a` raised to the power of `b`, where `a` and `b` are numbers
