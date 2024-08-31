@@ -191,7 +191,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Float.toInt(float)`, which converts the specified float argument into an integer and returns that integer
     - `Float.toString(float)`, which returns the string representation of the specified float argument
 - Various methods to work with bigints and bigfloats are defined under built-in classes called `bigint` and `bigfloat` respectively, which are documented [here](./doc/bignum.md)
-- Various fields that correspond to string constants are defined under a built-in class called `String`, where the following fields are defined:
+- Various methods and fields that correspond to string constants and utility operations are defined under a built-in class called `String`, where the following methods and fields are defined:
     - `String.digits`, which is the string `"0123456789"`
     - `String.hexDigits`, which is the string `"0123456789abcdefABCDEF"`
     - `String.hexDigitsLower`, which is the string `"0123456789abcdef"`
@@ -202,6 +202,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `String.punctuation`, which is the string ``"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"``
     - `String.qwertyLower`, which is the string `"qwertyuiopasdfghjklzxcvbnm"`
     - `String.qwertyUpper`, which is the string `"QWERTYUIOPASDFGHJKLZXCVBNM"`
+    - `String.toString(arg)`, which returns the string representation of the specified argument
     - `String.uppercase`, which is the string `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`
 - Methods to work with random number generation are defined under a built-in-class called `Rand`, which is documented [here](./doc/Rand.md)
 - Strings have some additional features associated with them:

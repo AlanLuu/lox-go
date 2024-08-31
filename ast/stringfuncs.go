@@ -1,5 +1,11 @@
 package ast
 
+import (
+	"fmt"
+
+	"github.com/AlanLuu/lox/list"
+)
+
 func defineStringFields(stringClass *LoxClass) {
 	digits := "0123456789"
 	stringClass.classProperties["digits"] = NewLoxString(digits, '\'')
@@ -38,8 +44,29 @@ func defineStringFields(stringClass *LoxClass) {
 func (i *Interpreter) defineStringFuncs() {
 	className := "String"
 	stringClass := NewLoxClass(className, nil, false)
+	stringFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
+		s := &struct{ ProtoLoxCallable }{}
+		s.arityMethod = func() int { return arity }
+		s.callMethod = method
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native String class fn %v at %p>", name, &s)
+		}
+		stringClass.classProperties[name] = s
+	}
 
 	defineStringFields(stringClass)
+	stringFunc("toString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var str string
+		switch arg := args[0].(type) {
+		case *LoxString:
+			str = arg.str
+		case fmt.Stringer:
+			str = arg.String()
+		default:
+			str = fmt.Sprint(arg)
+		}
+		return NewLoxStringQuote(str), nil
+	})
 
 	i.globals.Define(className, stringClass)
 }
