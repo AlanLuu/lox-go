@@ -169,7 +169,16 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hexstr.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a hexadecimal string and returns that encoded string
 - Various methods and fields to work with integers are defined under a built-in class called `Integer`, where the following methods and fields are defined:
     - `Integer.MAX`, which is the maximum value that an integer can store
+    - `Integer.MAX8`, which is the maximum value that an 8-bit integer can store
+    - `Integer.MAX16`, which is the maximum value that a 16-bit integer can store
+    - `Integer.MAX32`, which is the maximum value that a 32-bit integer can store
+    - `Integer.MAXU8`, which is the maximum value that an unsigned 8-bit integer can store
+    - `Integer.MAXU16`, which is the maximum value that an unsigned 16-bit integer can store
+    - `Integer.MAXU32`, which is the maximum value that an unsigned 32-bit integer can store
     - `Integer.MIN`, which is the minimum value that an integer can store
+    - `Integer.MIN8`, which is the minimum value that an 8-bit integer can store
+    - `Integer.MIN16`, which is the minimum value that a 16-bit integer can store
+    - `Integer.MIN32`, which is the minimum value that a 32-bit integer can store
     - `Integer.parseInt(string)`, which attempts to convert the specified string argument into an integer and returns that integer if successful, otherwise a runtime error is thrown
     - `Integer.toFloat(integer)`, which converts the specified integer argument into a float and returns that float
     - `Integer.toString(integer)`, which returns the string representation of the specified integer argument

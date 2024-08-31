@@ -32,7 +32,18 @@ func (i *Interpreter) defineIntFuncs() {
 	}
 
 	intClass.classProperties["MAX"] = int64(math.MaxInt64)
+	intClass.classProperties["MAX8"] = int64(math.MaxInt8)
+	intClass.classProperties["MAX16"] = int64(math.MaxInt16)
+	intClass.classProperties["MAX32"] = int64(math.MaxInt32)
+	intClass.classProperties["MAXU8"] = int64(math.MaxUint8)
+	intClass.classProperties["MAXU16"] = int64(math.MaxUint16)
+	intClass.classProperties["MAXU32"] = int64(math.MaxUint32)
+
 	intClass.classProperties["MIN"] = int64(math.MinInt64)
+	intClass.classProperties["MIN8"] = int64(math.MinInt8)
+	intClass.classProperties["MIN16"] = int64(math.MinInt16)
+	intClass.classProperties["MIN32"] = int64(math.MinInt32)
+
 	intFunc("parseInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			result, resultErr := strconv.ParseInt(loxStr.str, 0, 64)
