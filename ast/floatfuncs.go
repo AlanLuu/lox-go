@@ -29,7 +29,9 @@ func (i *Interpreter) defineFloatFuncs() {
 	}
 
 	floatClass.classProperties["MAX"] = float64(math.MaxFloat64)
+	floatClass.classProperties["MAX32"] = float64(math.MaxFloat32)
 	floatClass.classProperties["MIN"] = float64(math.SmallestNonzeroFloat64)
+	floatClass.classProperties["MIN32"] = float64(math.SmallestNonzeroFloat32)
 	floatFunc("parseFloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			result, resultErr := strconv.ParseFloat(loxStr.str, 64)
