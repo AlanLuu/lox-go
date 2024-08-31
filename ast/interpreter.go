@@ -56,6 +56,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineOSFuncs()       //Defined in osfuncs.go
 	interpreter.defineRandFuncs()     //Defined in randfuncs.go
 	interpreter.defineRegexFuncs()    //Defined in regexfuncs.go
+	interpreter.defineStringFuncs()   //Defined in stringfuncs.go
 	return interpreter
 }
 
