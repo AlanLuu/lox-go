@@ -1,7 +1,9 @@
 package ast
 
 import (
+	crand "crypto/rand"
 	"fmt"
+	"math/big"
 
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
@@ -9,6 +11,16 @@ import (
 )
 
 func defineIteratorFields(iteratorClass *LoxClass) {
+	urandom := InfiniteLoxIterator{}
+	urandom.nextMethod = func() any {
+		numBig, numErr := crand.Int(crand.Reader, big.NewInt(256))
+		if numErr != nil {
+			panic(numErr)
+		}
+		return numBig.Int64()
+	}
+	iteratorClass.classProperties["urandom"] = NewLoxIterator(urandom)
+
 	zeroes := InfiniteLoxIterator{}
 	zeroes.nextMethod = func() any {
 		return int64(0)
