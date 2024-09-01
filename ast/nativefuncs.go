@@ -259,6 +259,13 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return NewLoxString(userInput, '\''), nil
 	})
+	nativeFunc("iterator", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			return NewLoxIterator(element.Iterator()), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("len", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if element, ok := args[0].(interfaces.Length); ok {
 			return element.Length(), nil
