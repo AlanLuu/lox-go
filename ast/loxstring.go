@@ -31,7 +31,7 @@ func (l *LoxStringIterator) HasNext() bool {
 }
 
 func (l *LoxStringIterator) Next() any {
-	c := l.loxStr.str[l.index]
+	c := []rune(l.loxStr.str)[l.index]
 	l.index++
 	return NewLoxStringQuote(string(c))
 }
@@ -481,6 +481,20 @@ func (l *LoxString) Iterator() interfaces.Iterator {
 
 func (l *LoxString) Length() int64 {
 	return int64(utf8.RuneCountInString(l.str))
+}
+
+func (l *LoxString) ReverseIterator() interfaces.Iterator {
+	iterator := ProtoLoxIterator{}
+	index := l.Length() - 1
+	iterator.hasNextMethod = func() bool {
+		return index >= 0
+	}
+	iterator.nextMethod = func() any {
+		c := []rune(l.str)[index]
+		index--
+		return NewLoxStringQuote(string(c))
+	}
+	return iterator
 }
 
 func (l *LoxString) String() string {

@@ -804,6 +804,20 @@ func (l *LoxList) Iterator() interfaces.Iterator {
 	return &LoxListIterator{l, 0}
 }
 
+func (l *LoxList) ReverseIterator() interfaces.Iterator {
+	iterator := ProtoLoxIterator{}
+	index := len(l.elements) - 1
+	iterator.hasNextMethod = func() bool {
+		return index >= 0
+	}
+	iterator.nextMethod = func() any {
+		element := l.elements[index]
+		index--
+		return element
+	}
+	return iterator
+}
+
 func (l *LoxList) Length() int64 {
 	return int64(len(l.elements))
 }

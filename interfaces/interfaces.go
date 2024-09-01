@@ -21,6 +21,11 @@ type Length interface {
 	Length() int64
 }
 
+type ReverseIterable interface {
+	Iterable
+	ReverseIterator() Iterator
+}
+
 type Type interface {
 	Type() string
 }
