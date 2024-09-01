@@ -50,6 +50,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineHexFuncs()      //Defined in hexfuncs.go
 	interpreter.defineHTTPFuncs()     //Defined in httpfuncs.go
 	interpreter.defineIntFuncs()      //Defined in intfuncs.go
+	interpreter.defineIteratorFuncs() //Defined in iteratorfuncs.go
 	interpreter.defineJSONFuncs()     //Defined in jsonfuncs.go
 	interpreter.defineMathFuncs()     //Defined in mathfuncs.go
 	interpreter.defineNativeFuncs()   //Defined in nativefuncs.go

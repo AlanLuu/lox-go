@@ -9,6 +9,19 @@ import (
 	"github.com/AlanLuu/lox/token"
 )
 
+type ProtoLoxIterator struct {
+	hasNextMethod func() bool
+	nextMethod    func() any
+}
+
+func (l ProtoLoxIterator) HasNext() bool {
+	return l.hasNextMethod()
+}
+
+func (l ProtoLoxIterator) Next() any {
+	return l.nextMethod()
+}
+
 type LoxIterator struct {
 	iterator interfaces.Iterator
 	methods  map[string]*struct{ ProtoLoxCallable }
