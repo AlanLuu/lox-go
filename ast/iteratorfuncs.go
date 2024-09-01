@@ -53,6 +53,47 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return argMustBeType(in.callToken, "reversed", "buffer, list, or string")
 	})
+	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var element any
+		var repeatCount int64
+		var isInfinite bool
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			element = args[0]
+			if argsLen == 2 {
+				if _, ok := args[1].(int64); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Iterator.repeat' must be an integer.")
+				}
+				repeatCount = args[1].(int64)
+			} else {
+				isInfinite = true
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		iterator := ProtoLoxIterator{}
+		if isInfinite {
+			iterator.hasNextMethod = func() bool {
+				return true
+			}
+			iterator.nextMethod = func() any {
+				return element
+			}
+		} else {
+			var count int64 = 0
+			iterator.hasNextMethod = func() bool {
+				return count >= 0 && count < repeatCount
+			}
+			iterator.nextMethod = func() any {
+				count++
+				return element
+			}
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("zip", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argIterators := list.NewListCap[interfaces.Iterator](int64(len(args)))
 		for _, arg := range args {
