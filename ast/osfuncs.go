@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"math/big"
 	"os"
 	"os/exec"
 	"os/user"
@@ -16,6 +15,7 @@ import (
 	"syscall"
 
 	"github.com/AlanLuu/lox/ast/filemode"
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/syscalls"
@@ -1537,7 +1537,7 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			buffer := EmptyLoxBufferCapDouble(numBytes)
 			for i := int64(0); i < numBytes; i++ {
-				numBig, numErr := crand.Int(crand.Reader, big.NewInt(256))
+				numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
 				if numErr != nil {
 					return nil, loxerror.RuntimeError(in.callToken, numErr.Error())
 				}

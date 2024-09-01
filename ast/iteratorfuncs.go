@@ -3,8 +3,8 @@ package ast
 import (
 	crand "crypto/rand"
 	"fmt"
-	"math/big"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -13,7 +13,7 @@ import (
 func defineIteratorFields(iteratorClass *LoxClass) {
 	urandom := InfiniteLoxIterator{}
 	urandom.nextMethod = func() any {
-		numBig, numErr := crand.Int(crand.Reader, big.NewInt(256))
+		numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
 		if numErr != nil {
 			panic(numErr)
 		}

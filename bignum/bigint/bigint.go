@@ -3,8 +3,9 @@ package bigint
 import "math/big"
 
 var (
-	Zero = big.NewInt(0)
-	One  = big.NewInt(1)
+	Zero       = big.NewInt(0)
+	One        = big.NewInt(1)
+	TwoFiveSix = big.NewInt(256)
 )
 
 var BoolMap = map[bool]*big.Int{
