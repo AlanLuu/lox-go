@@ -22,6 +22,18 @@ func (l ProtoLoxIterator) Next() any {
 	return l.nextMethod()
 }
 
+type InfiniteLoxIterator struct {
+	nextMethod func() any
+}
+
+func (l InfiniteLoxIterator) HasNext() bool {
+	return true
+}
+
+func (l InfiniteLoxIterator) Next() any {
+	return l.nextMethod()
+}
+
 type LoxIterator struct {
 	iterator interfaces.Iterator
 	methods  map[string]*struct{ ProtoLoxCallable }

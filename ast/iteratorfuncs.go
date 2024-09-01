@@ -8,6 +8,14 @@ import (
 	"github.com/AlanLuu/lox/loxerror"
 )
 
+func defineIteratorFields(iteratorClass *LoxClass) {
+	zeroes := InfiniteLoxIterator{}
+	zeroes.nextMethod = func() any {
+		return int64(0)
+	}
+	iteratorClass.classProperties["zeroes"] = NewLoxIterator(zeroes)
+}
+
 func (i *Interpreter) defineIteratorFuncs() {
 	className := "Iterator"
 	iteratorClass := NewLoxClass(className, nil, false)
@@ -21,6 +29,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 		iteratorClass.classProperties[name] = s
 	}
 
+	defineIteratorFields(iteratorClass)
 	iteratorFunc("zip", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argIterators := list.NewListCap[interfaces.Iterator](int64(len(args)))
 		for _, arg := range args {
