@@ -79,7 +79,6 @@ func (i *Interpreter) defineCSVFuncs() {
 		if argsLen == 2 {
 			switch args[0].(type) {
 			case *LoxFile:
-			case *LoxString:
 			default:
 				return nil, loxerror.RuntimeError(in.callToken,
 					"First argument to 'csv.writer' must be a file.")
