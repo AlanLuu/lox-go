@@ -1,6 +1,9 @@
 # Iterator utility methods and fields
 
 The following methods and fields are defined in the built-in `Iterator` class:
+- `Iterator.countInt(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
+    - `start` and `step` can be integers or bigints
+    - If `step` is omitted, `1` is used as the step value
 - `Iterator.repeat(element, [count])`, which returns an iterator that returns `element` over and over again. If `count` is specified, the returned iterator will only return `element` for a total of `count` times
 - `Iterator.reversed(reverseIterable)`, which takes in an iterable that can be reversed and returns an iterator that produces elements from the iterable in reverse order
     - The following iterables can be reversed: buffers, lists, and strings

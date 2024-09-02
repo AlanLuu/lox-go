@@ -3,6 +3,7 @@ package ast
 import (
 	crand "crypto/rand"
 	"fmt"
+	"math/big"
 
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
@@ -47,11 +48,71 @@ func (i *Interpreter) defineIteratorFuncs() {
 	}
 
 	defineIteratorFields(iteratorClass)
-	iteratorFunc("reversed", 1, func(in *Interpreter, args list.List[any]) (any, error) {
-		if element, ok := args[0].(interfaces.ReverseIterable); ok {
-			return NewLoxIterator(element.ReverseIterator()), nil
+	iteratorFunc("countInt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var start, step any
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			switch args[0].(type) {
+			case int64:
+			case *big.Int:
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'Iterator.countInt' must be an integer or bigint.")
+			}
+			start = args[0]
+			if argsLen == 2 {
+				switch args[1].(type) {
+				case int64:
+				case *big.Int:
+				default:
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Iterator.countInt' must be an integer or bigint.")
+				}
+				step = args[1]
+			} else {
+				step = int64(1)
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
-		return argMustBeType(in.callToken, "reversed", "buffer, list, or string")
+		iterator := InfiniteLoxIterator{}
+		switch start := start.(type) {
+		case int64:
+			switch step := step.(type) {
+			case int64:
+				iterator.nextMethod = func() any {
+					num := start
+					start += step
+					return num
+				}
+			case *big.Int:
+				iterator.nextMethod = func() any {
+					num := start
+					start += step.Int64()
+					return num
+				}
+			}
+		case *big.Int:
+			bigIntStart := new(big.Int).Set(start)
+			switch step := step.(type) {
+			case int64:
+				bigIntStep := big.NewInt(step)
+				iterator.nextMethod = func() any {
+					num := new(big.Int).Set(bigIntStart)
+					bigIntStart.Add(bigIntStart, bigIntStep)
+					return num
+				}
+			case *big.Int:
+				iterator.nextMethod = func() any {
+					num := new(big.Int).Set(bigIntStart)
+					bigIntStart.Add(bigIntStart, step)
+					return num
+				}
+			}
+		}
+		return NewLoxIterator(iterator), nil
 	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any
@@ -93,6 +154,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			}
 		}
 		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("reversed", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.ReverseIterable); ok {
+			return NewLoxIterator(element.ReverseIterator()), nil
+		}
+		return argMustBeType(in.callToken, "reversed", "buffer, list, or string")
 	})
 	iteratorFunc("zip", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argIterators := list.NewListCap[interfaces.Iterator](int64(len(args)))
