@@ -48,6 +48,37 @@ func (i *Interpreter) defineIteratorFuncs() {
 	}
 
 	defineIteratorFields(iteratorClass)
+	iteratorFunc("batched", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.batched' is not iterable.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.batched' must be an integer.")
+		}
+		length := args[1].(int64)
+		if length <= 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.batched' must be at least 1.")
+		}
+		iterableIterator := args[0].(interfaces.Iterable).Iterator()
+		iterator := ProtoIterator{}
+		iterator.hasNextMethod = func() bool {
+			return iterableIterator.HasNext()
+		}
+		iterator.nextMethod = func() any {
+			elements := list.NewListCap[any](length)
+			for i := int64(0); i < length; i++ {
+				if !iterableIterator.HasNext() {
+					break
+				}
+				elements.Add(iterableIterator.Next())
+			}
+			return NewLoxList(elements)
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("chain", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if len(args) == 0 {
 			return EmptyLoxIterator(), nil

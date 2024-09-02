@@ -1,6 +1,21 @@
 # Iterator utility methods and fields
 
 The following methods and fields are defined in the built-in `Iterator` class:
+- `Iterator.batched(iterable, length)`, which returns an iterator that produces lists of elements from the iterable of the specified length, which is an integer
+    ```js
+    var list = [1, 2, 3, 4, 5, 6];
+    var iterator1 = Iterator.batched(list, 1);
+    var iterator2 = Iterator.batched(list, 2);
+    var iterator3 = Iterator.batched(list, 4);
+    var iterator4 = Iterator.batched(list, 6);
+    var iterator5 = Iterator.batched(list, 8);
+    print iterator1.toList(); //[[1], [2], [3], [4], [5], [6]]
+    print iterator2.toList(); //[[1, 2], [3, 4], [5, 6]]
+    print iterator3.toList(); //[[1, 2, 3, 4], [5, 6]]
+    print iterator4.toList(); //[[1, 2, 3, 4, 5, 6]]
+    print iterator5.toList(); //[[1, 2, 3, 4, 5, 6]]
+    ```
+    - The value of `length` must be at least `1` or else a runtime error is thrown
 - `Iterator.chain(iterables)`, which takes a variable amount of iterables as arguments and returns an iterator that produces elements from the first iterable until there are no more elements in that iterable, then moves on to producing elements from the next iterable, until all iterables are out of elements
 - `Iterator.countInt(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
     - `start` and `step` can be integers or bigints
