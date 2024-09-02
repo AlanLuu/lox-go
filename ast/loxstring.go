@@ -484,7 +484,7 @@ func (l *LoxString) Length() int64 {
 }
 
 func (l *LoxString) ReverseIterator() interfaces.Iterator {
-	iterator := ProtoLoxIterator{}
+	iterator := ProtoIterator{}
 	index := l.Length() - 1
 	iterator.hasNextMethod = func() bool {
 		return index >= 0

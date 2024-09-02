@@ -9,28 +9,28 @@ import (
 	"github.com/AlanLuu/lox/token"
 )
 
-type ProtoLoxIterator struct {
+type ProtoIterator struct {
 	hasNextMethod func() bool
 	nextMethod    func() any
 }
 
-func (l ProtoLoxIterator) HasNext() bool {
+func (l ProtoIterator) HasNext() bool {
 	return l.hasNextMethod()
 }
 
-func (l ProtoLoxIterator) Next() any {
+func (l ProtoIterator) Next() any {
 	return l.nextMethod()
 }
 
-type InfiniteLoxIterator struct {
+type InfiniteIterator struct {
 	nextMethod func() any
 }
 
-func (l InfiniteLoxIterator) HasNext() bool {
+func (l InfiniteIterator) HasNext() bool {
 	return true
 }
 
-func (l InfiniteLoxIterator) Next() any {
+func (l InfiniteIterator) Next() any {
 	return l.nextMethod()
 }
 

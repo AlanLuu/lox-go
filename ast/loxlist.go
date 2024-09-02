@@ -805,7 +805,7 @@ func (l *LoxList) Iterator() interfaces.Iterator {
 }
 
 func (l *LoxList) ReverseIterator() interfaces.Iterator {
-	iterator := ProtoLoxIterator{}
+	iterator := ProtoIterator{}
 	index := len(l.elements) - 1
 	iterator.hasNextMethod = func() bool {
 		return index >= 0

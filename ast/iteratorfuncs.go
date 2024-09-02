@@ -13,7 +13,7 @@ import (
 )
 
 func defineIteratorFields(iteratorClass *LoxClass) {
-	urandom := InfiniteLoxIterator{}
+	urandom := InfiniteIterator{}
 	urandom.nextMethod = func() any {
 		numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
 		if numErr != nil {
@@ -23,7 +23,7 @@ func defineIteratorFields(iteratorClass *LoxClass) {
 	}
 	iteratorClass.classProperties["urandom"] = NewLoxIterator(urandom)
 
-	zeroes := InfiniteLoxIterator{}
+	zeroes := InfiniteIterator{}
 	zeroes.nextMethod = func() any {
 		return int64(0)
 	}
@@ -62,7 +62,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 					"All arguments to 'Iterator.chain' must be iterables.")
 			}
 		}
-		iterator := ProtoLoxIterator{}
+		iterator := ProtoIterator{}
 		iteratorIndex := 0
 		iterator.hasNextMethod = func() bool {
 			if !argIterators[iteratorIndex].HasNext() {
@@ -110,7 +110,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
-		iterator := InfiniteLoxIterator{}
+		iterator := InfiniteIterator{}
 		switch start := start.(type) {
 		case int64:
 			switch step := step.(type) {
@@ -152,7 +152,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			elements := list.NewList[any]()
 			it := iterable.Iterator()
 			atLeastOne := false
-			newIterator := ProtoLoxIterator{}
+			newIterator := ProtoIterator{}
 			newIterator.hasNextMethod = func() bool {
 				if !atLeastOne && it.HasNext() {
 					atLeastOne = true
@@ -201,7 +201,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
-		iterator := ProtoLoxIterator{}
+		iterator := ProtoIterator{}
 		if isInfinite {
 			iterator.hasNextMethod = func() bool {
 				return true
@@ -241,7 +241,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 					"All arguments to 'Iterator.zip' must be iterables.")
 			}
 		}
-		iterator := ProtoLoxIterator{}
+		iterator := ProtoIterator{}
 		iterator.hasNextMethod = func() bool {
 			for _, argIterator := range argIterators {
 				if !argIterator.HasNext() {
