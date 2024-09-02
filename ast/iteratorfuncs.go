@@ -114,6 +114,35 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterator), nil
 	})
+	iteratorFunc("cycle", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			elements := list.NewList[any]()
+			it := iterable.Iterator()
+			atLeastOne := false
+			newIterator := ProtoLoxIterator{}
+			newIterator.hasNextMethod = func() bool {
+				if !atLeastOne && it.HasNext() {
+					atLeastOne = true
+				}
+				return atLeastOne
+			}
+			elementsIndex := 0
+			newIterator.nextMethod = func() any {
+				var next any
+				if it.HasNext() {
+					next = it.Next()
+					elements.Add(next)
+				} else {
+					next = elements[elementsIndex]
+					elementsIndex = (elementsIndex + 1) % len(elements)
+				}
+				return next
+			}
+			return NewLoxIterator(newIterator), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any
 		var repeatCount *big.Int
