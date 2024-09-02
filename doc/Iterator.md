@@ -1,6 +1,7 @@
 # Iterator utility methods and fields
 
 The following methods and fields are defined in the built-in `Iterator` class:
+- `Iterator.chain(iterables)`, which takes a variable amount of iterables as arguments and returns an iterator that produces elements from the first iterable until there are no more elements in that iterable, then moves on to producing elements from the next iterable, until all iterables are out of elements
 - `Iterator.countInt(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
     - `start` and `step` can be integers or bigints
     - If `step` is omitted, `1` is used as the step value

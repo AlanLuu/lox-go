@@ -48,6 +48,39 @@ func (i *Interpreter) defineIteratorFuncs() {
 	}
 
 	defineIteratorFields(iteratorClass)
+	iteratorFunc("chain", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if len(args) == 0 {
+			return EmptyLoxIterator(), nil
+		}
+		argIterators := list.NewListCap[interfaces.Iterator](int64(len(args)))
+		for _, arg := range args {
+			switch arg := arg.(type) {
+			case interfaces.Iterable:
+				argIterators.Add(arg.Iterator())
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"All arguments to 'Iterator.chain' must be iterables.")
+			}
+		}
+		iterator := ProtoLoxIterator{}
+		iteratorIndex := 0
+		iterator.hasNextMethod = func() bool {
+			if !argIterators[iteratorIndex].HasNext() {
+				for i := iteratorIndex + 1; i < len(argIterators); i++ {
+					if argIterators[i].HasNext() {
+						iteratorIndex = i
+						return true
+					}
+				}
+				return false
+			}
+			return true
+		}
+		iterator.nextMethod = func() any {
+			return argIterators[iteratorIndex].Next()
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("countInt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var start, step any
 		argsLen := len(args)
@@ -195,6 +228,9 @@ func (i *Interpreter) defineIteratorFuncs() {
 		return argMustBeType(in.callToken, "reversed", "buffer, list, or string")
 	})
 	iteratorFunc("zip", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if len(args) == 0 {
+			return EmptyLoxIterator(), nil
+		}
 		argIterators := list.NewListCap[interfaces.Iterator](int64(len(args)))
 		for _, arg := range args {
 			switch arg := arg.(type) {
@@ -207,9 +243,6 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		iterator := ProtoLoxIterator{}
 		iterator.hasNextMethod = func() bool {
-			if len(argIterators) == 0 {
-				return false
-			}
 			for _, argIterator := range argIterators {
 				if !argIterator.HasNext() {
 					return false

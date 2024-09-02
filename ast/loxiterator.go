@@ -34,6 +34,16 @@ func (l InfiniteLoxIterator) Next() any {
 	return l.nextMethod()
 }
 
+type EmptyIterator struct{}
+
+func (l EmptyIterator) HasNext() bool {
+	return false
+}
+
+func (l EmptyIterator) Next() any {
+	return nil
+}
+
 type LoxIterator struct {
 	iterator interfaces.Iterator
 	methods  map[string]*struct{ ProtoLoxCallable }
@@ -44,6 +54,10 @@ func NewLoxIterator(iterator interfaces.Iterator) *LoxIterator {
 		iterator: iterator,
 		methods:  make(map[string]*struct{ ProtoLoxCallable }),
 	}
+}
+
+func EmptyLoxIterator() *LoxIterator {
+	return NewLoxIterator(EmptyIterator{})
 }
 
 func (l *LoxIterator) Get(name *token.Token) (any, error) {
