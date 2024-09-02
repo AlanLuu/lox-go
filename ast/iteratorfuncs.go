@@ -116,18 +116,22 @@ func (i *Interpreter) defineIteratorFuncs() {
 	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any
-		var repeatCount int64
+		var repeatCount *big.Int
 		var isInfinite bool
 		argsLen := len(args)
 		switch argsLen {
 		case 1, 2:
 			element = args[0]
 			if argsLen == 2 {
-				if _, ok := args[1].(int64); !ok {
+				switch arg := args[1].(type) {
+				case int64:
+					repeatCount = big.NewInt(arg)
+				case *big.Int:
+					repeatCount = new(big.Int).Set(arg)
+				default:
 					return nil, loxerror.RuntimeError(in.callToken,
-						"Second argument to 'Iterator.repeat' must be an integer.")
+						"Second argument to 'Iterator.repeat' must be an integer or bigint.")
 				}
-				repeatCount = args[1].(int64)
 			} else {
 				isInfinite = true
 			}
@@ -144,12 +148,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 				return element
 			}
 		} else {
-			var count int64 = 0
+			count := big.NewInt(0)
 			iterator.hasNextMethod = func() bool {
-				return count >= 0 && count < repeatCount
+				return count.Cmp(repeatCount) < 0
 			}
 			iterator.nextMethod = func() any {
-				count++
+				count.Add(count, bigint.One)
 				return element
 			}
 		}
