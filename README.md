@@ -436,6 +436,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - `iterator.hasNext()`, which returns `true` if there are more elements to be iterated over and `false` otherwise
             - `iterator.next()`, which returns the next element in the iterator
                 - If the iterator has no more elements, calling this method will throw a runtime error with the error message `"StopIteration"`
+            - `iterator.toList()`, which returns a list of elements obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over
         - Various utility iterator methods and fields are defined under a built-in class called `Iterator`, which is documented [here](./doc/Iterator.md)
     - `len(element)`, which returns the length of a buffer, dictionary, list, set, or string
         - Buffers: the length is the number of elements in the buffer

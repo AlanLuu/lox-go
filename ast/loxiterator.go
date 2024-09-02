@@ -75,6 +75,14 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 			}
 			return l.Next(), nil
 		})
+	case "toList":
+		return iteratorFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			newList := list.NewList[any]()
+			for l.HasNext() {
+				newList.Add(l.Next())
+			}
+			return NewLoxList(newList), nil
+		})
 	}
 	return nil, loxerror.RuntimeError(name, "Iterators have no property called '"+methodName+"'.")
 }
