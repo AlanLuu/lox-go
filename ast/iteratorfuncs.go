@@ -336,6 +336,58 @@ func (i *Interpreter) defineIteratorFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
 	})
+	iteratorFunc("enumerate", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var it interfaces.Iterator
+		var index any
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			if _, ok := args[0].(interfaces.Iterable); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'Iterator.enumerate' is not iterable.")
+			}
+			it = args[0].(interfaces.Iterable).Iterator()
+			if argsLen == 2 {
+				switch args[1].(type) {
+				case int64:
+				case *big.Int:
+				default:
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Iterator.enumerate' must be an integer or bigint.")
+				}
+				index = args[1]
+			} else {
+				index = int64(0)
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		iterable := ProtoIterator{}
+		iterable.hasNextMethod = func() bool {
+			return it.HasNext()
+		}
+		switch index := index.(type) {
+		case int64:
+			iterable.nextMethod = func() any {
+				entry := list.NewListCap[any](2)
+				entry.Add(index)
+				index++
+				entry.Add(it.Next())
+				return NewLoxList(entry)
+			}
+		case *big.Int:
+			indexCopy := new(big.Int).Set(index)
+			iterable.nextMethod = func() any {
+				entry := list.NewListCap[any](2)
+				entry.Add(new(big.Int).Set(indexCopy))
+				indexCopy.Add(indexCopy, bigint.One)
+				entry.Add(it.Next())
+				return NewLoxList(entry)
+			}
+		}
+		return NewLoxIterator(iterable), nil
+	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any
 		var repeatCount *big.Int
