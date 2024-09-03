@@ -192,6 +192,25 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return NewLoxHash(hashObj, "sha224"), nil
 	})
+	cryptoFunc("sha224sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var hashObj hash.Hash
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			hashObj = sha256.New224()
+			bytes := make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				bytes = append(bytes, byte(element.(int64)))
+			}
+			hashObj.Write(bytes)
+		case *LoxString:
+			hashObj = sha256.New224()
+			hashObj.Write([]byte(arg.str))
+		default:
+			return argMustBeType(in.callToken, "sha224sum", "buffer or string")
+		}
+		hexDigest := fmt.Sprintf("%x", hashObj.Sum(nil))
+		return NewLoxString(hexDigest, '\''), nil
+	})
 	cryptoFunc("sha256", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
 		argsLen := len(args)
@@ -218,6 +237,25 @@ func (i *Interpreter) defineCryptoFuncs() {
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
 		return NewLoxHash(hashObj, "sha256"), nil
+	})
+	cryptoFunc("sha256sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var hashObj hash.Hash
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			hashObj = sha256.New()
+			bytes := make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				bytes = append(bytes, byte(element.(int64)))
+			}
+			hashObj.Write(bytes)
+		case *LoxString:
+			hashObj = sha256.New()
+			hashObj.Write([]byte(arg.str))
+		default:
+			return argMustBeType(in.callToken, "sha256sum", "buffer or string")
+		}
+		hexDigest := fmt.Sprintf("%x", hashObj.Sum(nil))
+		return NewLoxString(hexDigest, '\''), nil
 	})
 	cryptoFunc("sha384", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
