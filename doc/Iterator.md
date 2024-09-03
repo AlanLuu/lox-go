@@ -17,6 +17,9 @@ The following methods and fields are defined in the built-in `Iterator` class:
     ```
     - The value of `length` must be at least `1` or else a runtime error is thrown
 - `Iterator.chain(iterables)`, which takes a variable amount of iterables as arguments and returns an iterator that produces elements from the first iterable until there are no more elements in that iterable, then moves on to producing elements from the next iterable, until all iterables are out of elements
+- `Iterator.countFloat(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
+    - `start` can be an integer, bigint, float, or bigfloat, and `step` can be a float or bigfloat
+    - If `step` is omitted, `1.0` is used as the step value
 - `Iterator.countInt(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
     - `start` and `step` can be integers or bigints
     - If `step` is omitted, `1` is used as the step value

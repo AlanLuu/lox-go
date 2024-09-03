@@ -112,6 +112,135 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterator), nil
 	})
+	iteratorFunc("countFloat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var start, step any
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			switch args[0].(type) {
+			case int64:
+			case *big.Int:
+			case float64:
+			case *big.Float:
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'Iterator.countFloat' must be an integer, bigint, float, or bigfloat.")
+			}
+			start = args[0]
+			if argsLen == 2 {
+				switch args[1].(type) {
+				case float64:
+				case *big.Float:
+				default:
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'Iterator.countFloat' must be a float or bigfloat.")
+				}
+				step = args[1]
+			} else {
+				step = float64(1.0)
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		iterator := InfiniteIterator{}
+		switch start := start.(type) {
+		case int64:
+			startFloat := float64(start)
+			firstIteration := true
+			switch step := step.(type) {
+			case float64:
+				iterator.nextMethod = func() any {
+					var num any
+					if firstIteration {
+						num = start
+						firstIteration = false
+					} else {
+						num = startFloat
+					}
+					startFloat += step
+					return num
+				}
+			case *big.Float:
+				iterator.nextMethod = func() any {
+					var num any
+					if firstIteration {
+						num = start
+						firstIteration = false
+					} else {
+						num = startFloat
+					}
+					stepFloat, _ := step.Float64()
+					startFloat += stepFloat
+					return num
+				}
+			}
+		case *big.Int:
+			bigFloatStart := new(big.Float).SetInt(start)
+			firstIteration := true
+			switch step := step.(type) {
+			case float64:
+				bigFloatStep := big.NewFloat(step)
+				iterator.nextMethod = func() any {
+					var num any
+					if firstIteration {
+						num = new(big.Int).Set(start)
+						firstIteration = false
+					} else {
+						num = new(big.Float).Set(bigFloatStart)
+					}
+					bigFloatStart.Add(bigFloatStart, bigFloatStep)
+					return num
+				}
+			case *big.Float:
+				iterator.nextMethod = func() any {
+					var num any
+					if firstIteration {
+						num = new(big.Int).Set(start)
+						firstIteration = false
+					} else {
+						num = new(big.Float).Set(bigFloatStart)
+					}
+					bigFloatStart.Add(bigFloatStart, step)
+					return num
+				}
+			}
+		case float64:
+			switch step := step.(type) {
+			case float64:
+				iterator.nextMethod = func() any {
+					num := start
+					start += step
+					return num
+				}
+			case *big.Float:
+				iterator.nextMethod = func() any {
+					num := start
+					stepFloat, _ := step.Float64()
+					start += stepFloat
+					return num
+				}
+			}
+		case *big.Float:
+			bigFloatStart := new(big.Float).Set(start)
+			switch step := step.(type) {
+			case float64:
+				bigFloatStep := big.NewFloat(step)
+				iterator.nextMethod = func() any {
+					num := new(big.Float).Set(bigFloatStart)
+					bigFloatStart.Add(bigFloatStart, bigFloatStep)
+					return num
+				}
+			case *big.Float:
+				iterator.nextMethod = func() any {
+					num := new(big.Float).Set(bigFloatStart)
+					bigFloatStart.Add(bigFloatStart, step)
+					return num
+				}
+			}
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("countInt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var start, step any
 		argsLen := len(args)
