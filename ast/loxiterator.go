@@ -77,6 +77,10 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 		}
 		return s, nil
 	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'iterator.%v' must be an %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	switch methodName {
 	case "hasNext":
 		return iteratorFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
@@ -90,12 +94,35 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 			return l.Next(), nil
 		})
 	case "toList":
-		return iteratorFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewList[any]()
-			for l.HasNext() {
-				newList.Add(l.Next())
+		return iteratorFunc(-1, func(in *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				newList := list.NewList[any]()
+				for l.HasNext() {
+					newList.Add(l.Next())
+				}
+				return NewLoxList(newList), nil
+			case 1:
+				if length, ok := args[0].(int64); ok {
+					if length < 0 {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Argument to 'iterator.toList' cannot be negative.")
+					}
+					newList := list.NewListCap[any](length)
+					for i := int64(0); i < length; i++ {
+						if !l.HasNext() {
+							break
+						}
+						newList.Add(l.Next())
+					}
+					return NewLoxList(newList), nil
+				}
+				return argMustBeTypeAn("integer")
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 			}
-			return NewLoxList(newList), nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Iterators have no property called '"+methodName+"'.")
