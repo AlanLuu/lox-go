@@ -1615,7 +1615,7 @@ func (i *Interpreter) defineOSFuncs() {
 
 		name := args[0].(*LoxString).str
 		buffer := args[1].(*LoxBuffer)
-		data := []byte{}
+		data := make([]byte, 0, len(buffer.elements))
 		for _, element := range buffer.elements {
 			data = append(data, byte(element.(int64)))
 		}

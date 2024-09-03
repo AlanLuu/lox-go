@@ -83,7 +83,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				hashObj = md5.New()
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
@@ -110,7 +110,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				hashObj = sha1.New()
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
@@ -137,7 +137,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				hashObj = sha256.New224()
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
@@ -164,7 +164,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				hashObj = sha256.New()
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
@@ -191,7 +191,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				hashObj = sha512.New384()
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
@@ -218,7 +218,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				hashObj = sha512.New()
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}

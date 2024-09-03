@@ -85,7 +85,7 @@ func (l *LoxHash) Get(name *token.Token) (any, error) {
 		return hashFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
-				bytes := []byte{}
+				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
