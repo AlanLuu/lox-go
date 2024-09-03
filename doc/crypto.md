@@ -19,7 +19,9 @@ The following methods are defined in the built-in `crypto` class:
 - `crypto.sha256([data])`, which returns a hash object that computes the SHA-256 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
 - `crypto.sha256sum(data)`, which returns a string that is the hexadecimal representation of the SHA-256 hash of the specified data, which is either a buffer or string
 - `crypto.sha384([data])`, which returns a hash object that computes the SHA-384 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
+- `crypto.sha384sum(data)`, which returns a string that is the hexadecimal representation of the SHA-384 hash of the specified data, which is either a buffer or string
 - `crypto.sha512([data])`, which returns a hash object that computes the SHA-512 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
+- `crypto.sha512sum(data)`, which returns a string that is the hexadecimal representation of the SHA-512 hash of the specified data, which is either a buffer or string
 
 Hash objects have the following methods and fields associated with them:
 - `hash.blockSize`, which is the block size of the hash object's hash algorithm as an integer
