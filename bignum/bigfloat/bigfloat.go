@@ -6,6 +6,10 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
+var (
+	One = big.NewFloat(1.0)
+)
+
 var BoolMap = map[bool]*big.Float{
 	true:  New(1),
 	false: New(0),

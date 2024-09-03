@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/AlanLuu/lox/bignum/bigfloat"
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
@@ -351,9 +352,11 @@ func (i *Interpreter) defineIteratorFuncs() {
 				switch args[1].(type) {
 				case int64:
 				case *big.Int:
+				case float64:
+				case *big.Float:
 				default:
 					return nil, loxerror.RuntimeError(in.callToken,
-						"Second argument to 'Iterator.enumerate' must be an integer or bigint.")
+						"Second argument to 'Iterator.enumerate' must be an integer, bigint, float, or bigfloat.")
 				}
 				index = args[1]
 			} else {
@@ -382,6 +385,23 @@ func (i *Interpreter) defineIteratorFuncs() {
 				entry := list.NewListCap[any](2)
 				entry.Add(new(big.Int).Set(indexCopy))
 				indexCopy.Add(indexCopy, bigint.One)
+				entry.Add(it.Next())
+				return NewLoxList(entry)
+			}
+		case float64:
+			iterable.nextMethod = func() any {
+				entry := list.NewListCap[any](2)
+				entry.Add(index)
+				index++
+				entry.Add(it.Next())
+				return NewLoxList(entry)
+			}
+		case *big.Float:
+			indexCopy := new(big.Float).Set(index)
+			iterable.nextMethod = func() any {
+				entry := list.NewListCap[any](2)
+				entry.Add(new(big.Float).Set(indexCopy))
+				indexCopy.Add(indexCopy, bigfloat.One)
 				entry.Add(it.Next())
 				return NewLoxList(entry)
 			}
