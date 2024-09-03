@@ -8,7 +8,11 @@ The following methods are defined in the built-in `crypto` class:
 - `crypto.bcryptVerify(password, hash)`, which takes in the specified password and bcrypt hash as strings and returns `true` if the password matches the hash and `false` otherwise
 - `crypto.md5([data])`, which returns a hash object that computes the MD5 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
     - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
+- `crypto.md5sum(data)`, which returns a string that is the hexadecimal representation of the MD5 hash of the specified data, which is either a buffer or string
+    - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
 - `crypto.sha1([data])`, which returns a hash object that computes the SHA-1 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
+    - Warning: SHA-1 is cryptographically broken and is unsuitable for security purposes
+- `crypto.sha1sum(data)`, which returns a string that is the hexadecimal representation of the SHA-1 hash of the specified data, which is either a buffer or string
     - Warning: SHA-1 is cryptographically broken and is unsuitable for security purposes
 - `crypto.sha224([data])`, which returns a hash object that computes the SHA-224 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
 - `crypto.sha256([data])`, which returns a hash object that computes the SHA-256 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
