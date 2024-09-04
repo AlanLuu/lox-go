@@ -408,6 +408,33 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterable), nil
 	})
+	iteratorFunc("pairwise", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			it := iterable.Iterator()
+			if !it.HasNext() {
+				return EmptyLoxIterator(), nil
+			}
+			first := it.Next()
+			if !it.HasNext() {
+				return EmptyLoxIterator(), nil
+			}
+			iterator := ProtoIterator{}
+			iterator.hasNextMethod = func() bool {
+				return it.HasNext()
+			}
+			iterator.nextMethod = func() any {
+				pair := list.NewListCap[any](2)
+				pair.Add(first)
+				next := it.Next()
+				pair.Add(next)
+				first = next
+				return NewLoxList(pair)
+			}
+			return NewLoxIterator(iterator), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any
 		var repeatCount *big.Int
