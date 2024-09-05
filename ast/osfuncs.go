@@ -1551,6 +1551,13 @@ func (i *Interpreter) defineOSFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'os.urandom' must be an integer.")
 	})
+	osFunc("userCacheDir", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		cacheDir, err := os.UserCacheDir()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxStringQuote(cacheDir), nil
+	})
 	osFunc("userConfigDir", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		configDir, err := os.UserConfigDir()
 		if err != nil {
