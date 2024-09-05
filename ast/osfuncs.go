@@ -1565,6 +1565,13 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(configDir), nil
 	})
+	osFunc("userHomeDir", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxStringQuote(homeDir), nil
+	})
 	osFunc("username", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		currentUser, err := user.Current()
 		if err != nil {
