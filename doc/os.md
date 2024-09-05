@@ -184,6 +184,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.unsetenv(key)`, which unsets the environment variable `key`, which is a string
 - `os.urandom(size)`, which returns a buffer of `size` random bytes that are cryptographically secure, where `size` is an integer
     - If `size` is negative, a runtime error is thrown
+- `os.userConfigDir()`, which returns the directory to be used for storing user-specific configuration data as a string
 - `os.username()`, which returns the username of the user running the current process as a string
 - `os.write(fd, buffer)`, which writes the contents of the specified buffer to the specified integer file descriptor and returns the number of bytes written as an integer
 - `os.writeFile(path, string)`, which writes the contents of the specified string to the file specified by the path string

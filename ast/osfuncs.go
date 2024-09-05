@@ -1551,6 +1551,13 @@ func (i *Interpreter) defineOSFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'os.urandom' must be an integer.")
 	})
+	osFunc("userConfigDir", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		configDir, err := os.UserConfigDir()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxStringQuote(configDir), nil
+	})
 	osFunc("username", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		currentUser, err := user.Current()
 		if err != nil {
@@ -1575,7 +1582,7 @@ func (i *Interpreter) defineOSFuncs() {
 
 		fd := args[0].(int64)
 		buffer := args[1].(*LoxBuffer)
-		bytes := list.NewListCapDouble[byte](int64(len(buffer.elements)))
+		bytes := list.NewListCap[byte](int64(len(buffer.elements)))
 		for _, element := range buffer.elements {
 			bytes.Add(byte(element.(int64)))
 		}
