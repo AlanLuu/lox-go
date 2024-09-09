@@ -93,6 +93,10 @@ func Getgroups() ([]int, error) {
 	return unix.Getgroups()
 }
 
+func Getsid(pid int) (int, error) {
+	return unix.Getsid(pid)
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unix.Mkfifo(path, mode)
 }

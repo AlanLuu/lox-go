@@ -66,6 +66,10 @@ func Getgroups() ([]int, error) {
 	return nil, unsupported("getgroups")
 }
 
+func Getsid(pid int) (int, error) {
+	return -1, unsupported("getsid")
+}
+
 func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }

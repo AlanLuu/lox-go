@@ -91,6 +91,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.getpid()`, which returns the process ID of the current process as an integer
 - `os.getppid()`, which returns the process ID of the parent process as an integer
+- `os.getsid(pid)`, which calls the Unix system call `getsid` with the specified process ID integer and returns the result as an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.getuid()`, which returns the user ID of the current process as an integer
     - On Windows, this method always returns `-1`
 - `os.hostname()`, which returns the hostname of the computer as a string

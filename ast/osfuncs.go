@@ -843,6 +843,16 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("getppid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getppid()), nil
 	})
+	osFunc("getsid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if pid, ok := args[0].(int64); ok {
+			sid, err := syscalls.Getsid(int(pid))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return int64(sid), nil
+		}
+		return argMustBeTypeAn(in.callToken, "getsid", "integer")
+	})
 	osFunc("getuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getuid()), nil
 	})
