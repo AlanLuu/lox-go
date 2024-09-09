@@ -151,6 +151,22 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "close", "integer")
 	})
+	osFunc("closeRange", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.closeRange' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.closeRange' must be an integer.")
+		}
+		low := args[0].(int64)
+		high := args[1].(int64)
+		for fd := low; fd < high; fd++ {
+			syscalls.Close(int(fd))
+		}
+		return nil, nil
+	})
 	osFunc("copy", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
