@@ -129,6 +129,10 @@ func Setreuid(ruid int, euid int) error {
 	return syscall.Setreuid(ruid, euid)
 }
 
+func Setsid() (int, error) {
+	return unix.Setsid()
+}
+
 func Setuid(uid int) error {
 	return unix.Setuid(uid)
 }

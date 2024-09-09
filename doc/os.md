@@ -155,6 +155,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.setreuid(ruid, euid)`, which sets the user ID and effective user ID of the current process to the specified user ID and effective user ID, which are both integers
     - Passing in `-1` for `ruid` or `euid` will result in the user ID or the effective user ID being unchanged respectively
     - This method does not work on Windows and throws an error if called on there
+- `os.setsid()`, which calls the Unix system call `setsid` and returns the result as an integer
 - `os.setuid(uid)`, which sets the user ID of the current process to the specified user ID, which is an integer
     - This method does not work on Windows and throws an error if called on there
 - `os.stderr`, which is a file object that allows for writing text to the standard error stream

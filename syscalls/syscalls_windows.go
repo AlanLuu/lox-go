@@ -102,6 +102,10 @@ func Setreuid(ruid int, euid int) error {
 	return unsupported("setreuid")
 }
 
+func Setsid() (int, error) {
+	return -1, unsupported("setsid")
+}
+
 func Setuid(uid int) error {
 	return unsupported("setuid")
 }

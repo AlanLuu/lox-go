@@ -1409,6 +1409,13 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("setsid", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		pid, err := syscalls.Setsid()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(pid), nil
+	})
 	osFunc("setuid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if uid, ok := args[0].(int64); ok {
 			err := syscalls.Setuid(int(uid))
