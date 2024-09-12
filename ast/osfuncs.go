@@ -264,7 +264,7 @@ func (i *Interpreter) defineOSFuncs() {
 				"First argument to 'os.execl' must be a string.")
 		}
 
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(argsLen - 1))
 		for i := 1; i < argsLen; i++ {
 			switch element := args[i].(type) {
 			case *LoxString:
@@ -298,7 +298,7 @@ func (i *Interpreter) defineOSFuncs() {
 				"Second argument to 'os.execle' must be a string.")
 		}
 
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(argsLen - 2))
 		lastArgErrMsg := "Last argument to 'os.execle' must be a dictionary."
 		envDictIndex := -1
 		for i := 1; i <= argsLen; i++ {
@@ -374,7 +374,7 @@ func (i *Interpreter) defineOSFuncs() {
 				"First argument to 'os.execlp' must be a string.")
 		}
 
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(argsLen - 1))
 		for i := 1; i < argsLen; i++ {
 			switch element := args[i].(type) {
 			case *LoxString:
@@ -408,7 +408,7 @@ func (i *Interpreter) defineOSFuncs() {
 				"Second argument to 'os.execlpe' must be a string.")
 		}
 
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(argsLen - 2))
 		lastArgErrMsg := "Last argument to 'os.execlpe' must be a dictionary."
 		envDictIndex := -1
 		for i := 1; i <= argsLen; i++ {
@@ -495,7 +495,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if argvList.IsEmpty() {
 			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
 		}
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(len(argvList)))
 		for _, element := range argvList {
 			switch element := element.(type) {
 			case *LoxString:
@@ -531,7 +531,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if argvList.IsEmpty() {
 			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
 		}
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(len(argvList)))
 		for _, element := range argvList {
 			switch element := element.(type) {
 			case *LoxString:
@@ -589,7 +589,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if argvList.IsEmpty() {
 			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
 		}
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(len(argvList)))
 		for _, element := range argvList {
 			switch element := element.(type) {
 			case *LoxString:
@@ -625,7 +625,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if argvList.IsEmpty() {
 			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
 		}
-		argv := list.NewList[string]()
+		argv := list.NewListCap[string](int64(len(argvList)))
 		for _, element := range argvList {
 			switch element := element.(type) {
 			case *LoxString:
