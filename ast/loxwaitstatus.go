@@ -26,12 +26,6 @@ func (l *LoxWaitStatus) Get(name *token.Token) (any, error) {
 	if property, ok := l.properties[lexemeName]; ok {
 		return property, nil
 	}
-	waitStatusField := func(field any) (any, error) {
-		if _, ok := l.properties[lexemeName]; !ok {
-			l.properties[lexemeName] = field
-		}
-		return field, nil
-	}
 	waitStatusFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
 		s := &struct{ ProtoLoxCallable }{}
 		s.arityMethod = func() int { return arity }
@@ -70,7 +64,9 @@ func (l *LoxWaitStatus) Get(name *token.Token) (any, error) {
 			return int64(l.status.StopSignal()), nil
 		})
 	case "waitStatus":
-		return waitStatusField(l.status.WaitStatus)
+		return waitStatusFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.status.WaitStatus, nil
+		})
 	}
 	return nil, loxerror.RuntimeError(name, "Wait statuses have no property called '"+lexemeName+"'.")
 }

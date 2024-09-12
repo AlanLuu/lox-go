@@ -76,6 +76,7 @@ The following methods and fields are defined in the built-in `os` class:
     - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
     - This method does not work on Windows and throws an error if called on there
 - `os.fork()`, which forks a child process and returns `0` in the child process and the pid of the newly created child process in the parent process as an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.fsync(fd)`, which forces a write of the file with the specified file descriptor to disk
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost
@@ -158,6 +159,7 @@ The following methods and fields are defined in the built-in `os` class:
     - Passing in `-1` for `ruid` or `euid` will result in the user ID or the effective user ID being unchanged respectively
     - This method does not work on Windows and throws an error if called on there
 - `os.setsid()`, which calls the Unix system call `setsid` and returns the result as an integer
+    - This method does not work on Windows and throws an error if called on there
 - `os.setuid(uid)`, which sets the user ID of the current process to the specified user ID, which is an integer
     - This method does not work on Windows and throws an error if called on there
 - `os.stderr`, which is a file object that allows for writing text to the standard error stream
@@ -193,7 +195,8 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.userConfigDir()`, which returns the path of the directory to be used for storing user-specific configuration data as a string
 - `os.userHomeDir()`, which returns the path of the user's home directory as a string
 - `os.username()`, which returns the username of the user running the current process as a string
-- `os.wait()`, which waits for a child process to complete and returns a list containing the pid of the completed child process as an integer and a wait status object with various methods and fields that are used to obtain information regarding the completed child process
+- `os.wait()`, which waits for a child process to complete and returns a list containing the pid of the completed child process as an integer and a wait status object with various methods that are used to obtain information regarding the completed child process, which are documented [here](./waitstatus.md)
+    - This method does not work on Windows and throws an error if called on there
 - `os.write(fd, buffer)`, which writes the contents of the specified buffer to the specified integer file descriptor and returns the number of bytes written as an integer
 - `os.writeFile(path, string)`, which writes the contents of the specified string to the file specified by the path string
     - If the file already exists, it is truncated
