@@ -75,6 +75,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.fchown(fd, uid, gid)`, which changes the uid and gid of the specified file descriptor to `uid` and `gid`
     - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
     - This method does not work on Windows and throws an error if called on there
+- `os.fork()`, which forks a child process and returns `0` in the child process and the pid of the newly created child process in the parent process as an integer
 - `os.fsync(fd)`, which forces a write of the file with the specified file descriptor to disk
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost
@@ -192,6 +193,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.userConfigDir()`, which returns the path of the directory to be used for storing user-specific configuration data as a string
 - `os.userHomeDir()`, which returns the path of the user's home directory as a string
 - `os.username()`, which returns the username of the user running the current process as a string
+- `os.wait()`, which waits for a child process to complete and returns a list containing the pid of the completed child process as an integer and a wait status object with various methods and fields that are used to obtain information regarding the completed child process
 - `os.write(fd, buffer)`, which writes the contents of the specified buffer to the specified integer file descriptor and returns the number of bytes written as an integer
 - `os.writeFile(path, string)`, which writes the contents of the specified string to the file specified by the path string
     - If the file already exists, it is truncated

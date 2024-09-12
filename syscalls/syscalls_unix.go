@@ -17,6 +17,18 @@ func execCommandNotFound(funcName string, path string) error {
 	return loxerror.Error(fmt.Sprintf("os.%v: %v: command not found", funcName, path))
 }
 
+func getWaitStatus(waitStatus unix.WaitStatus) WaitStatus {
+	return WaitStatus{
+		Continued:  waitStatus.Continued,
+		ExitStatus: waitStatus.ExitStatus,
+		Exited:     waitStatus.Exited,
+		Signaled:   waitStatus.Signaled,
+		StopSignal: waitStatus.StopSignal,
+		Stopped:    waitStatus.Stopped,
+		WaitStatus: int64(waitStatus),
+	}
+}
+
 func Close(fd int) error {
 	return syscall.Close(fd)
 }
@@ -79,6 +91,15 @@ func Fchmod(fd int, mode uint32) error {
 
 func Fchown(fd int, uid int, gid int) error {
 	return unix.Fchown(fd, uid, gid)
+}
+
+func Fork() (int, error) {
+	pid, _, errno := unix.Syscall(unix.SYS_FORK, 0, 0, 0)
+	var err error
+	if errno != 0 {
+		err = errno
+	}
+	return int(pid), err
 }
 
 func Fsync(fd int) error {
@@ -175,6 +196,15 @@ func Uname() (UnameResult, error) {
 		toString(buf.Version[:]),
 		toString(buf.Machine[:]),
 	}, nil
+}
+
+func Wait() (int, WaitStatus, error) {
+	var waitStatus unix.WaitStatus
+	pid, err := unix.Wait4(-1, &waitStatus, 0, nil)
+	if err != nil {
+		return -1, WaitStatus{}, err
+	}
+	return pid, getWaitStatus(waitStatus), nil
 }
 
 func Write(fd int, p []byte) (int, error) {

@@ -54,6 +54,10 @@ func Fchown(fd int, uid int, gid int) error {
 	return unsupported("fchown")
 }
 
+func Fork() (int, error) {
+	return -1, unsupported("fork")
+}
+
 func Fsync(fd int) error {
 	return syscall.FlushFileBuffers(syscall.Handle(fd))
 }
@@ -126,6 +130,10 @@ type UnameResult struct {
 
 func Uname() (UnameResult, error) {
 	return UnameResult{}, unsupported("uname")
+}
+
+func Wait() (int, WaitStatus, error) {
+	return -1, WaitStatus{}, unsupported("wait")
 }
 
 func Write(fd int, p []byte) (int, error) {

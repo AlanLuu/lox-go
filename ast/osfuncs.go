@@ -765,6 +765,13 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("fork", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		pid, err := syscalls.Fork()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(pid), nil
+	})
 	osFunc("fsync", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if fd, ok := args[0].(int64); ok {
 			err := syscalls.Fsync(int(fd))
@@ -1616,6 +1623,16 @@ func (i *Interpreter) defineOSFuncs() {
 			return NewLoxStringQuote(contents[len(contents)-1]), nil
 		}
 		return NewLoxStringQuote(username), nil
+	})
+	osFunc("wait", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		pid, waitStatus, err := syscalls.Wait()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		l := list.NewListCap[any](2)
+		l.Add(int64(pid))
+		l.Add(NewLoxWaitStatus(waitStatus))
+		return NewLoxList(l), nil
 	})
 	osFunc("write", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
