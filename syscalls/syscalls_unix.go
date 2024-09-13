@@ -102,6 +102,16 @@ func Fork() (int, error) {
 	return int(pid), err
 }
 
+func ForkExec(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) {
+	return syscall.ForkExec(argv0, argv, attr)
+}
+
+func ForkExecFd(argv0 string, argv []string) (int, error) {
+	return ForkExec(argv0, argv, &syscall.ProcAttr{
+		Files: []uintptr{0, 1, 2}, //stdin, stdout, stderr
+	})
+}
+
 func Fsync(fd int) error {
 	return unix.Fsync(fd)
 }

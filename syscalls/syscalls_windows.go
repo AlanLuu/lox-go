@@ -58,6 +58,14 @@ func Fork() (int, error) {
 	return -1, unsupported("fork")
 }
 
+func ForkExec(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) {
+	return -1, unsupported("forkExec")
+}
+
+func ForkExecFd(argv0 string, argv []string) (int, error) {
+	return ForkExec(argv0, argv, nil)
+}
+
 func Fsync(fd int) error {
 	return syscall.FlushFileBuffers(syscall.Handle(fd))
 }
