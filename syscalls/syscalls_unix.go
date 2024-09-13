@@ -129,6 +129,10 @@ func ForkExecvpFd(argv0 string, argv []string) (int, error) {
 	return ForkExecvp(argv0, argv, forkExecOptions(nil))
 }
 
+func ForkExecvpeFd(argv0 string, argv []string, env []string) (int, error) {
+	return ForkExecvp(argv0, argv, forkExecOptions(env))
+}
+
 func Fsync(fd int) error {
 	return unix.Fsync(fd)
 }

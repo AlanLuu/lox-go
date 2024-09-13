@@ -84,6 +84,11 @@ The following methods and fields are defined in the built-in `os` class:
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - The `PATH` environment variable is used when searching for the program to execute
     - This method does not work on Windows and throws an error if called on there
+- `os.forkExecvpe(file, argv, envp)`, which forks a child process and immediately invokes `execvpe` in the child process with the string argument `file`, the list argument `argv`, and the dictionary argument `envp`, returning the pid of the child process as an integer
+    - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
+    - The `PATH` environment variable is used when searching for the program to execute
+    - This method does not work on Windows and throws an error if called on there
 - `os.fsync(fd)`, which forces a write of the file with the specified file descriptor to disk
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost

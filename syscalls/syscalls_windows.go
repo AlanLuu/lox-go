@@ -74,6 +74,10 @@ func ForkExecvpFd(argv0 string, argv []string) (int, error) {
 	return ForkExecvp(argv0, argv, nil)
 }
 
+func ForkExecvpeFd(argv0 string, argv []string, env []string) (int, error) {
+	return ForkExecvp(argv0, argv, nil)
+}
+
 func Fsync(fd int) error {
 	return syscall.FlushFileBuffers(syscall.Handle(fd))
 }
