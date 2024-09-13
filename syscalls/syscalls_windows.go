@@ -62,8 +62,16 @@ func ForkExec(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) 
 	return -1, unsupported("forkExec")
 }
 
+func ForkExecvp(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) {
+	return -1, unsupported("forkExecvp")
+}
+
 func ForkExecFd(argv0 string, argv []string) (int, error) {
 	return ForkExec(argv0, argv, nil)
+}
+
+func ForkExecvpFd(argv0 string, argv []string) (int, error) {
+	return ForkExecvp(argv0, argv, nil)
 }
 
 func Fsync(fd int) error {

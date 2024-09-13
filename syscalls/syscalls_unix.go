@@ -17,6 +17,13 @@ func execCommandNotFound(funcName string, path string) error {
 	return loxerror.Error(fmt.Sprintf("os.%v: %v: command not found", funcName, path))
 }
 
+func forkExecOptions(env []string) *syscall.ProcAttr {
+	return &syscall.ProcAttr{
+		Files: []uintptr{0, 1, 2}, //stdin, stdout, stderr
+		Env:   env,
+	}
+}
+
 func getWaitStatus(waitStatus unix.WaitStatus) WaitStatus {
 	return WaitStatus{
 		Continued:  waitStatus.Continued,
@@ -106,10 +113,20 @@ func ForkExec(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) 
 	return syscall.ForkExec(argv0, argv, attr)
 }
 
+func ForkExecvp(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) {
+	fullargv0, err := exec.LookPath(argv0)
+	if err != nil {
+		return -1, execCommandNotFound("forkExecvp", argv0)
+	}
+	return syscall.ForkExec(fullargv0, argv, attr)
+}
+
 func ForkExecFd(argv0 string, argv []string) (int, error) {
-	return ForkExec(argv0, argv, &syscall.ProcAttr{
-		Files: []uintptr{0, 1, 2}, //stdin, stdout, stderr
-	})
+	return ForkExec(argv0, argv, forkExecOptions(nil))
+}
+
+func ForkExecvpFd(argv0 string, argv []string) (int, error) {
+	return ForkExecvp(argv0, argv, forkExecOptions(nil))
 }
 
 func Fsync(fd int) error {

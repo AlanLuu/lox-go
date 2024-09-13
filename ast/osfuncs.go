@@ -805,6 +805,39 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return int64(pid), nil
 	})
+	osFunc("forkExecvp", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.forkExecvp' must be a string.")
+		}
+		if _, ok := args[1].(*LoxList); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.forkExecvp' must be a list.")
+		}
+
+		strListErrMsg := "Second argument to 'os.forkExecvp' must be a list of strings."
+		argvList := args[1].(*LoxList).elements
+		if argvList.IsEmpty() {
+			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
+		}
+		argv := list.NewListCap[string](int64(len(argvList)))
+		for _, element := range argvList {
+			switch element := element.(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
+			}
+		}
+
+		argv0 := args[0].(*LoxString).str
+		pid, err := syscalls.ForkExecvpFd(argv0, argv)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(pid), nil
+	})
 	osFunc("fsync", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if fd, ok := args[0].(int64); ok {
 			err := syscalls.Fsync(int(fd))

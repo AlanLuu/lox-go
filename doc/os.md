@@ -77,8 +77,12 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.fork()`, which forks a child process and returns `0` in the child process and the pid of the newly created child process in the parent process as an integer
     - This method does not work on Windows and throws an error if called on there
-- `os.forkExec(file, argv)`, which forks a child process and immediately invokes `execv` in the child process with the string argument `file` and the list argument `argv`, returning the pid of the child process as an integer
+- `os.forkExec(path, argv)`, which forks a child process and immediately invokes `execv` in the child process with the string argument `path` and the list argument `argv`, returning the pid of the child process as an integer
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
+    - This method does not work on Windows and throws an error if called on there
+- `os.forkExecvp(file, argv)`, which forks a child process and immediately invokes `execvp` in the child process with the string argument `file` and the list argument `argv`, returning the pid of the child process as an integer
+    - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
+    - The `PATH` environment variable is used when searching for the program to execute
     - This method does not work on Windows and throws an error if called on there
 - `os.fsync(fd)`, which forces a write of the file with the specified file descriptor to disk
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
