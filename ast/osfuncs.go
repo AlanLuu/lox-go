@@ -805,6 +805,68 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return int64(pid), nil
 	})
+	osFunc("forkExecve", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.forkExecve' must be a string.")
+		}
+		if _, ok := args[1].(*LoxList); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.forkExecve' must be a list.")
+		}
+		if _, ok := args[2].(*LoxDict); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'os.forkExecve' must be a dictionary.")
+		}
+
+		strListErrMsg := "Second argument to 'os.forkExecve' must be a list of strings."
+		argvList := args[1].(*LoxList).elements
+		if argvList.IsEmpty() {
+			return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
+		}
+		argv := list.NewListCap[string](int64(len(argvList)))
+		for _, element := range argvList {
+			switch element := element.(type) {
+			case *LoxString:
+				argv.Add(element.str)
+			default:
+				argv.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, strListErrMsg)
+			}
+		}
+
+		strDictErrMsg := "Third argument to 'os.forkExecve' must be a dictionary with only strings."
+		envDict := args[2].(*LoxDict)
+		envp := list.NewList[string]()
+		it := envDict.Iterator()
+		for it.HasNext() {
+			var builder strings.Builder
+			pair := it.Next().(*LoxList).elements
+			switch key := pair[0].(type) {
+			case *LoxString:
+				builder.WriteString(key.str)
+			default:
+				envp.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+			}
+			builder.WriteRune('=')
+			switch value := pair[1].(type) {
+			case *LoxString:
+				builder.WriteString(value.str)
+			default:
+				envp.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, strDictErrMsg)
+			}
+			envp.Add(builder.String())
+		}
+
+		argv0 := args[0].(*LoxString).str
+		pid, err := syscalls.ForkExecveFd(argv0, argv, envp)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(pid), nil
+	})
 	osFunc("forkExecvp", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

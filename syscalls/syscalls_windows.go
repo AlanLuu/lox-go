@@ -70,6 +70,10 @@ func ForkExecFd(argv0 string, argv []string) (int, error) {
 	return ForkExec(argv0, argv, nil)
 }
 
+func ForkExecveFd(argv0 string, argv []string, env []string) (int, error) {
+	return ForkExec(argv0, argv, nil)
+}
+
 func ForkExecvpFd(argv0 string, argv []string) (int, error) {
 	return ForkExecvp(argv0, argv, nil)
 }

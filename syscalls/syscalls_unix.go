@@ -125,6 +125,10 @@ func ForkExecFd(argv0 string, argv []string) (int, error) {
 	return ForkExec(argv0, argv, forkExecOptions(nil))
 }
 
+func ForkExecveFd(argv0 string, argv []string, env []string) (int, error) {
+	return ForkExec(argv0, argv, forkExecOptions(env))
+}
+
 func ForkExecvpFd(argv0 string, argv []string) (int, error) {
 	return ForkExecvp(argv0, argv, forkExecOptions(nil))
 }

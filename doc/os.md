@@ -80,6 +80,10 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.forkExec(path, argv)`, which forks a child process and immediately invokes `execv` in the child process with the string argument `path` and the list argument `argv`, returning the pid of the child process as an integer
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - This method does not work on Windows and throws an error if called on there
+- `os.forkExecve(path, argv, envp)`, which forks a child process and immediately invokes `execve` in the child process with the string argument `path`, the list argument `argv`, and the dictionary argument `envp`, returning the pid of the child process as an integer
+    - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
+    - `envp`, which contains the key-value pairs of environment variables to pass to the new process, must be empty or only contain strings or else a runtime error is thrown
+    - This method does not work on Windows and throws an error if called on there
 - `os.forkExecvp(file, argv)`, which forks a child process and immediately invokes `execvp` in the child process with the string argument `file` and the list argument `argv`, returning the pid of the child process as an integer
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - The `PATH` environment variable is used when searching for the program to execute
