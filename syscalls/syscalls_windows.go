@@ -54,10 +54,6 @@ func Fchown(fd int, uid int, gid int) error {
 	return unsupported("fchown")
 }
 
-func Fork() (int, error) {
-	return -1, unsupported("fork")
-}
-
 func ForkExec(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) {
 	return -1, unsupported("forkExec")
 }

@@ -100,15 +100,6 @@ func Fchown(fd int, uid int, gid int) error {
 	return unix.Fchown(fd, uid, gid)
 }
 
-func Fork() (int, error) {
-	pid, _, errno := unix.Syscall(unix.SYS_FORK, 0, 0, 0)
-	var err error
-	if errno != 0 {
-		err = errno
-	}
-	return int(pid), err
-}
-
 func ForkExec(argv0 string, argv []string, attr *syscall.ProcAttr) (int, error) {
 	return syscall.ForkExec(argv0, argv, attr)
 }

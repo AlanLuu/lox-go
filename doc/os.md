@@ -75,8 +75,6 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.fchown(fd, uid, gid)`, which changes the uid and gid of the specified file descriptor to `uid` and `gid`
     - Passing in `-1` for `uid` or `gid` will result in that uid or gid being unchanged
     - This method does not work on Windows and throws an error if called on there
-- `os.fork()`, which forks a child process and returns `0` in the child process and the pid of the newly created child process in the parent process as an integer
-    - This method does not work on Windows and throws an error if called on there
 - `os.forkExec(path, argv)`, which forks a child process and immediately invokes `execv` in the child process with the string argument `path` and the list argument `argv`, returning the pid of the child process as an integer
     - `argv`, which contains the command line arguments to the new program, must only contain strings or else a runtime error is thrown
     - This method does not work on Windows and throws an error if called on there

@@ -765,13 +765,6 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
-	osFunc("fork", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
-		pid, err := syscalls.Fork()
-		if err != nil {
-			return nil, loxerror.RuntimeError(in.callToken, err.Error())
-		}
-		return int64(pid), nil
-	})
 	osFunc("forkExec", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
