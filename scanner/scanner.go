@@ -348,7 +348,18 @@ func (sc *Scanner) scanToken() error {
 	case ',':
 		addToken(token.COMMA)
 	case '.':
-		addToken(token.DOT)
+		if sc.match('.') {
+			if sc.match('.') {
+				addToken(token.ELLIPSIS)
+			} else {
+				sc.currentIndex--
+				addToken(token.DOT)
+				sc.currentIndex++
+				addToken(token.DOT)
+			}
+		} else {
+			addToken(token.DOT)
+		}
 	case '?':
 		addToken(token.QUESTION)
 	case '&':

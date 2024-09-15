@@ -1296,12 +1296,32 @@ func (i *Interpreter) visitCallExpr(expr Call) (any, error) {
 	}
 	arguments := list.NewListCapDouble[any](int64(len(expr.Arguments)))
 	for _, argument := range expr.Arguments {
-		result, resultErr := i.evaluate(argument)
-		if resultErr != nil {
-			arguments.Clear()
-			return nil, resultErr
+		switch argument := argument.(type) {
+		case Spread:
+			result, resultErr := i.evaluate(argument.Iterable)
+			if resultErr != nil {
+				arguments.Clear()
+				return nil, resultErr
+			}
+			switch result := result.(type) {
+			case interfaces.Iterable:
+				it := result.Iterator()
+				for it.HasNext() {
+					arguments.Add(it.Next())
+				}
+			default:
+				arguments.Clear()
+				return nil, loxerror.RuntimeError(argument.SpreadToken,
+					"Value after '...' must be an iterable.")
+			}
+		default:
+			result, resultErr := i.evaluate(argument)
+			if resultErr != nil {
+				arguments.Clear()
+				return nil, resultErr
+			}
+			arguments.Add(result)
 		}
-		arguments.Add(result)
 	}
 	if function, ok := callee.(LoxCallable); ok {
 		argsLen := len(arguments)

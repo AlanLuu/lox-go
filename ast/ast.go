@@ -156,6 +156,11 @@ type SetObject struct {
 	Set
 }
 
+type Spread struct {
+	Iterable    Expr
+	SpreadToken *token.Token
+}
+
 type String struct {
 	Str   string
 	Quote byte

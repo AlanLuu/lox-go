@@ -94,6 +94,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 		return r.visitSetExpr(expr)
 	case SetObject:
 		return r.visitSetExpr(expr.Set)
+	case Spread:
+		return r.visitSpreadExpr(expr)
 	case String:
 		return nil
 	case Super:
@@ -456,6 +458,10 @@ func (r *Resolver) visitSetExpr(expr Set) error {
 		return resolveErr
 	}
 	return r.resolveExpr(expr.Object)
+}
+
+func (r *Resolver) visitSpreadExpr(expr Spread) error {
+	return r.resolveExpr(expr.Iterable)
 }
 
 func (r *Resolver) visitSuperExpr(expr Super) error {

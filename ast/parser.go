@@ -637,12 +637,17 @@ func (p *Parser) finishCall(callee Expr) (Expr, error) {
 			if len(arguments) >= 255 {
 				loxerror.PrintErrorObject(p.error(p.peek(), "Can't have more than 255 arguments."))
 			}
+			spread := p.match(token.ELLIPSIS)
 			expr, exprErr := p.expression()
 			if exprErr != nil {
 				arguments.Clear()
 				return nil, exprErr
 			}
-			arguments.Add(expr)
+			if spread {
+				arguments.Add(Spread{expr, p.previous()})
+			} else {
+				arguments.Add(expr)
+			}
 		}
 	}
 	paren, parenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after arguments.")
