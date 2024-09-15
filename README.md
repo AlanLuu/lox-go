@@ -131,6 +131,11 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - The spread operator `...` is supported in this implementation of Lox
     - Examples:
         - `function(a, ...iterable, b)`, which passes all elements in the iterable as arguments to the specified function
+            ```js
+            var arr = [1, 2, 3];
+            var arr2 = [1, 2, ...arr, 4];
+            print arr2; //[1, 2, 1, 2, 3, 4]
+            ```
 - Static class fields and methods are supported in this implementation of Lox
     - Classes also support initializing instance fields to an initial value directly in the class body without the need for a constructor
     ```js

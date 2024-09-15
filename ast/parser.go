@@ -943,12 +943,17 @@ func (p *Parser) list() (Expr, error) {
 	elements := list.NewList[Expr]()
 	if !p.check(token.RIGHT_BRACKET) {
 		for cond := true; cond; cond = p.match(token.COMMA) {
+			spread := p.match(token.ELLIPSIS)
 			expr, exprErr := p.expression()
 			if exprErr != nil {
 				elements.Clear()
 				return nil, exprErr
 			}
-			elements.Add(expr)
+			if spread {
+				elements.Add(Spread{expr, p.previous()})
+			} else {
+				elements.Add(expr)
+			}
 		}
 	}
 	_, rightBracketErr := p.consume(token.RIGHT_BRACKET, "Expected ']' after list.")

@@ -2175,12 +2175,32 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 func (i *Interpreter) visitListExpr(expr List) (any, error) {
 	elements := list.NewListCapDouble[any](int64(len(expr.Elements)))
 	for _, element := range expr.Elements {
-		evalResult, evalErr := i.evaluate(element)
-		if evalErr != nil {
-			elements.Clear()
-			return nil, evalErr
+		switch element := element.(type) {
+		case Spread:
+			evalResult, evalErr := i.evaluate(element.Iterable)
+			if evalErr != nil {
+				elements.Clear()
+				return nil, evalErr
+			}
+			switch evalResult := evalResult.(type) {
+			case interfaces.Iterable:
+				it := evalResult.Iterator()
+				for it.HasNext() {
+					elements.Add(it.Next())
+				}
+			default:
+				elements.Clear()
+				return nil, loxerror.RuntimeError(element.SpreadToken,
+					"Value after '...' must be an iterable.")
+			}
+		default:
+			evalResult, evalErr := i.evaluate(element)
+			if evalErr != nil {
+				elements.Clear()
+				return nil, evalErr
+			}
+			elements.Add(evalResult)
 		}
-		elements.Add(evalResult)
 	}
 	return NewLoxList(elements), nil
 }
