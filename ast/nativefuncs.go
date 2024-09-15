@@ -191,6 +191,12 @@ func (i *Interpreter) defineNativeFuncs() {
 				return nil, parseErr
 			}
 
+			previous := i.environment
+			defer func() {
+				i.environment = previous
+			}()
+			i.environment = i.globals
+
 			importResolver := NewResolver(i)
 			resolverErr := importResolver.Resolve(exprList)
 			if resolverErr != nil {
