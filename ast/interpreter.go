@@ -1423,20 +1423,44 @@ func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
 	var tempKey any
 	isKey := true
 	for _, entry := range expr.Entries {
-		entry, entryErr := i.evaluate(entry)
-		if entryErr != nil {
-			return nil, entryErr
-		}
-		if isKey {
-			canBeKey, keyErr := CanBeDictKeyCheck(entry)
-			if !canBeKey {
-				return nil, loxerror.RuntimeError(expr.DictToken, keyErr)
+		switch entry := entry.(type) {
+		case Spread:
+			theEntry, entryErr := i.evaluate(entry.Iterable)
+			if entryErr != nil {
+				return nil, entryErr
 			}
-			tempKey = entry
-		} else {
-			dict.setKeyValue(tempKey, entry)
+			switch theEntry := theEntry.(type) {
+			case *LoxDict:
+				it := theEntry.Iterator()
+				for it.HasNext() {
+					next := it.Next().(*LoxList).elements
+					canBeKey, keyErr := CanBeDictKeyCheck(next[0])
+					if !canBeKey {
+						return nil, loxerror.RuntimeError(expr.DictToken, keyErr)
+					}
+					dict.setKeyValue(next[0], next[1])
+				}
+			default:
+				return nil, loxerror.RuntimeError(entry.SpreadToken,
+					"Value after '...' must be a dictionary.")
+			}
+			isKey = true
+		default:
+			theEntry, entryErr := i.evaluate(entry)
+			if entryErr != nil {
+				return nil, entryErr
+			}
+			if isKey {
+				canBeKey, keyErr := CanBeDictKeyCheck(theEntry)
+				if !canBeKey {
+					return nil, loxerror.RuntimeError(expr.DictToken, keyErr)
+				}
+				tempKey = theEntry
+			} else {
+				dict.setKeyValue(tempKey, theEntry)
+			}
+			isKey = !isKey
 		}
-		isKey = !isKey
 	}
 	return dict, nil
 }

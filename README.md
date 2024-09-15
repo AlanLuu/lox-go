@@ -136,6 +136,18 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             var arr2 = [1, 2, ...arr, 4];
             print arr2; //[1, 2, 1, 2, 3, 4]
             ```
+            ```js
+            var dict = {
+                1: 2,
+                3: 4
+            };
+            var dict2 = {
+                "key": "value",
+                ...dict,
+                "key2": "value2"
+            }; //Spread element in dictionaries must be dictionaries
+            print dict2; //{"key": "value", 1: 2, 3: 4, "key2": "value2"}
+            ```
 - Static class fields and methods are supported in this implementation of Lox
     - Classes also support initializing instance fields to an initial value directly in the class body without the need for a constructor
     ```js

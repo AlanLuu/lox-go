@@ -422,20 +422,28 @@ func (p *Parser) dict() (Expr, error) {
 				trailingComma = true
 				break
 			}
-			key, keyErr := p.or()
-			if keyErr != nil {
-				return nil, keyErr
+			if p.match(token.ELLIPSIS) {
+				spreadDict, spreadDictErr := p.or()
+				if spreadDictErr != nil {
+					return nil, spreadDictErr
+				}
+				entries.Add(Spread{spreadDict, p.previous()})
+			} else {
+				key, keyErr := p.or()
+				if keyErr != nil {
+					return nil, keyErr
+				}
+				_, colonErr := p.consume(token.COLON, "Expected ':' after dictionary key.")
+				if colonErr != nil {
+					return nil, colonErr
+				}
+				value, valueErr := p.or()
+				if valueErr != nil {
+					return nil, valueErr
+				}
+				entries.Add(key)
+				entries.Add(value)
 			}
-			_, colonErr := p.consume(token.COLON, "Expected ':' after dictionary key.")
-			if colonErr != nil {
-				return nil, colonErr
-			}
-			value, valueErr := p.or()
-			if valueErr != nil {
-				return nil, valueErr
-			}
-			entries.Add(key)
-			entries.Add(value)
 		}
 	}
 	if !trailingComma {
@@ -456,7 +464,7 @@ func (p *Parser) isDict() bool {
 	if p.isAtEnd() {
 		return false
 	}
-	if p.match(token.RIGHT_BRACE) {
+	if p.match(token.RIGHT_BRACE) || p.match(token.ELLIPSIS) {
 		return true
 	}
 	_, exprErr := p.or()
