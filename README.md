@@ -68,7 +68,6 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Dividing a bigint by `0` or `0n` throws a runtime error
 - A new statement called `put` prints an expression without a newline character at the end
     - Syntax: `put <expression>;`
-    - Note: in REPL mode, there is an issue where printed expressions without a newline at the end are not printed at all
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops
@@ -478,6 +477,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
     - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;`, `object.property = value;`, and `list[index] = value;`
+
+# Known bugs
+See [knownbugs.md](./doc/knownbugs.md)
 
 # Progress
 - Chapter 4 - Scanning (Complete)
