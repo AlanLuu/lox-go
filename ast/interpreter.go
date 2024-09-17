@@ -1440,9 +1440,14 @@ func (i *Interpreter) visitDictExpr(expr Dict) (any, error) {
 					}
 					dict.setKeyValue(next[0], next[1])
 				}
+			case interfaces.Iterable:
+				it := theEntry.Iterator()
+				for index := int64(0); it.HasNext(); index++ {
+					dict.setKeyValue(index, it.Next())
+				}
 			default:
 				return nil, loxerror.RuntimeError(entry.SpreadToken,
-					"Value after '...' must be a dictionary.")
+					"Value after '...' must be an iterable.")
 			}
 			isKey = true
 		default:

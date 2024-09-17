@@ -144,7 +144,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
                 "key": "value",
                 ...dict,
                 "key2": "value2"
-            }; //Spread element in dictionaries must be dictionaries
+            };
             print dict2; //{"key": "value", 1: 2, 3: 4, "key2": "value2"}
             ```
 - Static class fields and methods are supported in this implementation of Lox
