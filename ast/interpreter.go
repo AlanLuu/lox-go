@@ -55,6 +55,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineMathFuncs()     //Defined in mathfuncs.go
 	interpreter.defineNativeFuncs()   //Defined in nativefuncs.go
 	interpreter.defineOSFuncs()       //Defined in osfuncs.go
+	interpreter.defineProcessFuncs()  //Defined in processfuncs.go
 	interpreter.defineRandFuncs()     //Defined in randfuncs.go
 	interpreter.defineRegexFuncs()    //Defined in regexfuncs.go
 	interpreter.defineStringFuncs()   //Defined in stringfuncs.go
