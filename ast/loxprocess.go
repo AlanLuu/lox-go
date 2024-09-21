@@ -320,12 +320,12 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 			}
 			if err := l.run(); err != nil {
 				if exitErr, ok := err.(*exec.ExitError); ok {
-					return int64(exitErr.ExitCode()), nil
+					return NewLoxProcessResult(exitErr.ProcessState), nil
 				} else {
 					return nil, loxerror.RuntimeError(name, err.Error())
 				}
 			}
-			return int64(0), nil
+			return NewLoxProcessResult(l.process.ProcessState), nil
 		})
 	case "setArgs":
 		return processFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -411,12 +411,12 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 			}
 			if err := l.wait(); err != nil {
 				if exitErr, ok := err.(*exec.ExitError); ok {
-					return int64(exitErr.ExitCode()), nil
+					return NewLoxProcessResult(exitErr.ProcessState), nil
 				} else {
 					return nil, loxerror.RuntimeError(name, err.Error())
 				}
 			}
-			return int64(0), nil
+			return NewLoxProcessResult(l.process.ProcessState), nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Processes have no property called '"+methodName+"'.")
