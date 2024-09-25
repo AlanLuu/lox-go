@@ -186,6 +186,21 @@ func (i *Interpreter) defineProcessFuncs() {
 		}
 		return NewLoxProcessResult(process.process.ProcessState), nil
 	})
+	processFunc("runShell", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		cmd, err := getExecCmd(methodName("runShell"), true, in, args)
+		if err != nil {
+			return nil, err
+		}
+		process := NewLoxProcess(cmd)
+		if err := process.run(); err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				return NewLoxProcessResult(exitErr.ProcessState), nil
+			} else {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+		}
+		return NewLoxProcessResult(process.process.ProcessState), nil
+	})
 
 	i.globals.Define(className, processClass)
 }
