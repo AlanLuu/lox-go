@@ -9,6 +9,7 @@ The following methods are defined in the built-in `process` class:
 - `process class.newShellReusable(list/args)`, which takes in a list of strings or various string arguments and returns a process object with the specified command and arguments passed into the system shell that can be reused to run the command multiple times
 - `process class.newShellReusableSetStd(list/args)`, which takes in a list of strings or various string arguments and returns a process object with the specified command and arguments passed into the system shell that can be reused to run the command multiple times with the process' stdin, stdout, and stderr already set
 - `process class.newShellSetStd(list/args)`, which takes in a list of strings or various string arguments and returns a process object with the specified command and arguments passed into the system shell with the process' stdin, stdout, and stderr already set
+- `process class.run(list/args)`, which takes in a list of strings or various string arguments, creates a process object with the specified command and arguments, executes the process and waits for it to complete, and returns a process result object once the process completes successfully
 
 Process objects have the following methods associated with them:
 - `process.args()`, which returns a list of the command and argument strings associated with this process object
