@@ -20,11 +20,11 @@ Process objects have the following methods associated with them:
 - `process.combinedOutput()`, which executes the process and returns a string of the standard output and standard error contents combined
 - `process.combinedOutputBuf()`, which executes the process and returns a buffer of the standard output and standard error contents combined
 - `process.isReusable()`, which returns `true` if this process object can be reused to run the associated command multiple times and `false` otherwise
+- `process.isRunning()`, which returns `true` if the process is currently running, meaning it has been started but hasn't been waited on yet, and `false` otherwise
 - `process.output()`, which executes the process and returns a string of the standard output contents
 - `process.outputBuf()`, which executes the process and returns a buffer of the standard output contents
 - `process.path()`, which returns a string of the path of the command associated with this process object
 - `process.run()`, which executes the process, waits for it to complete, and returns a process result object once the process completes successfully
-- `process.running()`, which returns `true` if the process is currently running, meaning it has been started but hasn't been waited on yet, and `false` otherwise
 - `process.setArgs(argsList)`, which takes in a list of strings, sets the internal command and argument strings list of this process object to that list, and returns the process object itself
 - `process.setDir(dir)`, which takes in a string, sets the internal current working directory string of this process object to that string, and returns the process object itself
 - `process.setPath(path)`, which takes in a string, sets the internal path string of this process object to that string, and returns the process object itself

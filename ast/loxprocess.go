@@ -250,6 +250,10 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.reusable, nil
 		})
+	case "isRunning":
+		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.started && !l.waited, nil
+		})
 	case "output":
 		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			output, err := l.output()
@@ -326,10 +330,6 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 				}
 			}
 			return NewLoxProcessResult(l.process.ProcessState), nil
-		})
-	case "running":
-		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return l.started && !l.waited, nil
 		})
 	case "setArgs":
 		return processFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
