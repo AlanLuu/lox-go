@@ -32,7 +32,9 @@ Process objects have the following methods associated with them:
 - `process.setStdin(file)`, which takes in a file object, sets the internal stdin property of this process object to that file, and returns the process object itself
 - `process.setStdout(file)`, which takes in a file object, sets the internal stdout property of this process object to that file, and returns the process object itself
 - `process.start()`, which executes the process but does not wait for it to complete
+- `process.started()`, which returns `true` if the process has been started and `false` otherwise
 - `process.wait()`, which waits for the process, which must have been started already, to complete and returns a process result object once the process completes successfully
+- `process.waited()`, which returns `true` if the process has been successfully waited on and `false` otherwise
 
 Process result objects have the following methods associated with them:
 - `process result.exitCode()`, which returns the exit code of the completed process as an integer

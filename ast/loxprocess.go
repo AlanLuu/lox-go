@@ -404,6 +404,10 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 			}
 			return nil, nil
 		})
+	case "started":
+		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.started, nil
+		})
 	case "wait":
 		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			if l.reusable {
@@ -417,6 +421,10 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 				}
 			}
 			return NewLoxProcessResult(l.process.ProcessState), nil
+		})
+	case "waited":
+		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.waited, nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Processes have no property called '"+methodName+"'.")
