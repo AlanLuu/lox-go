@@ -3,8 +3,10 @@ package ast
 import (
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -144,6 +146,16 @@ func (l *LoxProcess) setStdout(writer io.Writer) {
 	l.originalStdout = writer
 }
 
+func (l *LoxProcess) signal(sig os.Signal) error {
+	if !l.started {
+		return LoxProcessError{"Cannot send signal to process that is not executing."}
+	}
+	if l.waited {
+		return LoxProcessError{"Cannot send signal to process that has already been waited on."}
+	}
+	return l.process.Process.Signal(sig)
+}
+
 func (l *LoxProcess) start() error {
 	if l.started {
 		if !l.reusable && l.waited {
@@ -186,6 +198,10 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 	}
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'process.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'process.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
@@ -422,6 +438,17 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 				return l, nil
 			}
 			return argMustBeType("file")
+		})
+	case "signal":
+		return processFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if sigNum, ok := args[0].(int64); ok {
+				err := l.signal(syscall.Signal(sigNum))
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				return nil, nil
+			}
+			return argMustBeTypeAn("integer")
 		})
 	case "start":
 		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

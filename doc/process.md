@@ -33,6 +33,7 @@ Process objects have the following methods associated with them:
 - `process.setStderr(file)`, which takes in a file object, sets the internal stderr property of this process object to that file, and returns the process object itself
 - `process.setStdin(file)`, which takes in a file object, sets the internal stdin property of this process object to that file, and returns the process object itself
 - `process.setStdout(file)`, which takes in a file object, sets the internal stdout property of this process object to that file, and returns the process object itself
+- `process.signal(signalNum)`, which sends the signal corresponding to the integer `signalNum` to the process, which must have been started already
 - `process.start()`, which executes the process but does not wait for it to complete
 - `process.started()`, which returns `true` if the process has been started and `false` otherwise
 - `process.wait()`, which waits for the process, which must have been started already, to complete and returns a process result object once the process completes successfully
