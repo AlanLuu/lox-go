@@ -21,6 +21,7 @@ Process objects have the following methods associated with them:
 - `process.combinedOutputBuf()`, which executes the process and returns a buffer of the standard output and standard error contents combined
 - `process.isReusable()`, which returns `true` if this process object can be reused to run the associated command multiple times and `false` otherwise
 - `process.isRunning()`, which returns `true` if the process is currently running, meaning it has been started but hasn't been waited on yet, and `false` otherwise
+- `process.kill()`, which kills the process, which must have been started already, and returns a process result object if the process was killed successfully
 - `process.output()`, which executes the process and returns a string of the standard output contents
 - `process.outputBuf()`, which executes the process and returns a buffer of the standard output contents
 - `process.path()`, which returns a string of the path of the command associated with this process object

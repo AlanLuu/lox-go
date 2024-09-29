@@ -76,6 +76,20 @@ func (l *LoxProcess) combinedOutput() ([]byte, error) {
 	return l.process.CombinedOutput()
 }
 
+func (l *LoxProcess) kill() error {
+	if !l.started {
+		return LoxProcessError{"Cannot kill process that is not executing."}
+	}
+	if l.waited {
+		return LoxProcessError{"Cannot kill process that has already been waited on."}
+	}
+	err := l.process.Process.Kill()
+	if err == nil {
+		l.wait()
+	}
+	return err
+}
+
 func (l *LoxProcess) output() ([]byte, error) {
 	if l.started && !l.reusable {
 		return nil, LoxProcessError{"Cannot run process that has already been executed."}
@@ -253,6 +267,14 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 	case "isRunning":
 		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.started && !l.waited, nil
+		})
+	case "kill":
+		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			err := l.kill()
+			if err != nil {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			return NewLoxProcessResult(l.process.ProcessState), nil
 		})
 	case "output":
 		return processFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
