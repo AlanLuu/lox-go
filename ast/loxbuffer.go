@@ -109,16 +109,24 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		return nil
 	}
 	memfrobCopy := func(start int64, stop int64) (*LoxBuffer, error) {
-		buffer := EmptyLoxBufferCapDouble(stop - start)
-		for i := start; i < stop; i++ {
-			switch element := l.elements[i].(type) {
-			case int64:
-				addErr := buffer.add(element ^ 42)
+		elementsLen := int64(len(l.elements))
+		buffer := EmptyLoxBufferCapDouble(elementsLen)
+		for i := int64(0); i < elementsLen; i++ {
+			if i >= start && i < stop {
+				switch element := l.elements[i].(type) {
+				case int64:
+					addErr := buffer.add(element ^ 42)
+					if addErr != nil {
+						return nil, loxerror.RuntimeError(name, addErr.Error())
+					}
+				default: //Should never happen
+					return nil, unknownTypeErr(element)
+				}
+			} else {
+				addErr := buffer.add(l.elements[i])
 				if addErr != nil {
 					return nil, loxerror.RuntimeError(name, addErr.Error())
 				}
-			default: //Should never happen
-				return nil, unknownTypeErr(element)
 			}
 		}
 		return buffer, nil
@@ -331,6 +339,53 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 					"Second argument to 'buffer.memfrobRange' cannot be larger than the buffer size.")
 			}
 			return nil, memfrob(start, stop)
+		})
+	case "memfrobRangeCopy":
+		return bufferFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var start, stop int64
+			elementsLen := int64(len(l.elements))
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				if _, ok := args[0].(int64); !ok {
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'buffer.memfrobRangeCopy' must be an integer.")
+				}
+				if argsLen == 2 {
+					if _, ok := args[1].(int64); !ok {
+						return nil, loxerror.RuntimeError(name,
+							"Second argument to 'buffer.memfrobRangeCopy' must be an integer.")
+					}
+					stop = args[1].(int64)
+				} else {
+					stop = elementsLen
+				}
+				start = args[0].(int64)
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if stop < start {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'buffer.memfrobRangeCopy' cannot be less than first argument.")
+			}
+			if start < 0 {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'buffer.memfrobRangeCopy' cannot be negative.")
+			}
+			if start > elementsLen {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'buffer.memfrobRangeCopy' cannot be larger than the buffer size.")
+			}
+			if stop < 0 {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'buffer.memfrobRangeCopy' cannot be negative.")
+			}
+			if stop > elementsLen {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'buffer.memfrobRangeCopy' cannot be larger than the buffer size.")
+			}
+			return memfrobCopy(start, stop)
 		})
 	case "toList":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
