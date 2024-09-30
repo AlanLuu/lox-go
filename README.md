@@ -261,6 +261,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.rot13()`, which returns a new string that is the ROT13 encoding of the original string
         - `string.rot18()`, which returns a new string that is the ROT18 encoding of the original string
             - ROT18 is a variation of ROT13 that combines ROT13 with ROT5, which shifts numerical digits by a factor of 5
+        - `string.rot47()`, which returns a new string that is the ROT47 encoding of the original string
         - `string.rstrip([chars])`, which returns a new string with all trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all trailing whitespace, newlines, and tabs removed
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
