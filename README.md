@@ -337,6 +337,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Buffers share the same methods as lists, except that the usual element restrictions are in place in terms of adding and setting elements, and any shared methods that normally return lists return buffers instead
         - Notably, the `map` method on buffers throws a runtime error if its callback function ever returns a value that is not an integer or is an integer less than 0 or greater than 255
     - Besides the methods shared with lists, buffers also have the following methods associated with them:
+        - `buffer.memfrob([num])`, which applies the XOR operation to each buffer element with the number 42, changing the original buffer as a result. If an integer `num` is specified, only `num` buffer elements starting with the first element are changed
         - `buffer.toList()`, which returns a new list with the elements from the buffer
         - `buffer.toString()`, which attempts to convert the elements from the buffer into a string. If a portion of the buffer cannot be converted into a string, a runtime error is thrown, with the error message specifying the portion of the buffer that cannot be converted into a string
 - Dictionaries are supported in this implementation of Lox

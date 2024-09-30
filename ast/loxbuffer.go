@@ -86,6 +86,28 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'buffer.%v' must be a %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'buffer.%v' must be an %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
+	unknownTypeErr := func(element any) error {
+		return loxerror.RuntimeError(name,
+			fmt.Sprintf("Unknown type '%v' found in buffer.", getType(element)))
+	}
+	memfrob := func(start int64, stop int64) error {
+		for i := start; i < stop; i++ {
+			switch element := l.elements[i].(type) {
+			case int64:
+				l.elements[i] = element ^ 42
+			default: //Should never happen
+				for j := start; j < i; j++ {
+					l.elements[j] = l.elements[j].(int64) ^ 42
+				}
+				return unknownTypeErr(element)
+			}
+		}
+		return nil
+	}
 	switch methodName {
 	case "append":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -192,6 +214,33 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 				return NewLoxBuffer(newList), nil
 			}
 			return argMustBeType("function")
+		})
+	case "memfrob":
+		return bufferFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var err error
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				err = memfrob(0, int64(len(l.elements)))
+			case 1:
+				if num, ok := args[0].(int64); ok {
+					if num < 0 {
+						return nil, loxerror.RuntimeError(name,
+							"Argument to 'buffer.memfrob' cannot be negative.")
+					}
+					if num > int64(len(l.elements)) {
+						return nil, loxerror.RuntimeError(name,
+							"Argument to 'buffer.memfrob' cannot be larger than the buffer size.")
+					}
+					err = memfrob(0, num)
+				} else {
+					return argMustBeTypeAn("integer")
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+			return nil, err
 		})
 	case "toList":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
