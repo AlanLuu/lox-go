@@ -260,6 +260,24 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxString(builder.String(), l.quote), nil
 		})
+	case "rot18":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			var upperA, upperZ, lowerA, lowerZ rune = 65, 90, 97, 122
+			var zeroPos, ninePos rune = 48, 57
+			var builder strings.Builder
+			for _, c := range l.str {
+				if c >= upperA && c <= upperZ {
+					builder.WriteRune(((c-upperA)+13)%26 + upperA)
+				} else if c >= lowerA && c <= lowerZ {
+					builder.WriteRune(((c-lowerA)+13)%26 + lowerA)
+				} else if c >= zeroPos && c <= ninePos {
+					builder.WriteRune(((c-zeroPos)+5)%10 + zeroPos)
+				} else {
+					builder.WriteRune(c)
+				}
+			}
+			return NewLoxString(builder.String(), l.quote), nil
+		})
 	case "rstrip":
 		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
