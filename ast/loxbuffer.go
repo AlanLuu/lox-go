@@ -285,6 +285,53 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 			}
 			return buffer, err
 		})
+	case "memfrobRange":
+		return bufferFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var start, stop int64
+			elementsLen := int64(len(l.elements))
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				if _, ok := args[0].(int64); !ok {
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'buffer.memfrobRange' must be an integer.")
+				}
+				if argsLen == 2 {
+					if _, ok := args[1].(int64); !ok {
+						return nil, loxerror.RuntimeError(name,
+							"Second argument to 'buffer.memfrobRange' must be an integer.")
+					}
+					stop = args[1].(int64)
+				} else {
+					stop = elementsLen
+				}
+				start = args[0].(int64)
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if stop < start {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'buffer.memfrobRange' cannot be less than first argument.")
+			}
+			if start < 0 {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'buffer.memfrobRange' cannot be negative.")
+			}
+			if start > elementsLen {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'buffer.memfrobRange' cannot be larger than the buffer size.")
+			}
+			if stop < 0 {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'buffer.memfrobRange' cannot be negative.")
+			}
+			if stop > elementsLen {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'buffer.memfrobRange' cannot be larger than the buffer size.")
+			}
+			return nil, memfrob(start, stop)
+		})
 	case "toList":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newList := list.NewListCapDouble[any](int64(len(l.elements)))
