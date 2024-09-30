@@ -108,6 +108,21 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		}
 		return nil
 	}
+	memfrobCopy := func(start int64, stop int64) (*LoxBuffer, error) {
+		buffer := EmptyLoxBufferCapDouble(stop - start)
+		for i := start; i < stop; i++ {
+			switch element := l.elements[i].(type) {
+			case int64:
+				addErr := buffer.add(element ^ 42)
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			default: //Should never happen
+				return nil, unknownTypeErr(element)
+			}
+		}
+		return buffer, nil
+	}
 	switch methodName {
 	case "append":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -241,6 +256,34 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 			}
 			return nil, err
+		})
+	case "memfrobCopy":
+		return bufferFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var buffer *LoxBuffer
+			var err error
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				buffer, err = memfrobCopy(0, int64(len(l.elements)))
+			case 1:
+				if num, ok := args[0].(int64); ok {
+					if num < 0 {
+						return nil, loxerror.RuntimeError(name,
+							"Argument to 'buffer.memfrobCopy' cannot be negative.")
+					}
+					if num > int64(len(l.elements)) {
+						return nil, loxerror.RuntimeError(name,
+							"Argument to 'buffer.memfrobCopy' cannot be larger than the buffer size.")
+					}
+					buffer, err = memfrobCopy(0, num)
+				} else {
+					return argMustBeTypeAn("integer")
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+			return buffer, err
 		})
 	case "toList":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
