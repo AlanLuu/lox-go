@@ -306,7 +306,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
-	case "shuffle":
+	case "shuffled":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			runes := []rune(l.str)
 			rand.Shuffle(len(runes), func(a int, b int) {
