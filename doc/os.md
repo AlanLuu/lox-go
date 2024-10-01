@@ -25,6 +25,28 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.dup2(oldfd, newfd)`, which duplicates the file descriptor `oldfd` to the file descriptor `newfd`, closing `newfd` in the process, where `oldfd` and `newfd` are both integers, and returns the value of `newfd` as an integer
     - If `oldfd == newfd` and `oldfd` is a valid file descriptor, this function does nothing and simply returns the value of `newfd` as an integer
     - This method does not work on Windows and throws an error if called on there
+- `os.devFull`, which is a file object that refers to the file `/dev/full` on Unix
+    - This field does not exist on Windows
+    - This field is lazy; the actual file object is only created when this field is accessed
+- `os.devFullBin`, which is a file object that refers to the file `/dev/full` on Unix and is open in binary mode
+    - This field does not exist on Windows
+    - This field is lazy; the actual file object is only created when this field is accessed
+- `os.devNull`, which is a file object that refers to the null device of the current operating system, which is `/dev/null` on Unix and `NUL` on Windows
+    - This field is lazy; the actual file object is only created when this field is accessed
+- `os.devNullBin`, which is a file object that refers to the null device of the current operating system, which is `/dev/null` on Unix and `NUL` on Windows, and is open in binary mode
+    - This field is lazy; the actual file object is only created when this field is accessed
+- `os.devRandom`, which is a file object that refers to the file `/dev/random` on Unix
+    - This field does not exist on Windows
+    - This field is lazy; the actual file object is only created when this field is accessed
+    - The file object in this field is open in binary mode
+- `os.devUrandom`, which is a file object that refers to the file `/dev/urandom` on Unix
+    - This field does not exist on Windows
+    - This field is lazy; the actual file object is only created when this field is accessed
+    - The file object in this field is open in binary mode
+- `os.devZero`, which is a file object that refers to the file `/dev/zero` on Unix
+    - This field does not exist on Windows
+    - This field is lazy; the actual file object is only created when this field is accessed
+    - The file object in this field is open in binary mode
 - `os.execl(path, arg1, [arg2, ..., argN])`, which executes the program given by the string argument `path` and the arguments from `arg1` to `argN`, immediately replacing the current process on success without returning any value and throwing a runtime error on failure
     - All arguments to this method after `path`, which become the command line arguments to the new program, must be strings or else a runtime error is thrown
     - `arg1` is required, while all arguments after `arg1` are optional

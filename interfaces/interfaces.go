@@ -17,6 +17,10 @@ type Iterable interface {
 	Iterator() Iterator
 }
 
+type LazyType interface {
+	LazyTypeEval() error
+}
+
 type Length interface {
 	Length() int64
 }

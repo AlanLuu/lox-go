@@ -1796,7 +1796,15 @@ func (i *Interpreter) visitGetExpr(expr Get) (any, error) {
 		return nil, objErr
 	}
 	if obj, ok := obj.(LoxObject); ok {
-		return obj.Get(expr.Name)
+		get, getErr := obj.Get(expr.Name)
+		switch get := get.(type) {
+		case interfaces.LazyType:
+			evalErr := get.LazyTypeEval()
+			if evalErr != nil {
+				return nil, evalErr
+			}
+		}
+		return get, getErr
 	}
 	return nil, loxerror.RuntimeError(expr.Name,
 		fmt.Sprintf("Type '%v' does not have properties.", getType(obj)))
@@ -2602,12 +2610,22 @@ func (i *Interpreter) visitVarStmt(stmt Var) (any, error) {
 }
 
 func (i *Interpreter) visitVariableExpr(expr Variable) (any, error) {
+	var variable any
+	var variableErr error
 	distance, ok := i.locals[expr.Name]
 	if ok {
-		return i.environment.GetAt(distance, expr.Name)
+		variable, variableErr = i.environment.GetAt(distance, expr.Name)
 	} else {
-		return i.globals.Get(expr.Name)
+		variable, variableErr = i.globals.Get(expr.Name)
 	}
+	switch variable := variable.(type) {
+	case interfaces.LazyType:
+		evalErr := variable.LazyTypeEval()
+		if evalErr != nil {
+			return nil, evalErr
+		}
+	}
+	return variable, variableErr
 }
 
 func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {

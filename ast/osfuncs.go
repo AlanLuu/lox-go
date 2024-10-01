@@ -253,6 +253,15 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return newfd, nil
 	})
+	osClass.classProperties["devNull"] = NewLoxLazyFile(os.DevNull, filemode.READ_WRITE, false)
+	osClass.classProperties["devNullBin"] = NewLoxLazyFile(os.DevNull, filemode.READ_WRITE, true)
+	if !util.IsWindows() {
+		osClass.classProperties["devFull"] = NewLoxLazyFile("/dev/full", filemode.READ_WRITE, false)
+		osClass.classProperties["devFullBin"] = NewLoxLazyFile("/dev/full", filemode.READ_WRITE, true)
+		osClass.classProperties["devRandom"] = NewLoxLazyFile("/dev/random", filemode.READ_WRITE, true)
+		osClass.classProperties["devUrandom"] = NewLoxLazyFile("/dev/urandom", filemode.READ_WRITE, true)
+		osClass.classProperties["devZero"] = NewLoxLazyFile("/dev/zero", filemode.READ_WRITE, true)
+	}
 	osFunc("execl", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		if argsLen == 0 || argsLen == 1 {
