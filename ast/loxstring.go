@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"strconv"
 	"strings"
 	"unicode"
@@ -304,6 +305,14 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				return argMustBeType("string")
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		})
+	case "shuffle":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			runes := []rune(l.str)
+			rand.Shuffle(len(runes), func(a int, b int) {
+				runes[a], runes[b] = runes[b], runes[a]
+			})
+			return NewLoxString(string(runes), l.quote), nil
 		})
 	case "split":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
