@@ -408,6 +408,14 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterable), nil
 	})
+	iteratorFunc("infiniteArg", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		arg := args[0]
+		iterator := InfiniteIterator{}
+		iterator.nextMethod = func() any {
+			return arg
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("pairwise", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if iterable, ok := args[0].(interfaces.Iterable); ok {
 			it := iterable.Iterator()
