@@ -599,6 +599,27 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return position, nil
 		})
+	case "setBinary":
+		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if isBinary, ok := args[0].(bool); ok {
+				l.isBinary = isBinary
+				modeKey := "mode"
+				if mode, ok := l.properties[modeKey].(*LoxString); ok {
+					modeStr := mode.str
+					modeLen := utf8.RuneCountInString(modeStr)
+					if modeLen > 0 {
+						modeStrRunes := []rune(modeStr)
+						if isBinary && modeStrRunes[modeLen-1] != 'b' {
+							l.properties[modeKey] = NewLoxString(modeStr+"b", '\'')
+						} else if !isBinary && modeStrRunes[modeLen-1] == 'b' {
+							l.properties[modeKey] = NewLoxString(string(modeStrRunes[:modeLen-1]), '\'')
+						}
+					}
+				}
+				return l, nil
+			}
+			return argMustBeType("boolean")
+		})
 	case "size":
 		stat, statErr := l.file.Stat()
 		if statErr != nil {
