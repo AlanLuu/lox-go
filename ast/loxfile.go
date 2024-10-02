@@ -215,6 +215,10 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			fd := l.file.Fd()
 			return isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd), nil
 		})
+	case "isBinary":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.isBinary, nil
+		})
 	case "isClosed":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isClosed(), nil
