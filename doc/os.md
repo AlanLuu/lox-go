@@ -210,6 +210,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.tee(arg, path)`, which writes the string representation of the specified argument to the file specified by the path name and also writes the string to standard output
+    - If the file already exists, it is truncated
+- `os.teeAppend(arg, path)`, which appends the string representation of the specified argument to the file specified by the path name and also writes the string to standard output
 - `os.tempdir()`, which returns the path of the default temporary file directory of the operating system as a string
 - `os.touch(name)`, which creates a new empty file with the specified name in the current working directory
     - If the file already exists, it is truncated
