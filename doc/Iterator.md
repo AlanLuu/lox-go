@@ -1,6 +1,7 @@
 # Iterator utility methods and fields
 
 The following methods and fields are defined in the built-in `Iterator` class:
+- `Iterator.args(args)`, which takes in a variable amount of arguments and returns an iterator that returns those arguments in order from left to right and stops after returning the rightmost argument
 - `Iterator.batched(iterable, length)`, which returns an iterator that produces lists of elements from the iterable of the specified length, which is an integer
     ```js
     var list = [1, 2, 3, 4, 5, 6];

@@ -49,6 +49,20 @@ func (i *Interpreter) defineIteratorFuncs() {
 	}
 
 	defineIteratorFields(iteratorClass)
+	iteratorFunc("args", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		index := 0
+		iterator := ProtoIterator{}
+		iterator.hasNextMethod = func() bool {
+			return index < argsLen
+		}
+		iterator.nextMethod = func() any {
+			element := args[index]
+			index++
+			return element
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("batched", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(interfaces.Iterable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
