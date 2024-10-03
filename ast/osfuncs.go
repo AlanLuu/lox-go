@@ -1697,6 +1697,33 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "system", "string")
 	})
+	osFunc("tee", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.tee' must be a string.")
+		}
+
+		elementStr := getResult(args[0], args[0], true)
+		path := args[1].(*LoxString).str
+		file, openErr := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+		if openErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, openErr.Error())
+		}
+		defer file.Close()
+
+		_, writeErr := file.WriteString(elementStr)
+		if writeErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, writeErr.Error())
+		}
+		_, writeErr = os.Stdout.WriteString(elementStr)
+		if writeErr != nil {
+			return nil, loxerror.RuntimeError(in.callToken, writeErr.Error())
+		}
+		if util.StdinFromTerminal() && []rune(elementStr)[len(elementStr)-1] != '\n' {
+			fmt.Println()
+		}
+		return nil, nil
+	})
 	osFunc("tempdir", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return NewLoxStringQuote(os.TempDir()), nil
 	})
