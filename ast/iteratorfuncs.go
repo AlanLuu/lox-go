@@ -49,7 +49,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 	}
 
 	defineIteratorFields(iteratorClass)
-	iteratorFunc("args", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+	iteratorFunc("args", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		index := 0
 		iterator := ProtoIterator{}
@@ -342,7 +342,11 @@ func (i *Interpreter) defineIteratorFuncs() {
 					elements.Add(next)
 				} else {
 					next = elements[elementsIndex]
-					elementsIndex = (elementsIndex + 1) % len(elements)
+					if elementsIndex >= len(elements)-1 {
+						elementsIndex = 0
+					} else {
+						elementsIndex++
+					}
 				}
 				return next
 			}
@@ -422,11 +426,30 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterable), nil
 	})
-	iteratorFunc("infiniteArg", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+	iteratorFunc("infiniteArg", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		arg := args[0]
 		iterator := InfiniteIterator{}
 		iterator.nextMethod = func() any {
 			return arg
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("infiniteArgs", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen == 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Expected at least 1 argument but got 0.")
+		}
+		index := 0
+		iterator := InfiniteIterator{}
+		iterator.nextMethod = func() any {
+			element := args[index]
+			if index >= argsLen-1 {
+				index = 0
+			} else {
+				index++
+			}
+			return element
 		}
 		return NewLoxIterator(iterator), nil
 	})
