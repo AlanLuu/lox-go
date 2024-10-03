@@ -140,6 +140,10 @@ func Getgroups() ([]int, error) {
 	return unix.Getgroups()
 }
 
+func Getpagesize() int {
+	return unix.Getpagesize()
+}
+
 func Getsid(pid int) (int, error) {
 	return unix.Getsid(pid)
 }

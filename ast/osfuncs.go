@@ -1052,6 +1052,9 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxList(groupsList), nil
 	})
+	osFunc("getpagesize", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(syscalls.Getpagesize()), nil
+	})
 	osFunc("getpid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getpid()), nil
 	})

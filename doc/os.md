@@ -128,6 +128,7 @@ The following methods and fields are defined in the built-in `os` class:
     - On Windows, this method always returns `-1`
 - `os.getgroups()`, which returns a list of the supplementary group IDs of the current process as integers
     - This method does not work on Windows and throws an error if called on there
+- `os.getpagesize()`, which returns the size of a memory page on the current system in bytes as an integer
 - `os.getpid()`, which returns the process ID of the current process as an integer
 - `os.getppid()`, which returns the process ID of the parent process as an integer
 - `os.getsid(pid)`, which calls the Unix system call `getsid` with the specified process ID integer and returns the result as an integer

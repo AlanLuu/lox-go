@@ -90,6 +90,10 @@ func Getgroups() ([]int, error) {
 	return nil, unsupported("getgroups")
 }
 
+func Getpagesize() int {
+	return syscall.Getpagesize()
+}
+
 func Getsid(pid int) (int, error) {
 	return -1, unsupported("getsid")
 }
