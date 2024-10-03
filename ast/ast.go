@@ -8,6 +8,11 @@ import (
 type Expr interface{}
 type Stmt interface{}
 
+type Assert struct {
+	Value       Expr
+	AssertToken *token.Token
+}
+
 type Assign struct {
 	Name  *token.Token
 	Value Expr

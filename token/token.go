@@ -52,6 +52,7 @@ const (
 
 	//Reserved keywords
 	AND
+	ASSERT
 	BREAK
 	CATCH
 	CLASS
@@ -134,6 +135,7 @@ var tokenArr = [...]string{
 
 	//Reserved keywords
 	"AND",
+	"ASSERT",
 	"BREAK",
 	"CATCH",
 	"CLASS",

@@ -116,6 +116,8 @@ func (r *Resolver) resolveExpr(expr Expr) error {
 
 func (r *Resolver) resolveStmt(stmt Stmt) error {
 	switch stmt := stmt.(type) {
+	case Assert:
+		return r.visitAssertStmt(stmt)
 	case Block:
 		return r.visitBlockStmt(stmt)
 	case Break, Continue:
@@ -183,6 +185,10 @@ func (r *Resolver) resolveLocal(expr Expr, name *token.Token) {
 			return
 		}
 	}
+}
+
+func (r *Resolver) visitAssertStmt(stmt Assert) error {
+	return r.resolveExpr(stmt.Value)
 }
 
 func (r *Resolver) visitAssignExpr(expr Assign) error {

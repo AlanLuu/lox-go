@@ -47,6 +47,19 @@ func (p *Parser) and() (Expr, error) {
 	return expr, nil
 }
 
+func (p *Parser) assertStatement() (Stmt, error) {
+	assertToken := p.previous()
+	assertExpr, assertExprErr := p.expression()
+	if assertExprErr != nil {
+		return nil, assertExprErr
+	}
+	_, semiColonErr := p.consume(token.SEMICOLON, "Expected ';' after value.")
+	if semiColonErr != nil {
+		return nil, semiColonErr
+	}
+	return Assert{assertExpr, assertToken}, nil
+}
+
 func (p *Parser) assignment() (Expr, error) {
 	expr, exprErr := p.or()
 	if exprErr != nil {
@@ -1110,6 +1123,8 @@ func (p *Parser) returnStatement() (Stmt, error) {
 
 func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 	switch {
+	case p.match(token.ASSERT):
+		return p.assertStatement()
 	case p.match(token.BREAK):
 		return p.breakStatement()
 	case p.match(token.CONTINUE):

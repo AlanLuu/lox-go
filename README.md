@@ -123,6 +123,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Along with try-catch-finally statements, `throw` statements are supported in this implementation of Lox
         - Syntax: `throw <expression>;`
         - `throw` statements throw a runtime error using the provided expression as the error message. If the provided expression is an error object, the object itself is thrown. Otherwise, if the provided expression is not a string, the string representation of the expression is used as the error message
+- Assert statements are supported in this implementation of Lox
+    ```java
+    assert 1 == 1;
+    assert 1 == 2; //Throws a runtime error
+    ```
+    - If the specified expression is false, a runtime error is thrown, otherwise the statement does nothing
 - Anonymous function expressions are supported in this implementation of Lox. There are two forms supported:
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called

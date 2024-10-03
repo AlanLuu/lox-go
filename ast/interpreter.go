@@ -65,6 +65,8 @@ func NewInterpreter() *Interpreter {
 
 func (i *Interpreter) evaluate(expr any) (any, error) {
 	switch expr := expr.(type) {
+	case Assert:
+		return i.visitAssertStmt(expr)
 	case Assign:
 		return i.visitAssignExpr(expr)
 	case BigNum:
@@ -444,6 +446,17 @@ func (i *Interpreter) Resolve(expr Expr, depth int) {
 	default:
 		i.locals[expr] = depth
 	}
+}
+
+func (i *Interpreter) visitAssertStmt(stmt Assert) (any, error) {
+	assertValue, assertValueErr := i.evaluate(stmt.Value)
+	if assertValueErr != nil {
+		return nil, assertValueErr
+	}
+	if !i.isTruthy(assertValue) {
+		return nil, loxerror.RuntimeError(stmt.AssertToken, "AssertionError")
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) visitAssignExpr(expr Assign) (any, error) {
