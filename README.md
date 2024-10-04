@@ -472,6 +472,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `iterator(iterable)`, which returns an iterator object from the specified iterable type and throws a runtime error if the argument is not an iterable type
         - Iterator objects have the following methods associated with them:
             - `iterator.hasNext()`, which returns `true` if there are more elements to be iterated over and `false` otherwise
+            - `iterator.isEmptyType()`, which returns `true` if the iterator is an empty iterator type that is always empty by default, which is typically returned in certain circumstances by native functions that return iterators, and `false` otherwise
             - `iterator.next()`, which returns the next element in the iterator
                 - If the iterator has no more elements, calling this method will throw a runtime error with the error message `"StopIteration"`
             - `iterator.toList([length])`, which returns a list of elements from the iterator with the specified length as an integer. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over

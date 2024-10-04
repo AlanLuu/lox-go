@@ -86,6 +86,14 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 		return iteratorFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.HasNext(), nil
 		})
+	case "isEmptyType":
+		return iteratorFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			switch l.iterator.(type) {
+			case EmptyIterator:
+				return true, nil
+			}
+			return false, nil
+		})
 	case "next":
 		return iteratorFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			if !l.HasNext() {
