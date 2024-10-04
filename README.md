@@ -102,6 +102,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each element of the set
         - File
             - For each iteration, `element` is each line from the file as a string
+        - CSV Reader
+            - For each iteration, `element` is a list of strings of the values that are separated by the delimiter for each line in the CSV file
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Try-catch-finally statements are supported in this implementation of Lox
     ```js

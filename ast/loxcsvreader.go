@@ -6,10 +6,55 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
 )
+
+type LoxCSVReaderIterator struct {
+	reader  *csv.Reader
+	current *LoxList
+	isAtEnd bool
+}
+
+func (l *LoxCSVReaderIterator) HasNext() bool {
+	return !l.isAtEnd
+}
+
+func (l *LoxCSVReaderIterator) Next() any {
+	var loxList *LoxList
+	if l.current == nil {
+		fields, err := l.reader.Read()
+		if err != nil {
+			l.isAtEnd = true
+			if !errors.Is(err, io.EOF) {
+				return nil
+			}
+		}
+		fieldsList := list.NewListCapDouble[any](int64(len(fields)))
+		for _, field := range fields {
+			fieldsList.Add(NewLoxStringQuote(field))
+		}
+		loxList = NewLoxList(fieldsList)
+	} else {
+		loxList = l.current
+	}
+	fields, err := l.reader.Read()
+	if err != nil {
+		l.isAtEnd = true
+		if !errors.Is(err, io.EOF) {
+			return nil
+		}
+	} else {
+		fieldsList := list.NewListCapDouble[any](int64(len(fields)))
+		for _, field := range fields {
+			fieldsList.Add(NewLoxStringQuote(field))
+		}
+		l.current = NewLoxList(fieldsList)
+	}
+	return loxList
+}
 
 type LoxCSVReader struct {
 	reader  *csv.Reader
@@ -78,6 +123,26 @@ func (l *LoxCSVReader) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "CSV readers have no property called '"+methodName+"'.")
+}
+
+func (l *LoxCSVReader) Iterator() interfaces.Iterator {
+	iterator := &LoxCSVReaderIterator{
+		reader: l.reader,
+	}
+	fields, err := l.reader.Read()
+	if err != nil {
+		iterator.isAtEnd = true
+		if !errors.Is(err, io.EOF) {
+			return EmptyLoxIterator()
+		}
+	} else {
+		fieldsList := list.NewListCapDouble[any](int64(len(fields)))
+		for _, field := range fields {
+			fieldsList.Add(NewLoxStringQuote(field))
+		}
+		iterator.current = NewLoxList(fieldsList)
+	}
+	return iterator
 }
 
 func (l *LoxCSVReader) String() string {
