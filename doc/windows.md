@@ -21,6 +21,7 @@ The following methods and fields are defined in the built-in `windows` class:
 - `windows.getMaximumProcessorCount()`, which returns an integer representing the number of logical processors on the current system
 - `windows.getSystemDirectory()`, which returns a string that is the path of the system directory, which is usually `C:\Windows\System32`
 - `windows.getSystemWindowsDirectory()`, which returns a string that is the path of the Windows directory, which is usually `C:\Windows`
+- `windows.listDrives()`, which returns a list that contains the Windows drive names on the current system as strings, which typically looks like `C:\\`
 - `windows.stderr`, which is an integer that refers to the file handle for the standard error stream on Windows
 - `windows.stdin`, which is an integer that refers to the file handle for the standard input stream on Windows
 - `windows.stdout`, which is an integer that refers to the file handle for the standard output stream on Windows

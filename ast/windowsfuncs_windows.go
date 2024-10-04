@@ -83,6 +83,26 @@ func (i *Interpreter) defineWindowsFuncs() {
 		}
 		return NewLoxStringQuote(dir), nil
 	})
+	windowsFunc("listDrives", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		mask, err := windows.GetLogicalDrives()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		drives := list.NewList[any]()
+		var num uint32 = 1
+		var letter rune = 'A'
+		for {
+			if mask&num != 0 {
+				drives.Add(NewLoxString(string(letter)+":\\\\", '\''))
+			}
+			if num == 1<<31 || num<<1 > mask || letter >= 'Z' {
+				break
+			}
+			num <<= 1
+			letter++
+		}
+		return NewLoxList(drives), nil
+	})
 	windowsClass.classProperties["stderr"] = int64(windows.Stderr)
 	windowsClass.classProperties["stdin"] = int64(windows.Stdin)
 	windowsClass.classProperties["stdout"] = int64(windows.Stdout)
