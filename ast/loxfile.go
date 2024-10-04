@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/ast/filemode"
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -16,12 +18,33 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
+type LoxFileIterator struct {
+	reader  *bufio.Reader
+	isAtEnd bool
+}
+
+func (l *LoxFileIterator) HasNext() bool {
+	return !l.isAtEnd
+}
+
+func (l *LoxFileIterator) Next() any {
+	line, err := l.reader.ReadString('\n')
+	if err != nil {
+		l.isAtEnd = true
+		if !errors.Is(err, io.EOF) {
+			return nil
+		}
+	}
+	return NewLoxStringQuote(line)
+}
+
 type LoxFile struct {
 	file       *os.File
 	name       string
 	mode       filemode.FileMode
 	isBinary   bool
 	stat       os.FileInfo
+	iterator   *LoxFileIterator
 	properties map[string]any
 }
 
@@ -822,6 +845,17 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Files have no property called '"+lexemeName+"'.")
+}
+
+func (l *LoxFile) Iterator() interfaces.Iterator {
+	if !l.isRead() {
+		return EmptyLoxIterator()
+	}
+	iterator := &LoxFileIterator{
+		reader: bufio.NewReader(l.file),
+	}
+	l.iterator = iterator
+	return iterator
 }
 
 func (l *LoxFile) String() string {
