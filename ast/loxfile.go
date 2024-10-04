@@ -20,6 +20,7 @@ import (
 
 type LoxFileIterator struct {
 	reader  *bufio.Reader
+	current *LoxString
 	isAtEnd bool
 }
 
@@ -28,14 +29,29 @@ func (l *LoxFileIterator) HasNext() bool {
 }
 
 func (l *LoxFileIterator) Next() any {
+	var loxStr *LoxString
+	if l.current == nil {
+		line, err := l.reader.ReadString('\n')
+		if err != nil {
+			l.isAtEnd = true
+			if !errors.Is(err, io.EOF) {
+				return nil
+			}
+		}
+		loxStr = NewLoxStringQuote(line)
+	} else {
+		loxStr = l.current
+	}
 	line, err := l.reader.ReadString('\n')
 	if err != nil {
 		l.isAtEnd = true
 		if !errors.Is(err, io.EOF) {
 			return nil
 		}
+	} else {
+		l.current = NewLoxStringQuote(line)
 	}
-	return NewLoxStringQuote(line)
+	return loxStr
 }
 
 type LoxFile struct {
@@ -44,7 +60,6 @@ type LoxFile struct {
 	mode       filemode.FileMode
 	isBinary   bool
 	stat       os.FileInfo
-	iterator   *LoxFileIterator
 	properties map[string]any
 }
 
@@ -854,7 +869,15 @@ func (l *LoxFile) Iterator() interfaces.Iterator {
 	iterator := &LoxFileIterator{
 		reader: bufio.NewReader(l.file),
 	}
-	l.iterator = iterator
+	line, err := iterator.reader.ReadString('\n')
+	if err != nil {
+		iterator.isAtEnd = true
+		if !errors.Is(err, io.EOF) {
+			return EmptyLoxIterator()
+		}
+	} else {
+		iterator.current = NewLoxStringQuote(line)
+	}
 	return iterator
 }
 
