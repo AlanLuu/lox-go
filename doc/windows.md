@@ -18,6 +18,7 @@ The following methods and fields are defined in the built-in `windows` class:
     }
     ```
 - `windows.getLastError()`, which returns an error object corresponding to the last error returned by a `windows` class method, or `nil` if there is no such error
+- `windows.getLogicalDrives()`, which returns an integer that is a bitmask of the available disk drives on the current system, further documented [here](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlogicaldrives)
 - `windows.getMaximumProcessorCount()`, which returns an integer representing the number of logical processors on the current system
 - `windows.getSystemDirectory()`, which returns a string that is the path of the system directory, which is usually `C:\Windows\System32`
 - `windows.getSystemWindowsDirectory()`, which returns a string that is the path of the Windows directory, which is usually `C:\Windows`

@@ -66,6 +66,13 @@ func (i *Interpreter) defineWindowsFuncs() {
 		}
 		return NewLoxError(err), nil
 	})
+	windowsFunc("getLogicalDrives", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		mask, err := windows.GetLogicalDrives()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(mask), nil
+	})
 	windowsFunc("getMaximumProcessorCount", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(windows.GetMaximumProcessorCount(windows.ALL_PROCESSOR_GROUPS)), nil
 	})
