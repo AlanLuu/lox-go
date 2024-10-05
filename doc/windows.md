@@ -5,7 +5,7 @@ Note: this class does not exist on non-Windows systems.
 Any method that fails will throw a runtime error with a message describing the error.
 
 The following methods and fields are defined in the built-in `windows` class:
-- `windows.getComputerName()`, which returns a string that is the NetBIOS name of the current system
+- `windows.computerName()`, which returns a string that is the NetBIOS name of the current system
 - `windows.getFileType(handle)`, which returns an integer corresponding to the type of file with the specified file handle integer, which is further documented [here](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype)
 - `windows.getFileTypeStr(handle)`, which returns a string corresponding to the type of file with the specified file handle integer, according to the following mapping:
     ```go
