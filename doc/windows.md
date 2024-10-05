@@ -6,6 +6,7 @@ Any method that fails will throw a runtime error with a message describing the e
 
 The following methods and fields are defined in the built-in `windows` class:
 - `windows.computerName()`, which returns a string that is the NetBIOS name of the current system
+- `windows.fsync(handle)`, which forces a write of the file with the specified file handle integer to disk
 - `windows.getFileType(handle)`, which returns an integer corresponding to the type of file with the specified file handle integer, which is further documented [here](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype)
 - `windows.getFileTypeStr(handle)`, which returns a string corresponding to the type of file with the specified file handle integer, according to the following mapping:
     ```go

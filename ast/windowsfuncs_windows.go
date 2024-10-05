@@ -33,6 +33,16 @@ func (i *Interpreter) defineWindowsFuncs() {
 		}
 		return NewLoxStringQuote(version), nil
 	})
+	windowsFunc("fsync", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if arg, ok := args[0].(int64); ok {
+			err := windows.Fsync(windows.Handle(arg))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return nil, nil
+		}
+		return argMustBeTypeAn(in.callToken, "fsync", "integer")
+	})
 	windowsFunc("getFileType", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if arg, ok := args[0].(int64); ok {
 			fileType, err := windows.GetFileType(windows.Handle(arg))
