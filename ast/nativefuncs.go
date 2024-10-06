@@ -305,6 +305,18 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'ListCap' must be an integer.")
 	})
+	nativeFunc("ListIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			lst := list.NewList[any]()
+			it := element.Iterator()
+			for it.HasNext() {
+				lst.Add(it.Next())
+			}
+			return NewLoxList(lst), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("ListZero", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if size, ok := args[0].(int64); ok {
 			if size < 0 {

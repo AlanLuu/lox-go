@@ -506,6 +506,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Strings: the length is the number of characters in the string
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ListCap(capacity)`, which returns a new list of the specified capacity, which is the number of elements the list can store before having to internally resize the underlying array that stores the list elements when a new element is added
+    - `ListIterable(iterable)`, which takes in an iterable and returns a list with the iterable elements as list elements
     - `ListZero(length)`, which returns a new list of the specified length, where each initial element is `0`
     - `oct(num)`, which converts the specified integer `num` into its octal representation as a string prefixed with "0o"
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
