@@ -405,6 +405,24 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		}
 		listStr.WriteByte(']')
 		return listStr.String()
+	case *LoxQueue:
+		sourceLen := source.elements.Len()
+		var queueStr strings.Builder
+		queueStr.WriteString("Queue [")
+		i := 0
+		for e := source.elements.Front(); e != nil; e = e.Next() {
+			if e.Value == originalSource {
+				queueStr.WriteString(selfReferential(originalSource))
+			} else {
+				queueStr.WriteString(getResult(e.Value, originalSource, false))
+			}
+			if i < sourceLen-1 {
+				queueStr.WriteString(", ")
+			}
+			i++
+		}
+		queueStr.WriteByte(']')
+		return queueStr.String()
 	case *LoxSet:
 		if len(source.elements) == 0 {
 			return "∅"

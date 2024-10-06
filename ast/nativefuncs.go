@@ -341,6 +341,25 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'ord' must be a single character.")
 	})
+	nativeFunc("Queue", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		queue := NewLoxQueue()
+		for _, element := range args {
+			queue.add(element)
+		}
+		return queue, nil
+	})
+	nativeFunc("QueueIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			queue := NewLoxQueue()
+			it := element.Iterator()
+			for it.HasNext() {
+				queue.add(it.Next())
+			}
+			return queue, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("range", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		switch argsLen {
