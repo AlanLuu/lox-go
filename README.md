@@ -395,6 +395,18 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `set.isEmpty()`, which returns `true` if the set contains no elements and `false` otherwise
         - `set.remove(element)`, which removes the specified element from the set. Returns `true` if the set contained `element`, false if it didn't, and throws a runtime error if the element is an object that cannot be a set element
         - `set.toList()`, which returns a list of all the elements in the set in no particular order
+- Queues are supported in this implementation of Lox
+    - Create a queue and assign it to a variable: `var queue = Queue(element1, element2);`
+        - The `Queue` function takes in a variable number of arguments and uses them as the queue elements: `Queue(element1, element2, ..., elementN)`
+    - Besides these operations, queues also have some methods associated with them:
+        - `queue.add(element)`, which adds an element to the back of the queue and is an alias for `queue.enqueue`
+        - `queue.contains(element)`, which returns `true` if the queue contains the specified element and `false` otherwise
+        - `queue.clear()`, which removes all elements from the queue
+        - `queue.dequeue()`, which removes and returns the element at the front of the queue
+        - `queue.enqueue(element)`, which adds an element to the back of the queue
+        - `queue.isEmpty()`, which returns `true` if the queue contains no elements and `false` otherwise
+        - `queue.peek()`, which returns the element at the front of the queue without removing it from the queue
+        - `queue.remove()`, which removes and returns the element at the front of the queue and is an alias for `queue.dequeue`
 - A range type is supported in this implementation of Lox
     - A range is a sequence of integers generated on demand, starting from a start value, stopping at but not including the stop value, and updating the current value using the step value
     - Examples of creating range objects and assigning them to variables:
@@ -491,6 +503,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `ListZero(length)`, which returns a new list of the specified length, where each initial element is `0`
     - `oct(num)`, which converts the specified integer `num` into its octal representation as a string prefixed with "0o"
     - `ord(c)`, which returns an integer that represents the Unicode code point of the character `c`, where `c` is a string that contains a single Unicode character
+    - `Queue(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a queue with the arguments as queue elements
+    - `QueueIterable(iterable)`, which takes in an iterable and returns a queue with the iterable elements as queue elements
     - `range(stop)`, which takes in an integer and returns a range object with a start value of `0`, a stop value of `stop`, and a step value of `1`
     - `range(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers and returns a range object with the specified parameters. If `step` is omitted, the resulting range object will have a step value of `1`
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
