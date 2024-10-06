@@ -400,6 +400,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - The `Queue` function takes in a variable number of arguments and uses them as the queue elements: `Queue(element1, element2, ..., elementN)`
     - Besides these operations, queues also have some methods associated with them:
         - `queue.add(element)`, which adds an element to the back of the queue and is an alias for `queue.enqueue`
+        - `queue.back()`, which returns the element at the back of the queue
+            - This method returns `nil` if the queue is empty
         - `queue.contains(element)`, which returns `true` if the queue contains the specified element and `false` otherwise
         - `queue.clear()`, which removes all elements from the queue
         - `queue.dequeue()`, which removes and returns the element at the front of the queue
@@ -408,7 +410,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `queue.isEmpty()`, which returns `true` if the queue contains no elements and `false` otherwise
         - `queue.peek()`, which returns the element at the front of the queue without removing it from the queue
             - This method returns `nil` if the queue is empty
-        - `queue.rear()`, which returns the element at the back of the queue
+        - `queue.rear()`, which returns the element at the back of the queue and is an alias for `queue.back`
             - This method returns `nil` if the queue is empty
         - `queue.remove()`, which removes and returns the element at the front of the queue and is an alias for `queue.dequeue`
             - This method throws a runtime error if the queue is empty

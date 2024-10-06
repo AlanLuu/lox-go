@@ -41,6 +41,14 @@ func (l *LoxQueue) add(element any) {
 	l.elements.PushBack(element)
 }
 
+func (l *LoxQueue) back() any {
+	element := l.elements.Back()
+	if element == nil {
+		return nil
+	}
+	return element.Value
+}
+
 func (l *LoxQueue) contains(element any) bool {
 	for e := l.elements.Front(); e != nil; e = e.Next() {
 		var condition bool
@@ -62,14 +70,6 @@ func (l *LoxQueue) contains(element any) bool {
 
 func (l *LoxQueue) peek() any {
 	element := l.elements.Front()
-	if element == nil {
-		return nil
-	}
-	return element.Value
-}
-
-func (l *LoxQueue) rear() any {
-	element := l.elements.Back()
 	if element == nil {
 		return nil
 	}
@@ -135,6 +135,10 @@ func (l *LoxQueue) Get(name *token.Token) (any, error) {
 			l.add(args[0])
 			return nil, nil
 		})
+	case "back", "rear":
+		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.back(), nil
+		})
 	case "contains":
 		return queueFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return l.contains(args[0]), nil
@@ -159,10 +163,6 @@ func (l *LoxQueue) Get(name *token.Token) (any, error) {
 	case "peek":
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.peek(), nil
-		})
-	case "rear":
-		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return l.rear(), nil
 		})
 	case "toList":
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
