@@ -146,14 +146,14 @@ func (l *LoxDeque) Get(name *token.Token) (any, error) {
 		return dequeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.back(), nil
 		})
-	case "contains":
-		return dequeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
-			return l.contains(args[0]), nil
-		})
 	case "clear":
 		return dequeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.elements.Init()
 			return nil, nil
+		})
+	case "contains":
+		return dequeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			return l.contains(args[0]), nil
 		})
 	case "front":
 		return dequeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

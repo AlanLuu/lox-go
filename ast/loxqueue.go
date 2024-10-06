@@ -139,14 +139,14 @@ func (l *LoxQueue) Get(name *token.Token) (any, error) {
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.back(), nil
 		})
-	case "contains":
-		return queueFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
-			return l.contains(args[0]), nil
-		})
 	case "clear":
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.elements.Init()
 			return nil, nil
+		})
+	case "contains":
+		return queueFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			return l.contains(args[0]), nil
 		})
 	case "dequeue", "remove":
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

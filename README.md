@@ -405,8 +405,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `queue.add(element)`, which adds an element to the back of the queue and is an alias for `queue.enqueue`
         - `queue.back()`, which returns the element at the back of the queue
             - This method returns `nil` if the queue is empty
-        - `queue.contains(element)`, which returns `true` if the queue contains the specified element and `false` otherwise
         - `queue.clear()`, which removes all elements from the queue
+        - `queue.contains(element)`, which returns `true` if the queue contains the specified element and `false` otherwise
         - `queue.dequeue()`, which removes and returns the element at the front of the queue
             - This method throws a runtime error if the queue is empty
         - `queue.enqueue(element)`, which adds an element to the back of the queue
