@@ -176,6 +176,25 @@ func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc("clock", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return float64(time.Now().UnixMilli()) / 1000, nil
 	})
+	nativeFunc("Deque", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		deque := NewLoxDeque()
+		for _, element := range args {
+			deque.pushBack(element)
+		}
+		return deque, nil
+	})
+	nativeFunc("DequeIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			deque := NewLoxDeque()
+			it := element.Iterator()
+			for it.HasNext() {
+				deque.pushBack(it.Next())
+			}
+			return deque, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("eval", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if codeStr, ok := args[0].(*LoxString); ok {
 			importSc := scanner.NewScanner(codeStr.str)

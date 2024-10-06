@@ -423,6 +423,24 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		}
 		queueStr.WriteByte(']')
 		return queueStr.String()
+	case *LoxDeque:
+		sourceLen := source.elements.Len()
+		var dequeStr strings.Builder
+		dequeStr.WriteString("Deque [")
+		i := 0
+		for e := source.elements.Front(); e != nil; e = e.Next() {
+			if e.Value == originalSource {
+				dequeStr.WriteString(selfReferential(originalSource))
+			} else {
+				dequeStr.WriteString(getResult(e.Value, originalSource, false))
+			}
+			if i < sourceLen-1 {
+				dequeStr.WriteString(", ")
+			}
+			i++
+		}
+		dequeStr.WriteByte(']')
+		return dequeStr.String()
 	case *LoxSet:
 		if len(source.elements) == 0 {
 			return "∅"
