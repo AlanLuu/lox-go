@@ -246,6 +246,15 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.replace' must be a string.")
 		})
+	case "reversed":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			runes := []rune(l.str)
+			var builder strings.Builder
+			for i := len(runes) - 1; i >= 0; i-- {
+				builder.WriteRune(runes[i])
+			}
+			return NewLoxStringQuote(builder.String()), nil
+		})
 	case "rot13":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			var upperA, upperZ, lowerA, lowerZ rune = 65, 90, 97, 122
