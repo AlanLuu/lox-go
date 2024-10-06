@@ -255,6 +255,33 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxStringQuote(builder.String()), nil
 		})
+	case "reversedWords":
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var delimiter string
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				delimiter = " "
+			case 1:
+				if loxStr, ok := args[0].(*LoxString); ok {
+					delimiter = loxStr.str
+				} else {
+					return argMustBeType("string")
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+			words := strings.Split(l.str, delimiter)
+			var builder strings.Builder
+			for i := len(words) - 1; i >= 0; i-- {
+				builder.WriteString(words[i])
+				if i > 0 {
+					builder.WriteString(delimiter)
+				}
+			}
+			return NewLoxStringQuote(builder.String()), nil
+		})
 	case "rot13":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			var upperA, upperZ, lowerA, lowerZ rune = 65, 90, 97, 122

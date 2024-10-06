@@ -271,6 +271,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
         - `string.replace(oldStr, newStr)`, which returns a new string where all occurrences of `oldStr` in the original string are replaced with `newStr`
         - `string.reversed()`, which returns a new string that is the original string in reversed order
+        - `string.reversedWords([delimiter])`, which returns a new string where each word from the original string is in backwards order, where each word is taken to be each string in a list of strings after splitting the original string by the specified delimiter string. If `delimiter` is omitted, the delimiter is a string with a single space
+            - Example: `"hello world".reversedWords() == "world hello"`
         - `string.rot13()`, which returns a new string that is the ROT13 encoding of the original string
         - `string.rot18()`, which returns a new string that is the ROT18 encoding of the original string
             - ROT18 is a variation of ROT13 that combines ROT13 with ROT5, which shifts numerical digits by a factor of 5
