@@ -68,6 +68,14 @@ func (l *LoxQueue) peek() any {
 	return element.Value
 }
 
+func (l *LoxQueue) rear() any {
+	element := l.elements.Back()
+	if element == nil {
+		return nil
+	}
+	return element.Value
+}
+
 func (l *LoxQueue) remove() (any, error) {
 	element := l.elements.Front()
 	if element == nil {
@@ -151,6 +159,10 @@ func (l *LoxQueue) Get(name *token.Token) (any, error) {
 	case "peek":
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.peek(), nil
+		})
+	case "rear":
+		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.rear(), nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Queues have no property called '"+methodName+"'.")
