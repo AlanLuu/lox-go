@@ -412,6 +412,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - This method returns `nil` if the queue is empty
         - `queue.remove()`, which removes and returns the element at the front of the queue and is an alias for `queue.dequeue`
             - This method throws a runtime error if the queue is empty
+        - `queue.toList()`, which returns a new list with the elements from the queue
 - A range type is supported in this implementation of Lox
     - A range is a sequence of integers generated on demand, starting from a start value, stopping at but not including the stop value, and updating the current value using the step value
     - Examples of creating range objects and assigning them to variables:
