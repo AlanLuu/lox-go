@@ -418,6 +418,27 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `queue.remove()`, which removes and returns the element at the front of the queue and is an alias for `queue.dequeue`
             - This method throws a runtime error if the queue is empty
         - `queue.toList()`, which returns a new list with the elements from the queue
+- Deques are supported in this implementation of Lox
+    - Create a deque and assign it to a variable: `var deque = Deque(element1, element2);`
+        - The `Deque` function takes in a variable number of arguments and uses them as the deque elements: `Deque(element1, element2, ..., elementN)`
+    - Besides these operations, deques also have some methods associated with them:
+        - `deque.back()`, which returns the element at the back of the deque without removing it from the deque
+            - This method returns `nil` if the deque is empty
+        - `deque.clear()`, which removes all elements from the deque
+        - `deque.contains(element)`, which returns `true` if the deque contains the specified element and `false` otherwise
+        - `deque.front()`, which returns the element at the front of the deque without removing it from the deque
+            - This method returns `nil` if the deque is empty
+        - `deque.isEmpty()`, which returns `true` if the deque contains no elements and `false` otherwise
+        - `deque.pushBack(element)`, which adds an element to the back of the deque
+        - `deque.pushFront(element)` which adds an element to the front of the deque
+        - `deque.rear()`, which returns the element at the back of the deque without removing it from the deque and is an alias for `deque.back`
+            - This method returns `nil` if the deque is empty
+        - `deque.removeBack()`, which removes and returns the element at the back of the deque
+            - This method throws a runtime error if the deque is empty
+        - `deque.removeFront()`, which removes and returns the element at the front of the deque
+            - This method throws a runtime error if the deque is empty
+        - `deque.toList()`, which returns a new list with the elements from the deque
+        - `deque.toListReversed()`, which returns a new list with the elements from the deque in reversed order starting from the back of the deque
 - A range type is supported in this implementation of Lox
     - A range is a sequence of integers generated on demand, starting from a start value, stopping at but not including the stop value, and updating the current value using the step value
     - Examples of creating range objects and assigning them to variables:
@@ -489,6 +510,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `BufferZero(length)`, which returns a new buffer of the specified length, where each initial element is `0`
     - `cap(item)`, which returns the capacity of a buffer or list, which is the number of elements the buffer or list can store before having to internally resize the underlying array that stores the buffer or list elements when a new element is added
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
+    - `Deque(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a deque with the arguments as deque elements
+    - `DequeIterable(iterable)`, which takes in an iterable and returns a deque with the iterable elements as deque elements
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
     - `hex(num)`, which converts the specified integer `num` into its hexadecimal representation as a string prefixed with "0x"
