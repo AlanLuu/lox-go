@@ -140,7 +140,30 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'string.%v' must be a %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'string.%v' must be an %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	switch methodName {
+	case "caesar":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if shift, ok := args[0].(int64); ok {
+				var upperA, upperZ, lowerA, lowerZ int64 = 65, 90, 97, 122
+				var builder strings.Builder
+				for _, c := range l.str {
+					cc := int64(c)
+					if cc >= upperA && cc <= upperZ {
+						builder.WriteRune(rune(((cc-upperA)+shift)%26 + upperA))
+					} else if cc >= lowerA && cc <= lowerZ {
+						builder.WriteRune(rune(((cc-lowerA)+shift)%26 + lowerA))
+					} else {
+						builder.WriteRune(c)
+					}
+				}
+				return NewLoxString(builder.String(), l.quote), nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "capitalize":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			switch utf8.RuneCountInString(l.str) {

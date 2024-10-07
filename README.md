@@ -258,6 +258,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `\f`: form feed
         - `\v`: vertical tab
     - Besides these features, strings also have some methods associated with them:
+        - `string.caesar(shift)`, which returns a new string that is the original string encoded by a caesar cipher of the specified shift amount, which is an integer
         - `string.capitalize()`, which returns a new string with the first character from the original string capitalized if possible and the rest of the characters in lowercase if possible
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
