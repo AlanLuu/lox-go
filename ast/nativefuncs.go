@@ -441,6 +441,21 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return set, nil
 	})
+	nativeFunc("SetIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			set := EmptyLoxSet()
+			it := element.Iterator()
+			for it.HasNext() {
+				_, errStr := set.add(it.Next())
+				if len(errStr) > 0 {
+					return nil, loxerror.RuntimeError(in.callToken, errStr)
+				}
+			}
+			return set, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("sleep", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch seconds := args[0].(type) {
 		case int64:
