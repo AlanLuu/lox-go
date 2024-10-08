@@ -100,6 +100,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each generated integer from the range object
         - Set
             - For each iteration, `element` is each element of the set
+        - Queue
+            - For each iteration, `element` is each element of the queue
+        - Deque
+            - For each iteration, `element` is each element of the deque
         - File
             - For each iteration, `element` is each line from the file as a string
         - CSV Reader
