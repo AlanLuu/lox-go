@@ -195,6 +195,26 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
 	})
+	nativeFunc("DictIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			dict := EmptyLoxDict()
+			it := element.Iterator()
+			switch element.(type) {
+			case *LoxDict:
+				for it.HasNext() {
+					pair := it.Next().(*LoxList).elements
+					dict.setKeyValue(pair[0], pair[1])
+				}
+			default:
+				for index := int64(0); it.HasNext(); index++ {
+					dict.setKeyValue(index, it.Next())
+				}
+			}
+			return dict, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("eval", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if codeStr, ok := args[0].(*LoxString); ok {
 			importSc := scanner.NewScanner(codeStr.str)

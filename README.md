@@ -518,6 +518,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `Deque(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a deque with the arguments as deque elements
     - `DequeIterable(iterable)`, which takes in an iterable and returns a deque with the iterable elements as deque elements
+    - `DictIterable(iterable)`, which takes in an iterable and returns a dictionary with the keys being integers starting from `0` and the values being elements from the iterable, with the key that is associated with a value being incremented for each iterable element there is
+        - If the iterable argument is a dictionary, this function returns a new dictionary that is a shallow copy of the original dictionary
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
     - `hex(num)`, which converts the specified integer `num` into its hexadecimal representation as a string prefixed with "0x"
