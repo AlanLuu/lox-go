@@ -348,6 +348,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - If the callback function does not return an integer or float, it is equivalent to returning `0` from the function
         - `list.sorted(callback)`, which returns a new list with all elements from the original list in sorted order based on the results of the callback function, which has the same behavior as the function described in `list.sort`
         - `list.toBuffer()`, which attempts to return a new buffer with the elements from the list. If the list contains an element that cannot belong in a buffer, a runtime error is thrown
+        - `list.toDict()`, which returns a dictionary with the keys being list indices and values being corresponding list elements
         - `list.toSet()`, which attempts to return a new set with the elements from the list. If the list contains an element that cannot belong in a set, a runtime error is thrown
         - `list.with(index, element)`, which returns a new list that is a copy of the original list with the original element at the specified index replaced with the new element
     - Two lists are compared based on whether they are the same length and for every index `i`, the element from the first list at index `i` is equal to the element from the second list at index `i`

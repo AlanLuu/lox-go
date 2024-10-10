@@ -760,6 +760,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
+	case "toDict":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			dict := EmptyLoxDict()
+			for i, element := range l.elements {
+				dict.setKeyValue(int64(i), element)
+			}
+			return dict, nil
+		})
 	case "toSet":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newSet := EmptyLoxSet()
