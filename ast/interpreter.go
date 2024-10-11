@@ -1429,13 +1429,13 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 	methods := make(map[string]*LoxFunction)
 	for _, method := range stmt.Methods {
 		isInit := method.Name.Lexeme == "init"
-		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, isInit}
+		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, isInit, method.Function.VarArgPos}
 		methods[method.Name.Lexeme] = function
 	}
 
 	classProperties := make(map[string]any)
 	for _, method := range stmt.ClassMethods {
-		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, false}
+		function := &LoxFunction{method.Name.Lexeme, method.Function, i.environment, false, method.Function.VarArgPos}
 		classProperties[method.Name.Lexeme] = function
 	}
 	for name, field := range stmt.ClassFields {
@@ -1831,12 +1831,12 @@ func (i *Interpreter) visitForEachStmt(stmt ForEach) (any, error) {
 }
 
 func (i *Interpreter) visitFunctionExpr(expr FunctionExpr) (*LoxFunction, error) {
-	return &LoxFunction{"", expr, i.environment, false}, nil
+	return &LoxFunction{"", expr, i.environment, false, expr.VarArgPos}, nil
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt Function) (any, error) {
 	funcName := stmt.Name.Lexeme
-	i.environment.Define(funcName, &LoxFunction{funcName, stmt.Function, i.environment, false})
+	i.environment.Define(funcName, &LoxFunction{funcName, stmt.Function, i.environment, false, stmt.Function.VarArgPos})
 	return nil, nil
 }
 

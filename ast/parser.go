@@ -845,10 +845,18 @@ func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, erro
 	}
 
 	parameters := list.NewList[*token.Token]()
+	varArgPos := -1
 	if !p.check(token.RIGHT_PAREN) {
+		varArgPosCount := 0
 		for cond := true; cond; cond = p.match(token.COMMA) {
 			if len(parameters) >= 255 {
 				loxerror.PrintErrorObject(p.error(p.peek(), "Can't have more than 255 parameters."))
+			}
+			if p.match(token.ELLIPSIS) {
+				if varArgPos >= 0 {
+					return emptyFuncNode, p.error(p.peek(), fmt.Sprintf("Can't have multiple varargs in %v.", kind))
+				}
+				varArgPos = varArgPosCount
 			}
 			paramName, paramNameErr := p.consume(token.IDENTIFIER, "Expected parameter name.")
 			if paramNameErr != nil {
@@ -856,6 +864,7 @@ func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, erro
 				return emptyFuncNode, paramNameErr
 			}
 			parameters.Add(paramName)
+			varArgPosCount++
 		}
 	}
 
@@ -890,8 +899,9 @@ func (p *Parser) functionBody(kind string, funcHasName bool) (FunctionExpr, erro
 		}
 	}
 	return FunctionExpr{
-		Params: parameters,
-		Body:   block,
+		Params:    parameters,
+		Body:      block,
+		VarArgPos: varArgPos,
 	}, nil
 }
 

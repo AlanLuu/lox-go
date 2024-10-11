@@ -93,8 +93,9 @@ type Function struct {
 }
 
 type FunctionExpr struct {
-	Params list.List[*token.Token]
-	Body   list.List[Stmt]
+	Params    list.List[*token.Token]
+	Body      list.List[Stmt]
+	VarArgPos int
 }
 
 type Get struct {

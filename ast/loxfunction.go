@@ -12,22 +12,42 @@ type LoxFunction struct {
 	declaration   FunctionExpr
 	closure       *env.Environment
 	isInitializer bool
+	varArgPos     int
 }
 
 func (f *LoxFunction) arity() int {
+	if f.hasVarArg() {
+		return -1
+	}
 	return len(f.declaration.Params)
 }
 
 func (f *LoxFunction) bind(instance any) *LoxFunction {
 	environment := env.NewEnvironmentEnclosing(f.closure)
 	environment.Define("this", instance)
-	return &LoxFunction{f.name, f.declaration, environment, f.isInitializer}
+	return &LoxFunction{f.name, f.declaration, environment, f.isInitializer, f.varArgPos}
 }
 
 func (f *LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
 	environment := env.NewEnvironmentEnclosing(f.closure)
-	for i := 0; i < len(f.declaration.Params); i++ {
-		environment.Define(f.declaration.Params[i].Lexeme, arguments[i])
+	if f.hasVarArg() {
+		for i := 0; i < len(f.declaration.Params); i++ {
+			if i > f.varArgPos {
+				environment.Define(f.declaration.Params[i].Lexeme, nil)
+			} else if i == f.varArgPos {
+				varArgs := list.NewList[any]()
+				for j := i; j < len(arguments); j++ {
+					varArgs.Add(arguments[j])
+				}
+				environment.Define(f.declaration.Params[i].Lexeme, NewLoxList(varArgs))
+			} else {
+				environment.Define(f.declaration.Params[i].Lexeme, arguments[i])
+			}
+		}
+	} else {
+		for i := 0; i < len(f.declaration.Params); i++ {
+			environment.Define(f.declaration.Params[i].Lexeme, arguments[i])
+		}
 	}
 	retValue, blockErr := interpreter.executeBlock(f.declaration.Body, environment)
 	if blockErr != nil {
@@ -44,6 +64,10 @@ func (f *LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (
 		return f.closure.GetAtStr(0, "this"), nil
 	}
 	return nil, nil
+}
+
+func (f *LoxFunction) hasVarArg() bool {
+	return f.varArgPos >= 0
 }
 
 func (f *LoxFunction) String() string {
