@@ -141,6 +141,20 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `fun(param1, paramN) {<statements>}`, which is a traditional anonymous function expression that contains a block with statements
     - `fun(param1, paramN) => <expression>`, which is an arrow function expression that implicitly returns the given expression when called
     - The parser will attempt to parse anonymous function expressions that appear on their own line as function declarations, throwing a parser error as a result. This is expected behavior; to force the parser to parse them as expressions, wrap the function expression inside parentheses, like `(fun() {})()`. In this case, this creates an anonymous function expression that is called immediately
+- Variadic functions are supported in this implementation of Lox
+    - An indefinite amount of arguments can be accepted as a list
+    ```js
+    fun foo(...a) {
+        //"a" is a list of arguments
+        print a;
+    }
+    fun bar(a, b, ...c) {
+        //"c" is a list of arguments
+        print c;
+    }
+    foo(1, 2, 3, 4, 5); //Prints [1, 2, 3, 4, 5]
+    bar(1, 2, 3, 4, 5); //Prints [3, 4, 5]
+    ```
 - The spread operator `...` is supported in this implementation of Lox
     - Examples:
         - `function(a, ...iterable, b)`, which passes all elements in the iterable as arguments to the specified function
