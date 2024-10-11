@@ -35,8 +35,9 @@ func (f *LoxFunction) call(interpreter *Interpreter, arguments list.List[any]) (
 			if i > f.varArgPos {
 				environment.Define(f.declaration.Params[i].Lexeme, nil)
 			} else if i == f.varArgPos {
-				varArgs := list.NewList[any]()
-				for j := i; j < len(arguments); j++ {
+				argsLen := len(arguments)
+				varArgs := list.NewListCap[any](int64(argsLen - i))
+				for j := i; j < argsLen; j++ {
 					varArgs.Add(arguments[j])
 				}
 				environment.Define(f.declaration.Params[i].Lexeme, NewLoxList(varArgs))
