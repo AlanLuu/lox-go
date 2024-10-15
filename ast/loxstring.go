@@ -521,7 +521,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 					}
 					return result, nil
 				}
-				return argMustBeType("integer")
+				return argMustBeTypeAn("integer")
 			}
 			return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		})
@@ -568,7 +568,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				}
 				return NewLoxString(finalStr, quote), nil
 			}
-			return argMustBeType("integer")
+			return argMustBeTypeAn("integer")
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Strings have no property called '"+methodName+"'.")
