@@ -46,6 +46,8 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineBigIntFuncs()   //Defined in bigintfuncs.go
 	interpreter.defineCryptoFuncs()   //Defined in cryptofuncs.go
 	interpreter.defineCSVFuncs()      //Defined in csvfuncs.go
+	interpreter.defineDateFuncs()     //Defined in datefuncs.go
+	interpreter.defineDurationFuncs() //Defined in durationfuncs.go
 	interpreter.defineFloatFuncs()    //Defined in floatfuncs.go
 	interpreter.defineHexFuncs()      //Defined in hexfuncs.go
 	interpreter.defineHTTPFuncs()     //Defined in httpfuncs.go
