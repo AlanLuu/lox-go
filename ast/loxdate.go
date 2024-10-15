@@ -172,6 +172,11 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return int64(l.date.Second()), nil
 		})
+	case "sleepUntil":
+		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			time.Sleep(time.Until(l.date))
+			return nil, nil
+		})
 	case "string":
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxString(l.defaultFormatStr(), '\''), nil
