@@ -199,6 +199,13 @@ func (i *Interpreter) defineDateFuncs() {
 		}
 		return argMustBeType(in.callToken, "parseDefault", "string")
 	})
+	dateFunc("sleepUntil", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxDate, ok := args[0].(*LoxDate); ok {
+			time.Sleep(time.Until(loxDate.date))
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "sleepUntil", "date")
+	})
 	dateFunc("weekdayStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if weekdayNum, ok := args[0].(int64); ok {
 			if weekdayNum < 1 || weekdayNum > 7 {
