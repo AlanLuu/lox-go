@@ -206,6 +206,52 @@ func (i *Interpreter) defineDateFuncs() {
 		}
 		return argMustBeType(in.callToken, "sleepUntil", "date")
 	})
+	dateFunc("time", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Date.time' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Date.time' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'Date.time' must be an integer.")
+		}
+		hour := int(args[0].(int64))
+		minute := int(args[1].(int64))
+		second := int(args[2].(int64))
+		today := time.Now()
+		date := time.Date(
+			today.Year(), today.Month(), today.Day(),
+			hour, minute, second, 0, time.UTC,
+		)
+		return NewLoxDate(date), nil
+	})
+	dateFunc("timeLocal", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Date.timeLocal' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Date.timeLocal' must be an integer.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'Date.timeLocal' must be an integer.")
+		}
+		hour := int(args[0].(int64))
+		minute := int(args[1].(int64))
+		second := int(args[2].(int64))
+		today := time.Now()
+		date := time.Date(
+			today.Year(), today.Month(), today.Day(),
+			hour, minute, second, 0, time.Local,
+		)
+		return NewLoxDate(date), nil
+	})
 	dateFunc("weekdayStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if weekdayNum, ok := args[0].(int64); ok {
 			if weekdayNum < 1 || weekdayNum > 7 {
