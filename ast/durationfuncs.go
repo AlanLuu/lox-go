@@ -109,6 +109,9 @@ func (i *Interpreter) defineDurationFuncs() {
 		}
 		return argMustBeType(in.callToken, "sleep", "duration")
 	})
+	durationFunc("stopwatch", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return NewLoxStopwatch(), nil
+	})
 	durationFunc("until", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxDate, ok := args[0].(*LoxDate); ok {
 			return NewLoxDuration(time.Until(loxDate.date)), nil
