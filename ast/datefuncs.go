@@ -252,6 +252,12 @@ func (i *Interpreter) defineDateFuncs() {
 		)
 		return NewLoxDate(date), nil
 	})
+	dateFunc("unix", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if seconds, ok := args[0].(int64); ok {
+			return NewLoxDate(time.Unix(seconds, 0)), nil
+		}
+		return argMustBeTypeAn(in.callToken, "unix", "integer")
+	})
 	dateFunc("weekdayStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if weekdayNum, ok := args[0].(int64); ok {
 			if weekdayNum < 1 || weekdayNum > 7 {
