@@ -258,6 +258,18 @@ func (i *Interpreter) defineDateFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "unix", "integer")
 	})
+	dateFunc("unixMicro", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if microseconds, ok := args[0].(int64); ok {
+			return NewLoxDate(time.UnixMicro(microseconds)), nil
+		}
+		return argMustBeTypeAn(in.callToken, "unixMicro", "integer")
+	})
+	dateFunc("unixMilli", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if milliseconds, ok := args[0].(int64); ok {
+			return NewLoxDate(time.UnixMilli(milliseconds)), nil
+		}
+		return argMustBeTypeAn(in.callToken, "unixMilli", "integer")
+	})
 	dateFunc("weekdayStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if weekdayNum, ok := args[0].(int64); ok {
 			if weekdayNum < 1 || weekdayNum > 7 {
