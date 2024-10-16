@@ -138,6 +138,11 @@ func (l *LoxDuration) Get(name *token.Token) (any, error) {
 		return durationFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.duration.Seconds(), nil
 		})
+	case "sleep":
+		return durationFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			time.Sleep(l.duration)
+			return nil, nil
+		})
 	case "string":
 		return durationFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxString(l.duration.String(), '\''), nil
