@@ -87,6 +87,16 @@ func (i *Interpreter) defineDateFuncs() {
 		errStr := fmt.Sprintf("Argument to 'Date.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
+	}
 
 	defineDateFields(dateClass)
 	dateFunc("date", 6, func(in *Interpreter, args list.List[any]) (any, error) {
@@ -159,6 +169,40 @@ func (i *Interpreter) defineDateFuncs() {
 	})
 	dateFunc("dateNow", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return NewLoxDate(time.Now()), nil
+	})
+	dateFunc("loopUntil", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxDate); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Date.loopUntil' must be a date.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Date.loopUntil' must be a function.")
+		}
+		loxDate := args[0].(*LoxDate)
+		callback := args[1].(*LoxFunction)
+		stopCallback := false
+		callbackChan := make(chan struct{}, 1)
+		errorChan := make(chan error, 1)
+		argList := getArgList(callback, 0)
+		go func() {
+			for !stopCallback {
+				result, resultErr := callback.call(i, argList)
+				if resultErr != nil && result == nil {
+					errorChan <- resultErr
+					break
+				}
+			}
+			callbackChan <- struct{}{}
+		}()
+		select {
+		case err := <-errorChan:
+			return nil, err
+		case <-time.After(time.Until(loxDate.date)):
+			stopCallback = true
+			<-callbackChan
+		}
+		return nil, nil
 	})
 	dateFunc("monthStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if monthNum, ok := args[0].(int64); ok {
