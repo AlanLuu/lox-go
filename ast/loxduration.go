@@ -55,6 +55,16 @@ func (l *LoxDuration) Get(name *token.Token) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'duration.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
+	}
 	switch methodName {
 	case "abs":
 		return durationFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
@@ -119,6 +129,34 @@ func (l *LoxDuration) Get(name *token.Token) (any, error) {
 	case "nanoseconds":
 		return durationFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.duration.Nanoseconds(), nil
+		})
+	case "repeat":
+		return durationFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				stopCallback := false
+				callbackChan := make(chan struct{}, 1)
+				errorChan := make(chan error, 1)
+				argList := getArgList(callback, 0)
+				go func() {
+					for !stopCallback {
+						result, resultErr := callback.call(i, argList)
+						if resultErr != nil && result == nil {
+							errorChan <- resultErr
+							break
+						}
+					}
+					callbackChan <- struct{}{}
+				}()
+				select {
+				case err := <-errorChan:
+					return nil, err
+				case <-time.After(l.duration):
+					stopCallback = true
+					<-callbackChan
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
 		})
 	case "round":
 		return durationFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
