@@ -569,6 +569,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `SetIterable(iterable)`, which takes in an iterable and returns a set with the iterable elements as set elements. If an element from the iterable cannot be stored in a set, a runtime error is thrown
     - `sleep(seconds)`, which pauses the program for the specified number of seconds
+    - `sum(iterable)`, which takes in an iterable and attempts to return an integer, float, bigint, or bigfloat that is the sum of all the elements from the iterable. If an element from the iterable cannot be used as an element to sum, a runtime error is thrown
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end

@@ -489,6 +489,21 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'sleep' must be an integer or float.")
 	})
+	nativeFunc("sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			sum := &LoxInternalSum{int64(0)}
+			it := element.Iterator()
+			for it.HasNext() {
+				err := sum.sum(it.Next())
+				if err != nil {
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
+				}
+			}
+			return sum.element, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return NewLoxString(getType(args[0]), '\''), nil
 	})
