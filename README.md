@@ -363,6 +363,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
                 - `0` or `0.0` means that `a` and `b` remain at the same places
             - If the callback function does not return an integer or float, it is equivalent to returning `0` from the function
         - `list.sorted(callback)`, which returns a new list with all elements from the original list in sorted order based on the results of the callback function, which has the same behavior as the function described in `list.sort`
+        - `list.sum()`, which attempts to return an integer, float, bigint, or bigfloat that is the sum of all the elements from the list. If an element from the list cannot be used as an element to sum, a runtime error is thrown
         - `list.toBuffer()`, which attempts to return a new buffer with the elements from the list. If the list contains an element that cannot belong in a buffer, a runtime error is thrown
         - `list.toDict()`, which returns a dictionary with the keys being list indices and values being corresponding list elements
         - `list.toSet()`, which attempts to return a new set with the elements from the list. If the list contains an element that cannot belong in a set, a runtime error is thrown

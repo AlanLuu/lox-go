@@ -749,6 +749,17 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "sum":
+		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			sum := &LoxInternalSum{int64(0)}
+			for _, element := range l.elements {
+				sumErr := sum.sum(element)
+				if sumErr != nil {
+					return nil, loxerror.RuntimeError(name, sumErr.Error())
+				}
+			}
+			return sum.element, nil
+		})
 	case "toBuffer":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			buffer := EmptyLoxBufferCapDouble(int64(len(l.elements)))
