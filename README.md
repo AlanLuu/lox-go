@@ -197,6 +197,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
 - Various methods to work with CSV files are defined under a built-in class called `csv`, which is documented [here](./doc/csv.md)
 - Various methods to work with regular expressions are defined under a built-in class called `regex`, which is documented [here](./doc/regex.md)
+- Various methods and fields to work with dates are defined under a built-in class called `Date`, which is documented [here](./doc/Date.md)
+- Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)
 - Various methods to work with processes are defined under a built-in class called `process`, which is documented [here](./doc/process.md)
 - Various methods and fields to work with Windows-specific functionality are defined under a built-in class called `windows`, which is documented [here](./doc/windows.md)
     - This class does not exist on non-Windows systems
@@ -566,7 +568,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `range(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers and returns a range object with the specified parameters. If `step` is omitted, the resulting range object will have a step value of `1`
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `SetIterable(iterable)`, which takes in an iterable and returns a set with the iterable elements as set elements. If an element from the iterable cannot be stored in a set, a runtime error is thrown
-    - `sleep(duration)`, which pauses the program for the specified duration in seconds
+    - `sleep(seconds)`, which pauses the program for the specified number of seconds
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
