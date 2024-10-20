@@ -1,0 +1,133 @@
+class stdin {
+    static _listElementsToNum(elements) {
+        for (var i = len(elements) - 1; i >= 0; i = i - 1) {
+            var num = elements[i].toNum();
+            if (num != NaN) {
+                elements[i] = num;
+            } else {
+                elements.pop(i);
+            }
+        }
+    }
+
+    static _diffreturn(delimiter) {
+        var elements = os.stdin.read().split(delimiter);
+        this._listElementsToNum(elements);
+        return elements.reduce(fun(a, b) => a - b);
+    }
+    static diff() {
+        print this._diffreturn("\n");
+    }
+    static diffwin() {
+        print this._diffreturn("\r\n");
+    }
+
+    static _filterfunc(callback, delimiter) {
+        var elements = os.stdin.read().strip().split(delimiter);
+        foreach (var element in elements) {
+            if (callback(element)) {
+                print element;
+            }
+        }
+    }
+    static filter(callback) {
+        if (type(callback) != "function") {
+            throw "Argument to 'stdin.filter' must be a function.";
+        }
+        this._filterfunc(callback, "\n");
+    }
+    static filterwin(callback) {
+        if (type(callback) != "function") {
+            throw "Argument to 'stdin.filterwin' must be a function.";
+        }
+        this._filterfunc(callback, "\r\n");
+    }
+
+    static _mapfunc(callback, delimiter) {
+        var elements = os.stdin.read().strip().split(delimiter);
+        foreach (var element in elements) {
+            print callback(element);
+        }
+    }
+    static map(callback) {
+        if (type(callback) != "function") {
+            throw "Argument to 'stdin.map' must be a function.";
+        }
+        this._mapfunc(callback, "\n");
+    }
+    static mapwin(callback) {
+        if (type(callback) != "function") {
+            throw "Argument to 'stdin.mapwin' must be a function.";
+        }
+        this._mapfunc(callback, "\r\n");
+    }
+
+    static _maxreturn(delimiter) {
+        var elements = os.stdin.read().split(delimiter);
+        var max = Integer.MIN;
+        foreach (var element in elements) {
+            var num = element.toNum();
+            if (num != NaN && num > max) {
+                max = num;
+            }
+        }
+        return max;
+    }
+    static max() {
+        print this._maxreturn("\n");
+    }
+    static maxwin() {
+        print this._maxreturn("\r\n");
+    }
+
+    static _minreturn(delimiter) {
+        var elements = os.stdin.read().split(delimiter);
+        var min = Integer.MAX;
+        foreach (var element in elements) {
+            var num = element.toNum();
+            if (num != NaN && num < min) {
+                min = num;
+            }
+        }
+        return min;
+    }
+    static min() {
+        print this._minreturn("\n");
+    }
+    static minwin() {
+        print this._minreturn("\r\n");
+    }
+
+    static _rot13return() {
+        return os.stdin.read().rot13();
+    }
+    static rot13() {
+        put this._rot13return();
+    }
+
+    static _rot18return() {
+        return os.stdin.read().rot18();
+    }
+    static rot18() {
+        put this._rot18return();
+    }
+
+    static _rot47return() {
+        return os.stdin.read().rot47();
+    }
+    static rot47() {
+        put this._rot47return();
+    }
+
+    static _sumreturn(delimiter) {
+        var elements = os.stdin.read().split(delimiter);
+        this._listElementsToNum(elements);
+        return elements.sum();
+    }
+    static sum() {
+        print this._sumreturn("\n");
+    }
+    static sumwin() {
+        print this._sumreturn("\r\n");
+    }
+}

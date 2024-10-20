@@ -1,8 +1,11 @@
 package main
 
 import (
+	"embed"
 	"flag"
+	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -15,6 +18,51 @@ import (
 
 const PROMPT = ">>> "
 const NEXT_LINE_PROMPT = "... "
+
+//go:embed loxcode/*
+var loxCodeFS embed.FS
+
+func runLoxCode(interpreter *ast.Interpreter) error {
+	dirFunc := func(path string, d fs.DirEntry, _ error) error {
+		if !d.IsDir() {
+			program, err := loxCodeFS.ReadFile(path)
+			if err != nil {
+				fmt.Fprintf(
+					os.Stderr,
+					"Warning: failed to read Lox file '%v'.\n",
+					path,
+				)
+				return nil
+			}
+
+			sc := scanner.NewScanner(string(program))
+			scanErr := sc.ScanTokens()
+			if scanErr != nil {
+				return scanErr
+			}
+
+			parser := ast.NewParser(sc.Tokens)
+			exprList, parseErr := parser.Parse()
+			defer exprList.Clear()
+			if parseErr != nil {
+				return parseErr
+			}
+
+			resolver := ast.NewResolver(interpreter)
+			resolverErr := resolver.Resolve(exprList)
+			if resolverErr != nil {
+				return resolverErr
+			}
+
+			valueErr := interpreter.Interpret(exprList, true)
+			if valueErr != nil {
+				return valueErr
+			}
+		}
+		return nil
+	}
+	return fs.WalkDir(loxCodeFS, ".", dirFunc)
+}
 
 func run(sc *scanner.Scanner, interpreter *ast.Interpreter) error {
 	scanErr := sc.ScanTokens()
@@ -56,6 +104,10 @@ func processFile(filePath string) error {
 	}
 	sc := scanner.NewScanner(string(program))
 	interpreter := ast.NewInterpreter()
+	runLoxCodeErr := runLoxCode(interpreter)
+	if runLoxCodeErr != nil {
+		return runLoxCodeErr
+	}
 	resultError := run(sc, interpreter)
 	if resultError != nil {
 		return resultError
@@ -72,6 +124,11 @@ func interactiveMode() int {
 	defer l.Close()
 
 	interpreter := ast.NewInterpreter()
+	runLoxCodeErr := runLoxCode(interpreter)
+	if runLoxCodeErr != nil {
+		loxerror.PrintErrorObject(runLoxCodeErr)
+		return 1
+	}
 	if util.StdinFromTerminal() {
 		numSpacesIndent := 2
 	outer:
@@ -141,9 +198,16 @@ func main() {
 	exitCode := 0
 	if *exprCLine != "" {
 		sc := scanner.NewScanner(*exprCLine)
-		resultError := run(sc, ast.NewInterpreter())
-		if resultError != nil {
-			loxerror.PrintErrorObject(resultError)
+		interpreter := ast.NewInterpreter()
+		runLoxCodeErr := runLoxCode(interpreter)
+		if runLoxCodeErr == nil {
+			resultError := run(sc, interpreter)
+			if resultError != nil {
+				loxerror.PrintErrorObject(resultError)
+				exitCode = 1
+			}
+		} else {
+			loxerror.PrintErrorObject(runLoxCodeErr)
 			exitCode = 1
 		}
 	} else if len(args) > 1 && args[1] != "-" {
