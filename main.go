@@ -22,6 +22,23 @@ const NEXT_LINE_PROMPT = "... "
 //go:embed loxcode/*
 var loxCodeFS embed.FS
 
+func usageFunc(writer io.Writer) func() {
+	return func() {
+		usage :=
+			`Usage: lox [OPTIONS] [FILE]
+
+OPTIONS:
+	-c <code>
+		Execute Lox code from command line argument
+	--disable-loxcode
+		Disable execution of all Lox files in the loxcode directory
+	-h, --help
+		Print this usage message and exit
+`
+		fmt.Fprint(writer, usage)
+	}
+}
+
 func runLoxCode(interpreter *ast.Interpreter) error {
 	if util.DisableLoxCode {
 		return nil
@@ -195,20 +212,19 @@ func interactiveMode() int {
 
 func main() {
 	var (
-		exprCLine = flag.String(
-			"c",
-			"",
-			"Execute Lox code from command line argument",
-		)
-		disableLoxCode = flag.Bool(
-			"disable-loxcode",
-			false,
-			"Disable execution of all Lox files in the loxcode directory",
-		)
+		exprCLine      = flag.String("c", "", "")
+		disableLoxCode = flag.Bool("disable-loxcode", false, "")
+		helpFlag1      = flag.Bool("h", false, "")
+		helpFlag2      = flag.Bool("help", false, "")
 	)
+	flag.Usage = usageFunc(os.Stderr)
 	flag.Parse()
-	args := flag.Args()
+	if *helpFlag1 || *helpFlag2 {
+		usageFunc(os.Stdout)()
+		os.Exit(0)
+	}
 
+	args := flag.Args()
 	util.DisableLoxCode = *disableLoxCode
 	exitCode := 0
 	if *exprCLine != "" {

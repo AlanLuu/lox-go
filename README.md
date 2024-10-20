@@ -2,17 +2,16 @@
 A Golang implementation of the Lox language from the book [Crafting Interpreters](https://craftinginterpreters.com/) with my own features
 
 # Usage
-Supports running code from a file:
 ```
-lox code.lox
-```
-or from stdin as a REPL:
-```
-lox
-```
-or as a string from the terminal:
-```
-lox -c <code>
+Usage: lox [OPTIONS] [FILE]
+
+OPTIONS:
+	-c <code>
+		Execute Lox code from command line argument
+	--disable-loxcode
+		Disable execution of all Lox files in the loxcode directory
+	-h, --help
+		Print this usage message and exit
 ```
 
 # Installation
