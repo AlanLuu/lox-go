@@ -23,6 +23,9 @@ const NEXT_LINE_PROMPT = "... "
 var loxCodeFS embed.FS
 
 func runLoxCode(interpreter *ast.Interpreter) error {
+	if util.DisableLoxCode {
+		return nil
+	}
 	dirFunc := func(path string, d fs.DirEntry, _ error) error {
 		if !d.IsDir() {
 			program, err := loxCodeFS.ReadFile(path)
@@ -191,10 +194,22 @@ func interactiveMode() int {
 }
 
 func main() {
-	args := os.Args
-	exprCLine := flag.String("c", "", "Read code from command line")
+	var (
+		exprCLine = flag.String(
+			"c",
+			"",
+			"Execute Lox code from command line argument",
+		)
+		disableLoxCode = flag.Bool(
+			"disable-loxcode",
+			false,
+			"Disable execution of all Lox files in the loxcode directory",
+		)
+	)
 	flag.Parse()
+	args := flag.Args()
 
+	util.DisableLoxCode = *disableLoxCode
 	exitCode := 0
 	if *exprCLine != "" {
 		sc := scanner.NewScanner(*exprCLine)
@@ -210,8 +225,8 @@ func main() {
 			loxerror.PrintErrorObject(runLoxCodeErr)
 			exitCode = 1
 		}
-	} else if len(args) > 1 && args[1] != "-" {
-		possibleError := processFile(args[1])
+	} else if len(args) > 0 && args[0] != "-" {
+		possibleError := processFile(args[0])
 		if possibleError != nil {
 			loxerror.PrintErrorObject(possibleError)
 			exitCode = 1

@@ -8,6 +8,7 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
+var DisableLoxCode = false
 var InteractiveMode = false
 
 func CountBraces(s string) (int, int) {
