@@ -200,6 +200,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods and fields to work with dates are defined under a built-in class called `Date`, which is documented [here](./doc/Date.md)
 - Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)
 - Various methods to work with processes are defined under a built-in class called `process`, which is documented [here](./doc/process.md)
+- Various methods to work with data from standard input are defined under a class called `stdin`, which is documented [here](./doc/stdin.md)
 - Various methods and fields to work with Windows-specific functionality are defined under a built-in class called `windows`, which is documented [here](./doc/windows.md)
     - This class does not exist on non-Windows systems
 - Various methods to work with base64 strings are defined under a built-in class called `base64`, where the following methods are defined:
@@ -575,6 +576,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
     - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;`, `object.property = value;`, and `list[index] = value;`
+
+# Running Lox code on interpreter startup
+- Lox files can be included in the `loxcode` directory, which will cause them to be embedded in the final interpreter executable and executed every time the interpreter starts
+    - If a file from this directory cannot be opened due to an error, it is skipped and a warning message is printed to standard error
+    - If a parser or runtime error occurs when executing a file from this directory, the interpreter immediately exits with a status code of 1
+    - If a file from this directory is altered, the interpreter must be rebuilt to include the altered file
 
 # Known bugs
 See [knownbugs.md](./doc/knownbugs.md)
