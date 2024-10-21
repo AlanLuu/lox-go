@@ -51,6 +51,13 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return NewLoxString(builder.String(), '\''), nil
 	}
+	nativeFunc("arity", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if callable, ok := args[0].(LoxCallable); ok {
+			return int64(callable.arity()), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'arity' must be a function or class.")
+	})
 	nativeFunc("bigrange", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		switch argsLen {

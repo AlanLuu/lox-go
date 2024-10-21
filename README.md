@@ -525,6 +525,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - If the specified import file doesn't exist or if the file exists but an error occurred while it was being executed, a runtime error is thrown
     - `import` statements can also have an optional alias specified, in which case only the alias name is brought into the global environment of the current file and all global variable, function, and class declarations from the imported file become properties of the alias and can be accessed using the following notation: `alias.variable`
 - A few other native functions are defined:
+    - `arity(callable)`, which takes in a callable, which is either a function or class, and returns an integer that represents the number of arguments the specified callable expects to receive
+        - If the callable can receive a variable number of arguments, `-1` is returned
     - `bigrange(stop)`, which takes in an integer or bigint and returns a bigrange object with a start value of `0n`, a stop value of `stop`, and a step value of `1n`
     - `bigrange(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers or bigints and returns a bigrange object with the specified parameters. If `step` is omitted, the resulting bigrange object will have a step value of `1n`
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
