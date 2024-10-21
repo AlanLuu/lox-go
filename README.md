@@ -189,6 +189,11 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     var a = A();
     print a.z; //Prints "30"
     ```
+- Static classes are supported in this implementation of Lox, which are classes that cannot be instantiated, and attempting to do so will throw a runtime error
+    ```js
+    static class A {}
+    var a = A(); //Throws a runtime error
+    ```
 - Various mathematical methods and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
 - Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
 - Various methods and fields to work with operating system functionality are defined under a built-in class called `os`, which is documented [here](./doc/os.md)
