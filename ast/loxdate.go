@@ -142,6 +142,10 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.date.IsDST(), nil
 		})
+	case "isLocal":
+		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.date.Location().String() == "Local", nil
+		})
 	case "isoWeek":
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			year, week := l.date.ISOWeek()
@@ -149,6 +153,10 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 			elements.Add(int64(year))
 			elements.Add(int64(week))
 			return NewLoxList(elements), nil
+		})
+	case "isUTC":
+		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.date.Location().String() == "UTC", nil
 		})
 	case "isZero":
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

@@ -40,7 +40,9 @@ Date objects have the following methods associated with them:
 - `date.isAfter(date2)`, which returns `true` if `date` is greater than `date2` and `false` otherwise
 - `date.isBefore(date2)`, which returns `true` if `date` is less than `date2` and `false` otherwise
 - `date.isDST()`, which returns `true` if the current date object is in Daylight Savings Time and `false` otherwise
+- `date.isLocal()`, which returns `true` if the current date object is in local time and `false` otherwise
 - `date.isoWeek()`, which returns a list with two elements, with the first being the ISO 8601 year value of the current date object as an integer and the second being the ISO 8601 week value of the current date object as an integer
+- `date.isUTC()`, which returns `true` if the current date object is in UTC time and `false` otherwise
 - `date.isZero()`, which returns `true` if the current date object corresponds to the date January 1, 0001, with a time of 00:00:00 UTC and `false` otherwise
 - `date.local()`, which returns a new date object that is the current date object in local time
 - `date.location()`, which returns a string that represents the current time zone information associated with the current date object, which is usually `"UTC"` or `"Local"`
