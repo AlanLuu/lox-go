@@ -1,4 +1,4 @@
-class stdin {
+static class stdin {
     static _listElementsToNum(elements) {
         for (var i = len(elements) - 1; i >= 0; i = i - 1) {
             var num = elements[i].toNum();

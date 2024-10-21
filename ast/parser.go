@@ -287,7 +287,7 @@ func (p *Parser) check(tokenType token.TokenType) bool {
 	return p.peek().TokenType == tokenType
 }
 
-func (p *Parser) classDeclaration() (Stmt, error) {
+func (p *Parser) classDeclaration(canInstantiate bool) (Stmt, error) {
 	className, classNameErr := p.consume(token.IDENTIFIER, "Expected class name.")
 	if classNameErr != nil {
 		return nil, classNameErr
@@ -362,6 +362,7 @@ func (p *Parser) classDeclaration() (Stmt, error) {
 		ClassMethods:   classMethods,
 		ClassFields:    classFields,
 		InstanceFields: instanceFields,
+		CanInstantiate: canInstantiate,
 	}, nil
 }
 
@@ -413,9 +414,15 @@ func (p *Parser) declaration() (Stmt, error) {
 	case p.match(token.FUN):
 		value, err = p.function("function")
 	case p.match(token.CLASS):
-		value, err = p.classDeclaration()
+		value, err = p.classDeclaration(true)
 	case p.match(token.ENUM):
 		value, err = p.enumDeclaration()
+	case p.match(token.STATIC):
+		_, classErr := p.consume(token.CLASS, "Expected 'class' after 'static'.")
+		if classErr != nil {
+			return nil, classErr
+		}
+		value, err = p.classDeclaration(false)
 	default:
 		value, err = p.statement(false)
 	}

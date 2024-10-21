@@ -1464,7 +1464,7 @@ func (i *Interpreter) visitClassStmt(stmt Class) (any, error) {
 		make(map[string]*LoxFunction),
 		classProperties,
 		instanceFields,
-		true,
+		stmt.CanInstantiate,
 		false,
 	}
 	i.environment.Assign(stmt.Name, loxClass)

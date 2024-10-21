@@ -48,6 +48,7 @@ type Class struct {
 	ClassMethods   list.List[Function]
 	ClassFields    map[string]Expr
 	InstanceFields map[string]Expr
+	CanInstantiate bool
 }
 
 type Continue struct{}
