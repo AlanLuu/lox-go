@@ -322,7 +322,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			if l.isBinary {
 				if argsLen == 0 {
-					loxBuffer := EmptyLoxBufferCapDouble(int64(len(buffer)))
+					loxBuffer := EmptyLoxBufferCap(int64(len(buffer)))
 					for _, element := range buffer {
 						addErr := loxBuffer.add(int64(element))
 						if addErr != nil {
@@ -331,7 +331,7 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 					}
 					return loxBuffer, nil
 				} else {
-					loxBuffer := EmptyLoxBufferCapDouble(int64(bufferSize))
+					loxBuffer := EmptyLoxBufferCap(int64(bufferSize))
 					for i := 0; i < bufferSize; i++ {
 						addErr := loxBuffer.add(int64(buffer[i]))
 						if addErr != nil {

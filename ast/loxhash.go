@@ -56,7 +56,7 @@ func (l *LoxHash) Get(name *token.Token) (any, error) {
 	case "digest":
 		return hashFunc(0, func(in *Interpreter, _ list.List[any]) (any, error) {
 			digest := l.hash.Sum(nil)
-			buffer := EmptyLoxBufferCapDouble(int64(len(digest)))
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
 			for _, element := range digest {
 				addErr := buffer.add(int64(element))
 				if addErr != nil {

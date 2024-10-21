@@ -32,7 +32,7 @@ func (i *Interpreter) defineHexFuncs() {
 			if decodeErr != nil {
 				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
 			}
-			buffer := EmptyLoxBufferCapDouble(int64(len(result)))
+			buffer := EmptyLoxBufferCap(int64(len(result)))
 			for _, value := range result {
 				addErr := buffer.add(int64(value))
 				if addErr != nil {

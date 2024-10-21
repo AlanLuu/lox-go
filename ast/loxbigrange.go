@@ -324,7 +324,7 @@ func (l *LoxBigRange) Get(name *token.Token) (any, error) {
 			if capacity > 256 {
 				capacity = 256
 			}
-			buffer := EmptyLoxBufferCapDouble(capacity)
+			buffer := EmptyLoxBufferCap(capacity)
 			it := l.Iterator()
 			for it.HasNext() {
 				addErr := buffer.add(it.Next().(*big.Int).Int64())

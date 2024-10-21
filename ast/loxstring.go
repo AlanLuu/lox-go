@@ -446,7 +446,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 	case "toBuffer":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			b := make([]byte, 4)
-			buffer := EmptyLoxBufferCapDouble(int64(len(l.str)))
+			buffer := EmptyLoxBufferCap(int64(len(l.str)))
 			for _, r := range l.str {
 				for i := 0; i < utf8.EncodeRune(b, r); i++ {
 					addErr := buffer.add(int64(b[i]))

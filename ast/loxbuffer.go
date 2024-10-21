@@ -110,7 +110,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 	}
 	memfrobCopy := func(start int64, stop int64) (*LoxBuffer, error) {
 		elementsLen := int64(len(l.elements))
-		buffer := EmptyLoxBufferCapDouble(elementsLen)
+		buffer := EmptyLoxBufferCap(elementsLen)
 		for i := int64(0); i < elementsLen; i++ {
 			if i >= start && i < stop {
 				switch element := l.elements[i].(type) {

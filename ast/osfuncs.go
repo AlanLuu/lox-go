@@ -1395,7 +1395,7 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 
-		buffer := EmptyLoxBufferCapDouble(int64(len(bytes)))
+		buffer := EmptyLoxBufferCap(int64(len(bytes)))
 		for _, element := range bytes {
 			bufErr := buffer.add(int64(element))
 			if bufErr != nil {
@@ -1420,7 +1420,7 @@ func (i *Interpreter) defineOSFuncs() {
 			if err != nil {
 				return nil, loxerror.RuntimeError(in.callToken, err.Error())
 			}
-			loxBuffer := EmptyLoxBufferCapDouble(int64(len(bytes)))
+			loxBuffer := EmptyLoxBufferCap(int64(len(bytes)))
 			for _, element := range bytes {
 				addErr := loxBuffer.add(int64(element))
 				if addErr != nil {
@@ -1824,7 +1824,7 @@ func (i *Interpreter) defineOSFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Argument to 'os.urandom' cannot be negative.")
 			}
-			buffer := EmptyLoxBufferCapDouble(numBytes)
+			buffer := EmptyLoxBufferCap(numBytes)
 			for i := int64(0); i < numBytes; i++ {
 				numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
 				if numErr != nil {

@@ -267,7 +267,7 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 					return nil, loxerror.RuntimeError(name, err.Error())
 				}
 			}
-			buffer := EmptyLoxBufferCapDouble(int64(len(output)))
+			buffer := EmptyLoxBufferCap(int64(len(output)))
 			for _, element := range output {
 				addErr := buffer.add(int64(element))
 				if addErr != nil {
@@ -342,7 +342,7 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 					return nil, loxerror.RuntimeError(name, err.Error())
 				}
 			}
-			buffer := EmptyLoxBufferCapDouble(int64(len(output)))
+			buffer := EmptyLoxBufferCap(int64(len(output)))
 			for _, element := range output {
 				addErr := buffer.add(int64(element))
 				if addErr != nil {

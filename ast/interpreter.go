@@ -579,7 +579,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if left <= 0 || len(right.elements) == 0 {
 				return EmptyLoxBuffer(), nil
 			}
-			newBuffer := EmptyLoxBufferCapDouble(int64(len(right.elements)) * left)
+			newBuffer := EmptyLoxBufferCap(int64(len(right.elements)) * left)
 			for i := int64(0); i < left; i++ {
 				for _, element := range right.elements {
 					addErr := newBuffer.add(element)
@@ -1180,7 +1180,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				return right.NewLoxString(left.String() + right.str), nil
 			case *LoxBuffer:
 				capacity := int64(len(left.elements)) + int64(len(right.elements))
-				newBuffer := EmptyLoxBufferCapDouble(capacity)
+				newBuffer := EmptyLoxBufferCap(capacity)
 				for _, element := range left.elements {
 					addErr := newBuffer.add(element)
 					if addErr != nil {
@@ -1200,7 +1200,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 				if right <= 0 || len(left.elements) == 0 {
 					return EmptyLoxBuffer(), nil
 				}
-				newBuffer := EmptyLoxBufferCapDouble(int64(len(left.elements)) * right)
+				newBuffer := EmptyLoxBufferCap(int64(len(left.elements)) * right)
 				for i := int64(0); i < right; i++ {
 					for _, element := range left.elements {
 						addErr := newBuffer.add(element)

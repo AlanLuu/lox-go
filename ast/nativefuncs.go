@@ -126,7 +126,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			"Argument to 'bin' must be an integer.")
 	})
 	nativeFunc("Buffer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
-		buffer := EmptyLoxBufferCapDouble(int64(len(args)))
+		buffer := EmptyLoxBufferCap(int64(len(args)))
 		for _, element := range args {
 			addErr := buffer.add(element)
 			if addErr != nil {
@@ -152,7 +152,7 @@ func (i *Interpreter) defineNativeFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Argument to 'BufferZero' cannot be negative.")
 			}
-			buffer := EmptyLoxBufferCapDouble(size)
+			buffer := EmptyLoxBufferCap(size)
 			for index := int64(0); index < size; index++ {
 				buffer.add(int64(0))
 			}
