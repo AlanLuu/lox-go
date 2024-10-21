@@ -27,6 +27,84 @@ func (l *LoxDate) defaultFormatStr() string {
 	return l.date.Format(LoxDateDefaultFormat)
 }
 
+func (l *LoxDate) setDay(day int) {
+	l.date = time.Date(
+		l.date.Year(),
+		l.date.Month(),
+		day,
+		l.date.Hour(),
+		l.date.Minute(),
+		l.date.Second(),
+		l.date.Nanosecond(),
+		l.date.Location(),
+	)
+}
+
+func (l *LoxDate) setHour(hour int) {
+	l.date = time.Date(
+		l.date.Year(),
+		l.date.Month(),
+		l.date.Day(),
+		hour,
+		l.date.Minute(),
+		l.date.Second(),
+		l.date.Nanosecond(),
+		l.date.Location(),
+	)
+}
+
+func (l *LoxDate) setMinute(minute int) {
+	l.date = time.Date(
+		l.date.Year(),
+		l.date.Month(),
+		l.date.Day(),
+		l.date.Hour(),
+		minute,
+		l.date.Second(),
+		l.date.Nanosecond(),
+		l.date.Location(),
+	)
+}
+
+func (l *LoxDate) setMonth(month time.Month) {
+	l.date = time.Date(
+		l.date.Year(),
+		month,
+		l.date.Day(),
+		l.date.Hour(),
+		l.date.Minute(),
+		l.date.Second(),
+		l.date.Nanosecond(),
+		l.date.Location(),
+	)
+}
+
+func (l *LoxDate) setSecond(second int) {
+	l.date = time.Date(
+		l.date.Year(),
+		l.date.Month(),
+		l.date.Day(),
+		l.date.Hour(),
+		l.date.Minute(),
+		second,
+		l.date.Nanosecond(),
+		l.date.Location(),
+	)
+}
+
+func (l *LoxDate) setYear(year int) {
+	l.date = time.Date(
+		year,
+		l.date.Month(),
+		l.date.Day(),
+		l.date.Hour(),
+		l.date.Minute(),
+		l.date.Second(),
+		l.date.Nanosecond(),
+		l.date.Location(),
+	)
+}
+
 func (l *LoxDate) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxDate:
@@ -55,6 +133,10 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 	}
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'date.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'date.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
@@ -217,6 +299,54 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 	case "second":
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return int64(l.date.Second()), nil
+		})
+	case "setDay":
+		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if day, ok := args[0].(int64); ok {
+				l.setDay(int(day))
+				return l, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "setHour":
+		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if hour, ok := args[0].(int64); ok {
+				l.setHour(int(hour))
+				return l, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "setMinute":
+		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if minute, ok := args[0].(int64); ok {
+				l.setMinute(int(minute))
+				return l, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "setMonth":
+		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if month, ok := args[0].(int64); ok {
+				l.setMonth(time.Month(month))
+				return l, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "setSecond":
+		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if second, ok := args[0].(int64); ok {
+				l.setSecond(int(second))
+				return l, nil
+			}
+			return argMustBeTypeAn("integer")
+		})
+	case "setYear":
+		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if year, ok := args[0].(int64); ok {
+				l.setYear(int(year))
+				return l, nil
+			}
+			return argMustBeTypeAn("integer")
 		})
 	case "sleepUntil":
 		return dateFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

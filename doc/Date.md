@@ -53,6 +53,12 @@ Date objects have the following methods associated with them:
 - `date.nanosecond()`, which returns the nanosecond associated with the current date object as an integer
 - `date.now()`, which is an alias for `date.unixMilli`
 - `date.second()`, which returns the second associated with the current date object as an integer
+- `date.setDay(day)`, which sets the day of the current date object to the specified day integer and returns the current date object itself
+- `date.setHour(hour)`, which sets the hour of the current date object to the specified hour integer and returns the current date object itself
+- `date.setMinute(minute)`, which sets the minute of the current date object to the specified minute integer and returns the current date object itself
+- `date.setMonth(month)`, which sets the month of the current date object to the specified month integer and returns the current date object itself
+- `date.setSecond(second)`, which sets the second of the current date object to the specified second integer and returns the current date object itself
+- `date.setYear(year)`, which sets the year of the current date object to the specified year integer and returns the current date object itself
 - `date.sleepUntil()`, which pauses the program until the current date is greater than or equal to the current date object
 - `date.string()`, which formats the date object according to the RFC 3339 layout into a string and returns that string
 - `date.sub(date2)`, which returns a duration object that is the difference between the current date object and the specified date object
