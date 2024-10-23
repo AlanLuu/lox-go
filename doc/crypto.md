@@ -32,12 +32,12 @@ Fernet objects have the following methods associated with them:
 - `fernet.b64()`, which is an alias for `fernet.base64`
 - `fernet.base64()`, which returns a string that is the base64 representation of the fernet key associated with the current fernet object
 - `fernet.bytes()`, which returns a buffer of the bytes of the fernet key associated with the current fernet object
-- `fernet.decrypt(buffer/string)`, which attempts to decrypt the specified buffer or string representation of the specified fernet token using the key associated with the current fernet object, and returns a buffer of the decrypted bytes if successful
+- `fernet.decrypt(buffer/file/string)`, which attempts to decrypt the specified buffer, file object, or string representation of the specified fernet token using the key associated with the current fernet object, and returns a buffer of the decrypted bytes if successful
     - If decryption is unsuccessful, this method throws a runtime error
-- `fernet.decryptToFile(buffer/string, string/file)`, which attempts to decrypt the specified buffer or string representation of the specified fernet token using the key associated with the current fernet object and writes the decrypted bytes to the specified file, which can be specified as a string or a file object
-    - If the file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+- `fernet.decryptToFile(buffer/file/string, string/file)`, which attempts to decrypt the specified buffer, file object, or string representation of the specified fernet token using the key associated with the current fernet object and writes the decrypted bytes to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
     - If decryption is unsuccessful, this method throws a runtime error
-- `fernet.decryptToStr(buffer/string)`, which attempts to decrypt the specified buffer or string representation of the specified fernet token using the key associated with the current fernet object, and returns a string of the decrypted bytes if successful
+- `fernet.decryptToStr(buffer/string)`, which attempts to decrypt the specified buffer, file object, or string representation of the specified fernet token using the key associated with the current fernet object, and returns a string of the decrypted bytes if successful
     - If decryption is unsuccessful, this method throws a runtime error
 - `fernet.encrypt(buffer/file/string)`, which returns a buffer of the encryption result of the specified buffer, file object, or string, which is known as a fernet token
 - `fernet.encryptToFile(buffer/file/string, string/file)`, which writes the encryption result of the specified buffer, file object, or string, which is known as a fernet token, to the specified file, which can be specified as a string or a file object

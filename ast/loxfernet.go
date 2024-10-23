@@ -73,6 +73,8 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 		switch element.(type) {
 		case *LoxBuffer:
 			return "Fernet: failed to decrypt buffer."
+		case *LoxFile:
+			return "Fernet: failed to decrypt file."
 		case *LoxString:
 			return "Fernet: failed to decrypt string."
 		default:
@@ -106,10 +108,20 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"File argument to 'fernet.decrypt' must be in read mode.")
+				}
+				var readErr error
+				bytes, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
 			case *LoxString:
 				bytes = []byte(arg.str)
 			default:
-				return argMustBeType("buffer or string")
+				return argMustBeType("buffer, file, or string")
 			}
 
 			decryptedBytes = fernet.VerifyAndDecrypt(bytes, 0, []*fernet.Key{l.key})
@@ -132,13 +144,13 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 			case *LoxString:
 			default:
 				return nil, loxerror.RuntimeError(name,
-					"First argument to 'fernet.decryptToFile' must be a buffer or string.")
+					"First argument to 'fernet.decryptToFile' must be a buffer, file, or string.")
 			}
 			switch arg := args[1].(type) {
 			case *LoxFile:
 				if !arg.isWrite() && !arg.isAppend() {
 					return nil, loxerror.RuntimeError(name,
-						"File argument to 'fernet.decryptToFile' must be in write or append mode.")
+						"Second file argument to 'fernet.decryptToFile' must be in write or append mode.")
 				}
 			case *LoxString:
 			default:
@@ -153,6 +165,16 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 				bytes = make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
+				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"First file argument to 'fernet.decryptToFile' must be in read mode.")
+				}
+				var readErr error
+				bytes, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
 				}
 			case *LoxString:
 				bytes = []byte(arg.str)
@@ -188,10 +210,20 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
 				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"File argument to 'fernet.decryptToStr' must be in read mode.")
+				}
+				var readErr error
+				bytes, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
 			case *LoxString:
 				bytes = []byte(arg.str)
 			default:
-				return argMustBeType("buffer or string")
+				return argMustBeType("buffer, file, or string")
 			}
 
 			decryptedBytes = fernet.VerifyAndDecrypt(bytes, 0, []*fernet.Key{l.key})
