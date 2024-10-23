@@ -3,6 +3,7 @@ package ast
 import (
 	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/AlanLuu/lox/list"
@@ -73,7 +74,7 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 		case *LoxBuffer:
 			return "Fernet: failed to decrypt buffer."
 		case *LoxString:
-			return "Fernet: failed to decrypt base64 string."
+			return "Fernet: failed to decrypt string."
 		default:
 			return ""
 		}
@@ -211,10 +212,20 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 					bytes = append(bytes, byte(element.(int64)))
 				}
 				encryptedBytes, err = fernet.EncryptAndSign(bytes, l.key)
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"File argument to 'fernet.encrypt' must be in read mode.")
+				}
+				bytes, readErr := io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+				encryptedBytes, err = fernet.EncryptAndSign(bytes, l.key)
 			case *LoxString:
 				encryptedBytes, err = fernet.EncryptAndSign([]byte(arg.str), l.key)
 			default:
-				return argMustBeType("buffer or string")
+				return argMustBeType("buffer, file, or string")
 			}
 
 			if err != nil {
@@ -233,16 +244,17 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 		return fernetFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			switch args[0].(type) {
 			case *LoxBuffer:
+			case *LoxFile:
 			case *LoxString:
 			default:
 				return nil, loxerror.RuntimeError(name,
-					"First argument to 'fernet.encryptToFile' must be a buffer or string.")
+					"First argument to 'fernet.encryptToFile' must be a buffer, file, or string.")
 			}
 			switch arg := args[1].(type) {
 			case *LoxFile:
 				if !arg.isWrite() && !arg.isAppend() {
 					return nil, loxerror.RuntimeError(name,
-						"File argument to 'fernet.encryptToFile' must be in write or append mode.")
+						"Second file argument to 'fernet.encryptToFile' must be in write or append mode.")
 				}
 			case *LoxString:
 			default:
@@ -257,6 +269,16 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 				bytes := make([]byte, 0, len(arg.elements))
 				for _, element := range arg.elements {
 					bytes = append(bytes, byte(element.(int64)))
+				}
+				encryptedBytes, err = fernet.EncryptAndSign(bytes, l.key)
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"First file argument to 'fernet.encryptToFile' must be in read mode.")
+				}
+				bytes, readErr := io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
 				}
 				encryptedBytes, err = fernet.EncryptAndSign(bytes, l.key)
 			case *LoxString:
@@ -293,10 +315,20 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 					bytes = append(bytes, byte(element.(int64)))
 				}
 				encryptedBytes, err = fernet.EncryptAndSign(bytes, l.key)
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"File argument to 'fernet.encryptToStr' must be in read mode.")
+				}
+				bytes, readErr := io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+				encryptedBytes, err = fernet.EncryptAndSign(bytes, l.key)
 			case *LoxString:
 				encryptedBytes, err = fernet.EncryptAndSign([]byte(arg.str), l.key)
 			default:
-				return argMustBeType("buffer or string")
+				return argMustBeType("buffer, file, or string")
 			}
 
 			if err != nil {
