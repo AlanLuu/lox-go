@@ -73,6 +73,39 @@ func (i *Interpreter) defineCryptoFuncs() {
 		hash := []byte(args[1].(*LoxString).str)
 		return bcrypt.CompareHashAndPassword(hash, password) == nil, nil
 	})
+	cryptoFunc("fernet", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var fernet *LoxFernet
+		var err error
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			fernet, err = NewLoxFernet()
+		case 1:
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				if len(arg.elements) != 32 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Buffer argument to 'crypto.fernet' must be of length 32.")
+				}
+				key := [32]byte{}
+				for i := 0; i < 32; i++ {
+					key[i] = byte(arg.elements[i].(int64))
+				}
+				fernet = NewLoxFernetFromBytes(key)
+			case *LoxString:
+				fernet, err = NewLoxFernetFromString(arg.str)
+			default:
+				return argMustBeType(in.callToken, "fernet", "buffer or string")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return fernet, nil
+	})
 	cryptoFunc("md5", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
 		argsLen := len(args)
