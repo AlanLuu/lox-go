@@ -22,6 +22,16 @@ static class stdin {
         print this._diffreturn("\r\n");
     }
 
+    static fernetdecrypt(key) {
+        var fernet = crypto.fernet(key);
+        fernet.decryptToFile(os.stdin, os.stdout);
+    }
+    static fernetencrypt() {
+        var fernet = crypto.fernet();
+        os.stderr.writeLine(fernet.base64());
+        fernet.encryptToFile(os.stdin, os.stdout);
+    }
+
     static _filterfunc(callback, delimiter) {
         var elements = os.stdin.read().strip().split(delimiter);
         foreach (var element in elements) {
