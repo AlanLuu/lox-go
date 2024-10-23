@@ -141,6 +141,7 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 		return fernetFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			switch args[0].(type) {
 			case *LoxBuffer:
+			case *LoxFile:
 			case *LoxString:
 			default:
 				return nil, loxerror.RuntimeError(name,
