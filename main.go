@@ -31,7 +31,7 @@ OPTIONS:
 	-c <code>
 		Execute Lox code from command line argument
 	--disable-loxcode
-		Disable execution of all Lox files in the loxcode directory
+		Disable execution of all Lox files that are bundled inside this interpreter executable
 	-h, --help
 		Print this usage message and exit
 `
