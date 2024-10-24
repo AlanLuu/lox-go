@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -29,6 +30,16 @@ func (i *Interpreter) defineCryptoFuncs() {
 	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'crypto.%v' must be a %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
 	}
 
 	cryptoFunc("bcrypt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
@@ -106,6 +117,65 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return fernet, nil
 	})
+	cryptoFunc("hmac", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		argZeroErrMsg := "First argument to 'crypto.hmac' must be a function."
+		argOneErrMsg := "Second argument to 'crypto.hmac' must be a buffer or string."
+		switch args[0].(type) {
+		case *LoxClass:
+			return nil, loxerror.RuntimeError(in.callToken, argZeroErrMsg)
+		case LoxCallable:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, argZeroErrMsg)
+		}
+		switch args[1].(type) {
+		case *LoxBuffer:
+		case *LoxString:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, argOneErrMsg)
+		}
+
+		callable := args[0].(LoxCallable)
+		var result any
+		switch callable := callable.(type) {
+		case *LoxFunction:
+			argList := getArgList(callable, 0)
+			callResult, resultErr := callable.call(i, argList)
+			if callresultReturn, ok := callResult.(Return); ok {
+				result = callresultReturn.FinalValue
+			} else if resultErr != nil {
+				return nil, resultErr
+			}
+		default:
+			var resultErr error
+			result, resultErr = callable.call(i, list.NewList[any]())
+			if resultErr != nil {
+				return nil, resultErr
+			}
+		}
+
+		switch result := result.(type) {
+		case *LoxHash:
+			if result.hashFunc == nil {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Function argument to 'crypto.hmac' returned unknown hash type.")
+			}
+			var key []byte
+			switch arg := args[1].(type) {
+			case *LoxBuffer:
+				key = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					key = append(key, byte(element.(int64)))
+				}
+			case *LoxString:
+				key = []byte(arg.str)
+			}
+			hashObj := hmac.New(result.hashFunc, key)
+			return NewLoxHash(hashObj, result.hashFunc, "hmac-"+result.hashType), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Function argument to 'crypto.hmac' must return a hash object.")
+		}
+	})
 	cryptoFunc("md5", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
 		argsLen := len(args)
@@ -131,7 +201,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		return NewLoxHash(hashObj, "md5"), nil
+		return NewLoxHash(hashObj, md5.New, "md5"), nil
 	})
 	cryptoFunc("md5sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
@@ -177,7 +247,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		return NewLoxHash(hashObj, "sha1"), nil
+		return NewLoxHash(hashObj, sha1.New, "sha1"), nil
 	})
 	cryptoFunc("sha1sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
@@ -223,7 +293,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		return NewLoxHash(hashObj, "sha224"), nil
+		return NewLoxHash(hashObj, sha256.New224, "sha224"), nil
 	})
 	cryptoFunc("sha224sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
@@ -269,7 +339,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		return NewLoxHash(hashObj, "sha256"), nil
+		return NewLoxHash(hashObj, sha256.New, "sha256"), nil
 	})
 	cryptoFunc("sha256sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
@@ -315,7 +385,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		return NewLoxHash(hashObj, "sha384"), nil
+		return NewLoxHash(hashObj, sha512.New384, "sha384"), nil
 	})
 	cryptoFunc("sha384sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
@@ -361,7 +431,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		return NewLoxHash(hashObj, "sha512"), nil
+		return NewLoxHash(hashObj, sha512.New, "sha512"), nil
 	})
 	cryptoFunc("sha512sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash

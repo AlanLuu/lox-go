@@ -11,13 +11,15 @@ import (
 
 type LoxHash struct {
 	hash       hash.Hash
+	hashFunc   func() hash.Hash
 	hashType   string
 	properties map[string]any
 }
 
-func NewLoxHash(theHash hash.Hash, hashType string) *LoxHash {
+func NewLoxHash(theHash hash.Hash, hashFunc func() hash.Hash, hashType string) *LoxHash {
 	return &LoxHash{
 		hash:       theHash,
+		hashFunc:   hashFunc,
 		hashType:   hashType,
 		properties: make(map[string]any),
 	}
