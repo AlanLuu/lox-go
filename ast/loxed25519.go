@@ -212,11 +212,16 @@ func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 			seedBytes := l.privKey.Seed()
 			return NewLoxString(base64.StdEncoding.EncodeToString(seedBytes), '\''), nil
 		})
-	case "seedEncoded":
+	case "seedEncoded", "seedStr":
 		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			if !l.isKeyPair() {
-				return nil, loxerror.RuntimeError(name,
-					"Can only call 'ed25519.seedEncoded' on ed25519 keypairs.")
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"Can only call 'ed25519.%v' on ed25519 keypairs.",
+						methodName,
+					),
+				)
 			}
 			seedBytes := l.privKey.Seed()
 			return NewLoxStringQuote(LoxEd25519Encode(seedBytes)), nil
