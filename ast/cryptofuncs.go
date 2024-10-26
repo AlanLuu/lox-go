@@ -84,6 +84,82 @@ func (i *Interpreter) defineCryptoFuncs() {
 		hash := []byte(args[1].(*LoxString).str)
 		return bcrypt.CompareHashAndPassword(hash, password) == nil, nil
 	})
+	cryptoFunc("ed25519", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		keyPair, err := NewLoxEd25519()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return keyPair, nil
+	})
+	cryptoFunc("ed25519priv", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var privKeyBytes []byte
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			privKeyBytes = make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				privKeyBytes = append(privKeyBytes, byte(element.(int64)))
+			}
+		case *LoxString:
+			var decodeErr error
+			privKeyBytes, decodeErr = LoxEd25519Decode(arg.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+		default:
+			return argMustBeType(in.callToken, "ed25519priv", "buffer or string")
+		}
+		privKey, err := NewLoxEd25519PrivKey(privKeyBytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return privKey, nil
+	})
+	cryptoFunc("ed25519pub", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var pubKeyBytes []byte
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			pubKeyBytes = make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				pubKeyBytes = append(pubKeyBytes, byte(element.(int64)))
+			}
+		case *LoxString:
+			var decodeErr error
+			pubKeyBytes, decodeErr = LoxEd25519Decode(arg.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+		default:
+			return argMustBeType(in.callToken, "ed25519pub", "buffer or string")
+		}
+		pubKey, err := NewLoxEd25519PubKey(pubKeyBytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return pubKey, nil
+	})
+	cryptoFunc("ed25519seed", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var seedBytes []byte
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			seedBytes = make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				seedBytes = append(seedBytes, byte(element.(int64)))
+			}
+		case *LoxString:
+			var decodeErr error
+			seedBytes, decodeErr = LoxEd25519Decode(arg.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+		default:
+			return argMustBeType(in.callToken, "ed25519seed", "buffer or string")
+		}
+		keyPair, err := NewLoxEd25519PrivKeySeed(seedBytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return keyPair, nil
+	})
 	cryptoFunc("fernet", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var fernet *LoxFernet
 		var err error
