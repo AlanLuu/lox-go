@@ -30,7 +30,7 @@ func usageFunc(writer io.Writer) func() {
 OPTIONS:
 	-c <code>
 		Execute Lox code from command line argument
-	--disable-loxcode
+	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
 	-h, --help
 		Print this usage message and exit
@@ -212,10 +212,11 @@ func interactiveMode() int {
 
 func main() {
 	var (
-		exprCLine      = flag.String("c", "", "")
-		disableLoxCode = flag.Bool("disable-loxcode", false, "")
-		helpFlag1      = flag.Bool("h", false, "")
-		helpFlag2      = flag.Bool("help", false, "")
+		exprCLine       = flag.String("c", "", "")
+		disableLoxCode  = flag.Bool("disable-loxcode", false, "")
+		disableLoxCode2 = flag.Bool("dl", false, "")
+		helpFlag1       = flag.Bool("h", false, "")
+		helpFlag2       = flag.Bool("help", false, "")
 	)
 	flag.Usage = usageFunc(os.Stderr)
 	flag.Parse()
@@ -225,7 +226,7 @@ func main() {
 	}
 
 	args := flag.Args()
-	util.DisableLoxCode = *disableLoxCode
+	util.DisableLoxCode = *disableLoxCode || *disableLoxCode2
 	exitCode := 0
 	if *exprCLine != "" {
 		sc := scanner.NewScanner(*exprCLine)

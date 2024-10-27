@@ -8,7 +8,7 @@ Usage: lox [OPTIONS] [FILE]
 OPTIONS:
 	-c <code>
 		Execute Lox code from command line argument
-	--disable-loxcode
+	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
 	-h, --help
 		Print this usage message and exit
