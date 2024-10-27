@@ -212,7 +212,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - A runtime error is thrown if the specified string is not properly encoded as base64
     - `base64.decodeToBuf(string)`, which decodes the specified base64-encoded string into a buffer and returns that buffer
         - A runtime error is thrown if the specified string is not properly encoded as base64
+    - `base64.decodeURLSafe(string)`, which decodes the specified URL-safe base64-encoded string into a decoded string and returns that string
+        - A runtime error is thrown if the specified string is not properly encoded as URL-safe base64
+    - `base64.decodeURLSafeToBuf(string)`, which decodes the specified URL-safe base64-encoded string into a buffer and returns that buffer
+        - A runtime error is thrown if the specified string is not properly encoded as URL-safe base64
     - `base64.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a base64 string and returns that encoded string
+    - `base64.encodeURLSafe(arg)`, which encodes the specified argument, which is either a string or a buffer, into a URL-safe base64 string and returns that encoded string
 - Various methods to work with base32 strings are defined under a built-in class called `base32`, where the following methods are defined:
     - `base32.decode(string)`, which decodes the specified base32-encoded string into a decoded string and returns that string
         - A runtime error is thrown if the specified string is not properly encoded as base32

@@ -53,6 +53,33 @@ func (i *Interpreter) defineBase64Funcs() {
 		}
 		return argMustBeType(in.callToken, "decodeToBuf", "string")
 	})
+	base64Func("decodeURLSafe", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			result, decodeErr := base64.URLEncoding.DecodeString(loxStr.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+			return NewLoxStringQuote(string(result)), nil
+		}
+		return argMustBeType(in.callToken, "decodeURLSafe", "string")
+	})
+	base64Func("decodeURLSafeToBuf", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			result, decodeErr := base64.URLEncoding.DecodeString(loxStr.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+			buffer := EmptyLoxBufferCap(int64(len(result)))
+			for _, value := range result {
+				addErr := buffer.add(int64(value))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+				}
+			}
+			return buffer, nil
+		}
+		return argMustBeType(in.callToken, "decodeURLSafeToBuf", "string")
+	})
 	base64Func("encode", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch arg := args[0].(type) {
 		case *LoxString:
@@ -67,6 +94,21 @@ func (i *Interpreter) defineBase64Funcs() {
 			return NewLoxString(encodedStr, '\''), nil
 		}
 		return argMustBeType(in.callToken, "encode", "string or buffer")
+	})
+	base64Func("encodeURLSafe", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch arg := args[0].(type) {
+		case *LoxString:
+			encodedStr := base64.URLEncoding.EncodeToString([]byte(arg.str))
+			return NewLoxString(encodedStr, '\''), nil
+		case *LoxBuffer:
+			byteList := list.NewListCapDouble[byte](int64(len(arg.elements)))
+			for _, element := range arg.elements {
+				byteList.Add(byte(element.(int64)))
+			}
+			encodedStr := base64.URLEncoding.EncodeToString([]byte(byteList))
+			return NewLoxString(encodedStr, '\''), nil
+		}
+		return argMustBeType(in.callToken, "encodeURLSafe", "string or buffer")
 	})
 
 	i.globals.Define(className, base64Class)
