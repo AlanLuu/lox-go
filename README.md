@@ -204,6 +204,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods and fields to work with dates are defined under a built-in class called `Date`, which is documented [here](./doc/Date.md)
 - Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)
 - Various methods to work with processes are defined under a built-in class called `process`, which is documented [here](./doc/process.md)
+- Various methods to work with generating cryptographically secure strings are defined under a class called `secrets`, which is documented [here](./doc/secrets.md)
 - Various methods to work with data from standard input are defined under a class called `stdin`, which is documented [here](./doc/stdin.md)
 - Various methods and fields to work with Windows-specific functionality are defined under a built-in class called `windows`, which is documented [here](./doc/windows.md)
     - This class does not exist on non-Windows systems
