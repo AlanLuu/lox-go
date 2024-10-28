@@ -3,12 +3,85 @@ package ast
 import (
 	"crypto/ed25519"
 	"encoding/base64"
+	"encoding/pem"
 	"fmt"
+	"math/rand"
+	"os"
+	"path/filepath"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"golang.org/x/crypto/ssh"
 )
+
+func MarshalED25519PrivateKey(key ed25519.PrivateKey) []byte {
+	magic := append([]byte("openssh-key-v1"), 0)
+	var w struct {
+		CipherName   string
+		KdfName      string
+		KdfOpts      string
+		NumKeys      uint32
+		PubKey       []byte
+		PrivKeyBlock []byte
+	}
+
+	pk1 := struct {
+		Check1  uint32
+		Check2  uint32
+		Keytype string
+		Pub     []byte
+		Priv    []byte
+		Comment string
+		Pad     []byte `ssh:"rest"`
+	}{}
+
+	ci := rand.Uint32()
+	pk1.Check1 = ci
+	pk1.Check2 = ci
+
+	pk1.Keytype = ssh.KeyAlgoED25519
+
+	pk, ok := key.Public().(ed25519.PublicKey)
+	if !ok {
+		/*
+			ed25519.PublicKey type assertion failed on an ed25519 public key.
+			This should never ever happen.
+		*/
+		fmt.Fprintln(os.Stderr, "ed25519.PublicKey type assertion failed")
+		return nil
+	}
+	pubKey := []byte(pk)
+	pk1.Pub = pubKey
+
+	pk1.Priv = []byte(key)
+
+	pk1.Comment = ""
+
+	bs := 8
+	blockLen := len(ssh.Marshal(pk1))
+	padLen := (bs - (blockLen % bs)) % bs
+	pk1.Pad = make([]byte, padLen)
+
+	for i := 0; i < padLen; i++ {
+		pk1.Pad[i] = byte(i + 1)
+	}
+
+	prefix := []byte{0x0, 0x0, 0x0, 0x0b}
+	prefix = append(prefix, []byte(ssh.KeyAlgoED25519)...)
+	prefix = append(prefix, []byte{0x0, 0x0, 0x0, 0x20}...)
+
+	w.CipherName = "none"
+	w.KdfName = "none"
+	w.KdfOpts = ""
+	w.NumKeys = 1
+	w.PubKey = append(prefix, pubKey...)
+	w.PrivKeyBlock = ssh.Marshal(pk1)
+
+	magic = append(magic, ssh.Marshal(w)...)
+
+	return magic
+}
 
 func LoxEd25519Decode(str string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(str)
@@ -284,6 +357,60 @@ func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 			}
 			signature := ed25519.Sign(l.privKey, message)
 			return NewLoxStringQuote(LoxEd25519Encode(signature)), nil
+		})
+	case "ssh":
+		return ed25519Func(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var path string
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				var pathErr error
+				path, pathErr = os.UserHomeDir()
+				if pathErr != nil {
+					return nil, loxerror.RuntimeError(name, pathErr.Error())
+				}
+			case 1:
+				if loxStr, ok := args[0].(*LoxString); ok {
+					path = loxStr.str
+				} else {
+					return argMustBeType("string")
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+
+			stat, statErr := os.Stat(path)
+			if statErr != nil {
+				return nil, loxerror.RuntimeError(name, statErr.Error())
+			}
+			if !stat.IsDir() {
+				return nil, loxerror.RuntimeError(name,
+					"Path argument to 'ed25519.ssh' must refer to a directory.")
+			}
+
+			if l.isKeyPair() {
+				pemKey := &pem.Block{
+					Type:  "OPENSSH PRIVATE KEY",
+					Bytes: MarshalED25519PrivateKey(l.privKey),
+				}
+				sshPrivKey := pem.EncodeToMemory(pemKey)
+				writeErr := os.WriteFile(filepath.Join(path, "id_ed25519"), sshPrivKey, 0600)
+				if writeErr != nil {
+					return nil, loxerror.RuntimeError(name, writeErr.Error())
+				}
+			}
+			sshPubKey, sshPubKeyErr := ssh.NewPublicKey(l.pubKey)
+			if sshPubKeyErr != nil {
+				return nil, loxerror.RuntimeError(name, sshPubKeyErr.Error())
+			}
+			authorizedKey := ssh.MarshalAuthorizedKey(sshPubKey)
+			writeErr := os.WriteFile(filepath.Join(path, "id_ed25519.pub"), authorizedKey, 0644)
+			if writeErr != nil {
+				return nil, loxerror.RuntimeError(name, writeErr.Error())
+			}
+
+			return nil, nil
 		})
 	case "verify":
 		return ed25519Func(2, func(_ *Interpreter, args list.List[any]) (any, error) {
