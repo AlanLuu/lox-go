@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func MarshalED25519PrivateKey(key ed25519.PrivateKey) []byte {
+func MarshalED25519PrivateKey(key ed25519.PrivateKey, comment string) []byte {
 	magic := append([]byte("openssh-key-v1"), 0)
 	var w struct {
 		CipherName   string
@@ -56,7 +56,7 @@ func MarshalED25519PrivateKey(key ed25519.PrivateKey) []byte {
 
 	pk1.Priv = []byte(key)
 
-	pk1.Comment = ""
+	pk1.Comment = comment
 
 	bs := 8
 	blockLen := len(ssh.Marshal(pk1))
@@ -398,7 +398,68 @@ func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 			if l.isKeyPair() {
 				pemKey := &pem.Block{
 					Type:  "OPENSSH PRIVATE KEY",
-					Bytes: MarshalED25519PrivateKey(l.privKey),
+					Bytes: MarshalED25519PrivateKey(l.privKey, ""),
+				}
+				sshPrivKey := pem.EncodeToMemory(pemKey)
+				writeErr := os.WriteFile(filepath.Join(path, "id_ed25519"), sshPrivKey, 0600)
+				if writeErr != nil {
+					return nil, loxerror.RuntimeError(name, writeErr.Error())
+				}
+			}
+			sshPubKey, sshPubKeyErr := ssh.NewPublicKey(l.pubKey)
+			if sshPubKeyErr != nil {
+				return nil, loxerror.RuntimeError(name, sshPubKeyErr.Error())
+			}
+			authorizedKey := ssh.MarshalAuthorizedKey(sshPubKey)
+			writeErr := os.WriteFile(filepath.Join(path, "id_ed25519.pub"), authorizedKey, 0644)
+			if writeErr != nil {
+				return nil, loxerror.RuntimeError(name, writeErr.Error())
+			}
+
+			return nil, nil
+		})
+	case "sshComment":
+		return ed25519Func(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var comment, path string
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				if _, ok := args[0].(*LoxString); !ok {
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'ed25519.sshComment' must be a string.")
+				}
+				comment = args[0].(*LoxString).str
+				if argsLen == 2 {
+					if _, ok := args[1].(*LoxString); !ok {
+						return nil, loxerror.RuntimeError(name,
+							"Second argument to 'ed25519.sshComment' must be a string.")
+					}
+					path = args[1].(*LoxString).str
+				} else {
+					var pathErr error
+					path, pathErr = os.UserHomeDir()
+					if pathErr != nil {
+						return nil, loxerror.RuntimeError(name, pathErr.Error())
+					}
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+
+			stat, statErr := os.Stat(path)
+			if statErr != nil {
+				return nil, loxerror.RuntimeError(name, statErr.Error())
+			}
+			if !stat.IsDir() {
+				return nil, loxerror.RuntimeError(name,
+					"Path argument to 'ed25519.sshComment' must refer to a directory.")
+			}
+
+			if l.isKeyPair() {
+				pemKey := &pem.Block{
+					Type:  "OPENSSH PRIVATE KEY",
+					Bytes: MarshalED25519PrivateKey(l.privKey, comment),
 				}
 				sshPrivKey := pem.EncodeToMemory(pemKey)
 				writeErr := os.WriteFile(filepath.Join(path, "id_ed25519"), sshPrivKey, 0600)
