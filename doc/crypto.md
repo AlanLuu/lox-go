@@ -61,6 +61,8 @@ Ed25519 keypairs and public key objects have the following methods associated wi
 - `ed25519.ssh([path])`, which takes in a path to a directory as a string and writes the contents of the public key associated with the current Ed25519 object as an OpenSSH public key to a file called `id_ed25519.pub` in that directory, along with the contents of the private key associated with the current Ed25519 object as an OpenSSH private key to a file called `id_ed25519` in that directory if the current Ed25519 object is a keypair
     - If the path is omitted, the two files are written to `$HOME/.ssh` on Unix and `%USERPROFILE%\.ssh` on Windows, which will overwrite any existing files called `id_ed25519` and `id_ed25519.pub` in those directories
     - The path argument, if specified, must refer to an existing directory or else a runtime error is thrown
+- `ed25519.toPubKey()`, which converts the current Ed25519 keypair object into a public key object by erasing the private key contents associated with the current object and returns the current object itself
+    - If the current Ed25519 object is already a public key object, this method does nothing and just returns the current object itself
 - `ed25519.verify(message, signature)`, which takes in a message and a signature, which can both be buffers or base64 strings, and returns `true` if the specified signature is a valid signature of the specified message using the public key associated with the current Ed25519 object and `false` otherwise
 
 Fernet objects have the following methods associated with them:

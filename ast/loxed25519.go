@@ -166,6 +166,12 @@ func (l *LoxEd25519) isKeyPair() bool {
 	return l.privKey != nil
 }
 
+func (l *LoxEd25519) toPubKey() {
+	if l.privKey != nil {
+		l.privKey = nil
+	}
+}
+
 func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 	methodName := name.Lexeme
 	if method, ok := l.methods[methodName]; ok {
@@ -411,6 +417,11 @@ func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 			}
 
 			return nil, nil
+		})
+	case "toPubKey":
+		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			l.toPubKey()
+			return l, nil
 		})
 	case "verify":
 		return ed25519Func(2, func(_ *Interpreter, args list.List[any]) (any, error) {
