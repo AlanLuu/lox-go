@@ -202,28 +202,6 @@ func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isKeyPair(), nil
 		})
-	case "pubKey":
-		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			buffer := EmptyLoxBufferCap(int64(len(l.pubKey)))
-			for _, b := range l.pubKey {
-				addErr := buffer.add(int64(b))
-				if addErr != nil {
-					return nil, loxerror.RuntimeError(name, addErr.Error())
-				}
-			}
-			return buffer, nil
-		})
-	case "pubKeyEquals":
-		return ed25519Func(1, func(_ *Interpreter, args list.List[any]) (any, error) {
-			if keyPair, ok := args[0].(*LoxEd25519); ok {
-				return l.pubKey.Equal(keyPair.pubKey), nil
-			}
-			return argMustBeTypeAn("ed25519 keypair or public key")
-		})
-	case "pubKeyStr":
-		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			return NewLoxStringQuote(LoxEd25519Encode(l.pubKey)), nil
-		})
 	case "privKey":
 		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			if !l.isKeyPair() {
@@ -260,6 +238,28 @@ func (l *LoxEd25519) Get(name *token.Token) (any, error) {
 					"Can only call 'ed25519.privKeyStr' on ed25519 keypairs.")
 			}
 			return NewLoxStringQuote(LoxEd25519Encode(l.privKey)), nil
+		})
+	case "pubKey":
+		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			buffer := EmptyLoxBufferCap(int64(len(l.pubKey)))
+			for _, b := range l.pubKey {
+				addErr := buffer.add(int64(b))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "pubKeyEquals":
+		return ed25519Func(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if keyPair, ok := args[0].(*LoxEd25519); ok {
+				return l.pubKey.Equal(keyPair.pubKey), nil
+			}
+			return argMustBeTypeAn("ed25519 keypair or public key")
+		})
+	case "pubKeyStr":
+		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return NewLoxStringQuote(LoxEd25519Encode(l.pubKey)), nil
 		})
 	case "seed":
 		return ed25519Func(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

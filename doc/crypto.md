@@ -37,15 +37,15 @@ The following methods are defined in the built-in `crypto` class:
 
 Ed25519 keypairs and public key objects have the following methods associated with them:
 - `ed25519.isKeyPair()`, which returns `true` if the specified Ed25519 object is a keypair and `false` otherwise
-- `ed25519.pubKey()`, which returns a buffer of the public key contents associated with the current Ed25519 object
-- `ed25519.pubKeyEquals(arg)`, which takes in another Ed25519 keypair or public key object as an argument and returns `true` if both public keys associated with the two Ed25519 objects are the same and `false` otherwise
-- `ed25519.pubKeyStr()`, which returns an encoded base64 string of the public key contents associated with the current Ed25519 object
 - `ed25519.privKey()`, which returns a buffer of the private key contents associated with the current Ed25519 object
     - This method throws a runtime error if the current Ed25519 object is not a keypair
 - `ed25519.privKeyEquals(arg)`, which takes in another Ed25519 keypair as an argument and returns `true` if both private keys associated with the two Ed25519 keypairs are the same and `false` otherwise
     - This method throws a runtime error if the current Ed25519 object or the specified Ed25519 object is not a keypair
 - `ed25519.privKeyStr()`, which returns an encoded base64 string of the private key contents associated with the current Ed25519 object
     - This method throws a runtime error if the current Ed25519 object is not a keypair
+- `ed25519.pubKey()`, which returns a buffer of the public key contents associated with the current Ed25519 object
+- `ed25519.pubKeyEquals(arg)`, which takes in another Ed25519 keypair or public key object as an argument and returns `true` if both public keys associated with the two Ed25519 objects are the same and `false` otherwise
+- `ed25519.pubKeyStr()`, which returns an encoded base64 string of the public key contents associated with the current Ed25519 object
 - `ed25519.seed()`, which returns a buffer of the private key seed contents associated with the current Ed25519 object
     - This method throws a runtime error if the current Ed25519 object is not a keypair
 - `ed25519.seedB64()`, which is an alias for `ed25519.seedBase64`
