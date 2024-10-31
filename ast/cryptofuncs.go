@@ -8,6 +8,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"hash"
+	"math/big"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -297,6 +298,69 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		hexDigest := fmt.Sprintf("%x", hashObj.Sum(nil))
 		return NewLoxString(hexDigest, '\''), nil
+	})
+	cryptoFunc("rsa", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if bitSize, ok := args[0].(int64); ok {
+			keyPair, err := NewLoxRSA(int(bitSize))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return keyPair, nil
+		}
+		return argMustBeType(in.callToken, "rsa", "integer")
+	})
+	cryptoFunc("rsapriv", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var keyPair *LoxRSA
+		var err error
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			privKeyBytes := make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				privKeyBytes = append(privKeyBytes, byte(element.(int64)))
+			}
+			keyPair, err = NewLoxRSAPrivKeyBytes(privKeyBytes)
+		case *LoxString:
+			keyPair, err = NewLoxRSAPrivKeyStr(arg.str)
+		default:
+			return argMustBeType(in.callToken, "rsapriv", "buffer or string")
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return keyPair, nil
+	})
+	cryptoFunc("rsapub", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var keyPair *LoxRSA
+		var err error
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			privKeyBytes := make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				privKeyBytes = append(privKeyBytes, byte(element.(int64)))
+			}
+			keyPair, err = NewLoxRSAPubKeyBytes(privKeyBytes)
+		case *LoxString:
+			keyPair, err = NewLoxRSAPubKeyStr(arg.str)
+		default:
+			return argMustBeType(in.callToken, "rsapub", "buffer or string")
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return keyPair, nil
+	})
+	cryptoFunc("rsapubne", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*big.Int); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.rsapubne' must be a bigint.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.rsapubne' must be an integer.")
+		}
+		N := args[0].(*big.Int)
+		E := int(args[1].(int64))
+		return NewLoxRSAPubKey(N, E), nil
 	})
 	cryptoFunc("sha1", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var hashObj hash.Hash
