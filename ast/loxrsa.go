@@ -204,6 +204,16 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			),
 		)
 	}
+	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
+		argList := list.NewListLen[any](int64(numArgs))
+		callbackArity := callback.arity()
+		if callbackArity > numArgs {
+			for i := 0; i < callbackArity-numArgs; i++ {
+				argList.Add(nil)
+			}
+		}
+		return argList
+	}
 	switch lexemeName {
 	case "bitLen", "bitSize":
 		return int64(l.bitSize), nil
@@ -246,7 +256,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
-	case "decryptToPKCS1v15Str", "decryptToStr":
+	case "decryptPKCS1v15ToStr", "decryptToStr":
 		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var ciphertext []byte
 			switch arg := args[0].(type) {
@@ -294,6 +304,207 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			return accessMustBePrecomputedKeypair()
 		}
 		return new(big.Int).Set(l.privKey.Precomputed.Dq), nil
+	case "encryptOAEP":
+		return rsaFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen != 2 && argsLen != 3 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+			}
+
+			var callable LoxCallable
+			var plaintext []byte
+			var label []byte
+
+			argZeroErrMsg := "First argument to 'rsa.encryptOAEP' must be a function."
+			argOneErrMsg := "Second argument to 'rsa.encryptOAEP' must be a buffer or string."
+			switch arg := args[0].(type) {
+			case *LoxClass:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			case LoxCallable:
+				callable = arg
+			default:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			}
+			switch args[1].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name, argOneErrMsg)
+			}
+			if argsLen == 3 {
+				argTwoErrMsg := "Third argument to 'rsa.encryptOAEP' must be a buffer or string."
+				switch args[2].(type) {
+				case *LoxBuffer:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name, argTwoErrMsg)
+				}
+			}
+
+			var result any
+			switch callable := callable.(type) {
+			case *LoxFunction:
+				argList := getArgList(callable, 0)
+				callResult, resultErr := callable.call(i, argList)
+				if callresultReturn, ok := callResult.(Return); ok {
+					result = callresultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+			default:
+				var resultErr error
+				result, resultErr = callable.call(i, list.NewList[any]())
+				if resultErr != nil {
+					return nil, resultErr
+				}
+			}
+
+			switch result := result.(type) {
+			case *LoxHash:
+				switch arg := args[1].(type) {
+				case *LoxBuffer:
+					plaintext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						plaintext = append(plaintext, byte(element.(int64)))
+					}
+				case *LoxString:
+					plaintext = []byte(arg.str)
+				}
+				if argsLen == 3 {
+					switch arg := args[2].(type) {
+					case *LoxBuffer:
+						label = make([]byte, 0, len(arg.elements))
+						for _, element := range arg.elements {
+							label = append(label, byte(element.(int64)))
+						}
+					case *LoxString:
+						label = []byte(arg.str)
+					}
+				} else {
+					label = []byte{}
+				}
+
+				ciphertext, err := rsa.EncryptOAEP(
+					result.hash,
+					crand.Reader,
+					&l.pubKey,
+					plaintext,
+					label,
+				)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				buffer := EmptyLoxBufferCap(int64(len(ciphertext)))
+				for _, b := range ciphertext {
+					addErr := buffer.add(int64(b))
+					if addErr != nil {
+						return nil, loxerror.RuntimeError(name, addErr.Error())
+					}
+				}
+				return buffer, nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Function argument to 'rsa.encryptOAEP' must return a hash object.")
+			}
+		})
+	case "encryptOAEPToStr":
+		return rsaFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen != 2 && argsLen != 3 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+			}
+
+			var callable LoxCallable
+			var plaintext []byte
+			var label []byte
+
+			argZeroErrMsg := "First argument to 'rsa.encryptOAEPToStr' must be a function."
+			argOneErrMsg := "Second argument to 'rsa.encryptOAEPToStr' must be a buffer or string."
+			switch arg := args[0].(type) {
+			case *LoxClass:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			case LoxCallable:
+				callable = arg
+			default:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			}
+			switch args[1].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name, argOneErrMsg)
+			}
+			if argsLen == 3 {
+				argTwoErrMsg := "Third argument to 'rsa.encryptOAEPToStr' must be a buffer or string."
+				switch args[2].(type) {
+				case *LoxBuffer:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name, argTwoErrMsg)
+				}
+			}
+
+			var result any
+			switch callable := callable.(type) {
+			case *LoxFunction:
+				argList := getArgList(callable, 0)
+				callResult, resultErr := callable.call(i, argList)
+				if callresultReturn, ok := callResult.(Return); ok {
+					result = callresultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+			default:
+				var resultErr error
+				result, resultErr = callable.call(i, list.NewList[any]())
+				if resultErr != nil {
+					return nil, resultErr
+				}
+			}
+
+			switch result := result.(type) {
+			case *LoxHash:
+				switch arg := args[1].(type) {
+				case *LoxBuffer:
+					plaintext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						plaintext = append(plaintext, byte(element.(int64)))
+					}
+				case *LoxString:
+					plaintext = []byte(arg.str)
+				}
+				if argsLen == 3 {
+					switch arg := args[2].(type) {
+					case *LoxBuffer:
+						label = make([]byte, 0, len(arg.elements))
+						for _, element := range arg.elements {
+							label = append(label, byte(element.(int64)))
+						}
+					case *LoxString:
+						label = []byte(arg.str)
+					}
+				} else {
+					label = []byte{}
+				}
+
+				ciphertext, err := rsa.EncryptOAEP(
+					result.hash,
+					crand.Reader,
+					&l.pubKey,
+					plaintext,
+					label,
+				)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				return NewLoxStringQuote(LoxRSAEncode(ciphertext)), nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Function argument to 'rsa.encryptOAEPToStr' must return a hash object.")
+			}
+		})
 	case "encryptPKCS1v15", "encrypt":
 		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var plaintext []byte
@@ -322,7 +533,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
-	case "encryptToPKCS1v15Str", "encryptToStr":
+	case "encryptPKCS1v15ToStr", "encryptToStr":
 		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var plaintext []byte
 			switch arg := args[0].(type) {
