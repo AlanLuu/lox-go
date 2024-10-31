@@ -207,6 +207,77 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 	switch lexemeName {
 	case "bitLen", "bitSize":
 		return int64(l.bitSize), nil
+	case "decryptPKCS1v15", "decrypt":
+		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var ciphertext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				if l.isKeyPair() {
+					ciphertext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						ciphertext = append(ciphertext, byte(element.(int64)))
+					}
+				}
+			case *LoxString:
+				if l.isKeyPair() {
+					var err error
+					ciphertext, err = LoxRSADecode(arg.str)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+			default:
+				return argMustBeType("buffer or string")
+			}
+
+			if !l.isKeyPair() {
+				return accessMustBeKeypair()
+			}
+			plaintext, err := rsa.DecryptPKCS1v15(nil, l.privKey, ciphertext)
+			if err != nil {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			buffer := EmptyLoxBufferCap(int64(len(plaintext)))
+			for _, b := range plaintext {
+				addErr := buffer.add(int64(b))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "decryptToPKCS1v15Str", "decryptToStr":
+		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var ciphertext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				if l.isKeyPair() {
+					ciphertext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						ciphertext = append(ciphertext, byte(element.(int64)))
+					}
+				}
+			case *LoxString:
+				if l.isKeyPair() {
+					var err error
+					ciphertext, err = LoxRSADecode(arg.str)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+			default:
+				return argMustBeType("buffer or string")
+			}
+
+			if !l.isKeyPair() {
+				return accessMustBeKeypair()
+			}
+			plaintext, err := rsa.DecryptPKCS1v15(nil, l.privKey, ciphertext)
+			if err != nil {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			return NewLoxStringQuote(string(plaintext)), nil
+		})
 	case "dp":
 		if !l.isKeyPair() {
 			return accessMustBeKeypair()
@@ -223,6 +294,55 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			return accessMustBePrecomputedKeypair()
 		}
 		return new(big.Int).Set(l.privKey.Precomputed.Dq), nil
+	case "encryptPKCS1v15", "encrypt":
+		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var plaintext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				plaintext = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					plaintext = append(plaintext, byte(element.(int64)))
+				}
+			case *LoxString:
+				plaintext = []byte(arg.str)
+			default:
+				return argMustBeType("buffer or string")
+			}
+
+			ciphertext, err := rsa.EncryptPKCS1v15(crand.Reader, &l.pubKey, plaintext)
+			if err != nil {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			buffer := EmptyLoxBufferCap(int64(len(ciphertext)))
+			for _, b := range ciphertext {
+				addErr := buffer.add(int64(b))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "encryptToPKCS1v15Str", "encryptToStr":
+		return rsaFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var plaintext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				plaintext = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					plaintext = append(plaintext, byte(element.(int64)))
+				}
+			case *LoxString:
+				plaintext = []byte(arg.str)
+			default:
+				return argMustBeType("buffer or string")
+			}
+
+			ciphertext, err := rsa.EncryptPKCS1v15(crand.Reader, &l.pubKey, plaintext)
+			if err != nil {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			return NewLoxStringQuote(LoxRSAEncode(ciphertext)), nil
+		})
 	case "exponent", "e":
 		return int64(l.pubKey.E), nil
 	case "isKeyPair":
