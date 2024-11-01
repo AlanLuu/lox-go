@@ -1447,6 +1447,112 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			}
 			return nil, nil
 		})
+	case "verifyPKCS1v15", "verify":
+		return rsaFunc(3, func(i *Interpreter, args list.List[any]) (any, error) {
+			argZeroErrMsg := "First argument to 'rsa.%v' must be a function."
+			argOneErrMsg := "Second argument to 'rsa.%v' must be a buffer or string."
+			argTwoErrMsg := "Third argument to 'rsa.%v' must be a buffer or string."
+			switch args[0].(type) {
+			case *LoxClass:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf(argZeroErrMsg, lexemeName))
+			case LoxCallable:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf(argZeroErrMsg, lexemeName))
+			}
+			switch args[1].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf(argOneErrMsg, lexemeName))
+			}
+			switch args[2].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf(argTwoErrMsg, lexemeName))
+			}
+
+			callable := args[0].(LoxCallable)
+			var result any
+			switch callable := callable.(type) {
+			case *LoxFunction:
+				argList := getArgList(callable, 0)
+				callResult, resultErr := callable.call(i, argList)
+				if callresultReturn, ok := callResult.(Return); ok {
+					result = callresultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+			default:
+				var resultErr error
+				result, resultErr = callable.call(i, list.NewList[any]())
+				if resultErr != nil {
+					return nil, resultErr
+				}
+			}
+
+			switch result := result.(type) {
+			case *LoxHash:
+				hashType, ok := LoxCryptoHashes[result.hashType]
+				if !ok {
+					return nil, loxerror.RuntimeError(
+						name,
+						fmt.Sprintf(
+							"Function argument to 'rsa.%v' returned unknown hash type.",
+							lexemeName,
+						),
+					)
+				}
+
+				var bytes []byte
+				switch arg := args[1].(type) {
+				case *LoxBuffer:
+					bytes = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						bytes = append(bytes, byte(element.(int64)))
+					}
+				case *LoxString:
+					bytes = []byte(arg.str)
+				}
+
+				var sig []byte
+				switch arg := args[2].(type) {
+				case *LoxBuffer:
+					sig = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						sig = append(sig, byte(element.(int64)))
+					}
+				case *LoxString:
+					var err error
+					sig, err = LoxRSADecode(arg.str)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+
+				result.hash.Write(bytes)
+				hashed := result.hash.Sum(nil)
+				verifyResult := rsa.VerifyPKCS1v15(
+					&l.pubKey,
+					hashType,
+					hashed,
+					sig,
+				)
+				return verifyResult == nil, nil
+			default:
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"Function argument to 'rsa.%v' must return a hash object.",
+						lexemeName,
+					),
+				)
+			}
+		})
 	}
 	var errorMsg string
 	if l.isKeyPair() {
