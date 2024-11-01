@@ -86,7 +86,11 @@ func NewLoxRSAPubKey(N *big.Int, E int) *LoxRSA {
 func NewLoxRSAPubKeyBytes(bytes []byte) (*LoxRSA, error) {
 	pubKey, err := x509.ParsePKCS1PublicKey(bytes)
 	if err != nil {
-		return nil, err
+		pubKey2, err2 := x509.ParsePKIXPublicKey(bytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		pubKey = pubKey2.(*rsa.PublicKey)
 	}
 	return &LoxRSA{
 		privKey:     nil,
@@ -919,7 +923,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
-	case "pubKeyStr":
+	case "pubKeyStrPKCS1", "pubKeyStr":
 		return rsaFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			pubKey := l.encodePubKeyPKCS1()
 			return NewLoxStringQuote(LoxRSAEncode(pubKey)), nil
