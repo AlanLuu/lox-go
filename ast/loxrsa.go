@@ -1553,6 +1553,116 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 				)
 			}
 		})
+	case "verifyPSS":
+		return rsaFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen != 3 && argsLen != 4 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 3 or 4 arguments but got %v.", argsLen))
+			}
+			argZeroErrMsg := "First argument to 'rsa.verifyPSS' must be a function."
+			argOneErrMsg := "Second argument to 'rsa.verifyPSS' must be a buffer or string."
+			argTwoErrMsg := "Third argument to 'rsa.verifyPSS' must be a buffer or string."
+			switch args[0].(type) {
+			case *LoxClass:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			case LoxCallable:
+			default:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			}
+			switch args[1].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name, argOneErrMsg)
+			}
+			switch args[2].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name, argTwoErrMsg)
+			}
+			if argsLen == 4 {
+				argThreeErrMsg := "Fourth argument to 'rsa.verifyPSS' must be an integer."
+				if _, ok := args[3].(int64); !ok {
+					return nil, loxerror.RuntimeError(name, argThreeErrMsg)
+				}
+			}
+
+			callable := args[0].(LoxCallable)
+			var result any
+			switch callable := callable.(type) {
+			case *LoxFunction:
+				argList := getArgList(callable, 0)
+				callResult, resultErr := callable.call(i, argList)
+				if callresultReturn, ok := callResult.(Return); ok {
+					result = callresultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+			default:
+				var resultErr error
+				result, resultErr = callable.call(i, list.NewList[any]())
+				if resultErr != nil {
+					return nil, resultErr
+				}
+			}
+
+			switch result := result.(type) {
+			case *LoxHash:
+				hashType, ok := LoxCryptoHashes[result.hashType]
+				if !ok {
+					return nil, loxerror.RuntimeError(name,
+						"Function argument to 'rsa.verifyPSS' returned unknown hash type.")
+				}
+
+				var bytes []byte
+				switch arg := args[1].(type) {
+				case *LoxBuffer:
+					bytes = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						bytes = append(bytes, byte(element.(int64)))
+					}
+				case *LoxString:
+					bytes = []byte(arg.str)
+				}
+
+				var sig []byte
+				switch arg := args[2].(type) {
+				case *LoxBuffer:
+					sig = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						sig = append(sig, byte(element.(int64)))
+					}
+				case *LoxString:
+					var err error
+					sig, err = LoxRSADecode(arg.str)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+
+				result.hash.Write(bytes)
+				digest := result.hash.Sum(nil)
+				var pssOptions *rsa.PSSOptions = nil
+				if argsLen == 4 {
+					pssOptions = &rsa.PSSOptions{
+						SaltLength: int(args[3].(int64)),
+					}
+				}
+				verifyResult := rsa.VerifyPSS(
+					&l.pubKey,
+					hashType,
+					digest,
+					sig,
+					pssOptions,
+				)
+				return verifyResult == nil, nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Function argument to 'rsa.verifyPSS' must return a hash object.")
+			}
+		})
 	}
 	var errorMsg string
 	if l.isKeyPair() {
