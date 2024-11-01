@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"crypto"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
@@ -15,6 +16,15 @@ import (
 	"github.com/AlanLuu/lox/token"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var LoxCryptoHashes = map[string]crypto.Hash{
+	"md5":    crypto.MD5,
+	"sha1":   crypto.SHA1,
+	"sha224": crypto.SHA224,
+	"sha256": crypto.SHA256,
+	"sha384": crypto.SHA384,
+	"sha512": crypto.SHA512,
+}
 
 func (i *Interpreter) defineCryptoFuncs() {
 	className := "crypto"
