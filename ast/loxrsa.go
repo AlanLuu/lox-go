@@ -1119,6 +1119,203 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 				)
 			}
 		})
+	case "signPSS":
+		return rsaFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen != 2 && argsLen != 3 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+			}
+			argZeroErrMsg := "First argument to 'rsa.signPSS' must be a function."
+			argOneErrMsg := "Second argument to 'rsa.signPSS' must be a buffer or string."
+			switch args[0].(type) {
+			case *LoxClass:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			case LoxCallable:
+			default:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			}
+			switch args[1].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name, argOneErrMsg)
+			}
+			if argsLen == 3 {
+				argTwoErrMsg := "Third argument to 'rsa.signPSS' must be an integer."
+				if _, ok := args[2].(int64); !ok {
+					return nil, loxerror.RuntimeError(name, argTwoErrMsg)
+				}
+			}
+
+			if !l.isKeyPair() {
+				return callMustBeKeypair()
+			}
+
+			callable := args[0].(LoxCallable)
+			var result any
+			switch callable := callable.(type) {
+			case *LoxFunction:
+				argList := getArgList(callable, 0)
+				callResult, resultErr := callable.call(i, argList)
+				if callresultReturn, ok := callResult.(Return); ok {
+					result = callresultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+			default:
+				var resultErr error
+				result, resultErr = callable.call(i, list.NewList[any]())
+				if resultErr != nil {
+					return nil, resultErr
+				}
+			}
+
+			switch result := result.(type) {
+			case *LoxHash:
+				hashType, ok := LoxCryptoHashes[result.hashType]
+				if !ok {
+					return nil, loxerror.RuntimeError(name,
+						"Function argument to 'rsa.signPSS' returned unknown hash type.")
+				}
+
+				var bytes []byte
+				switch arg := args[1].(type) {
+				case *LoxBuffer:
+					bytes = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						bytes = append(bytes, byte(element.(int64)))
+					}
+				case *LoxString:
+					bytes = []byte(arg.str)
+				}
+
+				result.hash.Write(bytes)
+				digest := result.hash.Sum(nil)
+				var pssOptions *rsa.PSSOptions = nil
+				if argsLen == 3 {
+					pssOptions = &rsa.PSSOptions{
+						SaltLength: int(args[2].(int64)),
+					}
+				}
+				signature, err := rsa.SignPSS(
+					crand.Reader,
+					l.privKey,
+					hashType,
+					digest,
+					pssOptions,
+				)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				buffer := EmptyLoxBufferCap(int64(len(signature)))
+				for _, b := range signature {
+					addErr := buffer.add(int64(b))
+					if addErr != nil {
+						return nil, loxerror.RuntimeError(name, addErr.Error())
+					}
+				}
+				return buffer, nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Function argument to 'rsa.signPSS' must return a hash object.")
+			}
+		})
+	case "signPSSToStr":
+		return rsaFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen != 2 && argsLen != 3 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+			}
+			argZeroErrMsg := "First argument to 'rsa.signPSSToStr' must be a function."
+			argOneErrMsg := "Second argument to 'rsa.signPSSToStr' must be a buffer or string."
+			switch args[0].(type) {
+			case *LoxClass:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			case LoxCallable:
+			default:
+				return nil, loxerror.RuntimeError(name, argZeroErrMsg)
+			}
+			switch args[1].(type) {
+			case *LoxBuffer:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name, argOneErrMsg)
+			}
+			if argsLen == 3 {
+				argTwoErrMsg := "Third argument to 'rsa.signPSSToStr' must be an integer."
+				if _, ok := args[2].(int64); !ok {
+					return nil, loxerror.RuntimeError(name, argTwoErrMsg)
+				}
+			}
+
+			if !l.isKeyPair() {
+				return callMustBeKeypair()
+			}
+
+			callable := args[0].(LoxCallable)
+			var result any
+			switch callable := callable.(type) {
+			case *LoxFunction:
+				argList := getArgList(callable, 0)
+				callResult, resultErr := callable.call(i, argList)
+				if callresultReturn, ok := callResult.(Return); ok {
+					result = callresultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+			default:
+				var resultErr error
+				result, resultErr = callable.call(i, list.NewList[any]())
+				if resultErr != nil {
+					return nil, resultErr
+				}
+			}
+
+			switch result := result.(type) {
+			case *LoxHash:
+				hashType, ok := LoxCryptoHashes[result.hashType]
+				if !ok {
+					return nil, loxerror.RuntimeError(name,
+						"Function argument to 'rsa.signPSSToStr' returned unknown hash type.")
+				}
+
+				var bytes []byte
+				switch arg := args[1].(type) {
+				case *LoxBuffer:
+					bytes = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						bytes = append(bytes, byte(element.(int64)))
+					}
+				case *LoxString:
+					bytes = []byte(arg.str)
+				}
+
+				result.hash.Write(bytes)
+				digest := result.hash.Sum(nil)
+				var pssOptions *rsa.PSSOptions = nil
+				if argsLen == 3 {
+					pssOptions = &rsa.PSSOptions{
+						SaltLength: int(args[2].(int64)),
+					}
+				}
+				signature, err := rsa.SignPSS(
+					crand.Reader,
+					l.privKey,
+					hashType,
+					digest,
+					pssOptions,
+				)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				return NewLoxStringQuote(LoxRSAEncode(signature)), nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Function argument to 'rsa.signPSSToStr' must return a hash object.")
+			}
+		})
 	case "ssh":
 		return rsaFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var path string
