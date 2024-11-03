@@ -22,6 +22,12 @@ The following methods are defined in the built-in `crypto` class:
     - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
 - `crypto.md5sum(data)`, which returns a string that is the hexadecimal representation of the MD5 hash of the specified data, which is either a buffer or string
     - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
+- `crypto.rsa(bitSize)`, which returns an RSA kaypair object with a random private key of the specified bit size integer and the public key corresponding to that private key
+- `crypto.rsapriv(privKey)`, which takes in an RSA private key as a buffer or base64 string and returns an RSA keypair object with the specified private key and the public key corresponding to that private key
+    - The private key can be in PKCS1 or PKCS8 form
+- `crypto.rsapub(pubKey)`, which takes in an RSA public key as a buffer or base64 string and returns an RSA public key object with the specified public key
+    - The public key can be in PKCS1 or PKIX form
+- `crypto.rsapubne(n, e)`, which returns an RSA public key object with the specified RSA `n` (modulus) and `e` (public exponent) values, where `n` is a bigint and `e` is an integer
 - `crypto.sha1([data])`, which returns a hash object that computes the SHA-1 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
     - Warning: SHA-1 is cryptographically broken and is unsuitable for security purposes
 - `crypto.sha1sum(data)`, which returns a string that is the hexadecimal representation of the SHA-1 hash of the specified data, which is either a buffer or string
@@ -100,3 +106,96 @@ Hash objects have the following methods and fields associated with them:
     - `sha384` for SHA-384
     - `sha512` for SHA-512
 - `hash.update(data)`, which updates the hash object with the specified data, which must be a buffer or string
+
+RSA keypairs and public key objects have the following methods and fields associated with them:
+- `rsa.bitLen`, which is the number of bits of the current RSA object as an integer
+- `rsa.bitSize`, which is an alias for `rsa.bitLen`
+- `rsa.d`, which is an alias for `rsa.privateExponent`
+- `rsa.decrypt(ciphertext)`, which is an alias for `rsa.decryptPKCS1v15`
+- `rsa.decryptOAEP(function, ciphertext, [label])`, which takes in a function that returns a hash object, the ciphertext as a buffer or base64 string, and an optional label as a buffer or string and attempts to decrypt the specified ciphertext using RSA-OAEP, returning a buffer of the decrypted bytes if successful
+    - The specified function argument must return a hash object or else a runtime error is thrown
+    - This method throws a runtime error if the current RSA object is not a keypair
+    - If decryption is unsuccessful, this method throws a runtime error
+- `rsa.decryptOAEPToStr(function, ciphertext, [label])`, which takes in a function that returns a hash object, the ciphertext as a buffer or base64 string, and an optional label as a buffer or string and attempts to decrypt the specified ciphertext using RSA-OAEP, returning a string of the decrypted bytes if successful
+    - The specified function argument must return a hash object or else a runtime error is thrown
+    - This method throws a runtime error if the current RSA object is not a keypair
+    - If decryption is unsuccessful, this method throws a runtime error
+- `rsa.decryptPKCS1v15(ciphertext)`, which takes in the ciphertext as a buffer or base64 string and attempts to decrypt the specified ciphertext using RSA and the padding scheme from PKCS #1 v1.5, returning a buffer of the decrypted bytes if successful
+    - This method throws a runtime error if the current RSA object is not a keypair
+    - If decryption is unsuccessful, this method throws a runtime error
+- `rsa.decryptPKCS1v15ToStr(ciphertext)`, which takes in the ciphertext as a buffer or base64 string and attempts to decrypt the specified ciphertext using RSA and the padding scheme from PKCS #1 v1.5, returning a string of the decrypted bytes if successful
+    - This method throws a runtime error if the current RSA object is not a keypair
+    - If decryption is unsuccessful, this method throws a runtime error
+- `rsa.decryptToStr(ciphertext)`, which is an alias for `rsa.decryptPKCS1v15ToStr`
+- `rsa.dp`, which is the value `D mod (P - 1)` as a bigint
+    - This field can only be accessed once it's precomputed through calling `rsa.precompute` or `rsa.precomputeForce`, otherwise a runtime error is thrown
+- `rsa.dq`, which is the value `D mod (Q - 1)` as a bigint
+    - This field can only be accessed once it's precomputed through calling `rsa.precompute` or `rsa.precomputeForce`, otherwise a runtime error is thrown
+- `rsa.e`, which is an alias for `rsa.exponent`
+- `rsa.encrypt(ciphertext)`, which is an alias for `rsa.encryptPKCS1v15`
+- `rsa.encryptOAEP(function, plaintext, [label])`, which takes in a function that returns a hash object, the plaintext as a buffer or string, and an optional label as a buffer or string and encrypts the specified plaintext using RSA-OAEP, returning a buffer of the encrypted bytes if successful
+    - The specified function argument must return a hash object or else a runtime error is thrown
+- `rsa.encryptOAEPToStr(function, plaintext, [label])`, which takes in a function that returns a hash object, the plaintext as a buffer or string, and an optional label as a buffer or string and encrypts the specified plaintext using RSA-OAEP, returning a base64 string of the encrypted bytes if successful
+    - The specified function argument must return a hash object or else a runtime error is thrown
+- `rsa.encryptPKCS1v15(plaintext)`, which takes in the plaintext as a buffer or string and encrypts the specified plaintext using RSA and the padding scheme from PKCS #1 v1.5, returning a buffer of the encrypted bytes if successful
+- `rsa.encryptPKCS1v15ToStr(plaintext)`, which takes in the plaintext as a buffer or string and encrypts the specified plaintext using RSA and the padding scheme from PKCS #1 v1.5, returning a base64 string of the encrypted bytes if successful
+- `rsa.exponent`, which is the public exponent of the current RSA object as an integer
+- `rsa.isKeyPair()`, which returns `true` if the specified RSA object is a keypair and `false` otherwise
+- `rsa.modSize`, which is the public modulus of the current RSA object as a bigint
+- `rsa.modSizeBytes()`, which returns the modulus size of the current RSA object in bytes as an integer
+- `rsa.n`, which is an alias for `rsa.modSize`
+- `rsa.numPrimes`, which is the number of prime factors associated with the current RSA keypair object as an integer
+    - Accessing this field throws a runtime error if the current RSA object is not a keypair
+- `rsa.precompute()`, which performs some calculations and saves them to speed up operations involving the private key associated with the current RSA keypair object
+    - If the values have already been precomputed, calling this method does nothing
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.precomputeForce()`, which performs some calculations and saves them to speed up operations involving the private key associated with the current RSA keypair object
+    - If the values have already been precomputed, calling this method will recompute them again
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.primes()`, which returns a list of the prime factors associated with the current RSA keypair object as bigints
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.privateExponent`, which is the private exponent of the current RSA object as a bigint
+    - Accessing this field throws a runtime error if the current RSA object is not a keypair
+- `rsa.privKey()`, which is an alias for `rsa.privKeyPKCS1`
+- `rsa.privKeyEquals(arg)`, which takes in another RSA keypair as an argument and returns `true` if both private keys associated with the two RSA keypairs are the same and `false` otherwise
+    - This method throws a runtime error if the current RSA object or the specified RSA object is not a keypair
+- `rsa.privKeyPKCS1()`, which returns a buffer that is the private key of the current RSA keypair object in PKCS #1, ASN.1 DER form
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.privKeyPKCS8()`, which returns a buffer that is the private key of the current RSA keypair object in PKCS #8, ASN.1 DER form
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.privKeyStr()`, which is an alias for `rsa.privKeyStrPKCS1`
+- `rsa.privKeyStrPKCS1()`, which returns a base64 string that is the private key of the current RSA keypair object in PKCS #1, ASN.1 DER form
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.privKeyStrPKCS8()`, which returns a base64 string that is the private key of the current RSA keypair object in PKCS #8, ASN.1 DER form
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.pubKeyEquals(arg)`, which takes in another RSA keypair or public key object as an argument and returns `true` if both public keys associated with the two Ed25519 objects are the same and `false` otherwise
+- `rsa.pubKey()`, which is an alias for `rsa.pubKeyPKCS1`
+- `rsa.pubKeyPKCS1()`, which returns a buffer that is the public key of the current RSA object in PKCS #1, ASN.1 DER form
+- `rsa.pubKeyPKIX()`, which returns a buffer that is the public key of the current RSA object in PKIX, ASN.1 DER form
+- `rsa.pubKeyStr`, which is an alias for `rsa.pubKeyStrPKCS1`
+- `rsa.pubKeyStrPKCS1()`, which returns a base64 string that is the public key of the current RSA object in PKCS #1, ASN.1 DER form
+- `rsa.pubKeyStrPKIX()`, which returns a base64 string that is the public key of the current RSA object in PKIX, ASN.1 DER form
+- `rsa.sign(function, message)`, which is an alias for `rsa.signPKCS1v15`
+- `rsa.signPKCS1v15(function, message)`, which takes in a function that returns a hash object and the message to sign as a buffer or string and returns a buffer of the signature generated using RSASSA-PKCS1-V1_5-SIGN from RSA PKCS #1 v1.5 by signing the specified message with the private key associated with the current RSA keypair object
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.signPKCS1v15ToStr(function, message)`, which takes in a function that returns a hash object and the message to sign as a buffer or string and returns a base64 string of the signature generated using RSASSA-PKCS1-V1_5-SIGN from RSA PKCS #1 v1.5 by signing the specified message with the private key associated with the current RSA keypair object
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.signPSS(function, message, [saltLength])`, which takes in a function that returns a hash object, the message to sign as a buffer or string, and an optional salt length as an integer and returns a buffer of a signature generated using PSS by signing the specified message with the private key associated with the current RSA keypair object
+    - The salt length argument specifies the salt length used in the PSS signature
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.signPSSToStr(function, message, [saltLength])`, which takes in a function that returns a hash object, the message to sign as a buffer or string, and an optional salt length as an integer and returns a base64 string of a signature generated using PSS by signing the specified message with the private key associated with the current RSA keypair object
+    - The salt length argument specifies the salt length used in the PSS signature
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.ssh([path])`, which takes in a path to a directory as a string and writes the contents of the public key associated with the current RSA object as an OpenSSH public key to a file called `id_rsa.pub` in that directory, along with the contents of the private key associated with the current RSA object as an OpenSSH private key to a file called `id_rsa` in that directory if the current RSA object is a keypair
+    - If the path is omitted, the two files are written to `$HOME/.ssh` on Unix and `%USERPROFILE%\.ssh` on Windows, which will overwrite any existing files called `id_rsa` and `id_rsa.pub` in those directories
+    - The path argument, if specified, must refer to an existing directory or else a runtime error is thrown
+- `rsa.sshComment(comment, [path])`, which takes in a comment and an optional path to a directory as strings and writes the contents of the public key associated with the current RSA object as an OpenSSH public key to a file called `id_rsa.pub` in that directory, along with the contents of the private key associated with the current RSA object as an OpenSSH private key with the specified comment to a file called `id_rsa` in that directory if the current RSA object is a keypair
+    - If the path is omitted, the two files are written to `$HOME/.ssh` on Unix and `%USERPROFILE%\.ssh` on Windows, which will overwrite any existing files called `id_rsa` and `id_rsa.pub` in those directories
+    - The path argument, if specified, must refer to an existing directory or else a runtime error is thrown
+- `rsa.toPubKey()`, which converts the current RSA keypair object into a public key object by erasing the private key contents associated with the current object and returns the current object itself
+    - If the current RSA object is already a public key object, this method does nothing and just returns the current object itself
+- `rsa.validate()`, which performs various checks on the private key associated with the current RSA keypair object and throws a runtime error if any problems are found
+    - This method throws a runtime error if the current RSA object is not a keypair
+- `rsa.verify(function, message, signature)`, which is an alias for `rsa.verifyPKCS1v15`
+- `rsa.verifyPKCS1v15(function, message, signature)`, which takes in a function that returns a hash object, the message as a buffer or string to verify, and an RSA PKCS #1 v1.5 signature as a buffer or base64 string and attempts to verify the specified message with the specified signature with the public key associated with the current RSA object, returning `true` if the specified signature is a valid signature of the specified message and `false` otherwise
+- `rsa.verifyPSS(function, message, signature, [saltLength])`, which takes in a function that returns a hash object, the message as a buffer or string to verify, a PSS signature as a buffer or base64 string, and an optional salt length as an integer and attempts to verify the specified message with the specified signature with the public key associated with the current RSA object, returning `true` if the specified signature is a valid signature of the specified message and `false` otherwise
