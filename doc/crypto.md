@@ -90,6 +90,8 @@ Fernet objects have the following methods associated with them:
     - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
 - `fernet.encryptToStr(buffer/file/string)`, which returns a string of the encryption result of the specified buffer, file object, or string, which is known as a fernet token
 - `fernet.hex()`, which returns a string that is the hexadecimal representation of the fernet key associated with the current fernet object
+- `fernet.key()`, which is an alias for `fernet.bytes`
+- `fernet.keyStr()`, which is an alias for `fernet.base64`
 
 Hash objects have the following methods and fields associated with them:
 - `hash.blockSize`, which is the block size of the hash object's hash algorithm as an integer

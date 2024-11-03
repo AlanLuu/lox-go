@@ -82,11 +82,11 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 		}
 	}
 	switch methodName {
-	case "base64", "b64":
+	case "base64", "b64", "keyStr":
 		return fernetFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxStringQuote(l.key.Encode()), nil
 		})
-	case "bytes":
+	case "bytes", "key":
 		return fernetFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			buffer := EmptyLoxBufferCap(32)
 			for _, b := range l.key {
@@ -378,7 +378,7 @@ func (l *LoxFernet) Get(name *token.Token) (any, error) {
 }
 
 func (l *LoxFernet) String() string {
-	return fmt.Sprintf("[fernet key: %v]", l.key.Encode())
+	return fmt.Sprintf("<fernet object at %p>", l)
 }
 
 func (l *LoxFernet) Type() string {
