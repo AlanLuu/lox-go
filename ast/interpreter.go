@@ -40,28 +40,29 @@ func NewInterpreter() *Interpreter {
 		callToken:  nil,
 	}
 	interpreter.environment = interpreter.globals
-	interpreter.defineBase32Funcs()   //Defined in base32funcs.go
-	interpreter.defineBase64Funcs()   //Defined in base64funcs.go
-	interpreter.defineBigFloatFuncs() //Defined in bigfloatfuncs.go
-	interpreter.defineBigIntFuncs()   //Defined in bigintfuncs.go
-	interpreter.defineCryptoFuncs()   //Defined in cryptofuncs.go
-	interpreter.defineCSVFuncs()      //Defined in csvfuncs.go
-	interpreter.defineDateFuncs()     //Defined in datefuncs.go
-	interpreter.defineDurationFuncs() //Defined in durationfuncs.go
-	interpreter.defineFloatFuncs()    //Defined in floatfuncs.go
-	interpreter.defineHexFuncs()      //Defined in hexfuncs.go
-	interpreter.defineHTTPFuncs()     //Defined in httpfuncs.go
-	interpreter.defineIntFuncs()      //Defined in intfuncs.go
-	interpreter.defineIteratorFuncs() //Defined in iteratorfuncs.go
-	interpreter.defineJSONFuncs()     //Defined in jsonfuncs.go
-	interpreter.defineMathFuncs()     //Defined in mathfuncs.go
-	interpreter.defineNativeFuncs()   //Defined in nativefuncs.go
-	interpreter.defineOSFuncs()       //Defined in osfuncs.go
-	interpreter.defineProcessFuncs()  //Defined in processfuncs.go
-	interpreter.defineRandFuncs()     //Defined in randfuncs.go
-	interpreter.defineRegexFuncs()    //Defined in regexfuncs.go
-	interpreter.defineStringFuncs()   //Defined in stringfuncs.go
-	interpreter.defineWindowsFuncs()  //Defined in windowsfuncs_windows.go
+	interpreter.defineBase32Funcs()     //Defined in base32funcs.go
+	interpreter.defineBase64Funcs()     //Defined in base64funcs.go
+	interpreter.defineBigFloatFuncs()   //Defined in bigfloatfuncs.go
+	interpreter.defineBigIntFuncs()     //Defined in bigintfuncs.go
+	interpreter.defineCryptoFuncs()     //Defined in cryptofuncs.go
+	interpreter.defineCSVFuncs()        //Defined in csvfuncs.go
+	interpreter.defineDateFuncs()       //Defined in datefuncs.go
+	interpreter.defineDurationFuncs()   //Defined in durationfuncs.go
+	interpreter.defineFloatFuncs()      //Defined in floatfuncs.go
+	interpreter.defineHexFuncs()        //Defined in hexfuncs.go
+	interpreter.defineHTTPFuncs()       //Defined in httpfuncs.go
+	interpreter.defineIntFuncs()        //Defined in intfuncs.go
+	interpreter.defineIteratorFuncs()   //Defined in iteratorfuncs.go
+	interpreter.defineJSONFuncs()       //Defined in jsonfuncs.go
+	interpreter.defineMathFuncs()       //Defined in mathfuncs.go
+	interpreter.defineNativeFuncs()     //Defined in nativefuncs.go
+	interpreter.defineOSFuncs()         //Defined in osfuncs.go
+	interpreter.defineProcessFuncs()    //Defined in processfuncs.go
+	interpreter.defineRandFuncs()       //Defined in randfuncs.go
+	interpreter.defineRegexFuncs()      //Defined in regexfuncs.go
+	interpreter.defineStringFuncs()     //Defined in stringfuncs.go
+	interpreter.defineWebBrowserFuncs() //Defined in webbrowserfuncs.go
+	interpreter.defineWindowsFuncs()    //Defined in windowsfuncs_windows.go
 	return interpreter
 }
 
