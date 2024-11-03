@@ -175,6 +175,8 @@ RSA keypairs and public key objects have the following methods and fields associ
 - `rsa.pubKeyStr`, which is an alias for `rsa.pubKeyStrPKCS1`
 - `rsa.pubKeyStrPKCS1()`, which returns a base64 string that is the public key of the current RSA object in PKCS #1, ASN.1 DER form
 - `rsa.pubKeyStrPKIX()`, which returns a base64 string that is the public key of the current RSA object in PKIX, ASN.1 DER form
+- `rsa.qinv`, which is the value `Q^-1 mod P` as a bigint
+    - This field can only be accessed once it's precomputed through calling `rsa.precompute` or `rsa.precomputeForce`, otherwise a runtime error is thrown
 - `rsa.sign(function, message)`, which is an alias for `rsa.signPKCS1v15`
 - `rsa.signPKCS1v15(function, message)`, which takes in a function that returns a hash object and the message to sign as a buffer or string and returns a buffer of the signature generated using RSASSA-PKCS1-V1_5-SIGN from RSA PKCS #1 v1.5 by signing the specified message with the private key associated with the current RSA keypair object
     - This method throws a runtime error if the current RSA object is not a keypair

@@ -936,6 +936,14 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxStringQuote(LoxRSAEncode(pubKey)), nil
 		})
+	case "qinv":
+		if !l.isKeyPair() {
+			return accessMustBeKeypair()
+		}
+		if !l.precomputed {
+			return accessMustBePrecomputedKeypair()
+		}
+		return new(big.Int).Set(l.privKey.Precomputed.Qinv), nil
 	case "signPKCS1v15", "sign":
 		return rsaFunc(2, func(i *Interpreter, args list.List[any]) (any, error) {
 			argZeroErrMsg := "First argument to 'rsa.%v' must be a function."
