@@ -14,6 +14,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -308,6 +309,13 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		hexDigest := fmt.Sprintf("%x", hashObj.Sum(nil))
 		return NewLoxString(hexDigest, '\''), nil
+	})
+	cryptoFunc("randomUUID", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		randUUID, err := uuid.NewRandom()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxString(randUUID.String(), '\''), nil
 	})
 	cryptoFunc("rsa", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if bitSize, ok := args[0].(int64); ok {
