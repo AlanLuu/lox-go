@@ -6,6 +6,7 @@ package browser
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
@@ -92,6 +93,34 @@ func Open(url string) bool {
 		}
 	}
 	return false
+}
+
+func OpenCommand(cmdStr string, url string) (bool, error) {
+	browserCmdStrs := append(append([]string{}, Browsers()...), Other()...)
+	for _, browserCmdStr := range browserCmdStrs {
+		if cmdStr == browserCmdStr {
+			cmd := exec.Command(cmdStr, url)
+			if _, ok := cliBrowsers[cmdStr]; ok {
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err == nil {
+					return true, nil
+				} else if _, ok := err.(*exec.ExitError); ok {
+					return true, nil
+				}
+			} else if cmd.Start() == nil && appearsSuccessful(cmd, 3*time.Second) {
+				return true, nil
+			}
+			return false, nil
+		}
+	}
+	return false, errorsNewWrapper(
+		fmt.Sprintf(
+			"'%v' is not a valid command for opening a browser.",
+			cmdStr,
+		),
+	)
 }
 
 // appearsSuccessful reports whether the command appears to have run successfully.

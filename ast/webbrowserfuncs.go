@@ -66,6 +66,23 @@ func (i *Interpreter) defineWebBrowserFuncs() {
 		}
 		return argMustBeType(in.callToken, "open", "string")
 	})
+	webBrowserFunc("openCommand", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'webbrowser.openCommand' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'webbrowser.openCommand' must be a string.")
+		}
+		browserCmd := args[0].(*LoxString)
+		url := args[1].(*LoxString)
+		opened, err := browser.OpenCommand(browserCmd.str, url.str)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return opened, nil
+	})
 	webBrowserFunc("other", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		otherStrings := browser.Other()
 		otherList := list.NewListCapDouble[any](int64(len(otherStrings)))
