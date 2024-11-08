@@ -206,6 +206,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with processes are defined under a built-in class called `process`, which is documented [here](./doc/process.md)
 - Various methods to work with generating cryptographically secure strings are defined under a class called `secrets`, which is documented [here](./doc/secrets.md)
 - Various methods to work with data from standard input are defined under a class called `stdin`, which is documented [here](./doc/stdin.md)
+- Various methods and fields to work with UUID objects are defined under a class called `UUID`, which is documented [here](./doc/UUID.md)
 - Various methods to work with opening web browsers are defined under a built-in class called `webbrowser`, which is documented [here](./doc/webbrowser.md)
 - Various methods and fields to work with Windows-specific functionality are defined under a built-in class called `windows`, which is documented [here](./doc/windows.md)
     - This class does not exist on non-Windows systems
