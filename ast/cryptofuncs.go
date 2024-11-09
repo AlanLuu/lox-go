@@ -7,6 +7,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
 	"hash"
 	"math/big"
@@ -54,6 +55,48 @@ func (i *Interpreter) defineCryptoFuncs() {
 		return argList
 	}
 
+	cryptoFunc("aescfb", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var aesCFB *LoxAESCFB
+		var err error
+		switch arg := args[0].(type) {
+		case int64:
+			aesCFB, err = NewLoxAESCFB(int(arg))
+		case *LoxBuffer:
+			keyBytes := make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				keyBytes = append(keyBytes, byte(element.(int64)))
+			}
+			aesCFB, err = NewLoxAESCFBBytes(keyBytes)
+		case *LoxString:
+			keyBytes, decodeErr := LoxAESDecode(arg.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+			aesCFB, err = NewLoxAESCFBBytes(keyBytes)
+		default:
+			return argMustBeType(in.callToken, "aescfb", "buffer, integer, or string")
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"crypto.aescfb: "+err.Error())
+		}
+		return aesCFB, nil
+	})
+	cryptoFunc("aescfbhex", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			keyBytes, decodeErr := hex.DecodeString(loxStr.str)
+			if decodeErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, decodeErr.Error())
+			}
+			aesCFB, err := NewLoxAESCFBBytes(keyBytes)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"crypto.aescfbhex: "+err.Error())
+			}
+			return aesCFB, nil
+		}
+		return argMustBeType(in.callToken, "aescfbhex", "string")
+	})
 	cryptoFunc("bcrypt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var password []byte
 		var cost int
