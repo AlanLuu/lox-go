@@ -1,6 +1,7 @@
 # bigint and bigfloat methods
 
 The following methods are defined in the built-in `bigint` class:
+- `bigint.bytes(bigintArg)`, which returns a buffer of the byte representation of the absolute value of the specified bigint argument in big-endian order
 - `bigint.new(arg)`, which returns a bigint from the specified argument, which is either an integer, float, or string
     - If the argument is a float, the returned bigint's value is the truncated form of the float
 - `bigint.isInt(bigintArg)`, which returns `true` if the specified bigint argument's value can be represented as an integer without overflow and `false` otherwise

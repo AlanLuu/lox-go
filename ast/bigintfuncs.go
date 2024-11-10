@@ -30,6 +30,20 @@ func (i *Interpreter) defineBigIntFuncs() {
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
+	bigIntFunc("bytes", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if bigInt, ok := args[0].(*big.Int); ok {
+			bigIntBytes := bigInt.Bytes()
+			buffer := EmptyLoxBufferCap(int64(len(bigIntBytes)))
+			for _, b := range bigIntBytes {
+				addErr := buffer.add(int64(b))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+				}
+			}
+			return buffer, nil
+		}
+		return argMustBeType(in.callToken, "bytes", "bigint")
+	})
 	bigIntFunc("new", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch arg := args[0].(type) {
 		case int64:
