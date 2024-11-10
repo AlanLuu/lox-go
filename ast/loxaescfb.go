@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -160,6 +161,83 @@ func (l *LoxAESCFB) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
+	case "decryptToFile":
+		return aescfbFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			switch args[0].(type) {
+			case *LoxBuffer:
+			case *LoxFile:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'aes-cfb.decryptToFile' must be a buffer, file, or string.")
+			}
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				if !arg.isWrite() && !arg.isAppend() {
+					return nil, loxerror.RuntimeError(name,
+						"Second file argument to 'aes-cfb.decryptToFile' must be in write or append mode.")
+				}
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'aes-cfb.decryptToFile' must be a file or string.")
+			}
+
+			var ciphertext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				ciphertext = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					ciphertext = append(ciphertext, byte(element.(int64)))
+				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"First file argument to 'aes-cfb.decryptToFile' must be in read mode.")
+				}
+				var readErr error
+				ciphertext, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+			case *LoxString:
+				var decodeErr error
+				ciphertext, decodeErr = LoxAESDecode(arg.str)
+				if decodeErr != nil {
+					return nil, loxerror.RuntimeError(name, decodeErr.Error())
+				}
+			}
+
+			if len(ciphertext) < aes.BlockSize {
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"AES-CFB: AES ciphertext size must be at least %v bytes.",
+						aes.BlockSize,
+					),
+				)
+			}
+
+			iv := ciphertext[:aes.BlockSize]
+			ciphertext = ciphertext[aes.BlockSize:]
+			stream := cipher.NewCFBDecrypter(l.block, iv)
+			stream.XORKeyStream(ciphertext, ciphertext)
+
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				_, err := arg.file.Write(ciphertext)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			case *LoxString:
+				err := os.WriteFile(arg.str, ciphertext, 0666)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			}
+
+			return nil, nil
+		})
 	case "decryptToStr":
 		return aescfbFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var ciphertext []byte
@@ -245,6 +323,73 @@ func (l *LoxAESCFB) Get(name *token.Token) (any, error) {
 				}
 			}
 			return buffer, nil
+		})
+	case "encryptToFile":
+		return aescfbFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			switch args[0].(type) {
+			case *LoxBuffer:
+			case *LoxFile:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'aes-cfb.encryptToFile' must be a buffer, file, or string.")
+			}
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				if !arg.isWrite() && !arg.isAppend() {
+					return nil, loxerror.RuntimeError(name,
+						"Second file argument to 'aes-cfb.encryptToFile' must be in write or append mode.")
+				}
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'aes-cfb.encryptToFile' must be a file or string.")
+			}
+
+			var plaintext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				plaintext = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					plaintext = append(plaintext, byte(element.(int64)))
+				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"First file argument to 'aes-cfb.encryptToFile' must be in read mode.")
+				}
+				var readErr error
+				plaintext, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+			case *LoxString:
+				plaintext = []byte(arg.str)
+			}
+
+			ciphertext := make([]byte, len(plaintext)+aes.BlockSize)
+			iv := ciphertext[:aes.BlockSize]
+			if _, err := io.ReadFull(crand.Reader, iv); err != nil {
+				return nil, loxerror.RuntimeError(name,
+					"AES-CFB: Failed to generate random IV.")
+			}
+			stream := cipher.NewCFBEncrypter(l.block, iv)
+			stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				_, err := arg.file.Write(ciphertext)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			case *LoxString:
+				err := os.WriteFile(arg.str, ciphertext, 0666)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			}
+
+			return nil, nil
 		})
 	case "encryptToStr":
 		return aescfbFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
