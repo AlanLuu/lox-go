@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -79,6 +80,12 @@ func (i *Interpreter) defineBigIntFuncs() {
 			return float64(bigInt.Int64()), nil
 		}
 		return argMustBeType(in.callToken, "toFloat", "bigint")
+	})
+	bigIntFunc("toHexStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if bigInt, ok := args[0].(*big.Int); ok {
+			return NewLoxString(hex.EncodeToString(bigInt.Bytes()), '\''), nil
+		}
+		return argMustBeType(in.callToken, "toHexStr", "bigint")
 	})
 	bigIntFunc("toInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if bigInt, ok := args[0].(*big.Int); ok {

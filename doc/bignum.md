@@ -7,6 +7,7 @@ The following methods are defined in the built-in `bigint` class:
 - `bigint.isInt(bigintArg)`, which returns `true` if the specified bigint argument's value can be represented as an integer without overflow and `false` otherwise
 - `bigint.toBigFloat(bigintArg)`, which returns a bigfloat with the value of the specified bigint argument
 - `bigint.toFloat(bigintArg)`, which returns the integer representation of the specified bigint argument as a float
+- `bigint.toHexStr(bigintArg)`, which returns the hexadecimal representation of the specified bigint argument as a string
 - `bigint.toInt(bigintArg)`, which returns the integer representation of the specified bigint argument
 - `bigint.toString(bigintArg)`, which returns the string representation of the specified bigint argument
 
