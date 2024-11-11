@@ -61,6 +61,12 @@ func (i *Interpreter) defineIntFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "toFloat", "integer")
 	})
+	intFunc("toHexStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if value, ok := args[0].(int64); ok {
+			return NewLoxString(fmt.Sprintf("%x", value), '\''), nil
+		}
+		return argMustBeTypeAn(in.callToken, "toHexStr", "integer")
+	})
 	intFunc("toString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if value, ok := args[0].(int64); ok {
 			return NewLoxString(fmt.Sprint(value), '\''), nil

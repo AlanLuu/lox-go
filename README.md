@@ -247,6 +247,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Integer.MIN32`, which is the minimum value that a 32-bit integer can store
     - `Integer.parseInt(string)`, which attempts to convert the specified string argument into an integer and returns that integer if successful, otherwise a runtime error is thrown
     - `Integer.toFloat(integer)`, which converts the specified integer argument into a float and returns that float
+    - `Integer.toHexStr(integer)`, which returns the hexadecimal representation of the specified integer as a string without the prefix "0x"
     - `Integer.toString(integer)`, which returns the string representation of the specified integer argument
 - Various methods and fields to work with floats are defined under a built-in class called `Float`, where the following methods and fields are defined:
     - `Float.MAX`, which is the maximum value that a float can store
