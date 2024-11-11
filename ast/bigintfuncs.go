@@ -31,6 +31,12 @@ func (i *Interpreter) defineBigIntFuncs() {
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
+	bigIntFunc("bitSize", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if bigInt, ok := args[0].(*big.Int); ok {
+			return int64(bigInt.BitLen()), nil
+		}
+		return argMustBeType(in.callToken, "bitSize", "bigint")
+	})
 	bigIntFunc("bytes", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if bigInt, ok := args[0].(*big.Int); ok {
 			bigIntBytes := bigInt.Bytes()
