@@ -399,7 +399,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 			bigInt := big.NewInt(0)
 			j := big.NewInt(0)
 			twoFiveSix := big.NewInt(256)
-			for i := int64(elementsLen - 1); i >= 0; i-- {
+			for i := elementsLen - 1; i >= 0; i-- {
 				num := big.NewInt(l.elements[i].(int64))
 				twoFiveSix.Exp(twoFiveSix, j, nil)
 				twoFiveSix.Mul(twoFiveSix, num)
