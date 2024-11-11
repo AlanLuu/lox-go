@@ -3,7 +3,10 @@ package ast
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
+	"regexp"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -82,6 +85,54 @@ func (i *Interpreter) defineHexFuncs() {
 			return NewLoxString(hexStr, '\''), nil
 		}
 		return argMustBeType(in.callToken, "encode", "string or buffer")
+	})
+	hexFunc("tobigint", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			matched, _ := regexp.MatchString("^[0-9a-fA-F]+$", loxStr.str)
+			if !matched {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument string must only contain 0-9, a-f, and A-F.")
+			}
+			hexMapping := map[rune]int64{
+				'0': 0,
+				'1': 1,
+				'2': 2,
+				'3': 3,
+				'4': 4,
+				'5': 5,
+				'6': 6,
+				'7': 7,
+				'8': 8,
+				'9': 9,
+				'a': 10,
+				'A': 10,
+				'b': 11,
+				'B': 11,
+				'c': 12,
+				'C': 12,
+				'd': 13,
+				'D': 13,
+				'e': 14,
+				'E': 14,
+				'f': 15,
+				'F': 15,
+			}
+			runes := []rune(loxStr.str)
+			bigInt := big.NewInt(0)
+			j := big.NewInt(0)
+			value := big.NewInt(0)
+			sixteen := big.NewInt(16)
+			for i := len(runes) - 1; i >= 0; i-- {
+				value.SetInt64(hexMapping[runes[i]])
+				sixteen.Exp(sixteen, j, nil)
+				sixteen.Mul(sixteen, value)
+				bigInt.Add(bigInt, sixteen)
+				sixteen.SetInt64(16)
+				j.Add(j, bigint.One)
+			}
+			return bigInt, nil
+		}
+		return argMustBeType(in.callToken, "tobigint", "string")
 	})
 
 	i.globals.Define(className, hexClass)

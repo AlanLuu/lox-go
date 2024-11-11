@@ -232,6 +232,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hexstr.decodeToStr(hexStr)` which decodes the specified hexadecimal string into a decoded string and returns that string
     - `hexstr.dump(arg)`, which returns a string containing the hex dump of the specified argument, which is either a string or a buffer
     - `hexstr.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a hexadecimal string and returns that encoded string
+    - `hexstr.tobigint(hexStr)`, which returns the integer representation of the specified hexadecimal string as a bigint
 - Various methods and fields to work with integers are defined under a built-in class called `Integer`, where the following methods and fields are defined:
     - `Integer.MAX`, which is the maximum value that an integer can store
     - `Integer.MAX8`, which is the maximum value that an 8-bit integer can store
