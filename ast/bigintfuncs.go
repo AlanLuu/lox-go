@@ -75,6 +75,38 @@ func (i *Interpreter) defineBigIntFuncs() {
 		}
 		return argMustBeType(in.callToken, "isInt", "bigint")
 	})
+	bigIntFunc("probablyPrime", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var bigInt *big.Int
+		var n = 10
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			if arg, ok := args[0].(*big.Int); ok {
+				bigInt = arg
+			} else if argsLen == 2 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'bigint.probablyPrime' must be a bigint.")
+			} else {
+				return argMustBeType(in.callToken, "probablyPrime", "bigint")
+			}
+			if argsLen == 2 {
+				if arg, ok := args[1].(int64); ok {
+					n = int(arg)
+				} else {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'bigint.probablyPrime' must be an integer.")
+				}
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		if n < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'bigint.probablyPrime' cannot be negative.")
+		}
+		return bigInt.ProbablyPrime(n), nil
+	})
 	bigIntFunc("toBigFloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if bigInt, ok := args[0].(*big.Int); ok {
 			return new(big.Float).SetInt(bigInt), nil
