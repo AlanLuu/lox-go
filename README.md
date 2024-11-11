@@ -393,6 +393,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `buffer.memfrobCopy([num])`, which returns a new buffer with the original buffer elements XORed with 42. If an integer `num` is specified, only `num` buffer elements starting with the first element are changed
         - `buffer.memfrobRange(start, [stop])`, which applies the XOR operation to each buffer element with the number 42 starting from index `start` and stopping at index `stop` exclusive, which are both integers, and changing the original buffer as a result. If `stop` is omitted, the length of the buffer is used as the stop value
         - `buffer.memfrobRangeCopy(start, [stop])`, which returns a new buffer with the original buffer elements remaining the same and the elements from integer indexes `start` to `stop` exclusive XORed with 42. If `stop` is omitted, the length of the buffer is used as the stop value
+        - `buffer.tobigint()`, which returns a bigint that is the integer representation of the bytes stored in the original buffer in big-endian order
+            - This method throws a runtime error if the original buffer is empty
         - `buffer.toList()`, which returns a new list with the elements from the buffer
         - `buffer.toString()`, which attempts to convert the elements from the buffer into a string. If a portion of the buffer cannot be converted into a string, a runtime error is thrown, with the error message specifying the portion of the buffer that cannot be converted into a string
 - Dictionaries are supported in this implementation of Lox

@@ -2,10 +2,12 @@ package ast
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -386,6 +388,26 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 					"Second argument to 'buffer.memfrobRangeCopy' cannot be larger than the buffer size.")
 			}
 			return memfrobCopy(start, stop)
+		})
+	case "tobigint":
+		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			elementsLen := len(l.elements)
+			if elementsLen == 0 {
+				return nil, loxerror.RuntimeError(name,
+					"Cannot convert empty buffer to bigint.")
+			}
+			bigInt := big.NewInt(0)
+			j := big.NewInt(0)
+			twoFiveSix := big.NewInt(256)
+			for i := int64(elementsLen - 1); i >= 0; i-- {
+				num := big.NewInt(l.elements[i].(int64))
+				twoFiveSix.Exp(twoFiveSix, j, nil)
+				twoFiveSix.Mul(twoFiveSix, num)
+				bigInt.Add(bigInt, twoFiveSix)
+				twoFiveSix.SetInt64(256)
+				j.Add(j, bigint.One)
+			}
+			return bigInt, nil
 		})
 	case "toList":
 		return bufferFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
