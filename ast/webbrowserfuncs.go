@@ -29,7 +29,7 @@ func (i *Interpreter) defineWebBrowserFuncs() {
 
 	webBrowserFunc("browsers", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		browserStrings := browser.Browsers()
-		browsersList := list.NewListCapDouble[any](int64(len(browserStrings)))
+		browsersList := list.NewListCap[any](int64(len(browserStrings)))
 		for _, browserString := range browserStrings {
 			browsersList.Add(NewLoxStringQuote(browserString))
 		}
@@ -37,7 +37,7 @@ func (i *Interpreter) defineWebBrowserFuncs() {
 	})
 	webBrowserFunc("commands", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		commands := browser.Commands()
-		outerList := list.NewListCapDouble[any](int64(len(commands)))
+		outerList := list.NewListCap[any](int64(len(commands)))
 		for index, outer := range commands {
 			if index == 0 && os.Getenv("BROWSER") != "" {
 				continue
@@ -85,7 +85,7 @@ func (i *Interpreter) defineWebBrowserFuncs() {
 	})
 	webBrowserFunc("other", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		otherStrings := browser.Other()
-		otherList := list.NewListCapDouble[any](int64(len(otherStrings)))
+		otherList := list.NewListCap[any](int64(len(otherStrings)))
 		for _, otherString := range otherStrings {
 			otherList.Add(NewLoxStringQuote(otherString))
 		}

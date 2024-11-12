@@ -27,7 +27,7 @@ import (
 
 func cmdArgsToLoxList() *LoxList {
 	args := flag.Args()
-	argvList := list.NewListCapDouble[any](int64(len(args)) + 1)
+	argvList := list.NewListCap[any](int64(len(args)) + 1)
 	execPath, err := os.Executable()
 	if err == nil {
 		argvList.Add(NewLoxStringQuote(execPath))
@@ -1046,7 +1046,7 @@ func (i *Interpreter) defineOSFuncs() {
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
-		groupsList := list.NewListCapDouble[any](int64(len(groups)))
+		groupsList := list.NewListCap[any](int64(len(groups)))
 		for _, group := range groups {
 			groupsList.Add(int64(group))
 		}

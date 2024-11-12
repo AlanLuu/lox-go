@@ -86,7 +86,7 @@ func (i *Interpreter) defineBase64Funcs() {
 			encodedStr := base64.StdEncoding.EncodeToString([]byte(arg.str))
 			return NewLoxString(encodedStr, '\''), nil
 		case *LoxBuffer:
-			byteList := list.NewListCapDouble[byte](int64(len(arg.elements)))
+			byteList := list.NewListCap[byte](int64(len(arg.elements)))
 			for _, element := range arg.elements {
 				byteList.Add(byte(element.(int64)))
 			}
@@ -101,7 +101,7 @@ func (i *Interpreter) defineBase64Funcs() {
 			encodedStr := base64.URLEncoding.EncodeToString([]byte(arg.str))
 			return NewLoxString(encodedStr, '\''), nil
 		case *LoxBuffer:
-			byteList := list.NewListCapDouble[byte](int64(len(arg.elements)))
+			byteList := list.NewListCap[byte](int64(len(arg.elements)))
 			for _, element := range arg.elements {
 				byteList.Add(byte(element.(int64)))
 			}

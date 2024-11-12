@@ -813,7 +813,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			if !l.isKeyPair() {
 				return callMustBeKeypair()
 			}
-			primes := list.NewListCapDouble[any](int64(len(l.privKey.Primes)))
+			primes := list.NewListCap[any](int64(len(l.privKey.Primes)))
 			for _, prime := range l.privKey.Primes {
 				primes.Add(new(big.Int).Set(prime))
 			}

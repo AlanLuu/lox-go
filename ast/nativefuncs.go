@@ -331,7 +331,7 @@ func (i *Interpreter) defineNativeFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Argument to 'List' cannot be negative.")
 			}
-			lst := list.NewListCapDouble[any](size)
+			lst := list.NewListCap[any](size)
 			for index := int64(0); index < size; index++ {
 				lst.Add(nil)
 			}
@@ -369,7 +369,7 @@ func (i *Interpreter) defineNativeFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Argument to 'ListZero' cannot be negative.")
 			}
-			lst := list.NewListCapDouble[any](size)
+			lst := list.NewListCap[any](size)
 			for index := int64(0); index < size; index++ {
 				lst.Add(int64(0))
 			}

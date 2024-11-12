@@ -223,7 +223,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "copy":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCapDouble[any](int64(len(l.elements)))
+			newList := list.NewListCap[any](int64(len(l.elements)))
 			for _, element := range l.elements {
 				newList.Add(element)
 			}
@@ -445,7 +445,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
-				newList := list.NewListCapDouble[any](int64(len(l.elements)))
+				newList := list.NewListCap[any](int64(len(l.elements)))
 				for index, element := range l.elements {
 					argList[0] = element
 					argList[1] = int64(index)
@@ -623,7 +623,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "reversed":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			reversedList := list.NewListCapDouble[any](int64(len(l.elements)))
+			reversedList := list.NewListCap[any](int64(len(l.elements)))
 			for i := len(l.elements) - 1; i >= 0; i-- {
 				reversedList.Add(l.elements[i])
 			}
@@ -638,7 +638,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "shuffled":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			shuffledList := list.NewListCapDouble[any](int64(len(l.elements)))
+			shuffledList := list.NewListCap[any](int64(len(l.elements)))
 			for _, element := range l.elements {
 				shuffledList.Add(element)
 			}
@@ -698,7 +698,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 	case "sorted":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
-				sortedList := list.NewListCapDouble[any](int64(len(l.elements)))
+				sortedList := list.NewListCap[any](int64(len(l.elements)))
 				for _, element := range l.elements {
 					sortedList.Add(element)
 				}
@@ -803,7 +803,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 					return nil, loxerror.RuntimeError(name, ListIndexOutOfRange(originalNewIndex))
 				}
 				newElement := args[1]
-				newList := list.NewListCapDouble[any](int64(len(l.elements)))
+				newList := list.NewListCap[any](int64(len(l.elements)))
 				for oldIndex, oldElement := range l.elements {
 					if int64(oldIndex) != newIndex {
 						newList.Add(oldElement)

@@ -166,7 +166,7 @@ func (l *LoxQueue) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return queueFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCapDouble[any](l.Length())
+			newList := list.NewListCap[any](l.Length())
 			for e := l.elements.Front(); e != nil; e = e.Next() {
 				newList.Add(e.Value)
 			}

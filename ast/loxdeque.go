@@ -191,7 +191,7 @@ func (l *LoxDeque) Get(name *token.Token) (any, error) {
 		})
 	case "toList":
 		return dequeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCapDouble[any](l.Length())
+			newList := list.NewListCap[any](l.Length())
 			for e := l.elements.Front(); e != nil; e = e.Next() {
 				newList.Add(e.Value)
 			}
@@ -199,7 +199,7 @@ func (l *LoxDeque) Get(name *token.Token) (any, error) {
 		})
 	case "toListReversed":
 		return dequeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			newList := list.NewListCapDouble[any](l.Length())
+			newList := list.NewListCap[any](l.Length())
 			for e := l.elements.Back(); e != nil; e = e.Prev() {
 				newList.Add(e.Value)
 			}

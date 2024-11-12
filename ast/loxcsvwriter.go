@@ -58,7 +58,7 @@ func (l *LoxCSVWriter) Get(name *token.Token) (any, error) {
 	case "bufferedWrite":
 		return csvWriterFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if loxList, ok := args[0].(*LoxList); ok {
-				records := list.NewListCapDouble[string](int64(len(loxList.elements)))
+				records := list.NewListCap[string](int64(len(loxList.elements)))
 				for _, element := range loxList.elements {
 					var record string
 					switch element := element.(type) {
@@ -91,7 +91,7 @@ func (l *LoxCSVWriter) Get(name *token.Token) (any, error) {
 	case "write":
 		return csvWriterFunc(1, func(in *Interpreter, args list.List[any]) (any, error) {
 			if loxList, ok := args[0].(*LoxList); ok {
-				record := list.NewListCapDouble[string](int64(len(loxList.elements)))
+				record := list.NewListCap[string](int64(len(loxList.elements)))
 				for _, element := range loxList.elements {
 					var value string
 					switch element := element.(type) {

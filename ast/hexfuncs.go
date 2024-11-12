@@ -62,7 +62,7 @@ func (i *Interpreter) defineHexFuncs() {
 			hexDump := hex.Dump([]byte(arg.str))
 			return NewLoxStringQuote(hexDump), nil
 		case *LoxBuffer:
-			byteList := list.NewListCapDouble[byte](int64(len(arg.elements)))
+			byteList := list.NewListCap[byte](int64(len(arg.elements)))
 			for _, element := range arg.elements {
 				byteList.Add(byte(element.(int64)))
 			}
@@ -77,7 +77,7 @@ func (i *Interpreter) defineHexFuncs() {
 			hexStr := hex.EncodeToString([]byte(arg.str))
 			return NewLoxString(hexStr, '\''), nil
 		case *LoxBuffer:
-			byteList := list.NewListCapDouble[byte](int64(len(arg.elements)))
+			byteList := list.NewListCap[byte](int64(len(arg.elements)))
 			for _, element := range arg.elements {
 				byteList.Add(byte(element.(int64)))
 			}
