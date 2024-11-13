@@ -90,6 +90,19 @@ The following methods and fields are defined in the built-in `os` class:
     - This method uses the value of the `HOME` environment variable as the home directory on non-Windows systems if it exists
 - `os.exit([code])`, which exits the program with the specified exit code. If `code` is omitted, the default exit code is 0
     - Calling this method will immediately stop the program without running any other code, e.g., if this method is called inside a try-catch block with a `finally` block, the `finally` block will not be executed
+- `os.fallocate(fd/file/string, size)`, which takes in an integer file descriptor, a file object, or a string that is a path name to a file, followed by a size argument as an integer or string, and if the size of the specified file is less than the size argument, allocates disk space with null bytes to the specified file according to the size argument until its size is the same as the size argument
+    - If the size argument is an integer, it specifies the size of the file in bytes
+    - If the size argument is a string, it specifies the size of the file as a numerical integer value with a size suffix, which is of the form `"<INTEGER><SUFFIX>"`
+        - Examples: `"100M"`, `"1G"`, `"2G"`
+        - The following are valid size suffixes:
+            - `b`, where `"1b"` is 512 bytes
+            - `k`/`K`, where `"1k"` is 1024 bytes
+            - `m`/`M`, where `"1m"` is 1024 * 1024 bytes
+            - `g`/`G`, where `"1g"` is 1024 * 1024 * 1024 bytes
+        - A runtime error is thrown if an invalid string is passed as the size argument
+    - If a string is specified as the first argument and the file that the string refers to does not exist, it is created
+    - If a file descriptor is specified as the first argument and the file corresponding to that file descriptor is not open in write or append mode, this method throws a runtime error with the message "bad file descriptor"
+    - On Linux, this method utilizes the `fallocate(2)` syscall
 - `os.fchdir(fd)`, which changes the current working directory to the specified directory file descriptor
     - This method does not work on Windows and throws an error if called on there
 - `os.fchmod(fd, mode)`, which changes the mode of the specified file descriptor to `mode`

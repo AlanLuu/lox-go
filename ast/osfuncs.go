@@ -11,6 +11,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -723,6 +724,169 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		CloseInputFuncReadline()
 		os.Exit(exitCode)
+		return nil, nil
+	})
+	osFunc("fallocate", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch args[0].(type) {
+		case int64:
+		case *LoxFile:
+		case *LoxString:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.fallocate' must be an integer, file, or string.")
+		}
+
+		var size int64
+		switch arg := args[1].(type) {
+		case int64:
+			size = arg
+		case *LoxString:
+			runes := []rune(arg.str)
+			runesLen := len(runes)
+			if runesLen < 2 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second string argument to 'os.fallocate' must have at least 2 characters.")
+			}
+			lastIndex := runesLen - 1
+
+			sizeNumStr := string(runes[:lastIndex])
+			sizeNum, convertErr := strconv.ParseInt(sizeNumStr, 10, 64)
+			if convertErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Failed to convert '%v' to integer.", sizeNumStr))
+			}
+
+			const kb = 1024
+			const mb = 1024 * 1024
+			const gb = 1024 * 1024 * 1024
+			sizes := map[rune]int64{
+				'b': kb / 2,
+				'k': kb,
+				'K': kb,
+				'm': mb,
+				'M': mb,
+				'g': gb,
+				'G': gb,
+			}
+			sizeChar := runes[lastIndex]
+			if sizeChar >= '0' && sizeChar <= '9' {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second string argument to 'os.fallocate' must end with a size suffix.")
+			}
+			if sizeConstant, ok := sizes[sizeChar]; ok {
+				size = sizeConstant * sizeNum
+			} else {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("'%v' is not a valid size suffix.", string(sizeChar)))
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.fallocate' must be an integer or string.")
+		}
+
+		if size < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Size argument to 'os.fallocate' cannot be negative.")
+		}
+
+		var err error
+		switch arg := args[0].(type) {
+		case int64:
+			if arg < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"File descriptor argument to 'os.fallocate' cannot be negative.")
+			}
+			if util.IsLinux() {
+				err = linuxsyscalls.Fallocate(int(arg), 0, 0, size)
+			} else {
+				badFileDesc := "bad file descriptor"
+				file := os.NewFile(uintptr(arg), "fallocate")
+				if file == nil {
+					return nil, loxerror.RuntimeError(in.callToken, badFileDesc)
+				}
+
+				//Check if the file can actually be written to
+				_, testWriteErr := file.WriteString("")
+				if testWriteErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, badFileDesc)
+				}
+
+				stat, statErr := file.Stat()
+				if statErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+				}
+				statSize := stat.Size()
+				if size > statSize {
+					_, err = file.Write(make([]byte, size-statSize))
+				}
+			}
+		case *LoxFile:
+			if !arg.isWrite() && !arg.isAppend() {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"File argument to 'os.fallocate' must be in write or append mode.")
+			}
+			fd := int(arg.file.Fd())
+			switch {
+			case util.IsLinux():
+				err = linuxsyscalls.Fallocate(fd, 0, 0, size)
+			case arg.mode == filemode.READ_WRITE:
+				stat, statErr := arg.file.Stat()
+				if statErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+				}
+				statSize := stat.Size()
+				if size > statSize {
+					originalOffset, seekErr1 := arg.file.Seek(0, io.SeekStart)
+					if seekErr1 != nil {
+						return nil, loxerror.RuntimeError(in.callToken, seekErr1.Error())
+					}
+					_, seekErr2 := arg.file.Seek(0, io.SeekEnd)
+					if seekErr2 != nil {
+						return nil, loxerror.RuntimeError(in.callToken, seekErr2.Error())
+					}
+					_, err = arg.file.Write(make([]byte, size-statSize))
+					_, seekErr3 := arg.file.Seek(originalOffset, io.SeekStart)
+					if seekErr3 != nil {
+						return nil, loxerror.RuntimeError(in.callToken, seekErr3.Error())
+					}
+				}
+			default:
+				stat, statErr := arg.file.Stat()
+				if statErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+				}
+				statSize := stat.Size()
+				if size > statSize {
+					_, err = arg.file.Write(make([]byte, size-statSize))
+				}
+			}
+		case *LoxString:
+			file, fileErr := os.OpenFile(
+				arg.str,
+				os.O_WRONLY|os.O_CREATE|os.O_APPEND,
+				0666,
+			)
+			if fileErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, fileErr.Error())
+			}
+			if util.IsLinux() {
+				err = linuxsyscalls.Fallocate(int(file.Fd()), 0, 0, size)
+			} else {
+				stat, statErr := file.Stat()
+				if statErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+				}
+				statSize := stat.Size()
+				if size > statSize {
+					_, err = file.Write(make([]byte, size-statSize))
+				}
+			}
+			file.Close()
+		}
+
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
 		return nil, nil
 	})
 	osFunc("fchdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {

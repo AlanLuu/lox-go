@@ -13,6 +13,10 @@ func unsupported(name string) error {
 	return loxerror.Error("'os." + name + "' is unsupported on " + osName + ".")
 }
 
+func Fallocate(fd int, mode uint32, off int64, len int64) error {
+	return unsupported("fallocate")
+}
+
 func Setresgid(rgid int, egid int, sgid int) error {
 	return unsupported("setresgid")
 }
