@@ -44,6 +44,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineBase64Funcs()     //Defined in base64funcs.go
 	interpreter.defineBigFloatFuncs()   //Defined in bigfloatfuncs.go
 	interpreter.defineBigIntFuncs()     //Defined in bigintfuncs.go
+	interpreter.defineBigMathFuncs()    //Defined in bigmathfuncs.go
 	interpreter.defineCryptoFuncs()     //Defined in cryptofuncs.go
 	interpreter.defineCSVFuncs()        //Defined in csvfuncs.go
 	interpreter.defineDateFuncs()       //Defined in datefuncs.go
@@ -665,7 +666,7 @@ func (i *Interpreter) visitBinaryExpr(expr Binary) (any, error) {
 			if bigint.IsZero(right) {
 				return nil, runtimeErrorWrapper(divideByZeroMsg)
 			}
-			return new(big.Int).Mod(left, right), nil
+			return new(big.Int).Rem(left, right), nil
 		case token.DOUBLE_STAR:
 			return new(big.Int).Exp(left, right, nil), nil
 		case token.DOUBLE_LESS:
