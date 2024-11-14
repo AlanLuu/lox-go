@@ -398,6 +398,32 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			return nil, loxerror.RuntimeError(name,
 				fmt.Sprintf("Invalid character encoding found with bytes '%v'.", b))
 		})
+	case "readdirnames":
+		return fileFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			n := 0
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+			case 1:
+				if arg, ok := args[0].(int64); ok {
+					n = int(arg)
+				} else {
+					return argMustBeTypeAn("integer")
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+			fileNames, err := l.file.Readdirnames(n)
+			if err != nil && !errors.Is(err, io.EOF) {
+				return nil, loxerror.RuntimeError(name, err.Error())
+			}
+			fileNamesList := list.NewListCap[any](int64(len(fileNames)))
+			for _, fileName := range fileNames {
+				fileNamesList.Add(NewLoxStringQuote(fileName))
+			}
+			return NewLoxList(fileNamesList), nil
+		})
 	case "readLine":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			if l.isClosed() {

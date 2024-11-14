@@ -26,6 +26,9 @@ The following methods and fields are defined on file instances:
 - `file.readChar()`, which reads a single character from the file and returns it as a string with that character
     - If the file pointer is at EOF, this method returns `nil`
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
+- `file.readdirnames([numNames])`, which returns a list of `numNames` names of all files from the current file object as strings, where `numNames` is an integer and the file object must refer to a directory. If `numNames` is omitted or `numNames <= 0`, this method returns a list of all names of all files from the current file object as strings
+    - If the file object does not refer to a directory, a runtime error is thrown
+    - If the file pointer is at EOF, this method returns an empty list
 - `file.readLine()`, which reads a single line from the file, skipping over any blank lines, and returns that line without any trailing newline characters as a string
     - If the file pointer is at EOF, this method returns an empty string
     - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
