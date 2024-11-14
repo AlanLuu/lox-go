@@ -15,6 +15,7 @@ The following mathematical methods and constants are defined in the built-in `Ma
 - `Math.ceil(num)`, which returns the smallest integer greater than or equal to `num`
 - `Math.cos(num)`, which returns the cosine of `num`, where `num` is in radians
 - `Math.cosh(num)`, which returns the hyperbolic cosine of `num`
+- `Math.dim(x, y)`, which returns the maximum of `x - y` or `0` if `x - y` is negative and `x` and `y` are both integers, otherwise `0.0` is returned
 - `Math.E`, which is the value of Euler's number `e`, approximately `2.71828`
 - `Math.exp(num)`, which returns the value of `e` raised to the power of `num`
 - `Math.floor(num)`, which returns the largest integer less than or equal to `num`
