@@ -22,6 +22,7 @@ The following methods are defined in the built-in `bigmath` class:
     - If `bigint2` is `0n`, this method throws a runtime error
 - `bigmath.quorem(bigint1, bigint2)`, which returns a list with two elements, with the first being the quotient of `bigint1` and `bigint2` as a bigint and the second being the remainder of `bigint1` and `bigint2` as a bigint
     - If `bigint2` is `0n`, this method throws a runtime error
+- `bigmath.random()`, which returns a random bigfloat between `0n` and `1n` exclusive
 - `bigmath.round(bignum)`, which returns a bigint of `bignum` rounded to the nearest bigint
 - `bigmath.sqrt(bignum)`, which returns the square root of `bignum` as a bigfloat
     - If `bignum` is negative, this method throws a runtime error

@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math/big"
+	"math/rand"
 
 	"github.com/AlanLuu/lox/bignum/bigfloat"
 	"github.com/AlanLuu/lox/bignum/bigint"
@@ -304,6 +305,9 @@ func (i *Interpreter) defineBigMathFuncs() {
 		resultList.Add(quotient)
 		resultList.Add(remainder)
 		return NewLoxList(resultList), nil
+	})
+	bigMathFunc("random", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return bigfloat.New(rand.Float64()), nil
 	})
 	bigMathFunc("round", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch arg := args[0].(type) {
