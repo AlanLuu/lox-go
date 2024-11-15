@@ -30,6 +30,8 @@ The following methods are defined in the built-in `crypto` class:
     - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
 - `crypto.md5sum(data)`, which returns a string that is the hexadecimal representation of the MD5 hash of the specified data, which is either a buffer or string
     - Warning: MD5 is cryptographically broken and is unsuitable for security purposes
+- `crypto.prime(numBits)`, which returns a bigint that has a very high chance to be a random prime number of the specified number of bits, which is an integer
+    - This method throws a runtime error if `numBits < 2`
 - `crypto.randomUUID()`, which returns a randomly generated v4 UUID as a string
 - `crypto.rsa(bitSize)`, which returns an RSA kaypair object with a random private key of the specified bit size integer and the public key corresponding to that private key
 - `crypto.rsapriv(privKey)`, which takes in an RSA private key as a buffer or base64 string and returns an RSA keypair object with the specified private key and the public key corresponding to that private key

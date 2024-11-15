@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/hmac"
 	"crypto/md5"
+	crand "crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
@@ -42,6 +43,10 @@ func (i *Interpreter) defineCryptoFuncs() {
 	}
 	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'crypto.%v' must be a %v.", name, theType)
+		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
+	argMustBeTypeAn := func(callToken *token.Token, name string, theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'crypto.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
@@ -352,6 +357,20 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		hexDigest := fmt.Sprintf("%x", hashObj.Sum(nil))
 		return NewLoxString(hexDigest, '\''), nil
+	})
+	cryptoFunc("prime", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if numBits, ok := args[0].(int64); ok {
+			if numBits < 2 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Integer argument to 'crypto.prime' must be an integer >= 2.")
+			}
+			prime, err := crand.Prime(crand.Reader, int(numBits))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return prime, nil
+		}
+		return argMustBeTypeAn(in.callToken, "prime", "integer")
 	})
 	cryptoFunc("randomUUID", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		randUUID, err := uuid.NewRandom()
