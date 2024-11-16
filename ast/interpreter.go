@@ -55,6 +55,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineIntFuncs()        //Defined in intfuncs.go
 	interpreter.defineIteratorFuncs()   //Defined in iteratorfuncs.go
 	interpreter.defineJSONFuncs()       //Defined in jsonfuncs.go
+	interpreter.defineLogFuncs()        //Defined in logfuncs.go
 	interpreter.defineMathFuncs()       //Defined in mathfuncs.go
 	interpreter.defineNativeFuncs()     //Defined in nativefuncs.go
 	interpreter.defineOSFuncs()         //Defined in osfuncs.go
