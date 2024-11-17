@@ -107,6 +107,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each line from the file as a string
         - CSV Reader
             - For each iteration, `element` is a list of strings of the values that are separated by the delimiter for each line in the CSV file
+        - Logger
+            - For each iteration, `element` is each saved log line from the logger object as a string
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Try-catch-finally statements are supported in this implementation of Lox
     ```js
@@ -201,6 +203,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with HTTP requests are defined under a built-in class called `http`, which is documented [here](./doc/http.md)
 - Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
 - Various methods to work with CSV files are defined under a built-in class called `csv`, which is documented [here](./doc/csv.md)
+- Various methods and fields to work with logging are defined under a built-in class called `log`, which is documented [here](./doc/log.md)
 - Various methods to work with regular expressions are defined under a built-in class called `regex`, which is documented [here](./doc/regex.md)
 - Various methods and fields to work with dates are defined under a built-in class called `Date`, which is documented [here](./doc/Date.md)
 - Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)
