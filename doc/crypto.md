@@ -3,6 +3,14 @@
 Any method that fails will throw a runtime error with a message describing the error.
 
 The following methods are defined in the built-in `crypto` class:
+- `crypto.aescbc(integer/buffer/string)`, which returns an AES-CBC object based on the specified argument
+    - An integer can be specified, which returns an AES-CBC object with a randomly generated key of the specified bit size, where the argument can either be `128`, `192`, or `256`
+        - If the integer argument is not one of those numbers, a runtime error is thrown
+    - A buffer can be specified, which returns an AES-CBC object with its key being the contents of the specified buffer
+        - If the length of the specified buffer is not 16, 24, or 32, a runtime error is thrown
+    - A base64 string can be specified, which returns an AES-CBC object with its key being the decoded bytes of the string
+        - If the length of the decoded bytes is not 16, 24, or 32, a runtime error is thrown
+- `crypto.aescbchex(hexStr)`, which returns an AES-CBC object with its key being the decoded bytes of the specified hexadecimal string
 - `crypto.aescfb(integer/buffer/string)`, which returns an AES-CFB object based on the specified argument
     - An integer can be specified, which returns an AES-CFB object with a randomly generated key of the specified bit size, where the argument can either be `128`, `192`, or `256`
         - If the integer argument is not one of those numbers, a runtime error is thrown
@@ -52,17 +60,38 @@ The following methods are defined in the built-in `crypto` class:
 - `crypto.sha512([data])`, which returns a hash object that computes the SHA-512 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
 - `crypto.sha512sum(data)`, which returns a string that is the hexadecimal representation of the SHA-512 hash of the specified data, which is either a buffer or string
 
+AES-CBC objects have the following methods associated with them:
+- `aes-cbc.b64()`, which is an alias for `aes-cbc.base64`
+- `aes-cbc.base64()`, which returns a string that is the base64 representation of the AES key associated with the current AES-CBC object
+- `aes-cbc.bytes()`, which returns a buffer of the bytes of the AES key associated with the current AES-CBC object
+- `aes-cbc.decrypt(buffer/file/string)`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified ciphertext using the key associated with the current AES-CBC object, and returns a buffer of the decrypted bytes if successful
+    - If decryption is unsuccessful, this method returns a buffer that does not contain the original plaintext
+- `aes-cbc.decryptToFile(buffer/file/string, string/file)`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified ciphertext using the key associated with the current AES-CBC object and writes the decrypted bytes to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+    - If decryption is unsuccessful, the specified file will not contain the original plaintext
+- `aes-cbc.decryptToStr(buffer/file/string)`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified ciphertext using the key associated with the current AES-CBC object, and returns a string of the decrypted bytes if successful
+    - If decryption is unsuccessful, this method returns a string that does not contain the original plaintext
+- `aes-cbc.encrypt(buffer/file/string)`, which returns a buffer of the encryption result of the specified buffer, file object, or string
+- `aes-cbc.encryptToFile(buffer/file/string, string/file)`, which writes the encryption result of the specified buffer, file object, or string to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+- `aes-cbc.encryptToStr(buffer/file/string)`, which returns a base64 string of the encryption result of the specified buffer, file object, or string
+- `aes-cbc.hex()`, which returns a string that is the hexadecimal representation of the AES associated with the current AES-CBC object
+- `aes-cbc.key()`, which is an alias for `aes-cbc.bytes`
+- `aes-cbc.keyStr()`, which is an alias for `aes-cbc.base64`
+- `aes-cbc.typeInt()`, which returns an integer that represents the bit size of the key associated with the current AES-CBC object
+- `aes-cbc.typeStr()`, which returns a string that is the string `"AES-"` concatenated with the integer that represents the bit size of the key associated with the current AES-CBC object
+
 AES-CFB objects have the following methods associated with them:
 - `aes-cfb.b64()`, which is an alias for `aes-cfb.base64`
 - `aes-cfb.base64()`, which returns a string that is the base64 representation of the AES key associated with the current AES-CFB object
 - `aes-cfb.bytes()`, which returns a buffer of the bytes of the AES key associated with the current AES-CFB object
 - `aes-cfb.decrypt(buffer/file/string)`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified ciphertext using the key associated with the current AES-CFB object, and returns a buffer of the decrypted bytes if successful
-    - If decryption is unsuccessful, this method throws a runtime error
+    - If decryption is unsuccessful, this method returns a buffer that does not contain the original plaintext
 - `aes-cfb.decryptToFile(buffer/file/string, string/file)`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified ciphertext using the key associated with the current AES-CFB object and writes the decrypted bytes to the specified file, which can be specified as a string or a file object
     - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
-    - If decryption is unsuccessful, this method throws a runtime error
+    - If decryption is unsuccessful, the specified file will not contain the original plaintext
 - `aes-cfb.decryptToStr(buffer/file/string)`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified ciphertext using the key associated with the current AES-CFB object, and returns a string of the decrypted bytes if successful
-    - If decryption is unsuccessful, this method throws a runtime error
+    - If decryption is unsuccessful, this method returns a string that does not contain the original plaintext
 - `aes-cfb.encrypt(buffer/file/string)`, which returns a buffer of the encryption result of the specified buffer, file object, or string
 - `aes-cfb.encryptToFile(buffer/file/string, string/file)`, which writes the encryption result of the specified buffer, file object, or string to the specified file, which can be specified as a string or a file object
     - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
