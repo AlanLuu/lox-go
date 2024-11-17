@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -167,6 +168,100 @@ func (l *LoxAESCBC) Get(name *token.Token) (any, error) {
 			}
 			return buffer, nil
 		})
+	case "decryptToFile":
+		return aescbcFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			switch args[0].(type) {
+			case *LoxBuffer:
+			case *LoxFile:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'aes-cbc.decryptToFile' must be a buffer, file, or string.")
+			}
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				if !arg.isWrite() && !arg.isAppend() {
+					return nil, loxerror.RuntimeError(name,
+						"Second file argument to 'aes-cbc.decryptToFile' must be in write or append mode.")
+				}
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'aes-cbc.decryptToFile' must be a file or string.")
+			}
+
+			var ciphertext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				ciphertext = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					ciphertext = append(ciphertext, byte(element.(int64)))
+				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"File argument to 'aes-cbc.decryptToFile' must be in read mode.")
+				}
+				var readErr error
+				ciphertext, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+			case *LoxString:
+				var decodeErr error
+				ciphertext, decodeErr = LoxAESDecode(arg.str)
+				if decodeErr != nil {
+					return nil, loxerror.RuntimeError(name, decodeErr.Error())
+				}
+			default:
+				return argMustBeType("buffer, file, or string")
+			}
+
+			if len(ciphertext) < aes.BlockSize {
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"AES-CBC: AES ciphertext size must be at least %v bytes.",
+						aes.BlockSize,
+					),
+				)
+			}
+
+			iv := ciphertext[:aes.BlockSize]
+			ciphertext = ciphertext[aes.BlockSize:]
+			if len(ciphertext)%aes.BlockSize != 0 {
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"AES-CBC: AES ciphertext size must be a multiple of %v.",
+						aes.BlockSize,
+					),
+				)
+			}
+
+			mode := cipher.NewCBCDecrypter(l.block, iv)
+			mode.CryptBlocks(ciphertext, ciphertext)
+			textLen := len(ciphertext)
+			if textLen > 0 && textLen%aes.BlockSize == 0 {
+				paddingByte := ciphertext[textLen-1]
+				ciphertext = ciphertext[:textLen-int(paddingByte)]
+			}
+
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				_, err := arg.file.Write(ciphertext)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			case *LoxString:
+				err := os.WriteFile(arg.str, ciphertext, 0666)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			}
+
+			return nil, nil
+		})
 	case "decryptToStr":
 		return aescbcFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var ciphertext []byte
@@ -289,6 +384,95 @@ func (l *LoxAESCBC) Get(name *token.Token) (any, error) {
 				}
 			}
 			return buffer, nil
+		})
+	case "encryptToFile":
+		return aescbcFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			switch args[0].(type) {
+			case *LoxBuffer:
+			case *LoxFile:
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'aes-cbc.encryptToFile' must be a buffer, file, or string.")
+			}
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				if !arg.isWrite() && !arg.isAppend() {
+					return nil, loxerror.RuntimeError(name,
+						"Second file argument to 'aes-cbc.encryptToFile' must be in write or append mode.")
+				}
+			case *LoxString:
+			default:
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'aes-cbc.encryptToFile' must be a file or string.")
+			}
+
+			var plaintext []byte
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				plaintext = make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					plaintext = append(plaintext, byte(element.(int64)))
+				}
+			case *LoxFile:
+				if !arg.isRead() {
+					return nil, loxerror.RuntimeError(name,
+						"File argument to 'aes-cbc.encryptToStr' must be in read mode.")
+				}
+				var readErr error
+				plaintext, readErr = io.ReadAll(arg.file)
+				if readErr != nil {
+					return nil, loxerror.RuntimeError(name, readErr.Error())
+				}
+			case *LoxString:
+				plaintext = []byte(arg.str)
+			default:
+				return argMustBeType("buffer, file, or string")
+			}
+
+			//Should never happen
+			if aes.BlockSize <= 0 || aes.BlockSize > 255 {
+				return nil, loxerror.RuntimeError(name,
+					"AES-CBC: Internal block size error when encrypting.")
+			}
+
+			//Use PKCS#7 padding if plaintext length is not a multiple of AES block size
+			//https://stackoverflow.com/a/13572751
+			if len(plaintext)%aes.BlockSize != 0 {
+				n := byte(aes.BlockSize - (len(plaintext) % aes.BlockSize))
+				for len(plaintext)%aes.BlockSize != 0 {
+					plaintext = append(plaintext, n)
+				}
+			} else {
+				for i := 0; i < aes.BlockSize; i++ {
+					plaintext = append(plaintext, byte(aes.BlockSize))
+				}
+			}
+
+			ciphertext := make([]byte, len(plaintext)+aes.BlockSize)
+			iv := ciphertext[:aes.BlockSize]
+			if _, err := io.ReadFull(crand.Reader, iv); err != nil {
+				return nil, loxerror.RuntimeError(name,
+					"AES-CBC: Failed to generate random IV.")
+			}
+
+			mode := cipher.NewCBCEncrypter(l.block, iv)
+			mode.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+
+			switch arg := args[1].(type) {
+			case *LoxFile:
+				_, err := arg.file.Write(ciphertext)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			case *LoxString:
+				err := os.WriteFile(arg.str, ciphertext, 0666)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+			}
+
+			return nil, nil
 		})
 	case "encryptToStr":
 		return aescbcFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
