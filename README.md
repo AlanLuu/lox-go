@@ -215,6 +215,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with opening web browsers are defined under a built-in class called `webbrowser`, which is documented [here](./doc/webbrowser.md)
 - Various methods and fields to work with Windows-specific functionality are defined under a built-in class called `windows`, which is documented [here](./doc/windows.md)
     - This class does not exist on non-Windows systems
+- Various methods and fields to work with zip files are defined under a built-in class called `zip`, which is documented [here](./doc/zip.md)
 - Various methods to work with base64 strings are defined under a built-in class called `base64`, where the following methods are defined:
     - `base64.decode(string)`, which decodes the specified base64-encoded string into a decoded string and returns that string
         - A runtime error is thrown if the specified string is not properly encoded as base64
