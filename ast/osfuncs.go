@@ -869,6 +869,7 @@ func (i *Interpreter) defineOSFuncs() {
 			if fileErr != nil {
 				return nil, loxerror.RuntimeError(in.callToken, fileErr.Error())
 			}
+			defer file.Close()
 			if util.IsLinux() {
 				err = linuxsyscalls.Fallocate(int(file.Fd()), 0, 0, size)
 			} else {
@@ -881,7 +882,6 @@ func (i *Interpreter) defineOSFuncs() {
 					_, err = file.Write(make([]byte, size-statSize))
 				}
 			}
-			file.Close()
 		}
 
 		if err != nil {
