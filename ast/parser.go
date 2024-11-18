@@ -662,9 +662,6 @@ func (p *Parser) finishCall(callee Expr) (Expr, error) {
 	arguments := list.NewList[Expr]()
 	if !p.check(token.RIGHT_PAREN) {
 		for cond := true; cond; cond = p.match(token.COMMA) {
-			if len(arguments) >= 255 {
-				loxerror.PrintErrorObject(p.error(p.peek(), "Can't have more than 255 arguments."))
-			}
 			spread := p.match(token.ELLIPSIS)
 			expr, exprErr := p.expression()
 			if exprErr != nil {

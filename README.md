@@ -24,6 +24,7 @@ go build
 This will create an executable binary called `lox` on Linux/macOS and `lox.exe` on Windows that can be run directly.
 
 # Differences from Lox
+- No error is reported when calling a function with 255 arguments or more
 - Concatenating a string with another data type will convert that type into a string and concatenate them together
 - Integers and floats are distinct types in this implementation of Lox
     - Integers are signed 64-bit values and floats are double-precision floating-point values
