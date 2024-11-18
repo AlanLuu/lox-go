@@ -66,6 +66,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineUUIDFuncs()       //Defined in uuidfuncs.go
 	interpreter.defineWebBrowserFuncs() //Defined in webbrowserfuncs.go
 	interpreter.defineWindowsFuncs()    //Defined in windowsfuncs_windows.go
+	interpreter.defineZipFuncs()        //Defined in zipfuncs.go
 	return interpreter
 }
 
