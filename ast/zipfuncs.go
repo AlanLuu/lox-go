@@ -14,10 +14,10 @@ const (
 )
 
 func defineZipFields(zipClass *LoxClass) {
-	test := map[string]int64{
+	zipFields := map[string]int64{
 		"USE_BUFFER": ZIP_USE_BUFFER,
 	}
-	for key, value := range test {
+	for key, value := range zipFields {
 		zipClass.classProperties[key] = value
 	}
 }
