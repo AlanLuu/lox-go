@@ -16,6 +16,7 @@ Zip writer objects have the following methods associated with them:
 - `zip writer.close()`, which closes the current zip writer object and writes the zip file bytes to the specified file or buffer, depending on how the zip writer object was created
 - `zip writer.fileNames()`, which returns a list of file names in the current zip writer object as strings in alphabetical order
 - `zip writer.flush()`, which writes the zip file bytes to the specified file or buffer, depending on how the zip writer object was created, without closing the current zip writer object and returns the current zip writer object itself
+- `zip writer.isBuffer()`, which returns `true` if the current zip writer object was created using `zip.writer(zip.USE_BUFFER)` and `false` otherwise
 - `zip writer.isClosed()`, which returns `true` if the current zip writer object is closed and `false` otherwise
 - `zip writer.mkdir(path)`, which creates a directory with the specified path name string in the current zip object and returns the current zip writer object itself
     - If a file or directory with the specified path name already exists, a runtime error is thrown

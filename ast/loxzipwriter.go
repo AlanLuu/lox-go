@@ -182,6 +182,10 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 			}
 			return l, nil
 		})
+	case "isBuffer":
+		return zipWriterFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.bytesBuffer != nil, nil
+		})
 	case "isClosed":
 		return zipWriterFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isClosed, nil
