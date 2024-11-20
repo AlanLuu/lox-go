@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"slices"
 	"strings"
 
@@ -95,16 +94,7 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 			}
 
 			fileName := strings.Trim(args[0].(*LoxString).str, "/\\ ")
-			var builder strings.Builder
-			for _, c := range fileName {
-				switch c {
-				case '/', '\\':
-					builder.WriteRune(os.PathSeparator)
-				default:
-					builder.WriteRune(c)
-				}
-			}
-			fileName = builder.String()
+			fileName = strings.ReplaceAll(fileName, "\\", "/")
 			if fileNameStruct, ok := l.fileNames[fileName]; ok {
 				return fileExistsErr(fileName, fileNameStruct)
 			} else {
@@ -212,16 +202,7 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 					return closedErr()
 				}
 				dirName := strings.Trim(loxStr.str, "/\\ ")
-				var builder strings.Builder
-				for _, c := range dirName {
-					switch c {
-					case '/', '\\':
-						builder.WriteRune(os.PathSeparator)
-					default:
-						builder.WriteRune(c)
-					}
-				}
-				dirName = builder.String()
+				dirName = strings.ReplaceAll(dirName, "\\", "/")
 				if fileNameStruct, ok := l.fileNames[dirName]; ok {
 					return fileExistsErr(dirName, fileNameStruct)
 				} else {
