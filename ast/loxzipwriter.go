@@ -120,12 +120,14 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 				}
 			case *LoxFile:
 				if !arg.isRead() {
+					delete(l.fileNames, fileName)
 					return nil, loxerror.RuntimeError(name,
 						"First file argument to 'zip writer.addFile' must be in read mode.")
 				}
 				var readErr error
 				content, readErr = io.ReadAll(arg.file)
 				if readErr != nil {
+					delete(l.fileNames, fileName)
 					return nil, loxerror.RuntimeError(name, readErr.Error())
 				}
 			case *LoxString:
@@ -133,10 +135,12 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 			}
 			writer, err := l.writer.Create(fileName)
 			if err != nil {
+				delete(l.fileNames, fileName)
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			_, err = writer.Write(content)
 			if err != nil {
+				delete(l.fileNames, fileName)
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			return l, nil
@@ -225,6 +229,7 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 				}
 				_, err := l.writer.Create(dirName + "/")
 				if err != nil {
+					delete(l.fileNames, dirName)
 					return nil, loxerror.RuntimeError(name, err.Error())
 				}
 				return l, nil
