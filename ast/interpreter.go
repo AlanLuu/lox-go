@@ -63,6 +63,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineRandFuncs()       //Defined in randfuncs.go
 	interpreter.defineRegexFuncs()      //Defined in regexfuncs.go
 	interpreter.defineStringFuncs()     //Defined in stringfuncs.go
+	interpreter.defineTarFuncs()        //Defined in tarfuncs.go
 	interpreter.defineUUIDFuncs()       //Defined in uuidfuncs.go
 	interpreter.defineWebBrowserFuncs() //Defined in webbrowserfuncs.go
 	interpreter.defineWindowsFuncs()    //Defined in windowsfuncs_windows.go
