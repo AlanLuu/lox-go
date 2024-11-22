@@ -7,6 +7,7 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -123,7 +124,11 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 			case *LoxString:
 				content = []byte(arg.str)
 			}
-			writer, err := l.writer.Create(fileName)
+			writer, err := l.writer.CreateHeader(&zip.FileHeader{
+				Name:     fileName,
+				Method:   zip.Deflate,
+				Modified: time.Now(),
+			})
 			if err != nil {
 				delete(l.fileNames, fileName)
 				return nil, loxerror.RuntimeError(name, err.Error())
@@ -208,7 +213,11 @@ func (l *LoxZIPWriter) Get(name *token.Token) (any, error) {
 				} else {
 					l.fileNames[dirName] = struct{ isDir bool }{true}
 				}
-				_, err := l.writer.Create(dirName + "/")
+				_, err := l.writer.CreateHeader(&zip.FileHeader{
+					Name:     dirName + "/",
+					Method:   zip.Deflate,
+					Modified: time.Now(),
+				})
 				if err != nil {
 					delete(l.fileNames, dirName)
 					return nil, loxerror.RuntimeError(name, err.Error())
