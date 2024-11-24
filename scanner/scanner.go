@@ -58,7 +58,8 @@ var escapeChars = map[rune]rune{
 }
 
 type Scanner struct {
-	sourceLine   string
+	sourceRunes  []rune
+	sourceLen    int
 	Tokens       list.List[*token.Token]
 	startIndex   int
 	currentIndex int
@@ -67,7 +68,8 @@ type Scanner struct {
 
 func NewScanner(source string) *Scanner {
 	return &Scanner{
-		sourceLine:   source,
+		sourceRunes:  []rune(source),
+		sourceLen:    utf8.RuneCountInString(source),
 		Tokens:       list.NewList[*token.Token](),
 		startIndex:   0,
 		currentIndex: 0,
@@ -76,13 +78,13 @@ func NewScanner(source string) *Scanner {
 }
 
 func (sc *Scanner) advance() rune {
-	c := []rune(sc.sourceLine)[sc.currentIndex]
+	c := sc.sourceRunes[sc.currentIndex]
 	sc.currentIndex++
 	return c
 }
 
 func (sc *Scanner) addToken(tokenType token.TokenType, literal any, quote byte) {
-	text := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
+	text := string(sc.sourceRunes[sc.startIndex:sc.currentIndex])
 	sc.Tokens.Add(token.NewToken(tokenType, text, literal, sc.lineNum, quote))
 }
 
@@ -179,7 +181,7 @@ func (sc *Scanner) handleNumber() error {
 		sc.advance()
 	}
 
-	numStr := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
+	numStr := string(sc.sourceRunes[sc.startIndex:sc.currentIndex])
 	invalidLiteral := func(numType string) error {
 		return loxerror.GiveError(sc.lineNum, "", "Invalid "+numType+" literal")
 	}
@@ -223,7 +225,7 @@ func (sc *Scanner) handleIdentifier() {
 		sc.advance()
 	}
 
-	text := string([]rune(sc.sourceLine)[sc.startIndex:sc.currentIndex])
+	text := string(sc.sourceRunes[sc.startIndex:sc.currentIndex])
 	tokenType, ok := keywords[text]
 	if !ok {
 		tokenType = token.IDENTIFIER
@@ -247,7 +249,7 @@ func (sc *Scanner) handleString(quote rune) error {
 		} else if tokenQuote == '"' && sc.peek() == '"' {
 			tokenQuote = '\''
 		}
-		currentChar := []rune(sc.sourceLine)[sc.currentIndex]
+		currentChar := sc.sourceRunes[sc.currentIndex]
 		if !foundBackslash && currentChar == '\\' {
 			foundBackslash = true
 		} else if foundBackslash {
@@ -259,7 +261,7 @@ func (sc *Scanner) handleString(quote rune) error {
 			builder.WriteRune(escapeChar)
 			foundBackslash = false
 		} else {
-			builder.WriteRune([]rune(sc.sourceLine)[sc.currentIndex])
+			builder.WriteRune(sc.sourceRunes[sc.currentIndex])
 		}
 		sc.advance()
 	}
@@ -274,7 +276,7 @@ func (sc *Scanner) handleString(quote rune) error {
 }
 
 func (sc *Scanner) isAtEnd() bool {
-	return sc.currentIndex >= utf8.RuneCountInString(sc.sourceLine)
+	return sc.currentIndex >= sc.sourceLen
 }
 
 func isAlpha(r rune) bool {
@@ -305,7 +307,7 @@ func (sc *Scanner) match(expected rune) bool {
 	if sc.isAtEnd() {
 		return false
 	}
-	if []rune(sc.sourceLine)[sc.currentIndex] != expected {
+	if sc.sourceRunes[sc.currentIndex] != expected {
 		return false
 	}
 	sc.currentIndex++
@@ -316,14 +318,14 @@ func (sc *Scanner) peek() rune {
 	if sc.isAtEnd() {
 		return 0
 	}
-	return []rune(sc.sourceLine)[sc.currentIndex]
+	return sc.sourceRunes[sc.currentIndex]
 }
 
 func (sc *Scanner) previous() rune {
 	if sc.currentIndex == 0 {
 		return 0
 	}
-	return []rune(sc.sourceLine)[sc.currentIndex-1]
+	return sc.sourceRunes[sc.currentIndex-1]
 }
 
 func (sc *Scanner) scanToken() error {
@@ -462,9 +464,8 @@ func (sc *Scanner) scanToken() error {
 }
 
 func (sc *Scanner) ScanTokens() error {
-	source := &sc.sourceLine
-	sourceLen := utf8.RuneCountInString(*source)
-	if sourceLen > 1 && []rune(*source)[0] == '#' && []rune(*source)[1] == '!' {
+	source := &sc.sourceRunes
+	if sc.sourceLen > 1 && (*source)[0] == '#' && (*source)[1] == '!' {
 		//Ignore line with "#!" (Unix shebang) at beginning of first line
 		for sc.peek() != '\n' && !sc.isAtEnd() {
 			sc.currentIndex++
@@ -488,5 +489,6 @@ func (sc *Scanner) ScanTokens() error {
 }
 
 func (sc *Scanner) SetSourceLine(sourceLine string) {
-	sc.sourceLine = sourceLine
+	sc.sourceRunes = []rune(sourceLine)
+	sc.sourceLen = utf8.RuneCountInString(sourceLine)
 }
