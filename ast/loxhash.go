@@ -77,7 +77,7 @@ func (l *LoxHash) Get(name *token.Token) (any, error) {
 	case "reset":
 		return hashFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.hash.Reset()
-			return nil, nil
+			return l, nil
 		})
 	case "size":
 		return int64(l.hash.Size()), nil
@@ -97,7 +97,7 @@ func (l *LoxHash) Get(name *token.Token) (any, error) {
 			default:
 				return argMustBeType("buffer or string")
 			}
-			return nil, nil
+			return l, nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Hashes have no property called '"+lexemeName+"'.")
