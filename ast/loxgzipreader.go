@@ -3,15 +3,44 @@ package ast
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
+	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
 )
+
+type LoxGZIPReaderIterator struct {
+	reader  *gzip.Reader
+	current [1]byte
+	isAtEnd bool
+	stop    bool
+}
+
+func (l *LoxGZIPReaderIterator) HasNext() bool {
+	return !l.stop
+}
+
+func (l *LoxGZIPReaderIterator) Next() any {
+	theByte := l.current[0]
+	if !l.isAtEnd {
+		_, err := l.reader.Read(l.current[:])
+		if err != nil {
+			l.isAtEnd = true
+			if !errors.Is(err, io.EOF) {
+				l.stop = true
+			}
+		}
+	} else {
+		l.stop = true
+	}
+	return int64(theByte)
+}
 
 type LoxGZIPReader struct {
 	reader      *gzip.Reader
@@ -207,6 +236,20 @@ func (l *LoxGZIPReader) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "gzip readers have no property called '"+methodName+"'.")
+}
+
+func (l *LoxGZIPReader) Iterator() interfaces.Iterator {
+	iterator := &LoxGZIPReaderIterator{
+		reader: l.reader,
+	}
+	numBytesRead, err := l.reader.Read(iterator.current[:])
+	if err != nil {
+		iterator.isAtEnd = true
+		if numBytesRead == 0 || !errors.Is(err, io.EOF) {
+			iterator.stop = true
+		}
+	}
+	return iterator
 }
 
 func (l *LoxGZIPReader) String() string {
