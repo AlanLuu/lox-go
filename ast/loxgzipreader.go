@@ -114,6 +114,10 @@ func (l *LoxGZIPReader) Get(name *token.Token) (any, error) {
 					if l.isClosed {
 						return closedErr()
 					}
+					if numBytes < 0 {
+						return nil, loxerror.RuntimeError(name,
+							"Argument to 'gzip reader.read' cannot be negative.")
+					}
 					data = make([]byte, numBytes)
 					_, err = l.reader.Read(data)
 				} else {
