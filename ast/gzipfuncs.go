@@ -108,6 +108,30 @@ func (i *Interpreter) defineGzipFuncs() {
 		}
 		return buffer, nil
 	})
+	gzipFunc("reader", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var reader io.Reader
+		switch arg := args[0].(type) {
+		case *LoxBuffer:
+			data := make([]byte, 0, len(arg.elements))
+			for _, element := range arg.elements {
+				data = append(data, byte(element.(int64)))
+			}
+			reader = bytes.NewBuffer(data)
+		case *LoxFile:
+			if !arg.isRead() {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Cannot create gzip reader for file not in read mode.")
+			}
+			reader = arg.file
+		default:
+			return argMustBeType(in.callToken, "reader", "buffer or file")
+		}
+		gzipReader, err := NewLoxGZIPReader(reader)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return gzipReader, nil
+	})
 	gzipFunc("write", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		if argsLen != 2 && argsLen != 3 {
