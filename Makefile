@@ -1,5 +1,5 @@
 main:
-	go build
+	go build -trimpath
 
 debug:
 	go build -gcflags=all="-N -l"
