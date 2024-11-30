@@ -100,6 +100,7 @@ The following methods and fields are defined in the built-in `os` class:
             - `m`/`M`, where `"1m"` is 1024 * 1024 bytes
             - `g`/`G`, where `"1g"` is 1024 * 1024 * 1024 bytes
         - A runtime error is thrown if an invalid string is passed as the size argument
+    - If the size argument is equivalent to 0 or a negative value, a runtime error is thrown
     - If a string is specified as the first argument and the file that the string refers to does not exist, it is created
     - If a file descriptor is specified as the first argument and the file corresponding to that file descriptor is not open in write or append mode, this method throws a runtime error with the message "bad file descriptor"
     - On Linux, this method utilizes the `fallocate(2)` syscall

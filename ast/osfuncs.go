@@ -784,9 +784,9 @@ func (i *Interpreter) defineOSFuncs() {
 				"Second argument to 'os.fallocate' must be an integer or string.")
 		}
 
-		if size < 0 {
+		if size <= 0 {
 			return nil, loxerror.RuntimeError(in.callToken,
-				"Size argument to 'os.fallocate' cannot be negative.")
+				"Size argument to 'os.fallocate' cannot be 0 or negative.")
 		}
 
 		var err error
