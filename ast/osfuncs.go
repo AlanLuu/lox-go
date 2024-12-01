@@ -796,10 +796,31 @@ func (i *Interpreter) defineOSFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"File descriptor argument to 'os.fallocate' cannot be negative.")
 			}
+			badFileDesc := "bad file descriptor"
 			if util.IsLinux() {
 				err = linuxsyscalls.Fallocate(int(arg), 0, 0, size)
+				if err != nil {
+					file := os.NewFile(uintptr(arg), "fallocate")
+					if file == nil {
+						return nil, loxerror.RuntimeError(in.callToken, badFileDesc)
+					}
+
+					//Check if the file can actually be written to
+					_, testWriteErr := file.WriteString("")
+					if testWriteErr != nil {
+						return nil, loxerror.RuntimeError(in.callToken, testWriteErr.Error())
+					}
+
+					stat, statErr := file.Stat()
+					if statErr != nil {
+						return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+					}
+					statSize := stat.Size()
+					if size > statSize {
+						_, err = file.Write(make([]byte, size-statSize))
+					}
+				}
 			} else {
-				badFileDesc := "bad file descriptor"
 				file := os.NewFile(uintptr(arg), "fallocate")
 				if file == nil {
 					return nil, loxerror.RuntimeError(in.callToken, badFileDesc)
@@ -808,7 +829,7 @@ func (i *Interpreter) defineOSFuncs() {
 				//Check if the file can actually be written to
 				_, testWriteErr := file.WriteString("")
 				if testWriteErr != nil {
-					return nil, loxerror.RuntimeError(in.callToken, badFileDesc)
+					return nil, loxerror.RuntimeError(in.callToken, testWriteErr.Error())
 				}
 
 				stat, statErr := file.Stat()
@@ -829,6 +850,40 @@ func (i *Interpreter) defineOSFuncs() {
 			switch {
 			case util.IsLinux():
 				err = linuxsyscalls.Fallocate(fd, 0, 0, size)
+				if err != nil {
+					switch {
+					case arg.mode == filemode.READ_WRITE:
+						stat, statErr := arg.file.Stat()
+						if statErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+						}
+						statSize := stat.Size()
+						if size > statSize {
+							originalOffset, seekErr1 := arg.file.Seek(0, io.SeekStart)
+							if seekErr1 != nil {
+								return nil, loxerror.RuntimeError(in.callToken, seekErr1.Error())
+							}
+							_, seekErr2 := arg.file.Seek(0, io.SeekEnd)
+							if seekErr2 != nil {
+								return nil, loxerror.RuntimeError(in.callToken, seekErr2.Error())
+							}
+							_, err = arg.file.Write(make([]byte, size-statSize))
+							_, seekErr3 := arg.file.Seek(originalOffset, io.SeekStart)
+							if seekErr3 != nil {
+								return nil, loxerror.RuntimeError(in.callToken, seekErr3.Error())
+							}
+						}
+					default:
+						stat, statErr := arg.file.Stat()
+						if statErr != nil {
+							return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+						}
+						statSize := stat.Size()
+						if size > statSize {
+							_, err = arg.file.Write(make([]byte, size-statSize))
+						}
+					}
+				}
 			case arg.mode == filemode.READ_WRITE:
 				stat, statErr := arg.file.Stat()
 				if statErr != nil {
@@ -872,6 +927,16 @@ func (i *Interpreter) defineOSFuncs() {
 			defer file.Close()
 			if util.IsLinux() {
 				err = linuxsyscalls.Fallocate(int(file.Fd()), 0, 0, size)
+				if err != nil {
+					stat, statErr := file.Stat()
+					if statErr != nil {
+						return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+					}
+					statSize := stat.Size()
+					if size > statSize {
+						_, err = file.Write(make([]byte, size-statSize))
+					}
+				}
 			} else {
 				stat, statErr := file.Stat()
 				if statErr != nil {

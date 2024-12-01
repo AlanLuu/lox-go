@@ -103,7 +103,8 @@ The following methods and fields are defined in the built-in `os` class:
     - If the size argument is equivalent to 0 or a negative value, a runtime error is thrown
     - If a string is specified as the first argument and the file that the string refers to does not exist, it is created
     - If a file descriptor is specified as the first argument and the file corresponding to that file descriptor is not open in write or append mode, this method throws a runtime error with the message "bad file descriptor"
-    - On Linux, this method utilizes the `fallocate(2)` syscall
+    - On Linux, this method utilizes the `fallocate(2)` syscall and falls back to a generic file allocation method if the syscall fails
+        - On non-Linux systems, this method always uses the generic file allocation method
 - `os.fchdir(fd)`, which changes the current working directory to the specified directory file descriptor
     - This method does not work on Windows and throws an error if called on there
 - `os.fchmod(fd, mode)`, which changes the mode of the specified file descriptor to `mode`
