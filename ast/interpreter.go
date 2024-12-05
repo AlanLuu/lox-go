@@ -328,11 +328,15 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 					'\f': "\\f",
 					'\v': "\\v",
 				}
+				sourceQuoteRune := rune(source.quote)
 				var builder strings.Builder
 				for _, c := range source.str {
 					if escapeString, ok := escapeChars[c]; ok {
 						builder.WriteString(escapeString)
 					} else {
+						if c == sourceQuoteRune {
+							builder.WriteRune('\\')
+						}
 						builder.WriteRune(c)
 					}
 				}
