@@ -53,6 +53,13 @@ static class stdin {
         this._filterfunc(callback, "\r\n");
     }
 
+    static _lowerreturn() {
+        return os.stdin.read().lower();
+    }
+    static lower() {
+        put this._lowerreturn();
+    }
+
     static _mapfunc(callback, delimiter) {
         var elements = os.stdin.read().strip().split(delimiter);
         foreach (var element in elements) {
@@ -139,5 +146,12 @@ static class stdin {
     }
     static sumwin() {
         print this._sumreturn("\r\n");
+    }
+
+    static _upperreturn() {
+        return os.stdin.read().upper();
+    }
+    static upper() {
+        put this._upperreturn();
     }
 }

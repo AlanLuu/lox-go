@@ -7,6 +7,7 @@ The following methods are defined in the `stdin` class:
 - `stdin.fernetencrypt()`, which reads in bytes from standard input and encrypts them using fernet, writing the generated fernet key in base64 format to standard error and the encrypted data as a fernet token to standard output
 - `stdin.filter(callback)`, which reads values from standard input separated by a newline character and prints the values where the specified callback function returns a truthy value for them
 - `stdin.filterwin(callback)`, which is like `stdin.filter` except that the separator is CRLF instead of LF
+- `stdin.lower()`, which prints the lowercase version of the contents from standard input
 - `stdin.map(callback)`, which reads values from standard input separated by a newline character and prints the result of calling the specified callback function on each value
 - `stdin.mapwin(callback)`, which is like `stdin.map` except that the separator is CRLF instead of LF
 - `stdin.max()`, which reads values from standard input separated by a newline character and prints the maximum numerical value out of all the numerical values read, ignoring any non-numerical values
@@ -18,3 +19,4 @@ The following methods are defined in the `stdin` class:
 - `stdin.rot47()`, which prints the ROT47 encoding of the contents from standard input
 - `stdin.sum()`, which reads values from standard input separated by a newline character and prints the sum of the numerical values read, ignoring any non-numerical values
 - `stdin.sumwin()`, which is like `stdin.sum` except that the separator is CRLF instead of LF
+- `stdin.upper()`, which prints the uppercase version of the contents from standard input
