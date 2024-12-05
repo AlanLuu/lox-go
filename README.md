@@ -256,6 +256,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Integer.MIN16`, which is the minimum value that a 16-bit integer can store
     - `Integer.MIN32`, which is the minimum value that a 32-bit integer can store
     - `Integer.parseInt(string)`, which attempts to convert the specified string argument into an integer and returns that integer if successful, otherwise a runtime error is thrown
+    - `Integer.tobigint(integer)`, which converts the specified integer argument into a bigint and returns that bigint
     - `Integer.toFloat(integer)`, which converts the specified integer argument into a float and returns that float
     - `Integer.toHexStr(integer)`, which returns the hexadecimal representation of the specified integer as a string without the prefix "0x"
     - `Integer.toString(integer)`, which returns the string representation of the specified integer argument

@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math"
+	"math/big"
 	"strconv"
 
 	"github.com/AlanLuu/lox/list"
@@ -54,6 +55,12 @@ func (i *Interpreter) defineIntFuncs() {
 			return result, nil
 		}
 		return argMustBeType(in.callToken, "parseInt", "string")
+	})
+	intFunc("tobigint", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if value, ok := args[0].(int64); ok {
+			return new(big.Int).SetInt64(value), nil
+		}
+		return argMustBeTypeAn(in.callToken, "tobigint", "integer")
 	})
 	intFunc("toFloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if value, ok := args[0].(int64); ok {
