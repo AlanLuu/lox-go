@@ -266,6 +266,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Float.MIN`, which is the minimum value that a float can store
     - `Float.MIN32`, which is the minimum value that a 32-bit float can store
     - `Float.parseFloat(string)`, which attempts to convert the specified string argument into a float and returns that float if successful, otherwise a runtime error is thrown
+    - `Float.tobigfloat(float)`, which converts the specified float argument into a bigfloat and returns that bigfloat
     - `Float.toInt(float)`, which converts the specified float argument into an integer and returns that integer
     - `Float.toString(float)`, which returns the string representation of the specified float argument
 - Various methods to work with bigints and bigfloats are defined under built-in classes called `bigint` and `bigfloat` respectively, which are documented [here](./doc/bignum.md)

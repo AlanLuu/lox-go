@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/AlanLuu/lox/bignum/bigfloat"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -42,6 +43,12 @@ func (i *Interpreter) defineFloatFuncs() {
 			return result, nil
 		}
 		return argMustBeType(in.callToken, "parseFloat", "string")
+	})
+	floatFunc("tobigfloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if value, ok := args[0].(float64); ok {
+			return bigfloat.New(value), nil
+		}
+		return argMustBeType(in.callToken, "tobigfloat", "float")
 	})
 	floatFunc("toInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if value, ok := args[0].(float64); ok {
