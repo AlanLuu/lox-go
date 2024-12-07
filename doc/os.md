@@ -146,6 +146,11 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.getpagesize()`, which returns the size of a memory page on the current system in bytes as an integer
 - `os.getpid()`, which returns the process ID of the current process as an integer
 - `os.getppid()`, which returns the process ID of the parent process as an integer
+- `os.getrandom(buffer, [flags])`, which fills the specified buffer with `n` random bytes, where `n` is the length of the buffer, overwriting all existing elements in the buffer with the random bytes, and returns the number of bytes written to the buffer as an integer
+    - The optional `flags` argument is an integer and can be equal to `0` or some of the following flag fields bitwise ORed together: `os.GRND_RANDOM`, `os.GRND_NONBLOCK`, `os.GRND_INSECURE`
+        - The above flag fields do not exist on non-Linux platforms
+        - If `flags` is omitted, it defaults to `0`
+    - This method only works on Linux and throws an error if called on any other operating system
 - `os.getsid(pid)`, which calls the Unix system call `getsid` with the specified process ID integer and returns the result as an integer
     - This method does not work on Windows and throws an error if called on there
 - `os.getuid()`, which returns the user ID of the current process as an integer

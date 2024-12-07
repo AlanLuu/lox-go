@@ -1290,6 +1290,50 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("getppid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getppid()), nil
 	})
+	osFunc("getrandom", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var inputBuffer *LoxBuffer
+		flags := 0
+		argsLen := len(args)
+		switch argsLen {
+		case 1, 2:
+			if _, ok := args[0].(*LoxBuffer); !ok {
+				var firstPart string
+				if argsLen == 2 {
+					firstPart = "First argument "
+				} else {
+					firstPart = "Argument "
+				}
+				return nil, loxerror.RuntimeError(in.callToken,
+					firstPart+"to 'os.getrandom' must be a buffer.")
+			}
+			inputBuffer = args[0].(*LoxBuffer)
+			if argsLen == 2 {
+				if flagsArg, ok := args[1].(int64); ok {
+					flags = int(flagsArg)
+				} else {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Second argument to 'os.getrandom' must be an integer.")
+				}
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		if !util.IsLinux() {
+			_, err := linuxsyscalls.Getrandom(nil, 0)
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		inputBufferLen := len(inputBuffer.elements)
+		bytes := make([]byte, inputBufferLen)
+		n, err := linuxsyscalls.Getrandom(bytes, flags)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		for i := 0; i < inputBufferLen; i++ {
+			inputBuffer.elements[i] = int64(bytes[i])
+		}
+		return int64(n), nil
+	})
 	osFunc("getsid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if pid, ok := args[0].(int64); ok {
 			sid, err := syscalls.Getsid(int(pid))
@@ -1303,6 +1347,11 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("getuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getuid()), nil
 	})
+	if util.IsLinux() {
+		osClass.classProperties["GRND_INSECURE"] = int64(linuxsyscalls.GRND_INSECURE)
+		osClass.classProperties["GRND_NONBLOCK"] = int64(linuxsyscalls.GRND_NONBLOCK)
+		osClass.classProperties["GRND_RANDOM"] = int64(linuxsyscalls.GRND_RANDOM)
+	}
 	osFunc("hostname", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		hostname, err := os.Hostname()
 		if err != nil {
