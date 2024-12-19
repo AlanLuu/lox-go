@@ -52,6 +52,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineFloatFuncs()      //Defined in floatfuncs.go
 	interpreter.defineGzipFuncs()       //Defined in gzipfuncs.go
 	interpreter.defineHexFuncs()        //Defined in hexfuncs.go
+	interpreter.defineHTMLFuncs()       //Defined in htmlfuncs.go
 	interpreter.defineHTTPFuncs()       //Defined in httpfuncs.go
 	interpreter.defineIntFuncs()        //Defined in intfuncs.go
 	interpreter.defineIteratorFuncs()   //Defined in iteratorfuncs.go
