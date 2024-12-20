@@ -112,6 +112,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each saved log line from the logger object as a string
         - gzip reader
             - For each iteration, `element` is each byte of decompressed gzip data from the gzip reader object as an integer
+        - HTML tokenizer
+            - For each iteration, `element` is each HTML token from the HTML tokenizer object as an HTML token object
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Try-catch-finally statements are supported in this implementation of Lox
     ```js
@@ -201,6 +203,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     ```
 - Various mathematical methods and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
 - Various bigint and bigfloat mathematical methods are defined under a built-in class called `bigmath`, which is documented [here](./doc/bigmath.md)
+- Various methods and fields to work with HTML are defined under a built-in class called `HTML`, which is documented [here](./doc/HTML.md)
 - Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
 - Various methods and fields to work with operating system functionality are defined under a built-in class called `os`, which is documented [here](./doc/os.md)
 - Various methods to work with HTTP requests are defined under a built-in class called `http`, which is documented [here](./doc/http.md)

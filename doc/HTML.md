@@ -1,0 +1,41 @@
+# HTML methods and fields
+
+The following methods and fields are defined in the built-in `HTML` class:
+- `HTML.escape(string)`, which returns a new string that is the original string with all HTML special characters from the original string escaped into HTML entities
+    - The following special characters are escaped: `<`, `>`, `&`, `'`, `"`
+- `HTML.token`, which is a class that defines the following HTML tag type fields, which are all integers:
+    - `HTML.token.error`, `HTML.token.text`, `HTML.token.startTag`, `HTML.token.endTag`, `HTML.token.selfClosing`, `HTML.token.comment`, `HTML.token.doctype`
+- `HTML.tokenize(file/string)`, which returns an HTML tokenizer object that tokenizes a string of HTML from the specified file or string, with the assumption that the string of HTML is UTF-8 encoded
+    - If a file is specified, that file must be open in read mode or else a runtime error is thrown
+- `HTML.tokenType(integer)`, which returns the string representation of the specified HTML tag type field integer, or `"Unknown"` if the specified integer does not correspond to a valid tag type field
+- `HTML.unescape(string)`, which returns a new string that is the original string with all HTML entities from the original string escaped into HTML special characters
+
+HTML tokenizer objects have the following methods associated with them:
+- `HTML tokenizer.err()`, which throws the error obtained from scanning the latest token as a runtime error, or does nothing and returns `nil` if there is no error
+- `HTML tokenizer.iterNoNewLines()`, which returns an iterator that iterates over the current HTML tokenizer object that skips over all text tokens that only have newlines in them
+- `HTML tokenizer.next()`, which advances the current tokenizer to the next token and returns the token type of that token as an integer corresponding to an HTML tag type field from the `HTML.token` class
+    - This method returns the value of `HTML.token.error` if there are no more tokens left in the tokenizer
+- `HTML tokenizer.nextNoNewLines()`, which advances the current tokenizer to the next token that is not a text token with only newlines and returns the next token type as an integer corresponding to an HTML tag type field from the `HTML.token` class
+- `HTML tokenizer.raw()`, which returns the raw text of the current token as a buffer
+- `HTML tokenizer.rawStr()`, which returns the raw text of the current token as a string
+- `HTML tokenizer.token()`, which returns the current token as an HTML token object
+- `HTML tokenizer.tokenType()`, which returns the token type of the current token as an integer corresponding to an HTML tag type field from the `HTML.token` class
+- `HTML tokenizer.tokenTypeStr()`, which returns the token type of the current token as a string
+- `HTML tokenizer.toList()`, which returns a list of all tokens from the current tokenizer as HTML token objects
+    - Calling this method will exhaust the underlying stream of tokens in the current tokenizer, meaning subsequent calls to this method will return an empty list instead
+- `HTML tokenizer.toListNoNewLines()`, which returns a list of all tokens from the current tokenizer as HTML token objects, excluding any text tokens with only newlines
+    - Calling this method will exhaust the underlying stream of tokens in the current tokenizer, meaning subsequent calls to this method will return an empty list instead
+
+HTML token objects have the following fields associated with them:
+- `HTML token.attributes`, which is a list of all HTML attributes associated with the current HTML token object as HTML attribute objects
+- `HTML token.data`, which is the token content associated with the current HTML token object as a string
+    - For HTML tag tokens, this field is the tag name as a string
+    - For HTML text tokens, this field is the content of that text token
+- `HTML token.tag`, which is the tag name associated with the current HTML token object as a string
+    - For HTML text tokens, this field is an empty string
+- `HTML token.type`, which is the token type of the current HTML token object as an integer corresponding to an HTML tag type field from the `HTML.token` class
+- `HTML token.typeStr`, which is the token type of the current HTML token object as a string
+
+HTML attribute objects have the following fields associated with them:
+- `HTML attribute.key`, which is the key associated with the current attribute as a string
+- `HTML attribute.value`, which is the value associated with the current attribute as a string
