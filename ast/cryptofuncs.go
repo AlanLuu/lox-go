@@ -166,6 +166,9 @@ func (i *Interpreter) defineCryptoFuncs() {
 			}
 			password = []byte(args[0].(*LoxString).str)
 			cost = int(args[1].(int64))
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
 		hash, hashErr := bcrypt.GenerateFromPassword(password, cost)
 		if hashErr != nil {
