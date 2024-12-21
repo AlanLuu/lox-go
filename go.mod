@@ -3,6 +3,7 @@ module github.com/AlanLuu/lox
 go 1.22.2
 
 require (
+	filippo.io/age v1.2.1
 	github.com/chzyer/readline v1.5.1
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
 	github.com/google/uuid v1.6.0

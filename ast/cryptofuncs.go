@@ -144,6 +144,25 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return argMustBeType(in.callToken, "aescfbhex", "string")
 	})
+	cryptoFunc("agesym", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			return NewLoxAgeSymmetric(), nil
+		case 1:
+			if loxStr, ok := args[0].(*LoxString); ok {
+				if len(loxStr.str) == 0 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"String argument to 'crypto.agesym' cannot be empty.")
+				}
+				return NewLoxAgeSymmetricPassword(loxStr.str), nil
+			}
+			return argMustBeType(in.callToken, "agesym", "string")
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+	})
 	cryptoFunc("bcrypt", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var password []byte
 		var cost int
