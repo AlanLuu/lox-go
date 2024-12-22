@@ -174,6 +174,116 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
 		})
+	case "decryptToFile":
+		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 2, 3:
+				switch args[0].(type) {
+				case *LoxBuffer:
+				case *LoxFile:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'age symmetric.decryptToFile' must be a buffer, file, or string.")
+				}
+				switch arg := args[1].(type) {
+				case *LoxFile:
+					if !arg.isWrite() && !arg.isAppend() {
+						return nil, loxerror.RuntimeError(name,
+							"Second file argument to 'age symmetric.decryptToFile' must be in write or append mode.")
+					}
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name,
+						"Second argument to 'age symmetric.decryptToFile' must be a file or string.")
+				}
+
+				var password string = l.password
+				if argsLen == 3 {
+					switch arg := args[2].(type) {
+					case *LoxString:
+						password = arg.str
+					default:
+						return nil, loxerror.RuntimeError(name,
+							"Third argument to 'age symmetric.decryptToFile' must be a string.")
+					}
+				} else if !l.initPassword {
+					return nil, loxerror.RuntimeError(name,
+						"Must specify password argument to 'age symmetric.decryptToFile'.")
+				}
+				if len(password) == 0 {
+					return passwordErr(argsLen == 3)
+				}
+
+				identity, err := age.NewScryptIdentity(password)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				var ciphertext []byte
+				switch arg := args[0].(type) {
+				case *LoxBuffer:
+					ciphertext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						ciphertext = append(ciphertext, byte(element.(int64)))
+					}
+				case *LoxFile:
+					if !arg.isRead() {
+						return nil, loxerror.RuntimeError(name,
+							"First file argument to 'age symmetric.decryptToFile' must be in read mode.")
+					}
+					var readErr error
+					ciphertext, readErr = io.ReadAll(arg.file)
+					if readErr != nil {
+						return nil, loxerror.RuntimeError(name, readErr.Error())
+					}
+				case *LoxString:
+					var decodeErr error
+					ciphertext, decodeErr = LoxAgeEncryptionDecode(arg.str)
+					if decodeErr != nil {
+						return nil, loxerror.RuntimeError(name, decodeErr.Error())
+					}
+				}
+
+				readBuffer := bytes.NewBuffer(ciphertext)
+				r, err := age.Decrypt(readBuffer, identity)
+				if err != nil {
+					switch err.(type) {
+					case *age.NoIdentityMatchError:
+						return nil, loxerror.RuntimeError(name,
+							"age symmetric.decryptToFile: incorrect password")
+					default:
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+
+				writeBuffer := new(bytes.Buffer)
+				_, err = io.Copy(writeBuffer, r)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				bytes := writeBuffer.Bytes()
+				switch arg := args[1].(type) {
+				case *LoxFile:
+					_, err := arg.file.Write(bytes)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				case *LoxString:
+					err := os.WriteFile(arg.str, bytes, 0666)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+
+				return nil, nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+			}
+		})
 	case "decryptToStr":
 		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
