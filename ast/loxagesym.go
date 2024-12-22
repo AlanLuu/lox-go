@@ -104,7 +104,7 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 						return nil, loxerror.RuntimeError(name,
 							"Second argument to 'age symmetric.decrypt' must be a string.")
 					}
-				} else if !l.initPassword && argsLen == 1 {
+				} else if !l.initPassword {
 					return nil, loxerror.RuntimeError(name,
 						"Must specify password argument to 'age symmetric.decrypt'.")
 				}
@@ -197,7 +197,7 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 						return nil, loxerror.RuntimeError(name,
 							"Second argument to 'age symmetric.decryptToStr' must be a string.")
 					}
-				} else if !l.initPassword && argsLen == 1 {
+				} else if !l.initPassword {
 					return nil, loxerror.RuntimeError(name,
 						"Must specify password argument to 'age symmetric.decryptToStr'.")
 				}
@@ -282,7 +282,7 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 						return nil, loxerror.RuntimeError(name,
 							"Second argument to 'age symmetric.encrypt' must be a string.")
 					}
-				} else if !l.initPassword && argsLen == 1 {
+				} else if !l.initPassword {
 					return nil, loxerror.RuntimeError(name,
 						"Must specify password argument to 'age symmetric.encrypt'.")
 				}
@@ -344,6 +344,108 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
 		})
+	case "encryptToFile":
+		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 2, 3:
+				switch args[0].(type) {
+				case *LoxBuffer:
+				case *LoxFile:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'age symmetric.encryptToFile' must be a buffer, file, or string.")
+				}
+				switch arg := args[1].(type) {
+				case *LoxFile:
+					if !arg.isWrite() && !arg.isAppend() {
+						return nil, loxerror.RuntimeError(name,
+							"Second file argument to 'age symmetric.encryptToFile' must be in write or append mode.")
+					}
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name,
+						"Second argument to 'age symmetric.encryptToFile' must be a file or string.")
+				}
+
+				var password string = l.password
+				if argsLen == 3 {
+					switch arg := args[2].(type) {
+					case *LoxString:
+						password = arg.str
+					default:
+						return nil, loxerror.RuntimeError(name,
+							"Third argument to 'age symmetric.encryptToFile' must be a string.")
+					}
+				} else if !l.initPassword {
+					return nil, loxerror.RuntimeError(name,
+						"Must specify password argument to 'age symmetric.encryptToFile'.")
+				}
+				if len(password) == 0 {
+					return passwordErr(argsLen == 3)
+				}
+
+				recipient, err := age.NewScryptRecipient(password)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				var plaintext []byte
+				switch arg := args[0].(type) {
+				case *LoxBuffer:
+					plaintext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						plaintext = append(plaintext, byte(element.(int64)))
+					}
+				case *LoxFile:
+					if !arg.isRead() {
+						return nil, loxerror.RuntimeError(name,
+							"First file argument to 'age symmetric.encryptToFile' must be in read mode.")
+					}
+					var readErr error
+					plaintext, readErr = io.ReadAll(arg.file)
+					if readErr != nil {
+						return nil, loxerror.RuntimeError(name, readErr.Error())
+					}
+				case *LoxString:
+					plaintext = []byte(arg.str)
+				}
+
+				bytesBuffer := new(bytes.Buffer)
+				w, err := age.Encrypt(bytesBuffer, recipient)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				_, err = w.Write(plaintext)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				err = w.Close()
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				bytes := bytesBuffer.Bytes()
+				switch arg := args[1].(type) {
+				case *LoxFile:
+					_, err := arg.file.Write(bytes)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				case *LoxString:
+					err := os.WriteFile(arg.str, bytes, 0666)
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+
+				return nil, nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+			}
+		})
 	case "encryptToStr":
 		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
@@ -367,7 +469,7 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 						return nil, loxerror.RuntimeError(name,
 							"Second argument to 'age symmetric.encryptToStr' must be a string.")
 					}
-				} else if !l.initPassword && argsLen == 1 {
+				} else if !l.initPassword {
 					return nil, loxerror.RuntimeError(name,
 						"Must specify password argument to 'age symmetric.encryptToStr'.")
 				}
