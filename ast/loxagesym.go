@@ -266,6 +266,88 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
 		})
+	case "decryptPEMToStr", "decryptPemToStr":
+		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				switch args[0].(type) {
+				case *LoxBuffer:
+				case *LoxFile:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'age symmetric.decryptPEMToStr' must be a buffer, file, or string.")
+				}
+
+				var password string = l.password
+				if argsLen == 2 {
+					switch arg := args[1].(type) {
+					case *LoxString:
+						password = arg.str
+					default:
+						return nil, loxerror.RuntimeError(name,
+							"Second argument to 'age symmetric.decryptPEMToStr' must be a string.")
+					}
+				} else if !l.initPassword {
+					return nil, loxerror.RuntimeError(name,
+						"Must specify password argument to 'age symmetric.decryptPEMToStr'.")
+				}
+				if len(password) == 0 {
+					return passwordErr(argsLen == 2)
+				}
+
+				identity, err := age.NewScryptIdentity(password)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				var ciphertext []byte
+				switch arg := args[0].(type) {
+				case *LoxBuffer:
+					ciphertext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						ciphertext = append(ciphertext, byte(element.(int64)))
+					}
+				case *LoxFile:
+					if !arg.isRead() {
+						return nil, loxerror.RuntimeError(name,
+							"File argument to 'age symmetric.decryptPEMToStr' must be in read mode.")
+					}
+					var readErr error
+					ciphertext, readErr = io.ReadAll(arg.file)
+					if readErr != nil {
+						return nil, loxerror.RuntimeError(name, readErr.Error())
+					}
+				case *LoxString:
+					ciphertext = []byte(arg.str)
+				}
+
+				readBuffer := bytes.NewBuffer(ciphertext)
+				pemReader := armor.NewReader(readBuffer)
+				r, err := age.Decrypt(pemReader, identity)
+				if err != nil {
+					switch err.(type) {
+					case *age.NoIdentityMatchError:
+						return nil, loxerror.RuntimeError(name,
+							"age symmetric.decryptPEMToStr: incorrect password")
+					default:
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+				}
+
+				writeBuffer := new(bytes.Buffer)
+				_, err = io.Copy(writeBuffer, r)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				return NewLoxStringQuote(writeBuffer.String()), nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+		})
 	case "decryptToFile":
 		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
