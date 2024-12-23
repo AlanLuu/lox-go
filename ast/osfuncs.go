@@ -1220,6 +1220,25 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("gc", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			runtime.GC()
+		case 1:
+			if num, ok := args[0].(int64); ok {
+				for i := int64(0); i < num; i++ {
+					runtime.GC()
+				}
+			} else {
+				return argMustBeTypeAn(in.callToken, "gc", "integer")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		return nil, nil
+	})
 	osFunc("getcwd", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		cwd, err := os.Getwd()
 		if err != nil {

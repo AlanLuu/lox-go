@@ -132,6 +132,8 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.ftruncate(fd, size)`, which changes the size of the file specified by the file descriptor integer to `size` bytes specified as an integer
     - If `size` is less than the file size in bytes, the extra data is lost
     - If `size` is greater than the file size in bytes, the file is extended with null bytes until it is equal to `size` bytes
+- `os.gc([num])`, which invokes the garbage collector and blocks until the garbage collection process completes
+    - If `num` is specified, where `num` is an integer, this method invokes the garbage collector a total of `num` times instead of invoking it only once
 - `os.getcwd()`, which returns the current working directory as a string
 - `os.getegid()`, which returns the effective group ID of the current process as an integer
     - On Windows, this method always returns `-1`
