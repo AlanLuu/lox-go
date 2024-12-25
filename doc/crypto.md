@@ -19,6 +19,8 @@ The following methods are defined in the built-in `crypto` class:
     - A base64 string can be specified, which returns an AES-CFB object with its key being the decoded bytes of the string
         - If the length of the decoded bytes is not 16, 24, or 32, a runtime error is thrown
 - `crypto.aescfbhex(hexStr)`, which returns an AES-CFB object with its key being the decoded bytes of the specified hexadecimal string
+- `crypto.agesym([password])`, which returns an age symmetric encryption object that encrypts and decrypts data using the password argument, which is a string. If the password argument is omitted, a password must be specified in the encryption/decryption methods of the returned age symmetric encryption object
+    - If the password argument is specified and is an empty string, a runtime error is thrown
 - `crypto.bcrypt(password, [cost])`, which returns a string of the bcrypt hash of the specified password as a string with the specified cost as an integer. If the cost is omitted, the resulting bcrypt hash will have a cost of 10
     - If the cost is less than 4, the cost is set to 10
     - If the cost is greater than 31, a runtime error is thrown
@@ -101,6 +103,65 @@ AES-CFB objects have the following methods associated with them:
 - `aes-cfb.keyStr()`, which is an alias for `aes-cfb.base64`
 - `aes-cfb.typeInt()`, which returns an integer that represents the bit size of the key associated with the current AES-CFB object
 - `aes-cfb.typeStr()`, which returns a string that is the string `"AES-"` concatenated with the integer that represents the bit size of the key associated with the current AES-CFB object
+
+age symmetric encryption objects have the following methods associated with them:
+- `age symmetric.decrypt(buffer/file/string, [password])`, which attempts to decrypt the specified buffer, file object, or base64 string representation of the specified age encrypted data using the password associated with the current age symmetric encryption object, and returns a buffer of the decrypted bytes if successful
+    - If the `password` string argument is specified, this method attempts to decrypt the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+    - If decryption is unsuccessful, this method throws a runtime error
+- `age symmetric.decryptPEM(buffer/file/string, [password])`, which attempts to decrypt the specified buffer, file object, or string representation of the specified age PEM encrypted data using the password associated with the current age symmetric encryption object, and returns a buffer of the decrypted bytes if successful
+    - If the `password` string argument is specified, this method attempts to decrypt the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+    - If decryption is unsuccessful, this method throws a runtime error
+- `age symmetric.decryptPem(buffer/file/string, [password])`, which is an alias for `age symmetric.decryptPEM`
+- `age symmetric.decryptPEMToFile(buffer/file/string, string/file, [password])`, which attempts to decrypt the specified buffer, file object, or string representation of the specified age PEM encrypted data using the password associated with the current age symmetric encryption object and writes the decrypted bytes to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+    - If the `password` string argument is specified, this method attempts to decrypt the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+    - If decryption is unsuccessful, this method throws a runtime error
+- `age symmetric.decryptPemToFile(buffer/file/string, string/file, [password])`, which is an alias for `age symmetric.decryptPEMToFile`
+- `age symmetric.decryptPEMToStr(buffer/file/string, [password])`, which attempts to decrypt the specified buffer, file object, or string representation of the specified age PEM encrypted data using the password associated with the current age symmetric encryption object, and returns a string of the decrypted bytes if successful
+    - If the `password` string argument is specified, this method attempts to decrypt the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+    - If decryption is unsuccessful, this method throws a runtime error
+- `age symmetric.decryptPemToStr(buffer/file/string, [password])`, which is an alias for `age symmetric.decryptPEMToStr`
+- `age symmetric.decryptToFile(buffer/file/string, string/file, [password])`, which attempts to decrypt the specified buffer, file object, or string representation of the specified age encrypted data using the password associated with the current age symmetric encryption object and writes the decrypted bytes to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+    - If the `password` string argument is specified, this method attempts to decrypt the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+    - If decryption is unsuccessful, this method throws a runtime error
+- `age symmetric.decryptToStr(buffer/file/string, [password])`, which attempts to decrypt the specified buffer, file object, or string representation of the specified age encrypted data using the password associated with the current age symmetric encryption object, and returns a string of the decrypted bytes if successful
+    - If the `password` string argument is specified, this method attempts to decrypt the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+    - If decryption is unsuccessful, this method throws a runtime error
+- `age symmetric.encrypt(buffer/file/string, [password])`, which returns a buffer of the age encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object
+    - If the `password` string argument is specified, this method encrypts the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+- `age symmetric.encryptPEMToFile(buffer/file/string, string/file, [password])`, which writes the age PEM encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object, to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+    - If the `password` string argument is specified, this method encrypts the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+- `age symmetric.encryptPemToFile(buffer/file/string, string/file, [password])`, which is an alias for `age symmetric.encryptPEMToFile`
+- `age symmetric.encryptToFile(buffer/file/string, string/file, [password])`, which writes the age encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object, to the specified file, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
+    - If the `password` string argument is specified, this method encrypts the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+- `age symmetric.encryptToPEM(buffer/file/string, [password])`, which returns a string of the age PEM encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object
+    - If the `password` string argument is specified, this method encrypts the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+- `age symmetric.encryptToPem(buffer/file/string, [password])`, which is an alias for `age symmetric.encryptToPEM`
+- `age symmetric.encryptToStr(buffer/file/string, [password])`, which returns a base64 string of the age encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object
+    - If the `password` string argument is specified, this method encrypts the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+- `age symmetric.hasInitPassword()`, which returns `true` if the current age symmetric encryption object has a password associated with it and `false` otherwise
+- `age symmetric.initPassword()`, which returns the password associated with the current age symmetric encryption object as a string
+    - If the current age symmetric encryption object does not have a password associated with it, this method throws a runtime error
+- `age symmetric.password()`, which is an alias for `age symmetric.initPassword`
+- `age symmetric.removeInitPassword()`, which removes the password associated with the current age symmetric encryption object
+- `age symmetric.removePassword()`, which is an alias for `age symmetric.removeInitPassword`
+- `age symmetric.setInitPassword(password)`, which sets the password associated with the current age symmetric encryption object to the specified password string
+    - If the specified password is an empty string, this method throws a runtime error
+- `age symmetric.setPassword(password)`, which is an alias for `age symmetric.setInitPassword`
 
 Ed25519 keypairs and public key objects have the following methods associated with them:
 - `ed25519.isKeyPair()`, which returns `true` if the specified Ed25519 object is a keypair and `false` otherwise
