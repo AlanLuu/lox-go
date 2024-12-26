@@ -1026,6 +1026,96 @@ func (l *LoxAgeSymmetric) Get(name *token.Token) (any, error) {
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
 		})
+	case "encryptToPEMBuf", "encryptToPemBuf":
+		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				switch args[0].(type) {
+				case *LoxBuffer:
+				case *LoxFile:
+				case *LoxString:
+				default:
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'age symmetric.encryptToPEMBuf' must be a buffer, file, or string.")
+				}
+
+				var password string = l.password
+				if argsLen == 2 {
+					switch arg := args[1].(type) {
+					case *LoxString:
+						password = arg.str
+					default:
+						return nil, loxerror.RuntimeError(name,
+							"Second argument to 'age symmetric.encryptToPEMBuf' must be a string.")
+					}
+				} else if !l.initPassword {
+					return nil, loxerror.RuntimeError(name,
+						"Must specify password argument to 'age symmetric.encryptToPEMBuf'.")
+				}
+				if len(password) == 0 {
+					return passwordErr(argsLen == 2)
+				}
+
+				recipient, err := age.NewScryptRecipient(password)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				var plaintext []byte
+				switch arg := args[0].(type) {
+				case *LoxBuffer:
+					plaintext = make([]byte, 0, len(arg.elements))
+					for _, element := range arg.elements {
+						plaintext = append(plaintext, byte(element.(int64)))
+					}
+				case *LoxFile:
+					if !arg.isRead() {
+						return nil, loxerror.RuntimeError(name,
+							"File argument to 'age symmetric.encryptToPEMBuf' must be in read mode.")
+					}
+					var readErr error
+					plaintext, readErr = io.ReadAll(arg.file)
+					if readErr != nil {
+						return nil, loxerror.RuntimeError(name, readErr.Error())
+					}
+				case *LoxString:
+					plaintext = []byte(arg.str)
+				}
+
+				bytesBuffer := new(bytes.Buffer)
+				pemWriter := armor.NewWriter(bytesBuffer)
+				w, err := age.Encrypt(pemWriter, recipient)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				_, err = w.Write(plaintext)
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				err = w.Close()
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+				err = pemWriter.Close()
+				if err != nil {
+					return nil, loxerror.RuntimeError(name, err.Error())
+				}
+
+				bytes := bytesBuffer.Bytes()
+				buffer := EmptyLoxBufferCap(int64(len(bytes)))
+				for _, b := range bytes {
+					addErr := buffer.add(int64(b))
+					if addErr != nil {
+						return nil, loxerror.RuntimeError(name, addErr.Error())
+					}
+				}
+				return buffer, nil
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+		})
 	case "encryptToStr":
 		return ageSymFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)

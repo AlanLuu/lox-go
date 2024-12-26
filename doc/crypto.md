@@ -150,6 +150,10 @@ age symmetric encryption objects have the following methods associated with them
     - If the `password` string argument is specified, this method encrypts the data using the specified password instead
         - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
 - `age symmetric.encryptToPem(buffer/file/string, [password])`, which is an alias for `age symmetric.encryptToPEM`
+- `age symmetric.encryptToPEMBuf(buffer/file/string, [password])`, which returns a buffer of the age PEM encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object
+    - If the `password` string argument is specified, this method encrypts the data using the specified password instead
+        - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
+- `age symmetric.encryptToPemBuf(buffer/file/string, [password])`, which is an alias for `age symmetric.encryptToPEMBuf`
 - `age symmetric.encryptToStr(buffer/file/string, [password])`, which returns a base64 string of the age encryption result of the specified buffer, file object, or string, encrypted using the password associated with the current age symmetric encryption object
     - If the `password` string argument is specified, this method encrypts the data using the specified password instead
         - If the current age symmetric encryption object does not have a password associated with it, the `password` argument is required or else this method throws a runtime error
