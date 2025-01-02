@@ -144,6 +144,38 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return argMustBeType(in.callToken, "aescfbhex", "string")
 	})
+	cryptoFunc("ageasym", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var result *LoxAgeAsymmetric
+		var err error
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			result, err = NewLoxAgeAsymmetric()
+		case 1:
+			if loxStr, ok := args[0].(*LoxString); ok {
+				result, err = NewLoxAgeAsymmetricPrivKeyStr(loxStr.str)
+			} else {
+				return argMustBeType(in.callToken, "ageasym", "string")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return result, nil
+	})
+	cryptoFunc("ageasympub", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			result, err := NewLoxAgeAsymmetricPubKeyStr(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return result, nil
+		}
+		return argMustBeType(in.callToken, "ageasympub", "string")
+	})
 	cryptoFunc("agesym", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		switch argsLen {
