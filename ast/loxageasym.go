@@ -18,7 +18,7 @@ import (
 type LoxAgeAsymmetric struct {
 	privKey      *age.X25519Identity
 	pubKey       *age.X25519Recipient
-	creationTime time.Time
+	creationDate time.Time
 	methods      map[string]*struct{ ProtoLoxCallable }
 }
 
@@ -27,14 +27,18 @@ func NewLoxAgeAsymmetric() (*LoxAgeAsymmetric, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewLoxAgeAsymmetricPrivKey(privKey), nil
+	return NewLoxAgeAsymmetricPrivKey(privKey, true), nil
 }
 
-func NewLoxAgeAsymmetricPrivKey(privKey *age.X25519Identity) *LoxAgeAsymmetric {
+func NewLoxAgeAsymmetricPrivKey(privKey *age.X25519Identity, isNew bool) *LoxAgeAsymmetric {
+	var creationDate time.Time
+	if isNew {
+		creationDate = time.Now()
+	}
 	return &LoxAgeAsymmetric{
 		privKey:      privKey,
 		pubKey:       privKey.Recipient(),
-		creationTime: time.Now(),
+		creationDate: creationDate,
 		methods:      make(map[string]*struct{ ProtoLoxCallable }),
 	}
 }
@@ -44,14 +48,14 @@ func NewLoxAgeAsymmetricPrivKeyStr(str string) (*LoxAgeAsymmetric, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewLoxAgeAsymmetricPrivKey(privKey), nil
+	return NewLoxAgeAsymmetricPrivKey(privKey, false), nil
 }
 
 func NewLoxAgeAsymmetricPubKey(pubKey *age.X25519Recipient) *LoxAgeAsymmetric {
 	return &LoxAgeAsymmetric{
 		privKey:      nil,
 		pubKey:       pubKey,
-		creationTime: time.Time{},
+		creationDate: time.Time{},
 		methods:      make(map[string]*struct{ ProtoLoxCallable }),
 	}
 }
@@ -64,8 +68,16 @@ func NewLoxAgeAsymmetricPubKeyStr(str string) (*LoxAgeAsymmetric, error) {
 	return NewLoxAgeAsymmetricPubKey(pubKey), nil
 }
 
+func (l *LoxAgeAsymmetric) hasCreationDate() bool {
+	return l.creationDate != time.Time{}
+}
+
 func (l *LoxAgeAsymmetric) isKeyPair() bool {
 	return l.privKey != nil
+}
+
+func (l *LoxAgeAsymmetric) isKeyPairWithCreationDate() bool {
+	return l.isKeyPair() && l.hasCreationDate()
 }
 
 func (l *LoxAgeAsymmetric) toPubKey() {
@@ -107,10 +119,11 @@ func (l *LoxAgeAsymmetric) Get(name *token.Token) (any, error) {
 	switch methodName {
 	case "creationDate":
 		return ageAsymFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			if !l.isKeyPair() {
-				return callMustBeKeypair()
+			if !l.isKeyPairWithCreationDate() {
+				return nil, loxerror.RuntimeError(name,
+					"Can only call 'age asymmetric.creationDate' on newly-generated age asymmetric keypairs.")
 			}
-			return NewLoxDate(l.creationTime), nil
+			return NewLoxDate(l.creationDate), nil
 		})
 	case "decrypt":
 		return ageAsymFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -818,8 +831,8 @@ func (l *LoxAgeAsymmetric) Get(name *token.Token) (any, error) {
 		return ageAsymFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			getOutput := func() []byte {
 				var builder bytes.Buffer
-				if l.isKeyPair() {
-					timeFormat := l.creationTime.Format(time.RFC3339)
+				if l.isKeyPairWithCreationDate() {
+					timeFormat := l.creationDate.Format(time.RFC3339)
 					builder.WriteString(fmt.Sprintf("# created: %s\n", timeFormat))
 				}
 				builder.WriteString(fmt.Sprintf("# public key: %s\n", l.pubKey))
@@ -848,9 +861,17 @@ func (l *LoxAgeAsymmetric) Get(name *token.Token) (any, error) {
 			}
 			return nil, nil
 		})
+	case "hasCreationDate":
+		return ageAsymFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.hasCreationDate(), nil
+		})
 	case "isKeyPair":
 		return ageAsymFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isKeyPair(), nil
+		})
+	case "isNewKeyPair":
+		return ageAsymFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return l.isKeyPairWithCreationDate(), nil
 		})
 	case "privKey":
 		return ageAsymFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
