@@ -894,7 +894,10 @@ func (l *LoxAgeAsymmetric) Get(name *token.Token) (any, error) {
 }
 
 func (l *LoxAgeAsymmetric) String() string {
-	return fmt.Sprintf("<age asymmetric encryption object at %p>", l)
+	if !l.isKeyPair() {
+		return fmt.Sprintf("<age asymmetric encryption public key at %p>", l)
+	}
+	return fmt.Sprintf("<age asymmetric encryption keypair at %p>", l)
 }
 
 func (l *LoxAgeAsymmetric) Type() string {
