@@ -2271,7 +2271,8 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			return indexElement.get(indexValInt), nil
 		}
 	}
-	return nil, loxerror.RuntimeError(expr.Bracket, "Can only index into buffers, dictionaries, lists, and strings.")
+	return nil, loxerror.RuntimeError(expr.Bracket,
+		fmt.Sprintf("Cannot index into type '%v'.", getType(indexElement)))
 }
 
 func (i *Interpreter) visitListExpr(expr List) (any, error) {
