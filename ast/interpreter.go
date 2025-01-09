@@ -1996,6 +1996,10 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 		return nil, indexEndValErr
 	}
 
+	invalidBigintErr := func(value *big.Int) (any, error) {
+		return nil, loxerror.RuntimeError(expr.Bracket,
+			fmt.Sprintf("Index value '%v' is out of range.", bigint.String(value)))
+	}
 	switch indexElement := indexElement.(type) {
 	case *LoxString:
 		if expr.IsSlice {
@@ -2005,14 +2009,30 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if indexEndVal == nil {
 				indexEndVal = int64(utf8.RuneCountInString(indexElement.str))
 			}
-			if _, ok := indexVal.(int64); !ok {
+			var indexValInt int64
+			var indexEndValInt int64
+			switch indexVal := indexVal.(type) {
+			case int64:
+				indexValInt = indexVal
+			case *big.Int:
+				if !indexVal.IsInt64() {
+					return invalidBigintErr(indexVal)
+				}
+				indexValInt = indexVal.Int64()
+			default:
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
 			}
-			if _, ok := indexEndVal.(int64); !ok {
-				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexEndVal))
+			switch indexEndVal := indexEndVal.(type) {
+			case int64:
+				indexEndValInt = indexEndVal
+			case *big.Int:
+				if !indexEndVal.IsInt64() {
+					return invalidBigintErr(indexEndVal)
+				}
+				indexEndValInt = indexEndVal.Int64()
+			default:
+				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
 			}
-			indexValInt := indexVal.(int64)
-			indexEndValInt := indexEndVal.(int64)
 			originalIndexValInt := indexValInt
 			if indexValInt < 0 {
 				indexValInt += int64(utf8.RuneCountInString(indexElement.str))
@@ -2031,10 +2051,18 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return NewLoxStringQuote(string([]rune(indexElement.str)[indexValInt:indexEndValInt])), nil
 		} else {
-			if _, ok := indexVal.(int64); !ok {
+			var indexValInt int64
+			switch indexVal := indexVal.(type) {
+			case int64:
+				indexValInt = indexVal
+			case *big.Int:
+				if !indexVal.IsInt64() {
+					return invalidBigintErr(indexVal)
+				}
+				indexValInt = indexVal.Int64()
+			default:
 				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
 			}
-			indexValInt := indexVal.(int64)
 			originalIndexValInt := indexValInt
 			if indexValInt < 0 {
 				indexValInt += int64(utf8.RuneCountInString(indexElement.str))
