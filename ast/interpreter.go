@@ -2095,7 +2095,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 				}
 				indexValInt = indexVal.Int64()
 			default:
-				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexMustBeWholeNum(indexVal))
 			}
 			switch indexEndVal := indexEndVal.(type) {
 			case int64:
@@ -2106,7 +2106,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 				}
 				indexEndValInt = indexEndVal.Int64()
 			default:
-				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexMustBeWholeNum(indexVal))
 			}
 			originalIndexValInt := indexValInt
 			if indexValInt < 0 {
@@ -2141,7 +2141,7 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 				}
 				indexValInt = indexVal.Int64()
 			default:
-				return nil, loxerror.RuntimeError(expr.Bracket, StringIndexMustBeWholeNum(indexVal))
+				return nil, loxerror.RuntimeError(expr.Bracket, BufferIndexMustBeWholeNum(indexVal))
 			}
 			originalIndexValInt := indexValInt
 			if indexValInt < 0 {
