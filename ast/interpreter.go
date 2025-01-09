@@ -2246,14 +2246,30 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			if indexEndVal == nil {
 				indexEndVal = rangeLength
 			}
-			if _, ok := indexVal.(int64); !ok {
+			var indexValInt int64
+			var indexEndValInt int64
+			switch indexVal := indexVal.(type) {
+			case int64:
+				indexValInt = indexVal
+			case *big.Int:
+				if !indexVal.IsInt64() {
+					return invalidBigintErr(indexVal)
+				}
+				indexValInt = indexVal.Int64()
+			default:
 				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexVal))
 			}
-			if _, ok := indexEndVal.(int64); !ok {
+			switch indexEndVal := indexEndVal.(type) {
+			case int64:
+				indexEndValInt = indexEndVal
+			case *big.Int:
+				if !indexEndVal.IsInt64() {
+					return invalidBigintErr(indexEndVal)
+				}
+				indexEndValInt = indexEndVal.Int64()
+			default:
 				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexEndVal))
 			}
-			indexValInt := indexVal.(int64)
-			indexEndValInt := indexEndVal.(int64)
 			if indexValInt < 0 {
 				indexValInt += rangeLength
 			}
@@ -2265,10 +2281,18 @@ func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {
 			}
 			return indexElement.getRange(indexValInt, indexEndValInt), nil
 		} else {
-			if _, ok := indexVal.(int64); !ok {
+			var indexValInt int64
+			switch indexVal := indexVal.(type) {
+			case int64:
+				indexValInt = indexVal
+			case *big.Int:
+				if !indexVal.IsInt64() {
+					return invalidBigintErr(indexVal)
+				}
+				indexValInt = indexVal.Int64()
+			default:
 				return nil, loxerror.RuntimeError(expr.Bracket, RangeIndexMustBeWholeNum(indexVal))
 			}
-			indexValInt := indexVal.(int64)
 			originalIndexValInt := indexValInt
 			rangeLength := indexElement.Length()
 			if indexValInt < 0 {
