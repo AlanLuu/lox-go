@@ -66,6 +66,17 @@ func NewLoxHTMLNode(htmlNode *html.Node) *LoxHTMLNode {
 	return node
 }
 
+func (l *LoxHTMLNode) forEachDescendent(callback func(*html.Node)) {
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		callback(n)
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(l.current)
+}
+
 func (l *LoxHTMLNode) getNode(index uint8) *LoxHTMLNode {
 	familyStruct := l.family[index]
 	if familyStruct.familyMember == nil {
@@ -199,14 +210,9 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 	case "descendents":
 		return htmlNodeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			descendents := list.NewList[any]()
-			var f func(*html.Node)
-			f = func(n *html.Node) {
+			l.forEachDescendent(func(n *html.Node) {
 				descendents.Add(NewLoxHTMLNode(n))
-				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					f(c)
-				}
-			}
-			f(l.current)
+			})
 			return NewLoxList(descendents), nil
 		})
 	case "descendentsIter", "dfsIter":
@@ -290,6 +296,16 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 		})
 	case "tag":
 		return htmlNodeField(NewLoxString(l.current.DataAtom.String(), '\''))
+	case "textNodes":
+		return htmlNodeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			textNodes := list.NewList[any]()
+			l.forEachDescendent(func(n *html.Node) {
+				if n.Type == html.TextNode {
+					textNodes.Add(NewLoxHTMLNode(n))
+				}
+			})
+			return NewLoxList(textNodes), nil
+		})
 	case "type":
 		return htmlNodeField(int64(l.current.Type))
 	case "typeStr":
