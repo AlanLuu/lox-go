@@ -115,6 +115,10 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'HTML node.%v' must be a %v.", lexemeName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'HTML node.%v' must be an %v.", lexemeName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
 	fieldAliases := map[string]string{
 		"firstChild": "fc",
 		"fc":         "firstChild",
@@ -249,6 +253,30 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 		return getHTMLNode(loxHTMLNodeLastChild)
 	case "nextSibling", "ns":
 		return getHTMLNode(loxHTMLNodeNextSibling)
+	case "nodesByType":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if arg, ok := args[0].(int64); ok {
+				if arg < int64(html.ErrorNode) || arg > int64(html.RawNode) {
+					return nil, loxerror.RuntimeError(
+						name,
+						fmt.Sprintf(
+							"Integer argument to 'HTML node.nodesByType' must be from %v to %v.",
+							html.ErrorNode,
+							html.RawNode,
+						),
+					)
+				}
+				nodeType := html.NodeType(arg)
+				nodes := list.NewList[any]()
+				l.forEachDescendent(func(n *html.Node) {
+					if n.Type == nodeType {
+						nodes.Add(NewLoxHTMLNode(n))
+					}
+				})
+				return NewLoxList(nodes), nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "parent", "p":
 		return getHTMLNode(loxHTMLNodeParent)
 	case "prevSibling", "ps":
