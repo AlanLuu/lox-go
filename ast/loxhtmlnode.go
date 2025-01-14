@@ -41,6 +41,28 @@ func (l loxHTMLNodeType) String() string {
 	return "Unknown"
 }
 
+type loxHTMLNodeTypeStr string
+
+func (l loxHTMLNodeTypeStr) nodeType() int8 {
+	switch strings.ToLower(string(l)) {
+	case "error":
+		return int8(html.ErrorNode)
+	case "text":
+		return int8(html.TextNode)
+	case "document":
+		return int8(html.DocumentNode)
+	case "element":
+		return int8(html.ElementNode)
+	case "comment":
+		return int8(html.CommentNode)
+	case "doctype":
+		return int8(html.DoctypeNode)
+	case "raw":
+		return int8(html.RawNode)
+	}
+	return -1
+}
+
 type LoxHTMLNode struct {
 	current *html.Node
 	family  [5]struct {
@@ -276,6 +298,25 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 				return NewLoxList(nodes), nil
 			}
 			return argMustBeTypeAn("integer")
+		})
+	case "nodesByTypeStr":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				str := loxStr.str
+				nodeType := loxHTMLNodeTypeStr(str).nodeType()
+				if nodeType < 0 {
+					return nil, loxerror.RuntimeError(name,
+						fmt.Sprintf("HTML node.nodesByTypeStr: invalid type '%v'.", str))
+				}
+				nodes := list.NewList[any]()
+				l.forEachDescendent(func(n *html.Node) {
+					if n.Type == html.NodeType(nodeType) {
+						nodes.Add(NewLoxHTMLNode(n))
+					}
+				})
+				return NewLoxList(nodes), nil
+			}
+			return argMustBeType("string")
 		})
 	case "parent", "p":
 		return getHTMLNode(loxHTMLNodeParent)
