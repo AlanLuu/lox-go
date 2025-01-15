@@ -299,6 +299,64 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeTypeAn("integer")
 		})
+	case "nodesByTypeIter":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if arg, ok := args[0].(int64); ok {
+				if arg < int64(html.ErrorNode) || arg > int64(html.RawNode) {
+					return nil, loxerror.RuntimeError(
+						name,
+						fmt.Sprintf(
+							"Integer argument to 'HTML node.nodesByTypeIter' must be from %v to %v.",
+							html.ErrorNode,
+							html.RawNode,
+						),
+					)
+				}
+				nodeType := html.NodeType(arg)
+				stack := list.NewList[*html.Node]()
+				stack.Add(l.current)
+				firstIteration := true
+				iterator := ProtoIterator{}
+				iterator.hasNextMethod = func() bool {
+					if !firstIteration && stack.Peek().Type == nodeType {
+						if nodeType == html.ElementNode {
+							stack.Add(stack.Peek().FirstChild)
+						} else {
+							stack[len(stack)-1] = stack.Peek().NextSibling
+						}
+						for len(stack) > 0 && stack.Peek() == nil {
+							stack.Pop()
+							if len(stack) > 0 && stack.Peek() != nil {
+								stack[len(stack)-1] = stack.Peek().NextSibling
+							}
+						}
+					}
+					for len(stack) > 0 && stack.Peek().Type != nodeType {
+						if !firstIteration {
+							stack.Add(stack.Peek().FirstChild)
+						} else {
+							firstIteration = false
+						}
+						for len(stack) > 0 && stack.Peek() == nil {
+							stack.Pop()
+							if len(stack) > 0 && stack.Peek() != nil {
+								stack[len(stack)-1] = stack.Peek().NextSibling
+							}
+						}
+					}
+					if firstIteration {
+						firstIteration = false
+					}
+					return len(stack) > 0
+				}
+				iterator.nextMethod = func() any {
+					htmlNode := stack.Peek()
+					return NewLoxHTMLNode(htmlNode)
+				}
+				return NewLoxIterator(iterator), nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "nodesByTypeStr":
 		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
