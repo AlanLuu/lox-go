@@ -376,6 +376,60 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "nodesByTypeStrIter":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				str := loxStr.str
+				nodeTypeInt8 := loxHTMLNodeTypeStr(str).nodeType()
+				if nodeTypeInt8 < 0 {
+					return nil, loxerror.RuntimeError(name,
+						fmt.Sprintf("HTML node.nodesByTypeStrIter: invalid type '%v'.", str))
+				}
+				nodeType := html.NodeType(nodeTypeInt8)
+				stack := list.NewList[*html.Node]()
+				stack.Add(l.current)
+				firstIteration := true
+				iterator := ProtoIterator{}
+				iterator.hasNextMethod = func() bool {
+					if !firstIteration && stack.Peek().Type == nodeType {
+						if nodeType == html.ElementNode {
+							stack.Add(stack.Peek().FirstChild)
+						} else {
+							stack[len(stack)-1] = stack.Peek().NextSibling
+						}
+						for len(stack) > 0 && stack.Peek() == nil {
+							stack.Pop()
+							if len(stack) > 0 && stack.Peek() != nil {
+								stack[len(stack)-1] = stack.Peek().NextSibling
+							}
+						}
+					}
+					for len(stack) > 0 && stack.Peek().Type != nodeType {
+						if !firstIteration {
+							stack.Add(stack.Peek().FirstChild)
+						} else {
+							firstIteration = false
+						}
+						for len(stack) > 0 && stack.Peek() == nil {
+							stack.Pop()
+							if len(stack) > 0 && stack.Peek() != nil {
+								stack[len(stack)-1] = stack.Peek().NextSibling
+							}
+						}
+					}
+					if firstIteration {
+						firstIteration = false
+					}
+					return len(stack) > 0
+				}
+				iterator.nextMethod = func() any {
+					htmlNode := stack.Peek()
+					return NewLoxHTMLNode(htmlNode)
+				}
+				return NewLoxIterator(iterator), nil
+			}
+			return argMustBeType("string")
+		})
 	case "parent", "p":
 		return getHTMLNode(loxHTMLNodeParent)
 	case "prevSibling", "ps":
