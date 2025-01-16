@@ -477,6 +477,28 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 		})
 	case "tag":
 		return htmlNodeField(NewLoxString(l.current.DataAtom.String(), '\''))
+	case "tagNodesByName":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				str := strings.ToLower(loxStr.str)
+				tagNodes := list.NewList[any]()
+				if str == "!doctype" {
+					l.forEachDescendent(func(n *html.Node) {
+						if n.Type == html.DoctypeNode {
+							tagNodes.Add(NewLoxHTMLNode(n))
+						}
+					})
+				} else {
+					l.forEachDescendent(func(n *html.Node) {
+						if n.Type == html.ElementNode && n.Data == str {
+							tagNodes.Add(NewLoxHTMLNode(n))
+						}
+					})
+				}
+				return NewLoxList(tagNodes), nil
+			}
+			return argMustBeType("string")
+		})
 	case "textNodes":
 		return htmlNodeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			textNodes := list.NewList[any]()
