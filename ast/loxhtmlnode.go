@@ -231,6 +231,20 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxIterator(iterator), nil
 		})
+	case "commentNodesByContent":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				str := loxStr.str
+				commentNodes := list.NewList[any]()
+				l.forEachDescendent(func(n *html.Node) {
+					if n.Type == html.CommentNode && n.Data == str {
+						commentNodes.Add(NewLoxHTMLNode(n))
+					}
+				})
+				return NewLoxList(commentNodes), nil
+			}
+			return argMustBeType("string")
+		})
 	case "data":
 		return htmlNodeField(NewLoxStringQuote(l.current.Data))
 	case "descendents":
