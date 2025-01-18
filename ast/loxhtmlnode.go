@@ -589,6 +589,20 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 			})
 			return NewLoxList(textNodes), nil
 		})
+	case "textNodesByContent":
+		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				str := loxStr.str
+				textNodes := list.NewList[any]()
+				l.forEachDescendent(func(n *html.Node) {
+					if n.Type == html.TextNode && n.Data == str {
+						textNodes.Add(NewLoxHTMLNode(n))
+					}
+				})
+				return NewLoxList(textNodes), nil
+			}
+			return argMustBeType("string")
+		})
 	case "textNodesIter":
 		return htmlNodeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			stack := list.NewList[*html.Node]()
