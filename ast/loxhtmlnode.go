@@ -545,10 +545,12 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 				str := strings.ToLower(loxStr.str)
 				tagNodes := list.NewList[any]()
 				l.forEachDescendent(func(n *html.Node) {
-					for _, attr := range n.Attr {
-						if attr.Key == str {
-							tagNodes.Add(NewLoxHTMLNode(n))
-							break
+					if n.Type == html.ElementNode {
+						for _, attr := range n.Attr {
+							if attr.Key == str {
+								tagNodes.Add(NewLoxHTMLNode(n))
+								break
+							}
 						}
 					}
 				})
@@ -565,6 +567,9 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 				firstIteration := true
 				condition := func() bool {
 					e := stack.Peek()
+					if e.Type != html.ElementNode {
+						return false
+					}
 					for _, attr := range e.Attr {
 						if attr.Key == str {
 							return true
