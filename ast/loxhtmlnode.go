@@ -580,7 +580,7 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 				iterator := ProtoIterator{}
 				iterator.hasNextMethod = func() bool {
 					if !firstIteration && condition() {
-						stack[len(stack)-1] = stack.Peek().NextSibling
+						stack.Add(stack.Peek().FirstChild)
 						for len(stack) > 0 && stack.Peek() == nil {
 							stack.Pop()
 							if len(stack) > 0 && stack.Peek() != nil {
@@ -719,6 +719,68 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 				}
 			})
 			return NewLoxList(tagNodes), nil
+		})
+	case "tagNodesByAttrKeyValIter":
+		return htmlNodeFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'HTML node.tagNodesByAttrKeyValIter' must be a string.")
+			}
+			if _, ok := args[1].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'HTML node.tagNodesByAttrKeyValIter' must be a string.")
+			}
+			attrKey := strings.ToLower(args[0].(*LoxString).str)
+			attrVal := args[1].(*LoxString).str
+			stack := list.NewList[*html.Node]()
+			stack.Add(l.current)
+			firstIteration := true
+			condition := func() bool {
+				e := stack.Peek()
+				if e.Type != html.ElementNode {
+					return false
+				}
+				for _, attr := range e.Attr {
+					if attr.Key == attrKey && attr.Val == attrVal {
+						return true
+					}
+				}
+				return false
+			}
+			iterator := ProtoIterator{}
+			iterator.hasNextMethod = func() bool {
+				if !firstIteration && condition() {
+					stack.Add(stack.Peek().FirstChild)
+					for len(stack) > 0 && stack.Peek() == nil {
+						stack.Pop()
+						if len(stack) > 0 && stack.Peek() != nil {
+							stack[len(stack)-1] = stack.Peek().NextSibling
+						}
+					}
+				}
+				for len(stack) > 0 && !condition() {
+					if !firstIteration {
+						stack.Add(stack.Peek().FirstChild)
+					} else {
+						firstIteration = false
+					}
+					for len(stack) > 0 && stack.Peek() == nil {
+						stack.Pop()
+						if len(stack) > 0 && stack.Peek() != nil {
+							stack[len(stack)-1] = stack.Peek().NextSibling
+						}
+					}
+				}
+				if firstIteration {
+					firstIteration = false
+				}
+				return len(stack) > 0
+			}
+			iterator.nextMethod = func() any {
+				htmlNode := stack.Peek()
+				return NewLoxHTMLNode(htmlNode)
+			}
+			return NewLoxIterator(iterator), nil
 		})
 	case "tagNodesByName":
 		return htmlNodeFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
