@@ -695,6 +695,41 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 			})
 			return NewLoxList(tagNodes), nil
 		})
+	case "tagNodesByAttrKeysNotAny":
+		return htmlNodeFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 {
+				return nil, loxerror.RuntimeError(name,
+					"Expected at least 1 argument but got 0.")
+			}
+			attrKeyNames := make(map[string]struct{})
+			for i := 0; i < argsLen; i++ {
+				if loxStr, ok := args[i].(*LoxString); ok {
+					attrKeyNames[strings.ToLower(loxStr.str)] = struct{}{}
+				} else {
+					attrKeyNames = nil
+					return nil, loxerror.RuntimeError(
+						name,
+						fmt.Sprintf(
+							"Argument number %v in 'HTML node.tagNodesByAttrKeysNotAny' must be a string.",
+							i+1,
+						),
+					)
+				}
+			}
+			tagNodes := list.NewList[any]()
+			l.forEachDescendent(func(n *html.Node) {
+				if n.Type == html.ElementNode {
+					for _, attr := range n.Attr {
+						if _, ok := attrKeyNames[attr.Key]; ok {
+							return
+						}
+					}
+					tagNodes.Add(NewLoxHTMLNode(n))
+				}
+			})
+			return NewLoxList(tagNodes), nil
+		})
 	case "tagNodesByAttrKeyVal":
 		return htmlNodeFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if _, ok := args[0].(*LoxString); !ok {
