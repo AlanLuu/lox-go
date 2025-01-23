@@ -958,6 +958,16 @@ func (l *LoxHTMLNode) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "tagNodesNoAttrs":
+		return htmlNodeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			tagNodes := list.NewList[any]()
+			l.forEachDescendent(func(n *html.Node) {
+				if n.Type == html.ElementNode && len(n.Attr) == 0 {
+					tagNodes.Add(NewLoxHTMLNode(n))
+				}
+			})
+			return NewLoxList(tagNodes), nil
+		})
 	case "textNodes":
 		return htmlNodeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			textNodes := list.NewList[any]()
