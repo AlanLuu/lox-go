@@ -3,6 +3,13 @@
 The following methods and fields are defined in the built-in `HTML` class:
 - `HTML.escape(string)`, which returns a new string that is the original string with all HTML special characters from the original string escaped into HTML entities
     - The following special characters are escaped: `<`, `>`, `&`, `'`, `"`
+- `HTML.nodeType(integer)`, which returns the string representation of the specified HTML node type field integer, or `"Unknown"` if the specified integer does not correspond to a valid node type field
+- `HTML.parse(file/string)`, which parses the HTML content from the specified file or string and returns an HTML node object corresponding to the root node of the parsed HTML content
+    - If a file is specified, that file must be open in read mode or else a runtime error is thrown
+- `HTML.render(htmlNode)`, which recursively renders the specified HTML node object along with its children and siblings to a string and returns that string
+- `HTML.renderToBuf(htmlNode)`, which recursively renders the specified HTML node object along with its children and siblings to a buffer and returns that buffer
+- `HTML.renderToFile(htmlNode, file/string)`, which recursively renders the specified HTML node object along with its children and siblings to the specified file in plaintext, which can be specified as a string or a file object
+    - If the destination file is specified as a string, it is created if it doesn't already exist and truncated if it already exists
 - `HTML.token`, which is a class that defines the following HTML tag type fields, which are all integers:
     - `HTML.token.error`, `HTML.token.text`, `HTML.token.startTag`, `HTML.token.endTag`, `HTML.token.selfClosing`, `HTML.token.comment`, `HTML.token.doctype`
 - `HTML.tokenize(file/string)`, which returns an HTML tokenizer object that tokenizes a string of HTML from the specified file or string, with the assumption that the string of HTML is UTF-8 encoded
