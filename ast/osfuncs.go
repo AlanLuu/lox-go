@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"unicode"
 
 	"github.com/AlanLuu/lox/ast/filemode"
 	"github.com/AlanLuu/lox/bignum/bigint"
@@ -2179,6 +2180,29 @@ func (i *Interpreter) defineOSFuncs() {
 		l.Add(int64(pid))
 		l.Add(NewLoxWaitStatus(waitStatus))
 		return NewLoxList(l), nil
+	})
+	osFunc("whoami", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		var cmd *exec.Cmd
+		if util.IsWindows() {
+			cmd = exec.Command("C:\\Windows\\System32\\whoami.exe")
+		} else {
+			cmd = exec.Command("/bin/whoami")
+		}
+		whoamiBytes, err := cmd.Output()
+		if err != nil {
+			whoamiPath, pathErr := exec.LookPath("whoami")
+			if pathErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"os.whoami: whoami command not found in PATH.")
+			}
+			cmd = exec.Command(whoamiPath)
+			whoamiBytes, err = cmd.Output()
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+		}
+		whoami := strings.TrimRightFunc(string(whoamiBytes), unicode.IsSpace)
+		return NewLoxStringQuote(whoami), nil
 	})
 	osFunc("write", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
