@@ -1118,6 +1118,35 @@ func (p *Parser) printStatement(newLine bool) (Stmt, error) {
 	return Print{Expression: value, NewLine: newLine}, nil
 }
 
+func (p *Parser) repeatStatement() (Stmt, error) {
+	p.loopDepth++
+	defer func() {
+		p.loopDepth--
+	}()
+	repeatToken := p.previous()
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'repeat'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+	expr, exprErr := p.expression()
+	if exprErr != nil {
+		return nil, exprErr
+	}
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after expression.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+	body, bodyErr := p.statement(true)
+	if bodyErr != nil {
+		return nil, bodyErr
+	}
+	return Repeat{
+		Expression:  expr,
+		Body:        body,
+		RepeatToken: repeatToken,
+	}, nil
+}
+
 func (p *Parser) returnStatement() (Stmt, error) {
 	keyword := p.previous()
 	var value Expr
@@ -1157,6 +1186,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.printStatement(true)
 	case p.match(token.PUT):
 		return p.printStatement(false)
+	case p.match(token.REPEAT):
+		return p.repeatStatement()
 	case p.match(token.RETURN):
 		return p.returnStatement()
 	case p.match(token.THROW):

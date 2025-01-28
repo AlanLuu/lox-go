@@ -33,6 +33,7 @@ var keywords = map[string]token.TokenType{
 	"or":       token.OR,
 	"print":    token.PRINT,
 	"put":      token.PUT,
+	"repeat":   token.REPEAT,
 	"return":   token.RETURN,
 	"static":   token.STATIC,
 	"super":    token.SUPER,

@@ -115,6 +115,17 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - HTML tokenizer
             - For each iteration, `element` is each HTML token from the HTML tokenizer object as an HTML token object
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
+- Repeat statements are supported in this implementation of Lox
+    ```js
+    //Syntax: repeat (<expression>) <statement>
+    repeat (10) {
+        print "Hello world!";
+    }
+    ```
+    - The expression in a repeat statement must evaluate to an integer or bigint or else a runtime error is thrown
+        - If the expression evaluates to a negative value, it is the same as specifying `0` as the repeat expression
+        - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
+    - `break` and `continue` statements are supported inside repeat statements
 - Try-catch-finally statements are supported in this implementation of Lox
     ```js
     try {

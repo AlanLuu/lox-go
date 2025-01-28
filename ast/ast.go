@@ -147,6 +147,12 @@ type Print struct {
 	NewLine    bool
 }
 
+type Repeat struct {
+	Expression  Expr
+	Body        Stmt
+	RepeatToken *token.Token
+}
+
 type Return struct {
 	Keyword    *token.Token
 	Value      Expr

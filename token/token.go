@@ -73,6 +73,7 @@ const (
 	OR
 	PRINT
 	PUT
+	REPEAT
 	RETURN
 	STATIC
 	SUPER
@@ -156,6 +157,7 @@ var tokenArr = [...]string{
 	"OR",
 	"PRINT",
 	"PUT",
+	"REPEAT",
 	"RETURN",
 	"STATIC",
 	"SUPER",

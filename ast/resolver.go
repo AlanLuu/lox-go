@@ -142,6 +142,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitImportStmt(stmt)
 	case Print:
 		return r.visitPrintStmt(stmt)
+	case Repeat:
+		return r.visitRepeatStmt(stmt)
 	case Return:
 		return r.visitReturnStmt(stmt)
 	case Throw:
@@ -443,6 +445,14 @@ func (r *Resolver) visitLogicalExpr(expr Logical) error {
 
 func (r *Resolver) visitPrintStmt(stmt Print) error {
 	return r.resolveExpr(stmt.Expression)
+}
+
+func (r *Resolver) visitRepeatStmt(stmt Repeat) error {
+	resolveErr := r.resolveExpr(stmt.Expression)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	return r.resolveStmt(stmt.Body)
 }
 
 func (r *Resolver) visitReturnStmt(stmt Return) error {

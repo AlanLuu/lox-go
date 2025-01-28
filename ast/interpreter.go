@@ -127,6 +127,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitListExpr(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
+	case Repeat:
+		return i.visitRepeatStmt(expr)
 	case Return:
 		return i.visitReturnStmt(expr)
 	case Set:
@@ -216,7 +218,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt], makeHandler bool) er
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Call:
+				case While, For, ForEach, DoWhile, Repeat, Call:
 					continue
 				}
 			}
@@ -241,7 +243,7 @@ func (i *Interpreter) InterpretReturnLast(statements list.List[Stmt]) (any, erro
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Call:
+				case While, For, ForEach, DoWhile, Repeat, Call:
 					continue
 				}
 			}
@@ -1599,7 +1601,7 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile:
+				case While, For, ForEach, DoWhile, Repeat:
 					if _, ok := value.(Return); !ok {
 						continue
 					}
@@ -2436,6 +2438,107 @@ func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 		fmt.Println(getResult(value, value, true))
 	} else {
 		fmt.Print(getResult(value, value, true))
+	}
+	return nil, nil
+}
+
+func (i *Interpreter) visitRepeatStmt(stmt Repeat) (any, error) {
+	expr, exprErr := i.evaluate(stmt.Expression)
+	if exprErr != nil {
+		return nil, exprErr
+	}
+	var repeatTimes int64 = 0
+	var repeatTimesBigInt *big.Int
+	useBigInt := false
+	switch expr := expr.(type) {
+	case int64:
+		repeatTimes = expr
+	case *big.Int:
+		repeatTimesBigInt = expr
+		useBigInt = true
+	case bool:
+		if expr {
+			repeatTimes = 1
+		}
+	case nil:
+	default:
+		return nil, loxerror.RuntimeError(stmt.RepeatToken,
+			"Repeat statement expression must be an integer or bigint.")
+	}
+	enteredLoop := false
+	loopInterrupted := false
+	if useBigInt {
+		times := repeatTimesBigInt
+		one := bigint.BoolMap[true]
+		for count := big.NewInt(0); count.Cmp(times) < 0; count.Add(count, one) {
+			if !enteredLoop {
+				sigChan := make(chan os.Signal, 1)
+				signal.Notify(sigChan, os.Interrupt)
+				defer func() {
+					if !loopInterrupted {
+						sigChan <- loxsignal.LoopSignal{}
+						signal.Stop(sigChan)
+					}
+				}()
+				go func() {
+					sig := <-sigChan
+					switch sig {
+					case os.Interrupt:
+						loopInterrupted = true
+						signal.Stop(sigChan)
+					}
+				}()
+				enteredLoop = true
+			}
+			if loopInterrupted {
+				return nil, loxerror.RuntimeError(stmt.RepeatToken, "loop interrupted")
+			}
+			value, evalErr := i.evaluate(stmt.Body)
+			if evalErr != nil {
+				switch value := value.(type) {
+				case Break, Return:
+					return value, evalErr
+				case Continue:
+				default:
+					return nil, evalErr
+				}
+			}
+		}
+	} else {
+		for count := int64(0); count < repeatTimes; count++ {
+			if !enteredLoop {
+				sigChan := make(chan os.Signal, 1)
+				signal.Notify(sigChan, os.Interrupt)
+				defer func() {
+					if !loopInterrupted {
+						sigChan <- loxsignal.LoopSignal{}
+						signal.Stop(sigChan)
+					}
+				}()
+				go func() {
+					sig := <-sigChan
+					switch sig {
+					case os.Interrupt:
+						loopInterrupted = true
+						signal.Stop(sigChan)
+					}
+				}()
+				enteredLoop = true
+			}
+			if loopInterrupted {
+				return nil, loxerror.RuntimeError(stmt.RepeatToken, "loop interrupted")
+			}
+			value, evalErr := i.evaluate(stmt.Body)
+			if evalErr != nil {
+				switch value := value.(type) {
+				case Break, Return:
+					return value, evalErr
+				case Continue:
+				default:
+					return nil, evalErr
+				}
+			}
+		}
 	}
 	return nil, nil
 }
