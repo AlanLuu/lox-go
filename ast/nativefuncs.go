@@ -458,6 +458,29 @@ func (i *Interpreter) defineNativeFuncs() {
 				fmt.Sprintf("Expected 1, 2, or 3 arguments but got %v.", argsLen))
 		}
 	})
+	nativeFunc("repeatFunc", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'repeatFunc' must be an integer.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'repeatFunc' must be a function.")
+		}
+		times := args[0].(int64)
+		if times > 0 {
+			callback := args[1].(*LoxFunction)
+			argList := getArgList(callback, 0)
+			defer argList.Clear()
+			for i := int64(0); i < times; i++ {
+				result, resultErr := callback.call(in, argList)
+				if resultErr != nil && result == nil {
+					return nil, resultErr
+				}
+			}
+		}
+		return nil, nil
+	})
 	nativeFunc("Set", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		set := EmptyLoxSet()
 		for _, element := range args {
