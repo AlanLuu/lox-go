@@ -998,6 +998,26 @@ func (p *Parser) list() (Expr, error) {
 	return List{Elements: elements}, nil
 }
 
+func (p *Parser) loopStatement() (Stmt, error) {
+	p.loopDepth++
+	defer func() {
+		p.loopDepth--
+	}()
+	loopToken := p.previous()
+	_, leftBraceErr := p.consume(token.LEFT_BRACE, "Expected '{' after 'loop'.")
+	if leftBraceErr != nil {
+		return nil, leftBraceErr
+	}
+	loopBlockList, loopBlockErr := p.block()
+	if loopBlockErr != nil {
+		return nil, loopBlockErr
+	}
+	return Loop{
+		LoopBlock: Block{Statements: loopBlockList},
+		LoopToken: loopToken,
+	}, nil
+}
+
 func (p *Parser) match(tokenTypes ...token.TokenType) bool {
 	for _, tokenType := range tokenTypes {
 		if p.check(tokenType) {
@@ -1182,6 +1202,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.ifStatement()
 	case p.match(token.IMPORT):
 		return p.importStatement()
+	case p.match(token.LOOP):
+		return p.loopStatement()
 	case p.match(token.PRINT):
 		return p.printStatement(true)
 	case p.match(token.PUT):

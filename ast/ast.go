@@ -142,6 +142,11 @@ type Logical struct {
 	Right    Expr
 }
 
+type Loop struct {
+	LoopBlock Stmt
+	LoopToken *token.Token
+}
+
 type Print struct {
 	Expression Expr
 	NewLine    bool

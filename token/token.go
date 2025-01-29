@@ -68,6 +68,7 @@ const (
 	IF
 	IMPORT
 	INFINITY
+	LOOP
 	NAN
 	NIL
 	OR
@@ -152,6 +153,7 @@ var tokenArr = [...]string{
 	"IF",
 	"IMPORT",
 	"INFINITY",
+	"LOOP",
 	"NAN",
 	"NIL",
 	"OR",

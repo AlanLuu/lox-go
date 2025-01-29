@@ -140,6 +140,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitIfStmt(stmt)
 	case Import:
 		return r.visitImportStmt(stmt)
+	case Loop:
+		return r.visitLoopStmt(stmt)
 	case Print:
 		return r.visitPrintStmt(stmt)
 	case Repeat:
@@ -415,6 +417,10 @@ func (r *Resolver) visitListExpr(expr List) error {
 		}
 	}
 	return nil
+}
+
+func (r *Resolver) visitLoopStmt(stmt Loop) error {
+	return r.resolveStmt(stmt.LoopBlock)
 }
 
 func (r *Resolver) visitIfStmt(stmt If) error {

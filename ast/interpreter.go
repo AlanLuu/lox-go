@@ -125,6 +125,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitIndexExpr(expr)
 	case List:
 		return i.visitListExpr(expr)
+	case Loop:
+		return i.visitLoopStmt(expr)
 	case Print:
 		return i.visitPrintingStmt(expr)
 	case Repeat:
@@ -218,7 +220,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt], makeHandler bool) er
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Repeat, Call:
+				case While, For, ForEach, DoWhile, Repeat, Loop, Call:
 					continue
 				}
 			}
@@ -243,7 +245,7 @@ func (i *Interpreter) InterpretReturnLast(statements list.List[Stmt]) (any, erro
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Repeat, Call:
+				case While, For, ForEach, DoWhile, Repeat, Loop, Call:
 					continue
 				}
 			}
@@ -1601,7 +1603,7 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Repeat:
+				case While, For, ForEach, DoWhile, Repeat, Loop:
 					if _, ok := value.(Return); !ok {
 						continue
 					}
@@ -2427,6 +2429,46 @@ func (i *Interpreter) visitLogicalExpr(expr Logical) (any, error) {
 		return left, nil
 	}
 	return i.evaluate(expr.Right)
+}
+
+func (i *Interpreter) visitLoopStmt(stmt Loop) (any, error) {
+	loopBlock := stmt.LoopBlock.(Block)
+	enteredLoop := false
+	loopInterrupted := false
+	for {
+		if !enteredLoop {
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt)
+			defer func() {
+				if !loopInterrupted {
+					sigChan <- loxsignal.LoopSignal{}
+					signal.Stop(sigChan)
+				}
+			}()
+			go func() {
+				sig := <-sigChan
+				switch sig {
+				case os.Interrupt:
+					loopInterrupted = true
+					signal.Stop(sigChan)
+				}
+			}()
+			enteredLoop = true
+		}
+		if loopInterrupted {
+			return nil, loxerror.RuntimeError(stmt.LoopToken, "loop interrupted")
+		}
+		value, evalErr := i.visitBlockStmt(loopBlock)
+		if evalErr != nil {
+			switch value := value.(type) {
+			case Break, Return:
+				return value, evalErr
+			case Continue:
+			default:
+				return nil, evalErr
+			}
+		}
+	}
 }
 
 func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
