@@ -208,16 +208,6 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			),
 		)
 	}
-	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
-		argList := list.NewListLen[any](int64(numArgs))
-		callbackArity := callback.arity()
-		if callbackArity > numArgs {
-			for i := 0; i < callbackArity-numArgs; i++ {
-				argList.Add(nil)
-			}
-		}
-		return argList
-	}
 	switch lexemeName {
 	case "bitLen", "bitSize":
 		return int64(l.bitSize), nil

@@ -49,16 +49,6 @@ func (i *Interpreter) defineCryptoFuncs() {
 		errStr := fmt.Sprintf("Argument to 'crypto.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
-	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
-		argList := list.NewListLen[any](int64(numArgs))
-		callbackArity := callback.arity()
-		if callbackArity > numArgs {
-			for i := 0; i < callbackArity-numArgs; i++ {
-				argList.Add(nil)
-			}
-		}
-		return argList
-	}
 
 	cryptoFunc("aescbc", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var aesCBC *LoxAESCBC

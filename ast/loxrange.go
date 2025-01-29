@@ -90,16 +90,6 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		}
 		return s, nil
 	}
-	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
-		argList := list.NewListLen[any](int64(numArgs))
-		callbackArity := callback.arity()
-		if callbackArity > numArgs {
-			for i := 0; i < callbackArity-numArgs; i++ {
-				argList.Add(nil)
-			}
-		}
-		return argList
-	}
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'range.%v' must be a %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)

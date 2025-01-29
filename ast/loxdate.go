@@ -139,16 +139,6 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'date.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
-	getArgList := func(callback *LoxFunction, numArgs int) list.List[any] {
-		argList := list.NewListLen[any](int64(numArgs))
-		callbackArity := callback.arity()
-		if callbackArity > numArgs {
-			for i := 0; i < callbackArity-numArgs; i++ {
-				argList.Add(nil)
-			}
-		}
-		return argList
-	}
 	switch methodName {
 	case "add":
 		return dateFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
