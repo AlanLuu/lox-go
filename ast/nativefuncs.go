@@ -534,6 +534,53 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
 	})
+	nativeFunc("threadFunc", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'threadFunc' must be an integer.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'threadFunc' must be a function.")
+		}
+		times := args[0].(int64)
+		if times > 0 {
+			type errStruct struct {
+				err error
+				num int64
+			}
+			errorChan := make(chan errStruct, times)
+			callbackChan := make(chan struct{}, times)
+			callback := args[1].(*LoxFunction)
+			for i := int64(0); i < times; i++ {
+				go func() {
+					num := i + 1
+					argList := getArgList(callback, 1)
+					argList[0] = num
+					result, resultErr := callback.call(in, argList)
+					if resultErr != nil && result == nil {
+						errorChan <- errStruct{resultErr, num}
+					} else {
+						callbackChan <- struct{}{}
+					}
+					argList.Clear()
+				}()
+			}
+			for i := int64(0); i < times; i++ {
+				select {
+				case errStruct := <-errorChan:
+					fmt.Fprintf(
+						os.Stderr,
+						"Runtime error in thread #%v: %v\n",
+						errStruct.num,
+						strings.ReplaceAll(errStruct.err.Error(), "\n", " "),
+					)
+				case <-callbackChan:
+				}
+			}
+		}
+		return nil, nil
+	})
 	nativeFunc("type", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return NewLoxString(getType(args[0]), '\''), nil
 	})
