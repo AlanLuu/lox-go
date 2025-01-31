@@ -640,6 +640,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If `numThreads` is negative, it is the same as specifying `0` for that argument
         - The call to `threadFunc` blocks until all threads have finishing running
         - If a runtime error is thrown in a thread, the error is printed to standard error but this doesn't affect the remaining threads
+    - `threadFuncs(num, callback1, [callback2, ..., callbackN])`, which takes in an integer `num` and at least one callback function and spins up `num * callbackCount` threads that execute all provided callback functions concurrently, where `callbackCount` is the number of callback functions provided as arguments to `threadFuncs`
+        - If `num` is negative, it is the same as specifying `0` for that argument
+        - The call to `threadFuncs` blocks until all threads have finishing running
+        - If a runtime error is thrown in a thread, the error is printed to standard error but this doesn't affect the remaining threads
     - `type(element)`, which returns a string representing the type of the element
 - This Lox REPL supports typing in block statements with multiple lines
 - Expressions such as `1 + 1` that are typed into the REPL are evaluated and their results are displayed, with no need for semicolons at the end
