@@ -553,8 +553,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			callbackChan := make(chan struct{}, times)
 			callback := args[1].(*LoxFunction)
 			for i := int64(0); i < times; i++ {
-				go func() {
-					num := i + 1
+				go func(num int64) {
 					argList := getArgList(callback, 1)
 					argList[0] = num
 					result, resultErr := callback.call(in, argList)
@@ -564,7 +563,7 @@ func (i *Interpreter) defineNativeFuncs() {
 						callbackChan <- struct{}{}
 					}
 					argList.Clear()
-				}()
+				}(i + 1)
 			}
 			for i := int64(0); i < times; i++ {
 				select {
