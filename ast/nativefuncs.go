@@ -16,6 +16,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/scanner"
+	"github.com/AlanLuu/lox/util"
 	"github.com/chzyer/readline"
 	"github.com/mattn/go-isatty"
 )
@@ -543,6 +544,10 @@ func (i *Interpreter) defineNativeFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'threadFunc' must be a function.")
 		}
+		if !util.UnsafeMode {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Cannot call 'threadFunc' in non-unsafe mode.")
+		}
 		times := args[0].(int64)
 		if times > 0 {
 			type errStruct struct {
@@ -610,6 +615,10 @@ func (i *Interpreter) defineNativeFuncs() {
 					),
 				)
 			}
+		}
+		if !util.UnsafeMode {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Cannot call 'threadFuncs' in non-unsafe mode.")
 		}
 		times := args[0].(int64)
 		if times > 0 {

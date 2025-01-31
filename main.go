@@ -32,6 +32,8 @@ OPTIONS:
 		Execute Lox code from command line argument
 	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
+	--unsafe
+		Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
 	-h, --help
 		Print this usage message and exit
 `
@@ -215,6 +217,7 @@ func main() {
 		exprCLine       = flag.String("c", "", "")
 		disableLoxCode  = flag.Bool("disable-loxcode", false, "")
 		disableLoxCode2 = flag.Bool("dl", false, "")
+		unsafe          = flag.Bool("unsafe", false, "")
 		helpFlag1       = flag.Bool("h", false, "")
 		helpFlag2       = flag.Bool("help", false, "")
 	)
@@ -227,6 +230,7 @@ func main() {
 
 	args := flag.Args()
 	util.DisableLoxCode = *disableLoxCode || *disableLoxCode2
+	util.UnsafeMode = *unsafe
 	exitCode := 0
 	if *exprCLine != "" {
 		sc := scanner.NewScanner(*exprCLine)

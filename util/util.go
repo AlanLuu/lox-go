@@ -8,8 +8,11 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
-var DisableLoxCode = false
-var InteractiveMode = false
+var (
+	DisableLoxCode  = false
+	InteractiveMode = false
+	UnsafeMode      = false
+)
 
 func CountBraces(s string) (int, int) {
 	var quoteChr rune = 0
