@@ -617,6 +617,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 		}
 		if !util.UnsafeMode {
+			callbacks.Clear()
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Cannot call 'threadFuncs' in non-unsafe mode.")
 		}

@@ -3,6 +3,7 @@
 Any method that fails will throw a runtime error with a message describing the error.
 
 The following methods and fields are defined in the built-in `os` class:
+- `os.arch`, which is a string that specifies the architecture that the program is running on
 - `os.argv`, which is a list containing the command line arguments passed to the current script
     - `os.argv[0]` contains the absolute path name of the executable for the current process as a string or an empty string if the path name cannot be determined
     - When executing a script from a file, `os.argv[1]` contains the name of the script file that is being executed
@@ -175,6 +176,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.mktempBin([directory])`, which creates a temporary file with the name `lox.tmp.` followed by a random number in the specified directory and returns a file object open in read-write binary mode if successful. If the directory is omitted, the temporary file is created in the default temporary file directory of the operating system
     - Any temporary files created using this method must be manually deleted, which can be done with the following method call: `os.remove(tempFile.name)`, where `tempFile` is the variable that refers to the temporary file's file object
 - `os.name`, which is a string that specifies the operating system that the program is running on
+- `os.numCPU()`, which returns the number of logical CPUs on the current machine as an integer
 - `os.open(name, mode)`, which opens a file specified by a path name with the mode specified by the mode string. This method returns a file object if successful, which itself is documented [here](./doc/file.md)
     - The following file modes are available:
         - `"r"`, which opens a file for reading and throws a runtime error if the file doesn't exist
@@ -182,6 +184,7 @@ The following methods and fields are defined in the built-in `os` class:
         - `"a"`, which opens a file for writing, creating the file if it doesn't exist and appending to the file if it already exists
         - Along with the above modes, the letter `"b"` can also be specified to open a file in binary mode, such as `"rb"` for reading a binary file
             - The ordering doesn't matter, so the mode `"br"` is the same as `"rb"`
+- `os.osarch`, which is a string of the form `"<os.name>/<os.arch>"`
 - `os.pipe()`, which returns a list containing two file objects in text mode that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end
     - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
 - `os.pipeBin()`, which returns a list containing two file objects in binary mode that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end

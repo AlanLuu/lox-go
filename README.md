@@ -10,8 +10,8 @@ OPTIONS:
 		Execute Lox code from command line argument
 	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
-    --unsafe
-        Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
+	--unsafe
+		Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
 	-h, --help
 		Print this usage message and exit
 ```
@@ -277,6 +277,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hexstr.dump(arg)`, which returns a string containing the hex dump of the specified argument, which is either a string or a buffer
     - `hexstr.encode(arg)`, which encodes the specified argument, which is either a string or a buffer, into a hexadecimal string and returns that encoded string
     - `hexstr.tobigint(hexStr)`, which returns the integer representation of the specified hexadecimal string as a bigint
+- Various methods and fields to work with the state of this interpreter are defined under a built-in class called `lox`, where the following methods and fields are defined:
+    - `lox.gc([num])`, which invokes the garbage collector and blocks until the garbage collection process completes
+        - If `num` is specified, where `num` is an integer, this method invokes the garbage collector a total of `num` times instead of invoking it only once
+    - `lox.globals()`, which returns a dictionary containing all global variable names as string keys and their values as dictionary values
+    - `lox.locals()`, which returns a dictionary containing all local variable names as string keys and their values as dictionary values
+        - If this method is called in global scope, an empty dictionary is returned
+    - `lox.ranloxcode`, which is a boolean that is `true` if the `--disable-loxcode` flag was passed and `false` otherwise
+    - `lox.unsafe`, which is a boolean that is `true` if unsafe mode is enabled for this interpreter and `false` otherwise
 - Various methods and fields to work with integers are defined under a built-in class called `Integer`, where the following methods and fields are defined:
     - `Integer.MAX`, which is the maximum value that an integer can store
     - `Integer.MAX8`, which is the maximum value that an 8-bit integer can store

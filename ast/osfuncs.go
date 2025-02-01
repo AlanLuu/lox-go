@@ -75,6 +75,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 	}
 
+	osClass.classProperties["arch"] = NewLoxString(runtime.GOARCH, '\'')
 	osClass.classProperties["argv"] = cmdArgsToLoxList()
 	osFunc("chdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
@@ -1610,6 +1611,9 @@ func (i *Interpreter) defineOSFuncs() {
 		}, nil
 	})
 	osClass.classProperties["name"] = NewLoxString(runtime.GOOS, '\'')
+	osFunc("numCPU", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return int64(runtime.NumCPU()), nil
+	})
 	osFunc("open", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -1627,6 +1631,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return loxFile, nil
 	})
+	osClass.classProperties["osarch"] = NewLoxString(runtime.GOOS+"/"+runtime.GOARCH, '\'')
 	osFunc("pipe", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		r, w, err := os.Pipe()
 		if err != nil {
