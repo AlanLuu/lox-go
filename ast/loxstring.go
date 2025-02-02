@@ -204,6 +204,15 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "fields":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			fields := strings.Fields(l.str)
+			fieldsList := list.NewListCap[any](int64(len(fields)))
+			for _, field := range fields {
+				fieldsList.Add(NewLoxStringQuote(field))
+			}
+			return NewLoxList(fieldsList), nil
+		})
 	case "index":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
@@ -386,7 +395,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				splitSlice := strings.Split(l.str, loxStr.str)
 				loxList := list.NewListCap[any](int64(len(splitSlice)))
 				for _, str := range splitSlice {
-					loxList.Add(NewLoxString(str, '\''))
+					loxList.Add(NewLoxStringQuote(str))
 				}
 				return NewLoxList(loxList), nil
 			}
