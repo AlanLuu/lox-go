@@ -197,6 +197,13 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "equalsIgnoreCase":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return strings.EqualFold(l.str, loxStr.str), nil
+			}
+			return argMustBeType("string")
+		})
 	case "index":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

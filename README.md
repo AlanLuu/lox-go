@@ -352,6 +352,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
+        - `string.equalsIgnoreCase(string2)`, which returns `true` if `string` equals `string2`, ignoring letter case, and `false` otherwise
         - `string.index(string2)`, which returns an integer representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.isEmpty()`, which returns `true` if the length of the string is 0 and `false` otherwise
         - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
