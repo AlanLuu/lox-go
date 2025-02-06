@@ -49,6 +49,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineCryptoFuncs()     //Defined in cryptofuncs.go
 	interpreter.defineCSVFuncs()        //Defined in csvfuncs.go
 	interpreter.defineDateFuncs()       //Defined in datefuncs.go
+	interpreter.defineDotenvFuncs()     //Defined in dotenvfuncs.go
 	interpreter.defineDurationFuncs()   //Defined in durationfuncs.go
 	interpreter.defineFloatFuncs()      //Defined in floatfuncs.go
 	interpreter.defineGzipFuncs()       //Defined in gzipfuncs.go
