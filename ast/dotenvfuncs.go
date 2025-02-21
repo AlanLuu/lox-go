@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"os"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/AlanLuu/lox/list"
@@ -43,6 +44,16 @@ func (i *Interpreter) defineDotenvFuncs() {
 				default:
 					return nil, loxerror.RuntimeError(in.callToken, errMsg)
 				}
+				if key == "" {
+					envMap = nil
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Dictionary argument to 'dotenv.dictToEnv' cannot have a key that is an empty string.")
+				}
+				if strings.Contains(key, "=") {
+					envMap = nil
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Dictionary argument to 'dotenv.dictToEnv' cannot have a key with the '=' character.")
+				}
 				switch pairValue := pair[1].(type) {
 				case *LoxString:
 					value = pairValue.str
@@ -72,6 +83,16 @@ func (i *Interpreter) defineDotenvFuncs() {
 					key = pairKey.str
 				default:
 					return nil, loxerror.RuntimeError(in.callToken, errMsg)
+				}
+				if key == "" {
+					envMap = nil
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Dictionary argument to 'dotenv.dictToEnvBuf' cannot have a key that is an empty string.")
+				}
+				if strings.Contains(key, "=") {
+					envMap = nil
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Dictionary argument to 'dotenv.dictToEnvBuf' cannot have a key with the '=' character.")
 				}
 				switch pairValue := pair[1].(type) {
 				case *LoxString:
@@ -138,6 +159,16 @@ func (i *Interpreter) defineDotenvFuncs() {
 				key = pairKey.str
 			default:
 				return nil, loxerror.RuntimeError(in.callToken, errMsg)
+			}
+			if key == "" {
+				envMap = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Dictionary argument to 'dotenv.dictToEnvFile' cannot have a key that is an empty string.")
+			}
+			if strings.Contains(key, "=") {
+				envMap = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Dictionary argument to 'dotenv.dictToEnvFile' cannot have a key with the '=' character.")
 			}
 			switch pairValue := pair[1].(type) {
 			case *LoxString:
@@ -219,6 +250,16 @@ func (i *Interpreter) defineDotenvFuncs() {
 				key = pairKey.str
 			default:
 				return nil, loxerror.RuntimeError(in.callToken, errMsg)
+			}
+			if key == "" {
+				envMap = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Dictionary argument to 'dotenv.dictToEnvFileNoNewlineEnd' cannot have a key that is an empty string.")
+			}
+			if strings.Contains(key, "=") {
+				envMap = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Dictionary argument to 'dotenv.dictToEnvFileNoNewlineEnd' cannot have a key with the '=' character.")
 			}
 			switch pairValue := pair[1].(type) {
 			case *LoxString:
@@ -331,7 +372,7 @@ func (i *Interpreter) defineDotenvFuncs() {
 					return nil, loxerror.RuntimeError(
 						in.callToken,
 						fmt.Sprintf(
-							"Argument number %v to 'dotenv.load' must be a string.",
+							"Argument number %v in 'dotenv.load' must be a string.",
 							i+1,
 						),
 					)
@@ -343,6 +384,68 @@ func (i *Interpreter) defineDotenvFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return nil, nil
+	})
+	dotenvFunc("new", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			return NewLoxDotenv(), nil
+		case 1:
+			switch arg := args[0].(type) {
+			case *LoxBuffer:
+				envBytes := make([]byte, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					envBytes = append(envBytes, byte(element.(int64)))
+				}
+				dotenv, err := NewLoxDotenvFromBytes(envBytes)
+				if err != nil {
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
+				}
+				return dotenv, nil
+			case *LoxDict:
+				const errMsg = "Dictionary argument to 'dotenv.new' must only have strings."
+				envs := map[string]string{}
+				it := arg.Iterator()
+				for it.HasNext() {
+					pair := it.Next().(*LoxList).elements
+					var key, value string
+					switch pairKey := pair[0].(type) {
+					case *LoxString:
+						key = pairKey.str
+					default:
+						return nil, loxerror.RuntimeError(in.callToken, errMsg)
+					}
+					if key == "" {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Dictionary argument to 'dotenv.new' cannot have a key that is an empty string.")
+					}
+					if strings.Contains(key, "=") {
+						return nil, loxerror.RuntimeError(in.callToken,
+							"Dictionary argument to 'dotenv.new' cannot have a key with the '=' character.")
+					}
+					switch pairValue := pair[1].(type) {
+					case *LoxString:
+						value = pairValue.str
+					default:
+						return nil, loxerror.RuntimeError(in.callToken, errMsg)
+					}
+					envs[key] = value
+				}
+				dotenv, _ := NewLoxDotenvFromMap(envs, false)
+				return dotenv, nil
+			case *LoxString:
+				dotenv, err := NewLoxDotenvFromString(arg.str)
+				if err != nil {
+					return nil, loxerror.RuntimeError(in.callToken, err.Error())
+				}
+				return dotenv, nil
+			default:
+				return argMustBeType(in.callToken, "new", "buffer, dictionary, or string")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
 	})
 	dotenvFunc("overload", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var err error
@@ -361,7 +464,7 @@ func (i *Interpreter) defineDotenvFuncs() {
 					return nil, loxerror.RuntimeError(
 						in.callToken,
 						fmt.Sprintf(
-							"Argument number %v to 'dotenv.overload' must be a string.",
+							"Argument number %v in 'dotenv.overload' must be a string.",
 							i+1,
 						),
 					)
@@ -397,6 +500,16 @@ func (i *Interpreter) defineDotenvFuncs() {
 
 		dict := EmptyLoxDict()
 		for key, value := range envMap {
+			if key == "" {
+				dict = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"dotenv.parse: keys cannot be empty strings.")
+			}
+			if strings.Contains(key, "=") {
+				dict = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"dotenv.parse: keys cannot contain the character '='.")
+			}
 			dict.setKeyValue(NewLoxStringQuote(key), NewLoxStringQuote(value))
 		}
 		return dict, nil
@@ -413,7 +526,7 @@ func (i *Interpreter) defineDotenvFuncs() {
 				return nil, loxerror.RuntimeError(
 					in.callToken,
 					fmt.Sprintf(
-						"Argument number %v to 'dotenv.read' must be a string.",
+						"Argument number %v in 'dotenv.read' must be a string.",
 						i+1,
 					),
 				)
@@ -425,6 +538,16 @@ func (i *Interpreter) defineDotenvFuncs() {
 		}
 		dict := EmptyLoxDict()
 		for key, value := range envMap {
+			if key == "" {
+				dict = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"dotenv.read: keys cannot be empty strings.")
+			}
+			if strings.Contains(key, "=") {
+				dict = nil
+				return nil, loxerror.RuntimeError(in.callToken,
+					"dotenv.read: keys cannot contain the character '='.")
+			}
 			dict.setKeyValue(NewLoxStringQuote(key), NewLoxStringQuote(value))
 		}
 		return dict, nil
