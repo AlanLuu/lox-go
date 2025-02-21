@@ -14,10 +14,11 @@ import (
 )
 
 type LoxDotenv struct {
-	envs     map[string]string
-	overload bool
-	prevEnvs []string
-	methods  map[string]*struct{ ProtoLoxCallable }
+	envs             map[string]string
+	overload         bool
+	panicOnSetEnvErr bool
+	prevEnvs         []string
+	methods          map[string]*struct{ ProtoLoxCallable }
 }
 
 func NewLoxDotenv() *LoxDotenv {
@@ -54,10 +55,11 @@ func NewLoxDotenvFromMap(envs map[string]string, checkErrs bool) (*LoxDotenv, er
 		}
 	}
 	return &LoxDotenv{
-		envs:     envs,
-		overload: false,
-		prevEnvs: nil,
-		methods:  make(map[string]*struct{ ProtoLoxCallable }),
+		envs:             envs,
+		overload:         false,
+		panicOnSetEnvErr: true,
+		prevEnvs:         nil,
+		methods:          make(map[string]*struct{ ProtoLoxCallable }),
 	}, nil
 }
 
@@ -83,7 +85,7 @@ func (l *LoxDotenv) activate() {
 	os.Clearenv()
 	for key, value := range l.envs {
 		if err := os.Setenv(key, value); err != nil {
-			panic(err)
+			l.maybePanic(err)
 		}
 	}
 }
@@ -113,7 +115,7 @@ func (l *LoxDotenv) copyIntoGlobalEnv() {
 		_, ok := os.LookupEnv(key)
 		if !ok {
 			if err := os.Setenv(key, value); err != nil {
-				panic(err)
+				l.maybePanic(err)
 			}
 		}
 	}
@@ -122,7 +124,7 @@ func (l *LoxDotenv) copyIntoGlobalEnv() {
 func (l *LoxDotenv) copyIntoGlobalEnvForce() {
 	for key, value := range l.envs {
 		if err := os.Setenv(key, value); err != nil {
-			panic(err)
+			l.maybePanic(err)
 		}
 	}
 }
@@ -135,7 +137,7 @@ func (l *LoxDotenv) deactivate() {
 	for _, env := range l.prevEnvs {
 		envSplit := strings.Split(env, "=")
 		if err := os.Setenv(envSplit[0], envSplit[1]); err != nil {
-			panic(err)
+			l.maybePanic(err)
 		}
 	}
 	l.prevEnvs = nil
@@ -147,7 +149,7 @@ func (l *LoxDotenv) deleteEnv(key string) bool {
 		delete(l.envs, key)
 		if l.activated() {
 			if err := os.Unsetenv(key); err != nil {
-				panic(err)
+				l.maybePanic(err)
 			}
 		}
 	}
@@ -162,6 +164,12 @@ func (l *LoxDotenv) envString() string {
 	//This method never returns an error
 	envString, _ := godotenv.Marshal(l.envs)
 	return envString
+}
+
+func (l *LoxDotenv) maybePanic(arg any) {
+	if l.panicOnSetEnvErr {
+		panic(arg)
+	}
 }
 
 func (l *LoxDotenv) setEnvMap(envs map[string]string, checkErrs bool) error {
@@ -211,7 +219,7 @@ func (l *LoxDotenv) setEnv(key string, value string) bool {
 		l.envs[key] = value
 		if l.activated() {
 			if err := os.Setenv(key, value); err != nil {
-				panic(err)
+				l.maybePanic(err)
 			}
 		}
 		return true
@@ -223,7 +231,7 @@ func (l *LoxDotenv) setEnvForce(key string, value string) {
 	l.envs[key] = value
 	if l.activated() {
 		if err := os.Setenv(key, value); err != nil {
-			panic(err)
+			l.maybePanic(err)
 		}
 	}
 }
@@ -711,6 +719,23 @@ func (l *LoxDotenv) Get(name *token.Token) (any, error) {
 				return l, nil
 			}
 			return argMustBeType("boolean")
+		})
+	case "panicOnSetEnvErr":
+		return dotenvFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				return l.panicOnSetEnvErr, nil
+			case 1:
+				if panicOnSetEnvErr, ok := args[0].(bool); ok {
+					l.panicOnSetEnvErr = panicOnSetEnvErr
+					return l, nil
+				}
+				return argMustBeType("boolean")
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
 		})
 	case "printEnvStr":
 		return dotenvFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
