@@ -102,6 +102,15 @@ func Mkfifo(path string, mode uint32) error {
 	return unsupported("mkfifo")
 }
 
+func Pipe(p *[2]int) error {
+	var fd [2]syscall.Handle
+	if err := syscall.Pipe(fd[:]); err != nil {
+		return err
+	}
+	p[0], p[1] = int(fd[0]), int(fd[1])
+	return nil
+}
+
 func Read(fd int, p []byte) (int, error) {
 	return syscall.Read(syscall.Handle(fd), p)
 }

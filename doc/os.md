@@ -189,6 +189,7 @@ The following methods and fields are defined in the built-in `os` class:
     - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
 - `os.pipeBin()`, which returns a list containing two file objects in binary mode that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end
     - `list[0]` and `list[1]` contains the read and write ends of the pipe respectively
+- `os.pipefd()`, which creates a pipe and returns a list containing two integers that are file descriptors to that pipe, where `list[0]` refers to the read end and `list[1]` refers to the write end
 - `os.read(fd, numBytes)`, which reads at most `numBytes` bytes from the specified integer file descriptor into a buffer and returns that buffer
 - `os.readFile(name)`, which reads in the contents of the file with the specified file name string and returns a string with the file contents
 - `os.readFileBin(name)`, which reads in the contents of the file with the specified file name string and returns a buffer with the file contents

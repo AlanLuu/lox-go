@@ -152,6 +152,10 @@ func Mkfifo(path string, mode uint32) error {
 	return unix.Mkfifo(path, mode)
 }
 
+func Pipe(p *[2]int) error {
+	return unix.Pipe(p[:])
+}
+
 func Read(fd int, p []byte) (int, error) {
 	return syscall.Read(fd, p)
 }

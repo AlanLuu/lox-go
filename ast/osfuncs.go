@@ -1680,6 +1680,16 @@ func (i *Interpreter) defineOSFuncs() {
 		})
 		return NewLoxList(files), nil
 	})
+	osFunc("pipefd", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		var fd [2]int
+		err := syscalls.Pipe(&fd)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		fdList := list.NewListLen[any](2)
+		fdList[0], fdList[1] = int64(fd[0]), int64(fd[1])
+		return NewLoxList(fdList), nil
+	})
 	osFunc("read", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
