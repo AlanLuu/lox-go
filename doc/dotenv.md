@@ -1,0 +1,53 @@
+# Dotenv methods
+
+The following methods are defined in the built-in `dotenv` class:
+- `dotenv.dictToEnv(envDict)`
+- `dotenv.dictToEnvBuf(envDict)`
+- `dotenv.dictToEnvFile(envDict, [file/string])`
+- `dotenv.dictToEnvFileNoNewlineEnd(envDict, [file/string])`
+- `dotenv.exec(filenames, cmd, cmdArgs, isOverload)`
+- `dotenv.load([filenames...])`
+- `dotenv.new([buffer/dict/string])`
+- `dotenv.overload([filenames...])`
+- `dotenv.parse(buffer/string)`
+- `dotenv.read([filenames...])`
+
+Dotenv objects have the following methods associated with them:
+- `dotenv object.activate()`
+- `dotenv object.activated()`
+- `dotenv object.clear()`
+- `dotenv object.containsEnv(envStr)`
+- `dotenv object.copyGlobalEnv()`
+- `dotenv object.copyGlobalEnvForce()`
+- `dotenv object.copyIntoGlobalEnv()`
+- `dotenv object.copyIntoGlobalEnvForce()`
+- `dotenv object.deactivate()`
+- `dotenv object.deleteEnv(envStr)`
+- `dotenv object.deleteEnvBool(envStr)`
+- `dotenv object.envBuf()`
+- `dotenv object.envDict()`
+- `dotenv object.envList()`
+- `dotenv object.envStr()`
+- `dotenv object.exec(cmd, [cmdArgs...])`
+- `dotenv object.execList(cmd, cmdArgsList)`
+- `dotenv object.getEnv(envStr)`
+- `dotenv object.isActivated()`
+- `dotenv object.isOverload()`
+- `dotenv object.loadEnv(filename, [filenames...])`
+- `dotenv object.loadEnvBuf(envBuf)`
+- `dotenv object.loadEnvBufForce(envBuf)`
+- `dotenv object.loadEnvDict(envDict)`
+- `dotenv object.loadEnvDictForce(envDict)`
+- `dotenv object.loadEnvForce(filename, [filenames...])`
+- `dotenv object.loadEnvStr(envStr)`
+- `dotenv object.loadEnvStrForce(envStr)`
+- `dotenv object.mustGetEnv(envStr)`
+- `dotenv object.overload(bool)`
+- `dotenv object.panicOnSetEnvErr([bool])`
+- `dotenv object.printEnvStr()`
+- `dotenv object.setEnv(key, value)`
+- `dotenv object.setEnvBool(key, value)`
+- `dotenv object.setEnvForce(key, value)`
+- `dotenv object.setOverload(bool)`
+- `dotenv object.toDict()`
+- `dotenv object.toList()`
