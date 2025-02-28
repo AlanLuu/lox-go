@@ -324,6 +324,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `String.punctuation`, which is the string ``"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"``
     - `String.qwertyLower`, which is the string `"qwertyuiopasdfghjklzxcvbnm"`
     - `String.qwertyUpper`, which is the string `"QWERTYUIOPASDFGHJKLZXCVBNM"`
+    - `String.builder()`, which returns a stringbuilder object, with methods documented [here](./doc/stringbuilder.md)
     - `String.toString(arg)`, which returns the string representation of the specified argument
     - `String.uppercase`, which is the string `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`
 - Methods to work with random number generation are defined under a built-in-class called `Rand`, which is documented [here](./doc/Rand.md)
