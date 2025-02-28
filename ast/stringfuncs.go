@@ -55,7 +55,10 @@ func (i *Interpreter) defineStringFuncs() {
 	}
 
 	defineStringFields(stringClass)
-	stringFunc("toString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+	stringFunc("builder", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return NewLoxStringBuilder(), nil
+	})
+	stringFunc("toString", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		var str string
 		switch arg := args[0].(type) {
 		case *LoxString:

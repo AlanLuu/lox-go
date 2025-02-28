@@ -608,7 +608,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
     - `BufferZero(length)`, which returns a new buffer of the specified length, where each initial element is `0`
-    - `cap(item)`, which returns the capacity of a buffer or list, which is the number of elements the buffer or list can store before having to internally resize the underlying array that stores the buffer or list elements when a new element is added
+    - `cap(item)`, which returns the capacity of a buffer, list, or stringbuilder, which is the number of elements the item can store before having to internally resize the underlying array that stores the elements when a new element is added
     - `chr(i)`, which returns a string with a single character that is the Unicode character value of the code point `i`, where `i` is an integer
     - `Deque(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a deque with the arguments as deque elements
     - `DequeIterable(iterable)`, which takes in an iterable and returns a deque with the iterable elements as deque elements
@@ -627,13 +627,16 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
                 - If the iterator has no more elements, calling this method will throw a runtime error with the error message `"StopIteration"`
             - `iterator.toList([length])`, which returns a list of elements from the iterator with the specified length as an integer. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over
         - Various utility iterator methods and fields are defined under a built-in class called `Iterator`, which is documented [here](./doc/Iterator.md)
-    - `len(element)`, which returns the length of a buffer, dictionary, list, set, or string
+    - `len(element)`, which returns the length of the specified element, which can be any of the following:
         - Buffers: the length is the number of elements in the buffer
+        - Deques: the length is the number of elements in the deque
         - Dictionaries: the length is the number of keys in the dictionary
         - Lists: the length is the number of elements in the list
+        - Queues: the length is the number of elements in the queue
         - Ranges: the length is the number of integers in the range object based on its start, stop, and step values
         - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
+        - Stringbuilders: the length is the number of characters in the stringbuilder
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ListCap(capacity)`, which returns a new list of the specified capacity, which is the number of elements the list can store before having to internally resize the underlying array that stores the list elements when a new element is added
     - `ListIterable(iterable)`, which takes in an iterable and returns a list with the iterable elements as list elements
