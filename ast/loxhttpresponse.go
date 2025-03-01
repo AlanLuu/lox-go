@@ -129,6 +129,16 @@ func (l *LoxHTTPResponse) Get(name *token.Token) (any, error) {
 			l.close()
 			return nil, nil
 		})
+	case "cookies":
+		cookies := l.res.Cookies()
+		cookiesList := list.NewListCap[any](int64(len(cookies)))
+		for _, cookie := range cookies {
+			if cookie == nil {
+				continue
+			}
+			cookiesList.Add(NewLoxHTTPCookie(cookie))
+		}
+		return responseField(NewLoxList(cookiesList))
 	case "elapsed":
 		return responseField(l.elapsed)
 	case "headers":

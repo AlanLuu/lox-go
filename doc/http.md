@@ -44,6 +44,7 @@ The following methods are defined in the built-in `http` class:
 
 HTTP response objects have the following methods and fields associated with them:
 - `response.close()`, which closes the underlying response content stream, preventing access to `response.raw` and `response.text` if any of them haven't been accessed before from the caller before closing the response
+- `response.cookies`, which is a list of the cookies sent from the response in the Set-Cookie header as HTTP cookie objects
 - `response.elapsed`, which is a float that represents the amount of time the HTTP request took in seconds
 - `response.headers`, which is a dictionary of all the HTTP headers sent from the server
 - `response.raw`, which is a buffer containing the raw bytes of the response content
@@ -54,3 +55,22 @@ HTTP response objects have the following methods and fields associated with them
     - This field isn't stored in memory until it is accessed from the caller
     - When this field is accessed, if the field `response.raw` isn't already in memory, it becomes stored in memory along with this field
 - `response.url`, which is the URL of the HTTP request as a string
+
+HTTP cookie objects have the following methods and fields associated with them:
+- `cookie.domain`
+- `cookie.expires`
+- `cookie.httpOnly`
+- `cookie.maxAge`
+- `cookie.name`
+- `cookie.path`
+- `cookie.printSimpleString()`
+- `cookie.printString()`
+- `cookie.raw`
+- `cookie.rawExpires`
+- `cookie.secure`
+- `cookie.simpleString`
+- `cookie.string()`
+- `cookie.unparsed`
+- `cookie.valid()`
+- `cookie.validErr()`
+- `cookie.validThrowErr()`
