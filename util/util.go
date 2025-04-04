@@ -65,8 +65,16 @@ func IntOrFloat(f float64) any {
 	return f
 }
 
+func IsAndroid() bool {
+	return runtime.GOOS == "android"
+}
+
 func IsLinux() bool {
 	return runtime.GOOS == "linux"
+}
+
+func IsLinuxOrAndroid() bool {
+	return IsLinux() || IsAndroid()
 }
 
 func IsWindows() bool {

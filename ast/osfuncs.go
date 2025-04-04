@@ -799,7 +799,7 @@ func (i *Interpreter) defineOSFuncs() {
 					"File descriptor argument to 'os.fallocate' cannot be negative.")
 			}
 			badFileDesc := "bad file descriptor"
-			if util.IsLinux() {
+			if util.IsLinuxOrAndroid() {
 				err = linuxsyscalls.Fallocate(int(arg), 0, 0, size)
 				if err != nil {
 					file := os.NewFile(uintptr(arg), "fallocate")
@@ -850,7 +850,7 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			fd := int(arg.file.Fd())
 			switch {
-			case util.IsLinux():
+			case util.IsLinuxOrAndroid():
 				err = linuxsyscalls.Fallocate(fd, 0, 0, size)
 				if err != nil {
 					switch {
@@ -927,7 +927,7 @@ func (i *Interpreter) defineOSFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken, fileErr.Error())
 			}
 			defer file.Close()
-			if util.IsLinux() {
+			if util.IsLinuxOrAndroid() {
 				err = linuxsyscalls.Fallocate(int(file.Fd()), 0, 0, size)
 				if err != nil {
 					stat, statErr := file.Stat()
@@ -1340,7 +1340,7 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
-		if !util.IsLinux() {
+		if !util.IsLinuxOrAndroid() {
 			_, err := linuxsyscalls.Getrandom(nil, 0)
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
@@ -1368,7 +1368,7 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("getuid", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return int64(os.Getuid()), nil
 	})
-	if util.IsLinux() {
+	if util.IsLinuxOrAndroid() {
 		osClass.classProperties["GRND_INSECURE"] = int64(linuxsyscalls.GRND_INSECURE)
 		osClass.classProperties["GRND_NONBLOCK"] = int64(linuxsyscalls.GRND_NONBLOCK)
 		osClass.classProperties["GRND_RANDOM"] = int64(linuxsyscalls.GRND_RANDOM)
