@@ -622,6 +622,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `hex(num)`, which converts the specified integer `num` into its hexadecimal representation as a string prefixed with "0x"
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
         - Pressing Ctrl+C will throw a keyboard interrupt runtime error, and pressing Ctrl+D will cause this function to return `nil`
+    - `isinstance(element, class)`, which returns `true` if the specified element is an instance of the specified class and `false` otherwise
     - `iterator(iterable)`, which returns an iterator object from the specified iterable type and throws a runtime error if the argument is not an iterable type
         - Iterator objects have the following methods associated with them:
             - `iterator.hasNext()`, which returns `true` if there are more elements to be iterated over and `false` otherwise

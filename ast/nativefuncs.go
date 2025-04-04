@@ -312,6 +312,22 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return NewLoxString(userInput, '\''), nil
 	})
+	nativeFunc("isinstance", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[1].(*LoxClass); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'isinstance' must be a class.")
+		}
+		switch instance := args[0].(type) {
+		case *LoxInstance:
+			class := args[1].(*LoxClass)
+			for c := instance.class; c != nil; c = c.superClass {
+				if c == class {
+					return true, nil
+				}
+			}
+		}
+		return false, nil
+	})
 	nativeFunc("iterator", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if element, ok := args[0].(interfaces.Iterable); ok {
 			return NewLoxIterator(element.Iterator()), nil
