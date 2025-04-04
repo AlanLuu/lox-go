@@ -116,6 +116,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each byte of decompressed gzip data from the gzip reader object as an integer
         - HTML tokenizer
             - For each iteration, `element` is each HTML token from the HTML tokenizer object as an HTML token object
+        - IP address
+            - For each iteration, `element` is each byte from the IP address object as an integer
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Repeat statements are supported in this implementation of Lox, which repeatedly executes a statement for a certain number of times according to the expression
     ```js

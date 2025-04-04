@@ -484,7 +484,7 @@ func (l *LoxProcess) Get(name *token.Token) (any, error) {
 }
 
 func (l *LoxProcess) String() string {
-	return fmt.Sprintf("<process cmd=\"%v\" at %p", l.cmdArgStr, l)
+	return fmt.Sprintf("<process cmd=\"%v\" at %p>", l.cmdArgStr, l)
 }
 
 func (l *LoxProcess) Type() string {

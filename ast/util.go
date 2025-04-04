@@ -12,3 +12,7 @@ func getArgList(callback *LoxFunction, numArgs int) list.List[any] {
 	}
 	return argList
 }
+
+func isValidPortNum[T int | int64](portNum T) bool {
+	return portNum >= 0 && portNum <= 65535
+}
