@@ -1703,13 +1703,16 @@ func (i *Interpreter) defineOSFuncs() {
 		fd := args[0].(int64)
 		numBytes := args[1].(int64)
 		bytes := make([]byte, numBytes)
-		_, err := syscalls.Read(int(fd), bytes)
+		n, err := syscalls.Read(int(fd), bytes)
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 
-		buffer := EmptyLoxBufferCap(int64(len(bytes)))
-		for _, element := range bytes {
+		buffer := EmptyLoxBufferCap(int64(n))
+		for i, element := range bytes {
+			if i >= n {
+				break
+			}
 			bufErr := buffer.add(int64(element))
 			if bufErr != nil {
 				return nil, loxerror.RuntimeError(in.callToken, bufErr.Error())
