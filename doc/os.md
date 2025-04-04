@@ -271,3 +271,4 @@ The following methods and fields are defined in the built-in `os` class:
     - If the file already exists, it is truncated
 - `os.writeFileBin(path, buffer)`, which writes the contents of the specified buffer to the file specified by the path string
     - If the file already exists, it is truncated
+- `os.writeString(fd, string)`, which writes the contents of the specified string to the specified integer file descriptor and returns the number of bytes written as an integer

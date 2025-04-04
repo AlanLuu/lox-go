@@ -2312,6 +2312,24 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return nil, nil
 	})
+	osFunc("writeString", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.writeString' must be an integer.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.writeString' must be a string.")
+		}
+
+		fd := args[0].(int64)
+		bytes := []byte(args[1].(*LoxString).str)
+		numBytesWritten, err := syscalls.Write(int(fd), bytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return int64(numBytesWritten), nil
+	})
 
 	i.globals.Define(className, osClass)
 }
