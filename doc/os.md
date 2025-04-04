@@ -194,6 +194,7 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.readFile(name)`, which reads in the contents of the file with the specified file name string and returns a string with the file contents
 - `os.readFileBin(name)`, which reads in the contents of the file with the specified file name string and returns a buffer with the file contents
 - `os.readLink(name)`, which returns a string representing the destination of the symbolic link with the specified symbolic link name string
+- `os.readString(fd, numBytes)`, which reads at most `numBytes` bytes from the specified integer file descriptor into a string and returns that string
 - `os.remove(path)`, which removes the file or empty directory at the specified path string
     - If the directory is not empty, a runtime error is thrown
 - `os.removeAll(path)`, which removes the file or directory at the specified path string

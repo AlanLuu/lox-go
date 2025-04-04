@@ -1757,6 +1757,33 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return argMustBeType(in.callToken, "readLink", "string")
 	})
+	osFunc("readString", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.readString' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'os.readString' must be an integer.")
+		}
+
+		fd := args[0].(int64)
+		numBytes := args[1].(int64)
+		bytes := make([]byte, numBytes)
+		n, err := syscalls.Read(int(fd), bytes)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+
+		var builder strings.Builder
+		for i, element := range bytes {
+			if i >= n {
+				break
+			}
+			builder.WriteByte(element)
+		}
+		return NewLoxStringQuote(builder.String()), nil
+	})
 	osFunc("remove", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Remove(loxStr.str)
