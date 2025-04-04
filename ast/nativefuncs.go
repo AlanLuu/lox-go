@@ -201,7 +201,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return deque, nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("DequeIterable: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("DictIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if element, ok := args[0].(interfaces.Iterable); ok {
@@ -221,7 +221,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return dict, nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("DictIterable: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("eval", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		if codeStr, ok := args[0].(*LoxString); ok {
@@ -333,7 +333,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return NewLoxIterator(element.Iterator()), nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("iterator: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("len", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if element, ok := args[0].(interfaces.Length); ok {
@@ -378,7 +378,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return NewLoxList(lst), nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("ListIterable: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("ListZero", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if size, ok := args[0].(int64); ok {
@@ -433,7 +433,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return queue, nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("QueueIterable: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("range", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
@@ -521,7 +521,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return set, nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("SetIterable: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("sleep", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch seconds := args[0].(type) {
@@ -549,7 +549,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return sum.element, nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("sum: type '%v' is not iterable.", getType(args[0])))
 	})
 	nativeFunc("threadFunc", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {

@@ -353,7 +353,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return NewLoxIterator(newIterator), nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("Iterator.cycle: type '%v' is not iterable.", getType(args[0])))
 	})
 	iteratorFunc("enumerate", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var it interfaces.Iterator
@@ -478,7 +478,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return NewLoxIterator(iterator), nil
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
-			fmt.Sprintf("Type '%v' is not iterable.", getType(args[0])))
+			fmt.Sprintf("Iterator.pairwise: type '%v' is not iterable.", getType(args[0])))
 	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any
