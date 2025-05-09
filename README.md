@@ -117,7 +117,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - HTML tokenizer
             - For each iteration, `element` is each HTML token from the HTML tokenizer object as an HTML token object
         - IP address
-            - For each iteration, `element` is each byte from the IP address object as an integer
+            - For each iteration, `element` is each byte from the IP address instance as an integer
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Repeat statements are supported in this implementation of Lox, which repeatedly executes a statement for a certain number of times according to the expression
     ```js
@@ -245,6 +245,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with dotenv functionality are defined under a built-in class called `dotenv`, which is documented [here](./doc/dotenv.md)
 - Various methods and fields to work with gzip files are defined under a built-in class called `gzip`, which is documented [here](./doc/gzip.md)
 - Various methods and fields to work with logging are defined under a built-in class called `log`, which is documented [here](./doc/log.md)
+- Various methods and fields to work with network requests are defined under a built-in class called `net`, which is documented [here](./doc/net.md)
 - Various methods to work with regular expressions are defined under a built-in class called `regex`, which is documented [here](./doc/regex.md)
 - Various methods and fields to work with dates are defined under a built-in class called `Date`, which is documented [here](./doc/Date.md)
 - Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)

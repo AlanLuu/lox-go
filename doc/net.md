@@ -1,0 +1,164 @@
+# Net methods and fields
+
+Any method that fails will throw a runtime error with a message describing the error.
+
+The following network type string fields are defined in the built-in `net` class:
+- `net.tcp`, `net.tcp4`, `net.tcp6`, `net.udp`, `net.udp4`, `net.udp6`, `net.ip`, `net.ip4`, `net.ip6`, `net.unix`, `net.unixgram`, `net.unixpacket`
+
+The following methods are defined in the built-in `net` class:
+- `net.dial(network, address)`, which takes in a network type string and an address string in the form of `<host>:<port>` for TCP and UDP networks and attempts to connect to the specified address using the specified network string, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+- `net.dialIP(network, ip, port)`, which takes in a network type string, an IP address instance, and a port number as an integer and attempts to connect to the specified IP address using the specified network string and port number, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialPort(network, address, port)`, which takes in a network type string, an address string in the form of `<host>` for TCP and UDP networks, and a port number as an integer and attempts to connect to the specified address using the specified network string and port number, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The address string argument must not include the `:` character or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialTimeout(network, address, duration)`, which takes in a network type string, an address string in the form of `<host>:<port>` for TCP and UDP networks, and a duration object and attempts to connect to the specified address using the specified network string with a timeout of the specified duration, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+- `net.dialTimeoutIP(network, ip, port, duration)`, which takes in a network type string, an IP address instance, a port number as an integer, and a duration object and attempts to connect to the specified IP address using the specified network string and port number with a timeout of the specified duration, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialTimeoutPort(network, address, port, duration)`, which takes in a network type string, an address string in the form of `<host>` for TCP and UDP networks, a port number as an integer, and a duration object and attempts to connect to the specified address using the specified network string and port number with a timeout of the specified duration, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The address string argument must not include the `:` character or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.interfaceAddrs()`, which returns information about the system's unicast interface addresses as a list of lists of two elements, with the first element being the name of the network as a string and the second element being the string representation of the unicast interface address
+- `net.ipOther(byteArgs...)`, which takes in a variable amount of integers as arguments and returns an IP address instance that consists of the specified integer arguments
+    - If this method is called with no arguments, a nil IP address instance is returned
+    - All integer arguments must be from 0 to 255 or else a runtime error is thrown
+- `net.ipOtherBuf(buffer)`, which takes in a buffer and returns an IP address instance that consists of the buffer elements
+    - If the buffer argument has a length of 0, a nil IP address instance is returned
+- `net.ipOtherIter(iterator)`, which takes in an iterator that returns integers and returns an IP address instance that consists of the integers from the iterator
+    - If the iterator ever returns an element that is not an integer, a runtime error is thrown
+    - All integers returned from the iterator must be from 0 to 255 or else a runtime error is thrown
+- `net.ipOtherList(list)`, which takes in a list of integers and returns an IP address instance that consists of the integers from the list
+    - The specified list's elements must all be integers or else a runtime error is thrown
+    - All integers in the list must be from 0 to 255 or else a runtime error is thrown
+- `net.ipv4(a, b, c, d)`, which takes in four integers as arguments and returns an IP address instance that consists of those integer arguments
+    - All integer arguments must be from 0 to 255 or else a runtime error is thrown
+- `net.ipv4Buf(buffer)`, which takes in a buffer of exactly 4 integers and returns an IP address instance that consists of the buffer elements
+    - If the specified buffer does not contain exactly 4 integers, a runtime error is thrown
+- `net.ipv4Iter(iterator)`, which takes in an iterator that returns exactly 4 integers and returns an IP address instance that consists of the elements from the iterator
+    - If the iterator ever returns an element that is not an integer, a runtime error is thrown
+    - If the iterator does not return exactly 4 integers, a runtime error is thrown
+    - All integers returned from the iterator must be from 0 to 255 or else a runtime error is thrown
+- `net.ipv4List(list)`, which takes in a list of exactly 4 integers and returns an IP address instance that consists of the integers from the list
+    - The specified list's elements must all be integers or else a runtime error is thrown
+    - If the specified list does not contain exactly 4 integers, a runtime error is thrown
+    - All integers in the list must be from 0 to 255 or else a runtime error is thrown
+- `net.ipv6(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)`, which takes in a total of 16 integer arguments and returns an IP address instance that consists of those integer arguments
+    - All integer arguments must be from 0 to 255 or else a runtime error is thrown
+- `net.ipv6Buf(buffer)`, which takes in a buffer of exactly 16 integers and returns an IP address instance that consists of the buffer elements
+    - If the specified buffer does not contain exactly 4 integers, a runtime error is thrown
+- `net.ipv6Iter(iterator)`, which takes in an iterator that returns exactly 16 integers and returns an IP address instance that consists of the elements from the iterator
+    - If the iterator ever returns an element that is not an integer, a runtime error is thrown
+    - If the iterator does not return exactly 16 integers, a runtime error is thrown
+    - All integers returned from the iterator must be from 0 to 255 or else a runtime error is thrown
+- `net.ipv6List(list)`, which takes in a list of exactly 16 integers and returns an IP address instance that consists of the integers from the list
+    - The specified list's elements must all be integers or else a runtime error is thrown
+    - If the specified list does not contain exactly 16 integers, a runtime error is thrown
+    - All integers in the list must be from 0 to 255 or else a runtime error is thrown
+- `net.joinHostPort(host, port)`, which takes in a host and port string and returns a string of the form `"host:port"`
+    - If the host string contains a colon, the returned string is of the form `"[host]:port"`
+- `net.listen(network, address)`, which takes in a network type string and an address string in the form of `<host>:<port>` and listens on the local address, returning a listener object on success and throwing a runtime error on failure
+    - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
+- `net.listenIP(network, ip, port)`, which takes in a network type string, an IP address instance, and a port number as an integer and listens on the local IP address and port number, returning a listener object on success and throwing a runtime error on failure
+    - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
+    - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.listenPort(network, address, port)`, which takes in a network type string, an address string in the form of `<host>:<port>`, and a port number as an integer and listens on the local address and port number, returning a listener object on success and throwing a runtime error on failure
+    - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
+    - The address string argument must not include the `:` character or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.lookupAddr(addrStr/addrIP)`, which takes in a string representation of an IP address or an IP address instance and performs a reverse DNS lookup of the specified argument, returning a list of domain names, which are strings, that map to the specified argument
+- `net.lookupCNAME(hostStr)`, which looks up the CNAME of the specified host string and returns the CNAME as a string
+- `net.lookupHost(hostStr)`, which looks up the IP addresses of the specified host string and returns a list of strings of those IP addresses
+- `net.lookupIP(ipStr)`, which looks up the IP addresses of the specified host string and returns a list of IP address instances of those IP addresses
+- `net.lookupMX(domainNameStr)`, which returns the DNS MX records of the specified domain name string as a list of lists of two elements, with the first element being the MX host name as a string and the second element being the MX preference as an integer
+- `net.lookupNS(domainNameStr)`, which returns a list of strings of the DNS NS records for the specified domain name string
+- `net.lookupPort(network, service)`, which returns the port number as an integer for the specified network string and service string
+- `net.lookupTXT(domainNameStr)`, which returns a list of strings of the DNS TXT records for the specified domain name string
+- `net.mustParseIP(ipStr)`, which parses the specified string into an IP address instance and throws a runtime error if the string cannot be successfully parsed
+- `net.nilIP()`, which returns a nil IP address instance
+- `net.parseCIDR(cidrStr)`, which parses the specified string as a CIDR notation IP address and returns a list with two strings, with the first being the string representation of the IP address and the second being the string representation of the network implied by the IP and prefix length
+- `net.parseIP(ipStr)`, which parses the specified string into an IP address instance and returns a nil IP address instance if the string cannot be successfully parsed
+- `net.parseIPOrNil(ipStr)`, which parses the specified string into an IP address instance and returns `nil` if the string cannot be successfully parsed
+- `net.parseMAC(macStr)`, which parses the specified string as a MAC address and returns a buffer of the parsed MAC address
+- `net.pipe()`, which returns a list containing two connection objects that are connected to each other through a pipe, where reading from the read end returns data that is written to the write end
+- `net.splitHostPort(hostPortStr)`, which splits the specified string of the form `"host:port"`, `"host%zone:port"`, `"[host]:port"` or `"[host%zone]:port"` and returns a list with two strings, with the first being the host and the second being the port
+
+IP address instances have the following methods associated with them:
+- `ip address.defaultMask()`
+- `ip address.defaultMaskOrNil()`
+- `ip address.get(position)`, which is an alias for `ip address.getByte`
+- `ip address.getByte(position)`
+- `ip address.getIndex(index)`
+- `ip address.getSliceBuf(start, end)`
+- `ip address.getSliceIndexBuf(start, end)`
+- `ip address.getSliceIndexIter(start, end)`
+- `ip address.getSliceIndexList(start, end)`
+- `ip address.getSliceIter(start, end)`
+- `ip address.getSliceList(start, end)`
+- `ip address.httpurl()`
+- `ip address.ipv4Len16Iter()`
+- `ip address.isGlobalUnicast()`
+- `ip address.isInterfaceLocalMulticast()`
+- `ip address.isIpOther()`
+- `ip address.isIpv4()`
+- `ip address.isIpv4Len16()`
+- `ip address.isIpv6()`
+- `ip address.isLinkLocalMulticast()`
+- `ip address.isLinkLocalUnicast()`
+- `ip address.isLoopback()`
+- `ip address.isMulticast()`
+- `ip address.isNil()`
+- `ip address.isPrivate()`
+- `ip address.isUnspecified()`
+- `ip address.mask(ip)`
+- `ip address.set(position, value)`, which is an alias for `ip address.setByte`
+- `ip address.setByte(position, value)`
+- `ip address.setIndex(index, value)`
+- `ip address.strictEquals(ip)`
+- `ip address.string()`
+- `ip address.to16()`
+- `ip address.to16OrNil()`
+- `ip address.to4()`
+- `ip address.to4OrNil()`
+- `ip address.toBuffer()`
+- `ip address.toList()`
+
+Connection objects have the following methods associated with them:
+- `connection.close()`
+- `connection.closeForce()`
+- `connection.isClosed()`
+- `connection.localAddrNetwork()`
+- `connection.localAddrString()`
+- `connection.readBuffer()`
+- `connection.readBufferLine()`
+- `connection.readBufferLineIter()`
+- `connection.readString()`
+- `connection.readStringLine()`
+- `connection.readStringLineIter()`
+- `connection.readToFile(file/string)`
+- `connection.readToFileLine(file/string)`
+- `connection.remoteAddrNetwork()`
+- `connection.remoteAddrString()`
+- `connection.send(buffer/file/string)`, which is an alias for `connection.write`
+- `connection.setDeadline(date)`
+- `connection.setReadDeadline(date)`
+- `connection.setWriteDeadline(date)`
+- `connection.write(buffer/file/string)`
+
+Listener objects have the following methods associated with them:
+- `listener.accept()`
+- `listener.acceptFunc(callback)`
+- `listener.acceptIter()`
+- `listener.addrNetwork()`
+- `listener.addrString()`
+- `listener.close()`
+- `listener.closeForce()`
+- `listener.isClosed()`
