@@ -2216,6 +2216,13 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxStringQuote(username), nil
 	})
+	osFunc("usernameFull", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		currentUser, err := user.Current()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxStringQuote(currentUser.Username), nil
+	})
 	osFunc("wait", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		pid, waitStatus, err := syscalls.Wait()
 		if err != nil {
