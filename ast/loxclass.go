@@ -74,7 +74,7 @@ func (c *LoxClass) arity() int {
 func (c *LoxClass) call(interpreter *Interpreter, arguments list.List[any]) (any, error) {
 	if !c.canInstantiate {
 		return nil, loxerror.RuntimeError(interpreter.callToken,
-			fmt.Sprintf("Cannot instantiate class '%v'.", c.name))
+			fmt.Sprintf("Cannot instantiate static class '%v'.", c.name))
 	}
 	instance := NewLoxInstance(c)
 	for cls := c; cls != nil; cls = cls.superClass {
