@@ -8,7 +8,13 @@ The following network type string fields are defined in the built-in `net` class
 The following methods are defined in the built-in `net` class:
 - `net.dial(network, address)`, which takes in a network type string and an address string in the form of `<host>:<port>` for TCP and UDP networks and attempts to connect to the specified address using the specified network string, returning a connection object on success and throwing a runtime error on failure
     - The network string argument must be a valid network type string or else a runtime error is thrown
+- `net.dialOrNil(network, address)`, which takes in a network type string and an address string in the form of `<host>:<port>` for TCP and UDP networks and attempts to connect to the specified address using the specified network string, returning a connection object on success and returning `nil` on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
 - `net.dialIP(network, ip, port)`, which takes in a network type string, an IP address instance, and a port number as an integer and attempts to connect to the specified IP address using the specified network string and port number, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialIPOrNil(network, ip, port)`, which takes in a network type string, an IP address instance, and a port number as an integer and attempts to connect to the specified IP address using the specified network string and port number, returning a connection object on success and returning `nil` on failure
     - The network string argument must be a valid network type string or else a runtime error is thrown
     - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
     - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
@@ -16,13 +22,27 @@ The following methods are defined in the built-in `net` class:
     - The network string argument must be a valid network type string or else a runtime error is thrown
     - The address string argument must not include the `:` character or else a runtime error is thrown
     - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialPortOrNil(network, address, port)`, which takes in a network type string, an address string in the form of `<host>` for TCP and UDP networks, and a port number as an integer and attempts to connect to the specified address using the specified network string and port number, returning a connection object on success and returning `nil` on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The address string argument must not include the `:` character or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
 - `net.dialTimeout(network, address, duration)`, which takes in a network type string, an address string in the form of `<host>:<port>` for TCP and UDP networks, and a duration object and attempts to connect to the specified address using the specified network string with a timeout of the specified duration, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+- `net.dialTimeoutOrNil(network, address, duration)`, which takes in a network type string, an address string in the form of `<host>:<port>` for TCP and UDP networks, and a duration object and attempts to connect to the specified address using the specified network string with a timeout of the specified duration, returning a connection object on success and returning `nil` on failure
     - The network string argument must be a valid network type string or else a runtime error is thrown
 - `net.dialTimeoutIP(network, ip, port, duration)`, which takes in a network type string, an IP address instance, a port number as an integer, and a duration object and attempts to connect to the specified IP address using the specified network string and port number with a timeout of the specified duration, returning a connection object on success and throwing a runtime error on failure
     - The network string argument must be a valid network type string or else a runtime error is thrown
     - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
     - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialTimeoutIPOrNil(network, ip, port, duration)`, which takes in a network type string, an IP address instance, a port number as an integer, and a duration object and attempts to connect to the specified IP address using the specified network string and port number with a timeout of the specified duration, returning a connection object on success and returning `nil` on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
 - `net.dialTimeoutPort(network, address, port, duration)`, which takes in a network type string, an address string in the form of `<host>` for TCP and UDP networks, a port number as an integer, and a duration object and attempts to connect to the specified address using the specified network string and port number with a timeout of the specified duration, returning a connection object on success and throwing a runtime error on failure
+    - The network string argument must be a valid network type string or else a runtime error is thrown
+    - The address string argument must not include the `:` character or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.dialTimeoutPortOrNil(network, address, port, duration)`, which takes in a network type string, an address string in the form of `<host>` for TCP and UDP networks, a port number as an integer, and a duration object and attempts to connect to the specified address using the specified network string and port number with a timeout of the specified duration, returning a connection object on success and returning `nil` on failure
     - The network string argument must be a valid network type string or else a runtime error is thrown
     - The address string argument must not include the `:` character or else a runtime error is thrown
     - The port integer argument must be from 0 to 65535 or else a runtime error is thrown

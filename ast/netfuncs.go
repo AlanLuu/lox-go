@@ -66,6 +66,23 @@ func (i *Interpreter) defineNetFuncs() {
 		}
 		return NewLoxConnection(conn), nil
 	})
+	netFunc("dialOrNil", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.dialOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialOrNil' must be a string.")
+		}
+		network := args[0].(*LoxString).str
+		address := args[1].(*LoxString).str
+		conn, err := net.Dial(network, address)
+		if err != nil {
+			return nil, nil
+		}
+		return NewLoxConnection(conn), nil
+	})
 	netFunc("dialIP", 3, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -94,6 +111,37 @@ func (i *Interpreter) defineNetFuncs() {
 		conn, err := net.Dial(network, addressStr)
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxConnection(conn), nil
+	})
+	netFunc("dialIPOrNil", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.dialIPOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxIPAddress); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialIPOrNil' must be an IP address instance.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialIPOrNil' must be an integer.")
+		}
+		address := args[1].(*LoxIPAddress)
+		if address.isNil() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialIPOrNil' cannot be a nil IP address instance.")
+		}
+		portNum := args[2].(int64)
+		if !isValidPortNum(portNum) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialIPOrNil' must be from 0 to 65535.")
+		}
+		network := args[0].(*LoxString).str
+		addressStr := address.ip.String() + ":" + fmt.Sprint(portNum)
+		conn, err := net.Dial(network, addressStr)
+		if err != nil {
+			return nil, nil
 		}
 		return NewLoxConnection(conn), nil
 	})
@@ -128,6 +176,37 @@ func (i *Interpreter) defineNetFuncs() {
 		}
 		return NewLoxConnection(conn), nil
 	})
+	netFunc("dialPortOrNil", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.dialPortOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialPortOrNil' must be a string.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialPortOrNil' must be an integer.")
+		}
+		address := args[1].(*LoxString).str
+		if strings.Contains(address, ":") {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialPortOrNil' cannot contain the character ':'.")
+		}
+		portNum := args[2].(int64)
+		if !isValidPortNum(portNum) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialPortOrNil' must be from 0 to 65535.")
+		}
+		network := args[0].(*LoxString).str
+		addressStr := address + ":" + fmt.Sprint(portNum)
+		conn, err := net.Dial(network, addressStr)
+		if err != nil {
+			return nil, nil
+		}
+		return NewLoxConnection(conn), nil
+	})
 	netFunc("dialTimeout", 3, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -147,6 +226,28 @@ func (i *Interpreter) defineNetFuncs() {
 		conn, err := net.DialTimeout(network, address, timeout)
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxConnection(conn), nil
+	})
+	netFunc("dialTimeoutOrNil", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.dialTimeoutOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialTimeoutOrNil' must be a string.")
+		}
+		if _, ok := args[2].(*LoxDuration); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialTimeoutOrNil' must be a duration.")
+		}
+		network := args[0].(*LoxString).str
+		address := args[1].(*LoxString).str
+		timeout := args[2].(*LoxDuration).duration
+		conn, err := net.DialTimeout(network, address, timeout)
+		if err != nil {
+			return nil, nil
 		}
 		return NewLoxConnection(conn), nil
 	})
@@ -186,6 +287,42 @@ func (i *Interpreter) defineNetFuncs() {
 		}
 		return NewLoxConnection(conn), nil
 	})
+	netFunc("dialTimeoutIPOrNil", 4, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.dialTimeoutIPOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxIPAddress); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialTimeoutIPOrNil' must be an IP address instance.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialTimeoutIPOrNil' must be an integer.")
+		}
+		if _, ok := args[3].(*LoxDuration); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Fourth argument to 'net.dialTimeoutIPOrNil' must be a duration.")
+		}
+		address := args[1].(*LoxIPAddress)
+		if address.isNil() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialTimeoutIPOrNil' cannot be a nil IP address instance.")
+		}
+		portNum := args[2].(int64)
+		if !isValidPortNum(portNum) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialTimeoutIPOrNil' must be from 0 to 65535.")
+		}
+		network := args[0].(*LoxString).str
+		addressStr := address.ip.String() + ":" + fmt.Sprint(portNum)
+		timeout := args[3].(*LoxDuration).duration
+		conn, err := net.DialTimeout(network, addressStr, timeout)
+		if err != nil {
+			return nil, nil
+		}
+		return NewLoxConnection(conn), nil
+	})
 	netFunc("dialTimeoutPort", 4, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -219,6 +356,42 @@ func (i *Interpreter) defineNetFuncs() {
 		conn, err := net.DialTimeout(network, addressStr, timeout)
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxConnection(conn), nil
+	})
+	netFunc("dialTimeoutPortOrNil", 4, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.dialTimeoutPortOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialTimeoutPortOrNil' must be a string.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialTimeoutPortOrNil' must be an integer.")
+		}
+		if _, ok := args[3].(*LoxDuration); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Fourth argument to 'net.dialTimeoutPortOrNil' must be a duration.")
+		}
+		address := args[1].(*LoxString).str
+		if strings.Contains(address, ":") {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.dialTimeoutPortOrNil' cannot contain the character ':'.")
+		}
+		portNum := args[2].(int64)
+		if !isValidPortNum(portNum) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.dialTimeoutPortOrNil' must be from 0 to 65535.")
+		}
+		network := args[0].(*LoxString).str
+		addressStr := address + ":" + fmt.Sprint(portNum)
+		timeout := args[3].(*LoxDuration).duration
+		conn, err := net.DialTimeout(network, addressStr, timeout)
+		if err != nil {
+			return nil, nil
 		}
 		return NewLoxConnection(conn), nil
 	})
