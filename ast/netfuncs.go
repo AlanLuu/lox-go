@@ -1017,6 +1017,23 @@ func (i *Interpreter) defineNetFuncs() {
 		}
 		return NewLoxListener(listener), nil
 	})
+	netFunc("listenOrNil", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.listenOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.listenOrNil' must be a string.")
+		}
+		network := args[0].(*LoxString).str
+		address := args[1].(*LoxString).str
+		listener, err := net.Listen(network, address)
+		if err != nil {
+			return nil, nil
+		}
+		return NewLoxListener(listener), nil
+	})
 	netFunc("listenIP", 3, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -1048,6 +1065,37 @@ func (i *Interpreter) defineNetFuncs() {
 		}
 		return NewLoxListener(listener), nil
 	})
+	netFunc("listenIPOrNil", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.listenIPOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxIPAddress); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.listenIPOrNil' must be an IP address instance.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.listenIPOrNil' must be an integer.")
+		}
+		address := args[1].(*LoxIPAddress)
+		if address.isNil() {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.listenIPOrNil' cannot be a nil IP address instance.")
+		}
+		portNum := args[2].(int64)
+		if !isValidPortNum(portNum) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Port number argument to 'net.listenIPOrNil' must be from 0 to 65535.")
+		}
+		network := args[0].(*LoxString).str
+		addressStr := address.ip.String() + ":" + fmt.Sprint(portNum)
+		listener, err := net.Listen(network, addressStr)
+		if err != nil {
+			return nil, nil
+		}
+		return NewLoxListener(listener), nil
+	})
 	netFunc("listenPort", 3, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(*LoxString); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -1076,6 +1124,37 @@ func (i *Interpreter) defineNetFuncs() {
 		listener, err := net.Listen(network, addressStr)
 		if err != nil {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return NewLoxListener(listener), nil
+	})
+	netFunc("listenPortOrNil", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'net.listenPortOrNil' must be a string.")
+		}
+		if _, ok := args[1].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.listenPortOrNil' must be a string.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.listenPortOrNil' must be an integer.")
+		}
+		address := args[1].(*LoxString).str
+		if strings.Contains(address, ":") {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'net.listenPortOrNil' cannot contain the character ':'.")
+		}
+		portNum := args[2].(int64)
+		if !isValidPortNum(portNum) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'net.listenPortOrNil' must be from 0 to 65535.")
+		}
+		network := args[0].(*LoxString).str
+		addressStr := address + ":" + fmt.Sprint(portNum)
+		listener, err := net.Listen(network, addressStr)
+		if err != nil {
+			return nil, nil
 		}
 		return NewLoxListener(listener), nil
 	})

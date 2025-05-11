@@ -86,11 +86,21 @@ The following methods are defined in the built-in `net` class:
     - If the host string contains a colon, the returned string is of the form `"[host]:port"`
 - `net.listen(network, address)`, which takes in a network type string and an address string in the form of `<host>:<port>` and listens on the local address, returning a listener object on success and throwing a runtime error on failure
     - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
+- `net.listenOrNil(network, address)`, which takes in a network type string and an address string in the form of `<host>:<port>` and listens on the local address, returning a listener object on success and returning `nil` on failure
+    - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
 - `net.listenIP(network, ip, port)`, which takes in a network type string, an IP address instance, and a port number as an integer and listens on the local IP address and port number, returning a listener object on success and throwing a runtime error on failure
     - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
     - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
     - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.listenIPOrNil(network, ip, port)`, which takes in a network type string, an IP address instance, and a port number as an integer and listens on the local IP address and port number, returning a listener object on success and returning `nil` on failure
+    - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
+    - The IP address instance argument must not be a nil IP address instance or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
 - `net.listenPort(network, address, port)`, which takes in a network type string, an address string in the form of `<host>:<port>`, and a port number as an integer and listens on the local address and port number, returning a listener object on success and throwing a runtime error on failure
+    - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
+    - The address string argument must not include the `:` character or else a runtime error is thrown
+    - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
+- `net.listenPortOrNil(network, address, port)`, which takes in a network type string, an address string in the form of `<host>:<port>`, and a port number as an integer and listens on the local address and port number, returning a listener object on success and returning `nil` on failure
     - The network string argument must be one of the following or else a runtime error is thrown: `net.tcp`, `net.tcp4`, `net.tcp6`, `net.unix`, `net.unixpacket`
     - The address string argument must not include the `:` character or else a runtime error is thrown
     - The port integer argument must be from 0 to 65535 or else a runtime error is thrown
