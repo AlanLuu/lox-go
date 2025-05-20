@@ -235,6 +235,21 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.symlink(target, linkName)`, which creates a symbolic link to `target` with the name `linkName`, which are both strings
 - `os.sync()`, which forces a write of all data to disk
     - This method does not work on Windows and throws an error if called on there
+- `os.sysinfo()`, which returns a dictionary containing information about memory and swap usage on Linux via the `sysinfo(2)` syscall
+    - The returned dictionary contains the following keys and values, where the keys are all strings:
+        - `uptime` (integer)
+        - `loads` (list)
+        - `totalram` (integer)
+        - `freeram` (integer)
+        - `sharedram` (integer)
+        - `bufferram` (integer)
+        - `totalswap` (integer)
+        - `freeswap` (integer)
+        - `procs` (integer)
+        - `totalhigh` (integer)
+        - `freehigh` (integer)
+        - `unit` (integer)
+    - This method only works on Linux and throws an error if called on any other operating system
 - `os.system(command)`, which runs the specified command string in the system shell, which is `sh` on Unix and `cmd` on Windows, and returns the exit code of the command as an integer
 - `os.tee(arg, path)`, which writes the string representation of the specified argument to the file specified by the path name and also writes the string to standard output
     - If the file already exists, it is truncated

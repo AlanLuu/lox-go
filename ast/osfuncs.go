@@ -2018,6 +2018,45 @@ func (i *Interpreter) defineOSFuncs() {
 		syscalls.Sync()
 		return nil, nil
 	})
+	osFunc("sysinfo", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		result, err := linuxsyscalls.Sysinfo()
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		dict := EmptyLoxDict()
+		setDict := func(key string, value any) {
+			const loadsLen = 3
+			switch value := value.(type) {
+			case int64:
+				dict.setKeyValue(NewLoxString(key, '\''), value)
+			case uint64:
+				dict.setKeyValue(NewLoxString(key, '\''), int64(value))
+			case uint32:
+				dict.setKeyValue(NewLoxString(key, '\''), int64(value))
+			case uint16:
+				dict.setKeyValue(NewLoxString(key, '\''), int64(value))
+			case [loadsLen]uint64:
+				valList := list.NewListCap[any](loadsLen)
+				for _, element := range value {
+					valList.Add(int64(element))
+				}
+				dict.setKeyValue(NewLoxString(key, '\''), NewLoxList(valList))
+			}
+		}
+		setDict("uptime", result.Uptime)
+		setDict("loads", result.Loads)
+		setDict("totalram", result.Totalram)
+		setDict("freeram", result.Freeram)
+		setDict("sharedram", result.Sharedram)
+		setDict("bufferram", result.Bufferram)
+		setDict("totalswap", result.Totalswap)
+		setDict("freeswap", result.Freeswap)
+		setDict("procs", result.Procs)
+		setDict("totalhigh", result.Totalhigh)
+		setDict("freehigh", result.Freehigh)
+		setDict("unit", result.Unit)
+		return dict, nil
+	})
 	osFunc("system", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			var cmd *exec.Cmd
