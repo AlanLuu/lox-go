@@ -59,6 +59,8 @@ var escapeChars = map[rune]rune{
 	'v':  '\v',
 }
 
+var keywordAsIdentifier = false
+
 type Scanner struct {
 	sourceRunes  []rune
 	sourceLen    int
@@ -229,8 +231,9 @@ func (sc *Scanner) handleIdentifier() {
 
 	text := string(sc.sourceRunes[sc.startIndex:sc.currentIndex])
 	tokenType, ok := keywords[text]
-	if !ok {
+	if keywordAsIdentifier || !ok {
 		tokenType = token.IDENTIFIER
+		keywordAsIdentifier = false
 	}
 	sc.addToken(tokenType, nil, 0)
 }
@@ -335,6 +338,8 @@ func (sc *Scanner) scanToken() error {
 	addToken := func(tokenType token.TokenType) {
 		sc.addToken(tokenType, nil, 0)
 	}
+	foundDot := false
+	foundWhitespaceChar := false
 	switch c {
 	case '(':
 		addToken(token.LEFT_PAREN)
@@ -361,9 +366,11 @@ func (sc *Scanner) scanToken() error {
 				addToken(token.DOT)
 				sc.currentIndex++
 				addToken(token.DOT)
+				foundDot = true
 			}
 		} else {
 			addToken(token.DOT)
+			foundDot = true
 		}
 	case '?':
 		addToken(token.QUESTION)
@@ -437,11 +444,11 @@ func (sc *Scanner) scanToken() error {
 		addToken(token.PERCENT)
 
 	case '\n':
+		foundWhitespaceChar = true
 		sc.lineNum++
 
-	case ' ':
-	case '\r':
-	case '\t':
+	case ' ', '\r', '\t':
+		foundWhitespaceChar = true
 
 	case '"', '\'':
 		handleStringErr := sc.handleString(c)
@@ -461,6 +468,9 @@ func (sc *Scanner) scanToken() error {
 			unexpectedChar := "Unexpected character '" + string(c) + "'."
 			return loxerror.GiveError(sc.lineNum, "", unexpectedChar)
 		}
+	}
+	if !foundWhitespaceChar {
+		keywordAsIdentifier = foundDot
 	}
 	return nil
 }

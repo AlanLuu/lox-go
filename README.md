@@ -68,6 +68,12 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - bigints and bigfloats support the same operations as integers and floats, with the following notes:
         - bigfloats do not support the `**` operator
         - Dividing a bigint by `0` or `0n` throws a runtime error
+- Class properties that share the same spelling as a reserved keyword are supported in this implementation of Lox
+    ```js
+    class A {}
+    A.if = 0;
+    print A.if;
+    ```
 - A new statement called `put` prints an expression without a newline character at the end
     - Syntax: `put <expression>;`
 - `break` and `continue` statements are supported in this implementation of Lox
