@@ -257,6 +257,5 @@ func main() {
 		exitCode = interactiveMode()
 	}
 
-	ast.CloseInputFuncReadline()
-	os.Exit(exitCode)
+	ast.OSExit(exitCode)
 }

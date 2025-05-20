@@ -724,8 +724,7 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
 		}
-		CloseInputFuncReadline()
-		os.Exit(exitCode)
+		OSExit(exitCode)
 		return nil, nil
 	})
 	osFunc("fallocate", 2, func(in *Interpreter, args list.List[any]) (any, error) {

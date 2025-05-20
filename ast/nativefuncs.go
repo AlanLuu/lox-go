@@ -30,6 +30,11 @@ func CloseInputFuncReadline() {
 	}
 }
 
+func OSExit(code int) {
+	CloseInputFuncReadline()
+	os.Exit(code)
+}
+
 func (i *Interpreter) defineNativeFuncs() {
 	nativeFunc := func(name string, arity int, method func(*Interpreter, list.List[any]) (any, error)) {
 		s := &struct{ ProtoLoxCallable }{}

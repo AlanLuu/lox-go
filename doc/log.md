@@ -16,11 +16,13 @@ The following methods are defined in the built-in `log` class:
 - `log.loggerFromDefault()`, which returns a new logger object with its output file, prefix, and flag copied from the default logger object associated with the `log` class
 - `log.outputIs(file)`, which returns `true` if the file that the `log` class logs to is the same as the specified file argument and `false` otherwise
 - `log.prefix()`, which returns the optional prefix string associated with the `log` class as a string
+- `log.print(...args)`, which logs the specified arguments to the output file associated with the `log` class
 - `log.println(...args)`, which logs the specified arguments to the output file associated with the `log` class
 - `log.setFlags(flag)`, which sets the flag integer of the `log` class to the specified flag integer
 - `log.setOutput(file)`, which sets the output file associated with the `log` class to the specified file object
 - `log.setPrefix(prefix)`, which sets the optional prefix string of the `log` class to the specified prefix string
-- `log.sprintln(...args)`, which returns the log line generated from the specified arguments as a string rather than logging it to the output file associated with the `log` class
+- `log.sprint(...args)`, which returns the log line generated from the specified arguments as a string rather than logging it to the output file associated with the `log` class
+- `log.sprintln(...args)`, which returns the log line generated from the specified arguments plus a newline character as a string rather than logging it to the output file associated with the `log` class
 
 Logger objects have the following methods associated with them:
 - `logger.clearSavedLogs()`, which removes all saved log lines in the current logger object
@@ -30,6 +32,7 @@ Logger objects have the following methods associated with them:
     - If `index` is out of range, this method throws a runtime error
 - `logger.outputIs(file)`, which returns `true` if the file that the current logger object logs to is the same as the specified file argument and `false` otherwise
 - `logger.prefix()`, which returns the optional prefix string associated with the current logger object as a string
+- `logger.print(...args)`, which logs the specified arguments to the output file associated with the current logger object
 - `logger.println(...args)`, which logs the specified arguments to the output file associated with the current logger object
 - `logger.printSave(...args)`, which saves the log line generated from the specified arguments as a string in a list in the current logger object rather than logging it to the output file associated with the current logger object
 - `logger.printSaved()`, which logs all saved log lines in the current logger object to the output file associated with the current logger object
@@ -39,4 +42,5 @@ Logger objects have the following methods associated with them:
 - `logger.setFlags(flag)`, which sets the flag integer of the current logger object to the specified flag integer
 - `logger.setOutput(file)`, which sets the output file associated with the current logger object to the specified file object
 - `logger.setPrefix(prefix)`, which sets the optional prefix string of the current logger object to the specified prefix string
-- `logger.sprintln(...args)`, which returns the log line generated from the specified arguments as a string rather than logging it to the output file associated with the current logger object
+- `logger.sprint(...args)`, which returns the log line generated from the specified arguments as a string rather than logging it to the output file associated with the current logger object
+- `logger.sprintln(...args)`, which returns the log line generated from the specified arguments plus a newline character as a string rather than logging it to the output file associated with the current logger object

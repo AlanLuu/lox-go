@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/AlanLuu/lox/interfaces"
@@ -75,10 +74,6 @@ func (l *LoxLogger) Get(name *token.Token) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'logger.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
-	fatal := func() {
-		CloseInputFuncReadline()
-		os.Exit(1)
-	}
 	results := func(args []any) []any {
 		elements := make([]any, 0, len(args))
 		for _, arg := range args {
@@ -95,7 +90,7 @@ func (l *LoxLogger) Get(name *token.Token) (any, error) {
 	case "fatal":
 		return loggerFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			l.logger.Println(results(args)...)
-			fatal()
+			OSExit(1)
 			return nil, nil
 		})
 	case "flags":
@@ -112,6 +107,11 @@ func (l *LoxLogger) Get(name *token.Token) (any, error) {
 	case "prefix":
 		return loggerFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxStringQuote(l.logger.Prefix()), nil
+		})
+	case "print":
+		return loggerFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			l.logger.Print(results(args)...)
+			return nil, nil
 		})
 	case "println":
 		return loggerFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -192,6 +192,15 @@ func (l *LoxLogger) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "sprint":
+		return loggerFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var builder strings.Builder
+			prevWriter := l.logger.Writer()
+			l.logger.SetOutput(&builder)
+			l.logger.Print(results(args)...)
+			l.logger.SetOutput(prevWriter)
+			return NewLoxStringQuote(strings.TrimRight(builder.String(), "\n")), nil
+		})
 	case "sprintln":
 		return loggerFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			var builder strings.Builder
@@ -199,7 +208,7 @@ func (l *LoxLogger) Get(name *token.Token) (any, error) {
 			l.logger.SetOutput(&builder)
 			l.logger.Println(results(args)...)
 			l.logger.SetOutput(prevWriter)
-			return NewLoxStringQuote(strings.TrimRight(builder.String(), "\n")), nil
+			return NewLoxStringQuote(builder.String()), nil
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Logger objects have no property called '"+methodName+"'.")

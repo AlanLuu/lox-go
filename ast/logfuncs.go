@@ -47,10 +47,6 @@ func (i *Interpreter) defineLogFuncs() {
 		errStr := fmt.Sprintf("Argument to 'log.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
-	fatal := func() {
-		CloseInputFuncReadline()
-		os.Exit(1)
-	}
 	results := func(args []any) []any {
 		elements := make([]any, 0, len(args))
 		for _, arg := range args {
@@ -62,7 +58,7 @@ func (i *Interpreter) defineLogFuncs() {
 	defineLogFields(logClass)
 	logFunc("fatal", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		log.Println(results(args)...)
-		fatal()
+		OSExit(1)
 		return nil, nil
 	})
 	logFunc("flags", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
@@ -126,6 +122,10 @@ func (i *Interpreter) defineLogFuncs() {
 	logFunc("prefix", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return NewLoxStringQuote(log.Prefix()), nil
 	})
+	logFunc("print", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		log.Print(results(args)...)
+		return nil, nil
+	})
 	logFunc("println", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		log.Println(results(args)...)
 		return nil, nil
@@ -151,13 +151,21 @@ func (i *Interpreter) defineLogFuncs() {
 		}
 		return argMustBeType(in.callToken, "setPrefix", "string")
 	})
+	logFunc("sprint", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		var builder strings.Builder
+		prevWriter := log.Writer()
+		log.SetOutput(&builder)
+		log.Print(results(args)...)
+		log.SetOutput(prevWriter)
+		return NewLoxStringQuote(strings.TrimRight(builder.String(), "\n")), nil
+	})
 	logFunc("sprintln", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		var builder strings.Builder
 		prevWriter := log.Writer()
 		log.SetOutput(&builder)
 		log.Println(results(args)...)
 		log.SetOutput(prevWriter)
-		return NewLoxStringQuote(strings.TrimRight(builder.String(), "\n")), nil
+		return NewLoxStringQuote(builder.String()), nil
 	})
 
 	i.globals.Define(className, logClass)
