@@ -2480,10 +2480,18 @@ func (i *Interpreter) visitPrintingStmt(stmt Print) (any, error) {
 	if evalErr != nil {
 		return nil, evalErr
 	}
-	if stmt.NewLine {
-		fmt.Println(getResult(value, value, true))
+	if stmt.Stderr {
+		if stmt.NewLine {
+			fmt.Fprintln(os.Stderr, getResult(value, value, true))
+		} else {
+			fmt.Fprint(os.Stderr, getResult(value, value, true))
+		}
 	} else {
-		fmt.Print(getResult(value, value, true))
+		if stmt.NewLine {
+			fmt.Println(getResult(value, value, true))
+		} else {
+			fmt.Print(getResult(value, value, true))
+		}
 	}
 	return nil, nil
 }

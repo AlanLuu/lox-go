@@ -76,6 +76,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     ```
 - A new statement called `put` prints an expression without a newline character at the end
     - Syntax: `put <expression>;`
+- New statements called `printerr` and `puterr` print an expression to standard error instead of standard output
+    - Syntax: `printerr <expression>`, `puterr <expression>`
 - `break` and `continue` statements are supported in this implementation of Lox
 - For loops are implemented with their own AST node instead of being desugared into while loop nodes
     - This makes it easier to implement the `continue` statement inside for loops

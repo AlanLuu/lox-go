@@ -73,7 +73,9 @@ const (
 	NIL
 	OR
 	PRINT
+	PRINTERR
 	PUT
+	PUTERR
 	REPEAT
 	RETURN
 	STATIC
@@ -158,7 +160,9 @@ var tokenArr = [...]string{
 	"NIL",
 	"OR",
 	"PRINT",
+	"PRINTERR",
 	"PUT",
+	"PUTERR",
 	"REPEAT",
 	"RETURN",
 	"STATIC",

@@ -150,6 +150,7 @@ type Loop struct {
 type Print struct {
 	Expression Expr
 	NewLine    bool
+	Stderr     bool
 }
 
 type Repeat struct {
