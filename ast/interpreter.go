@@ -52,6 +52,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineDotenvFuncs()     //Defined in dotenvfuncs.go
 	interpreter.defineDurationFuncs()   //Defined in durationfuncs.go
 	interpreter.defineFloatFuncs()      //Defined in floatfuncs.go
+	interpreter.defineFmtFuncs()        //Defined in fmtfuncs.go
 	interpreter.defineGzipFuncs()       //Defined in gzipfuncs.go
 	interpreter.defineHexFuncs()        //Defined in hexfuncs.go
 	interpreter.defineHTMLFuncs()       //Defined in htmlfuncs.go
