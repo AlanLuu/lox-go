@@ -1266,6 +1266,18 @@ func (i *Interpreter) defineFmtFuncs() {
 	fmtFunc("sprint", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return NewLoxStringQuote(fmt.Sprint(argsToStrings(args)...)), nil
 	})
+	fmtFunc("sprintBuf", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		resultStr := fmt.Sprint(argsToStrings(args)...)
+		resultStrLen := len(resultStr)
+		buffer := EmptyLoxBufferCap(int64(resultStrLen))
+		for i := 0; i < resultStrLen; i++ {
+			addErr := buffer.add(int64(resultStr[i]))
+			if addErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+			}
+		}
+		return buffer, nil
+	})
 	fmtFunc("sprintf", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if len(args) == 0 {
 			return nil, loxerror.RuntimeError(in.callToken,
@@ -1281,6 +1293,29 @@ func (i *Interpreter) defineFmtFuncs() {
 				args[1:]...,
 			),
 		), nil
+	})
+	fmtFunc("sprintfBuf", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if len(args) == 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"fmt.sprintfBuf: expected at least 1 argument but got 0.")
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'fmt.sprintfBuf' must be a string.")
+		}
+		resultStr := fmt.Sprintf(
+			args[0].(*LoxString).str,
+			args[1:]...,
+		)
+		resultStrLen := len(resultStr)
+		buffer := EmptyLoxBufferCap(int64(resultStrLen))
+		for i := 0; i < resultStrLen; i++ {
+			addErr := buffer.add(int64(resultStr[i]))
+			if addErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+			}
+		}
+		return buffer, nil
 	})
 	fmtFunc("sprintfln", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if len(args) == 0 {
@@ -1298,8 +1333,43 @@ func (i *Interpreter) defineFmtFuncs() {
 			),
 		), nil
 	})
+	fmtFunc("sprintflnBuf", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if len(args) == 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"fmt.sprintflnBuf: expected at least 1 argument but got 0.")
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'fmt.sprintflnBuf' must be a string.")
+		}
+		resultStr := fmt.Sprintf(
+			args[0].(*LoxString).str+"\n",
+			args[1:]...,
+		)
+		resultStrLen := len(resultStr)
+		buffer := EmptyLoxBufferCap(int64(resultStrLen))
+		for i := 0; i < resultStrLen; i++ {
+			addErr := buffer.add(int64(resultStr[i]))
+			if addErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+			}
+		}
+		return buffer, nil
+	})
 	fmtFunc("sprintln", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		return NewLoxStringQuote(fmt.Sprintln(argsToStrings(args)...)), nil
+	})
+	fmtFunc("sprintlnBuf", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		resultStr := fmt.Sprintln(argsToStrings(args)...)
+		resultStrLen := len(resultStr)
+		buffer := EmptyLoxBufferCap(int64(resultStrLen))
+		for i := 0; i < resultStrLen; i++ {
+			addErr := buffer.add(int64(resultStr[i]))
+			if addErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, addErr.Error())
+			}
+		}
+		return buffer, nil
 	})
 
 	i.globals.Define(className, fmtClass)
