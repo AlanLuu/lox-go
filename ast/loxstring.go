@@ -190,6 +190,13 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "count":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return int64(strings.Count(l.str, loxStr.str)), nil
+			}
+			return argMustBeType("string")
+		})
 	case "endsWith":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

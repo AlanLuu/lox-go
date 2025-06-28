@@ -364,6 +364,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.capitalize()`, which returns a new string with the first character from the original string capitalized if possible and the rest of the characters in lowercase if possible
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
+        - `string.count(string2)`, which returns an integer representing the number of times `string2` appears in `string` in a non-overlapping manner
+            - If `string2` is an empty string, this method returns 1 plus the number of Unicode characters in `string`
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
         - `string.equalsIgnoreCase(string2)`, which returns `true` if `string` equals `string2`, ignoring letter case, and `false` otherwise
         - `string.fields()`, which returns a list containing all substrings that are separated by one or more consecutive whitespace characters
