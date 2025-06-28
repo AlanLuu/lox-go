@@ -3,6 +3,7 @@ package ast
 import (
 	"bufio"
 	"fmt"
+	"strings"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -146,6 +147,32 @@ func (i *Interpreter) defineBufioFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "readerStdinSize", "integer")
 	})
+	bufioFunc("readerString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			return NewLoxBufReader(strings.NewReader(loxStr.str)), nil
+		}
+		return argMustBeType(in.callToken, "readerString", "string")
+	})
+	bufioFunc("readerStringSize", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'bufio.readerStringSize' must be a string.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'bufio.readerStringSize' must be an integer.")
+		}
+		size := args[1].(int64)
+		if size < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Integer argument to 'bufio.readerStringSize' cannot be negative.")
+		}
+		loxStr := args[0].(*LoxString)
+		return NewLoxBufReaderSize(
+			strings.NewReader(loxStr.str),
+			int(size),
+		), nil
+	})
 	bufioFunc("scanner", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxFile, ok := args[0].(*LoxFile); ok {
 			if !loxFile.isRead() {
@@ -243,6 +270,33 @@ func (i *Interpreter) defineBufioFuncs() {
 			return NewLoxBufScannerStdinSplitFunc(splitFunc), nil
 		}
 		return argMustBeTypeAn(in.callToken, "scannerStdinFunc", "integer")
+	})
+	bufioFunc("scannerString", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			return NewLoxBufScanner(strings.NewReader(loxStr.str)), nil
+		}
+		return argMustBeType(in.callToken, "scannerString", "string")
+	})
+	bufioFunc("scannerStringFunc", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'bufio.scannerStringFunc' must be a string.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'bufio.scannerStringFunc' must be an integer.")
+		}
+		funcTypeNum := args[1].(int64)
+		splitFunc, ok := splitFuncsMap[funcTypeNum]
+		if !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Invalid integer argument to 'bufio.scannerStringFunc'.")
+		}
+		loxStr := args[0].(*LoxString)
+		return NewLoxBufScannerSplitFunc(
+			strings.NewReader(loxStr.str),
+			splitFunc,
+		), nil
 	})
 	bufioFunc("writer", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxFile, ok := args[0].(*LoxFile); ok {

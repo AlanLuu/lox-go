@@ -496,6 +496,8 @@ func (l *LoxBufReader) String() string {
 		}
 	case net.Conn:
 		return fmt.Sprintf("<buffered connection reader at %p>", l)
+	case *strings.Reader:
+		return fmt.Sprintf("<buffered string reader at %p>", l)
 	}
 
 	switch l.readerType {

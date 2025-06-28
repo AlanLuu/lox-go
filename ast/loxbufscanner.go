@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -333,6 +334,8 @@ func (l *LoxBufScanner) String() string {
 		}
 	case net.Conn:
 		return fmt.Sprintf("<buffered connection scanner at %p>", l)
+	case *strings.Reader:
+		return fmt.Sprintf("<buffered string scanner at %p>", l)
 	}
 
 	switch l.readerType {
