@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/AlanLuu/lox/list"
+	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/token"
 )
 
 func defineStringFields(stringClass *LoxClass) {
@@ -53,10 +55,46 @@ func (i *Interpreter) defineStringFuncs() {
 		}
 		stringClass.classProperties[name] = s
 	}
+	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'String.%v' must be a %v.", name, theType)
+		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
 
 	defineStringFields(stringClass)
 	stringFunc("builder", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return NewLoxStringBuilder(), nil
+	})
+	stringFunc("reader", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			return NewLoxStringReader(loxStr.str), nil
+		}
+		return argMustBeType(in.callToken, "reader", "string")
+	})
+	stringFunc("replacer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		strs := make([]string, 0, len(args))
+		for i, arg := range args {
+			switch arg := arg.(type) {
+			case *LoxString:
+				strs = append(strs, arg.str)
+			default:
+				strs = nil
+				return nil, loxerror.RuntimeError(
+					in.callToken,
+					fmt.Sprintf(
+						"Argument #%v in 'String.replacer' must be a string.",
+						i+1,
+					),
+				)
+			}
+		}
+		strReplacer, err := NewLoxStringReplacer(strs...)
+		if err != nil {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				"String.replacer: "+err.Error(),
+			)
+		}
+		return strReplacer, nil
 	})
 	stringFunc("toString", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		var str string
