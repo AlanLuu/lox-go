@@ -96,9 +96,7 @@ func (l *LoxDict) Get(name *token.Token) (any, error) {
 	switch methodName {
 	case "clear":
 		return dictFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			for key := range l.entries {
-				delete(l.entries, key)
-			}
+			clear(l.entries)
 			return nil, nil
 		})
 	case "containsKey":

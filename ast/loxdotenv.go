@@ -268,9 +268,7 @@ func (l *LoxDotenv) Get(name *token.Token) (any, error) {
 			if l.activated() {
 				os.Clearenv()
 			}
-			for key := range l.envs {
-				delete(l.envs, key)
-			}
+			clear(l.envs)
 			return nil, nil
 		})
 	case "containsEnv":

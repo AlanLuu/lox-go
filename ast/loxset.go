@@ -91,9 +91,7 @@ func (l *LoxSet) Get(name *token.Token) (any, error) {
 		})
 	case "clear":
 		return setFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
-			for element := range l.elements {
-				delete(l.elements, element)
-			}
+			clear(l.elements)
 			return nil, nil
 		})
 	case "contains":
