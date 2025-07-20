@@ -227,6 +227,30 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "indexFrom":
+		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'string.indexFrom' must be a string.")
+			}
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'string.indexFrom' must be an integer.")
+			}
+			loxStr := args[0].(*LoxString)
+			fromIndex := args[1].(int64)
+			if fromIndex <= 0 {
+				return int64(strings.Index(l.str, loxStr.str)), nil
+			} else if fromIndex > int64(utf8.RuneCountInString(l.str)) {
+				return int64(-1), nil
+			}
+			runes := []rune(l.str)
+			result := strings.Index(string(runes[fromIndex:]), loxStr.str)
+			if result == -1 {
+				return int64(-1), nil
+			}
+			return int64(result) + fromIndex, nil
+		})
 	case "isEmpty":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return len(l.str) == 0, nil

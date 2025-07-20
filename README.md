@@ -371,6 +371,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.fields()`, which returns a list containing all substrings that are separated by one or more consecutive whitespace characters
             - If the string only contains whitespace characters, this method returns an empty list
         - `string.index(string2)`, which returns an integer representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
+        - `string.indexFrom(string2, fromIndex)`, which returns an integer representing the index value of the location of `string2` in `string`, starting at the index `fromIndex`, which is an integer
+            - If `fromIndex <= 0`, this method returns the same value as `string.index(string2)`
+            - If `fromIndex > len(string)`, this method returns `-1`
         - `string.isEmpty()`, which returns `true` if the length of the string is 0 and `false` otherwise
         - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lower()`, which returns a new string with all lowercase letters
