@@ -241,7 +241,8 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			fromIndex := args[1].(int64)
 			if fromIndex <= 0 {
 				return int64(strings.Index(l.str, loxStr.str)), nil
-			} else if fromIndex > int64(utf8.RuneCountInString(l.str)) {
+			}
+			if fromIndex > int64(utf8.RuneCountInString(l.str)) {
 				return int64(-1), nil
 			}
 			runes := []rune(l.str)
@@ -261,6 +262,41 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				return int64(strings.LastIndex(l.str, loxStr.str)), nil
 			}
 			return argMustBeType("string")
+		})
+	case "lastIndexFrom":
+		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'string.lastIndexFrom' must be a string.")
+			}
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'string.lastIndexFrom' must be an integer.")
+			}
+			loxStr := args[0].(*LoxString)
+			fromIndex := args[1].(int64)
+			origStrLen := int64(utf8.RuneCountInString(l.str))
+			if fromIndex >= origStrLen {
+				return int64(strings.LastIndex(l.str, loxStr.str)), nil
+			}
+			if fromIndex < 0 {
+				return int64(-1), nil
+			}
+			substrLen := int64(utf8.RuneCountInString(loxStr.str))
+			maxStartPos := origStrLen - substrLen
+			if fromIndex > maxStartPos {
+				fromIndex = maxStartPos
+			}
+			endPos := fromIndex + substrLen
+			if endPos > origStrLen {
+				endPos = origStrLen
+			}
+			runes := []rune(l.str)
+			result := int64(strings.LastIndex(string(runes[:endPos]), loxStr.str))
+			if result != -1 && result <= fromIndex {
+				return result, nil
+			}
+			return int64(-1), nil
 		})
 	case "lower":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

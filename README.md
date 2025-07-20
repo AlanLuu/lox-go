@@ -371,11 +371,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.fields()`, which returns a list containing all substrings that are separated by one or more consecutive whitespace characters
             - If the string only contains whitespace characters, this method returns an empty list
         - `string.index(string2)`, which returns an integer representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
-        - `string.indexFrom(string2, fromIndex)`, which returns an integer representing the index value of the location of `string2` in `string`, starting at the index `fromIndex`, which is an integer
+        - `string.indexFrom(string2, fromIndex)`, which returns an integer representing the index value of the location of `string2` in `string`, starting at the index `fromIndex`, which is an integer, or `-1` if `string2` is not in `string` starting at the index `fromIndex`
             - If `fromIndex <= 0`, this method returns the same value as `string.index(string2)`
             - If `fromIndex > len(string)`, this method returns `-1`
         - `string.isEmpty()`, which returns `true` if the length of the string is 0 and `false` otherwise
         - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
+        - `string.lastIndexFrom(string2, fromIndex)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, starting at the index `fromIndex`, which is an integer, or `-1` if `string2` is not in `string` starting at the index `fromIndex`
+            - If `fromIndex >= len(string)`, this method returns the same value as `string.lastIndex(string2)`
+            - If `fromIndex < 0`, this method returns `-1`
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.lstrip([chars])`, which returns a new string with all leading characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading whitespace, newlines, and tabs removed
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
