@@ -1055,6 +1055,9 @@ func (p *Parser) Parse() (list.List[Stmt], error) {
 		if err != nil {
 			return statements, err
 		}
+		if statement == nil {
+			continue
+		}
 		statements.Add(statement)
 	}
 	return statements, nil
@@ -1220,6 +1223,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.repeatStatement()
 	case p.match(token.RETURN):
 		return p.returnStatement()
+	case p.match(token.SEMICOLON):
+		return nil, nil
 	case p.match(token.THROW):
 		return p.throwStatement()
 	case p.match(token.TRY):
