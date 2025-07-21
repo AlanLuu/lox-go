@@ -152,6 +152,29 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		}
 		return -1
 	}
+	lastIndexOfFrom := func(obj any, fromIndex int64) int64 {
+		elementsLen := int64(len(l.elements))
+		if fromIndex >= elementsLen {
+			return lastIndexOf(obj)
+		}
+		if fromIndex < 0 {
+			return -1
+		}
+		if equatableObj, ok := obj.(interfaces.Equatable); ok {
+			for i := fromIndex; i >= 0; i-- {
+				if equatableObj.Equals(l.elements[i]) {
+					return i
+				}
+			}
+		} else {
+			for i := fromIndex; i >= 0; i-- {
+				if obj == l.elements[i] {
+					return i
+				}
+			}
+		}
+		return -1
+	}
 	removeElements := func(arg any) bool {
 		removed := false
 		for i := int64(len(l.elements)) - 1; i >= 0; i-- {
@@ -459,6 +482,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 	case "lastIndex":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return lastIndexOf(args[0]), nil
+		})
+	case "lastIndexFrom":
+		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'list.lastIndexFrom' must be an integer.")
+			}
+			return lastIndexOfFrom(args[0], args[1].(int64)), nil
 		})
 	case "map":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {

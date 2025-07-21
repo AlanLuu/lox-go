@@ -440,6 +440,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.join(separator)`, which concatenates all elements in the list into a string where each element is separated by a separator string
         - `list.last()`, which returns the last element in the list. If the list is empty, a runtime error is thrown
         - `list.lastIndex(element)`, which returns the index value of the last occurrence of the element in the list, or `-1` if the element is not in the list
+        - `list.lastIndexFrom(element, fromIndex)`, which returns the index value of the last occurrence of the element in the list, starting at the index `fromIndex`, which is an integer, or `-1` if the element is not in the list starting at the index `fromIndex`
+            - If `fromIndex >= len(list)`, this method returns the same value as `list.lastIndex(element)`
+            - If `fromIndex < 0`, this method returns `-1`
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
         - `list.reduce(callback, [initialValue])`, which applies a reducer callback function on every element in the list from left to right and returns a single value
