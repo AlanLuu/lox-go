@@ -432,6 +432,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.flatten()`, which returns a new list where all elements contained within nested lists are flattened into a list without any nested lists
         - `list.forEach(callback)`, which executes the callback function for each element in the list
         - `list.index(element)`, which returns the index value of the element's position in the list, or `-1` if the element is not in the list
+        - `list.indexFrom(element, fromIndex)`, which returns the index value of the element's position in the list, starting at the index `fromIndex`, which is an integer, or `-1` if the element is not in the list starting at the index `fromIndex`
+            - If `fromIndex <= 0`, this method returns the same value as `list.index(element)`
+            - If `fromIndex > len(list)`, this method returns `-1`
         - `list.insert(index, element)`, which inserts an element into the list at the specified index
         - `list.isEmpty()`, which returns `true` if the list contains no elements and `false` otherwise
         - `list.join(separator)`, which concatenates all elements in the list into a string where each element is separated by a separator string

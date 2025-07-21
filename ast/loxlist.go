@@ -113,6 +113,29 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		}
 		return -1
 	}
+	indexOfFrom := func(obj any, fromIndex int64) int64 {
+		if fromIndex <= 0 {
+			return indexOf(obj)
+		}
+		elementsLen := int64(len(l.elements))
+		if fromIndex > elementsLen {
+			return -1
+		}
+		if equatableObj, ok := obj.(interfaces.Equatable); ok {
+			for i := fromIndex; i < elementsLen; i++ {
+				if equatableObj.Equals(l.elements[i]) {
+					return i
+				}
+			}
+		} else {
+			for i := fromIndex; i < elementsLen; i++ {
+				if obj == l.elements[i] {
+					return i
+				}
+			}
+		}
+		return -1
+	}
 	lastIndexOf := func(obj any) int64 {
 		if equatableObj, ok := obj.(interfaces.Equatable); ok {
 			for i := len(l.elements) - 1; i >= 0; i-- {
@@ -375,6 +398,14 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 	case "index":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			return indexOf(args[0]), nil
+		})
+	case "indexFrom":
+		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'list.indexFrom' must be an integer.")
+			}
+			return indexOfFrom(args[0], args[1].(int64)), nil
 		})
 	case "insert":
 		return listFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
