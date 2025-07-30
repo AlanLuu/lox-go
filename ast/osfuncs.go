@@ -2028,6 +2028,8 @@ func (i *Interpreter) defineOSFuncs() {
 			switch value := value.(type) {
 			case int64:
 				dict.setKeyValue(NewLoxString(key, '\''), value)
+			case int32:
+				dict.setKeyValue(NewLoxString(key, '\''), int64(value))
 			case uint64:
 				dict.setKeyValue(NewLoxString(key, '\''), int64(value))
 			case uint32:
@@ -2035,6 +2037,12 @@ func (i *Interpreter) defineOSFuncs() {
 			case uint16:
 				dict.setKeyValue(NewLoxString(key, '\''), int64(value))
 			case [loadsLen]uint64:
+				valList := list.NewListCap[any](loadsLen)
+				for _, element := range value {
+					valList.Add(int64(element))
+				}
+				dict.setKeyValue(NewLoxString(key, '\''), NewLoxList(valList))
+			case [loadsLen]uint32:
 				valList := list.NewListCap[any](loadsLen)
 				for _, element := range value {
 					valList.Add(int64(element))
