@@ -503,6 +503,51 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, nil
 	})
+	nativeFunc("Ring", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if len(args) == 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Ring: expected at least 1 argument but got 0.")
+		}
+		return NewLoxRingArgs(args...), nil
+	})
+	nativeFunc("RingIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			iterElements := list.NewList[any]()
+			it := element.Iterator()
+			for it.HasNext() {
+				iterElements.Add(it.Next())
+			}
+			if len(iterElements) == 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Iterable argument to 'RingIterable' cannot be empty.")
+			}
+			return NewLoxRingArgs(iterElements...), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("RingIterable: type '%v' is not iterable.", getType(args[0])))
+	})
+	nativeFunc("RingList", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxList, ok := args[0].(*LoxList); ok {
+			if len(loxList.elements) == 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"List argument to 'RingList' cannot be empty.")
+			}
+			return NewLoxRingArgs(loxList.elements...), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'RingList' must be a list.")
+	})
+	nativeFunc("RingNil", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if num, ok := args[0].(int64); ok {
+			if num <= 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'RingNil' cannot be less than 1.")
+			}
+			return NewLoxRingNils(int(num)), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'RingNil' must be an integer.")
+	})
 	nativeFunc("Set", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		set := EmptyLoxSet()
 		for _, element := range args {

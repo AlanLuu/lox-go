@@ -287,6 +287,14 @@ func selfReferential(source any) string {
 		return "{...}"
 	case *LoxList:
 		return "[...]"
+	case *LoxBuffer:
+		return "Buffer [...]"
+	case *LoxQueue:
+		return "Queue [...]"
+	case *LoxDeque:
+		return "Deque [...]"
+	case *LoxRing:
+		return "<self-referential ring>"
 	}
 	return "..."
 }
@@ -486,6 +494,14 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		}
 		setStr.WriteByte('}')
 		return setStr.String()
+	case *LoxRing:
+		var valueStr string
+		if source.ring.Value == originalSource {
+			valueStr = selfReferential(originalSource)
+		} else {
+			valueStr = getResult(source.ring.Value, originalSource, false)
+		}
+		return fmt.Sprintf("<ring value=%v at %p>", valueStr, source)
 	default:
 		return fmt.Sprint(source)
 	}
