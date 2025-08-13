@@ -15,6 +15,7 @@ type LoxRingIterator struct {
 	ring      *ring.Ring
 	current   *ring.Ring
 	firstIter bool
+	reverse   bool
 }
 
 func (l *LoxRingIterator) HasNext() bool {
@@ -25,7 +26,11 @@ func (l *LoxRingIterator) HasNext() bool {
 
 func (l *LoxRingIterator) Next() any {
 	value := l.current.Value
-	l.current = l.current.Next()
+	if l.reverse {
+		l.current = l.current.Prev()
+	} else {
+		l.current = l.current.Next()
+	}
 	return value
 }
 
@@ -506,11 +511,21 @@ func (l *LoxRing) Iterator() interfaces.Iterator {
 		ring:      l.ring,
 		current:   l.ring,
 		firstIter: true,
+		reverse:   false,
 	}
 }
 
 func (l *LoxRing) Length() int64 {
 	return int64(l.ring.Len())
+}
+
+func (l *LoxRing) ReverseIterator() interfaces.Iterator {
+	return &LoxRingIterator{
+		ring:      l.ring,
+		current:   l.ring,
+		firstIter: true,
+		reverse:   true,
+	}
 }
 
 func (l *LoxRing) String() string {
