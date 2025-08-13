@@ -131,6 +131,313 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'bin' must be an integer.")
 	})
+	nativeFunc("Bitfield", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			return EmptyLoxBitField(), nil
+		case 1:
+			if arg, ok := args[0].(int64); ok {
+				if arg < 0 || arg > 255 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Argument to 'Bitfield' must be an integer between 0 and 255.")
+				}
+				return NewLoxBitField(uint8(arg)), nil
+			}
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Argument to 'Bitfield' must be an integer.")
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+	})
+	nativeFunc("BitfieldArgs", 8, func(in *Interpreter, args list.List[any]) (any, error) {
+		var bools [8]bool
+		for i, arg := range args {
+			switch arg := arg.(type) {
+			case bool:
+				bools[i] = arg
+			case int64:
+				switch arg {
+				case 0:
+					bools[i] = false
+				case 1:
+					bools[i] = true
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldArgs: integer argument #%v "+
+								"must be either 0 or 1.",
+							i+1,
+						),
+					)
+				}
+			default:
+				return nil, loxerror.RuntimeError(
+					in.callToken,
+					fmt.Sprintf(
+						"BitfieldArgs: argument #%v must be a "+
+							"boolean or integer.",
+						i+1,
+					),
+				)
+			}
+		}
+		return NewLoxBitFieldBools(bools), nil
+	})
+	nativeFunc("BitfieldBuf", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxBuffer, ok := args[0].(*LoxBuffer); ok {
+			elements := loxBuffer.elements
+			if len(elements) != 8 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Buffer argument to 'BitfieldBuf' must have a length of 8.")
+			}
+			var bools [8]bool
+			for i, element := range elements {
+				switch element.(int64) {
+				case 0:
+					bools[i] = false
+				case 1:
+					bools[i] = true
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldBuf: buffer integer element at index %v "+
+								"must be either 0 or 1.",
+							i,
+						),
+					)
+				}
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BitfieldBuf' must be a buffer.")
+	})
+	nativeFunc("BitfieldBufLSB", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxBuffer, ok := args[0].(*LoxBuffer); ok {
+			elements := loxBuffer.elements
+			if len(elements) != 8 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Buffer argument to 'BitfieldBufLSB' must have a length of 8.")
+			}
+			var bools [8]bool
+			for i, element := range elements {
+				switch element.(int64) {
+				case 0:
+					bools[7-i] = false
+				case 1:
+					bools[7-i] = true
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldBufLSB: buffer integer element at index %v "+
+								"must be either 0 or 1.",
+							i,
+						),
+					)
+				}
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BitfieldBufLSB' must be a buffer.")
+	})
+	nativeFunc("BitfieldIterable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			var bools [8]bool
+			it := element.Iterator()
+			for i := 0; i < 8 && it.HasNext(); i++ {
+				bools[i] = in.isTruthy(it.Next())
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("BitfieldIterable: type '%v' is not iterable.", getType(args[0])))
+	})
+	nativeFunc("BitfieldIterableLSB", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if element, ok := args[0].(interfaces.Iterable); ok {
+			var bools [8]bool
+			it := element.Iterator()
+			for i := 7; i >= 0 && it.HasNext(); i-- {
+				bools[i] = in.isTruthy(it.Next())
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("BitfieldIterableLSB: type '%v' is not iterable.", getType(args[0])))
+	})
+	nativeFunc("BitfieldList", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxList, ok := args[0].(*LoxList); ok {
+			elements := loxList.elements
+			if len(elements) != 8 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"List argument to 'BitfieldList' must have a length of 8.")
+			}
+			var bools [8]bool
+			for i, element := range elements {
+				switch element := element.(type) {
+				case bool:
+					bools[i] = element
+				case int64:
+					switch element {
+					case 0:
+						bools[i] = false
+					case 1:
+						bools[i] = true
+					default:
+						return nil, loxerror.RuntimeError(
+							in.callToken,
+							fmt.Sprintf(
+								"BitfieldList: list integer element at index %v "+
+									"must be either 0 or 1.",
+								i,
+							),
+						)
+					}
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldList: list element at index %v must be a "+
+								"boolean or integer.",
+							i,
+						),
+					)
+				}
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BitfieldList' must be a list.")
+	})
+	nativeFunc("BitfieldListLSB", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxList, ok := args[0].(*LoxList); ok {
+			elements := loxList.elements
+			if len(elements) != 8 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"List argument to 'BitfieldListLSB' must have a length of 8.")
+			}
+			var bools [8]bool
+			for i, element := range elements {
+				switch element := element.(type) {
+				case bool:
+					bools[7-i] = element
+				case int64:
+					switch element {
+					case 0:
+						bools[7-i] = false
+					case 1:
+						bools[7-i] = true
+					default:
+						return nil, loxerror.RuntimeError(
+							in.callToken,
+							fmt.Sprintf(
+								"BitfieldListLSB: list integer element at index %v "+
+									"must be either 0 or 1.",
+								i,
+							),
+						)
+					}
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldListLSB: list element at index %v must be a "+
+								"boolean or integer.",
+							i,
+						),
+					)
+				}
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BitfieldListLSB' must be a list.")
+	})
+	nativeFunc("BitfieldLSB", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			return EmptyLoxBitField(), nil
+		case 1:
+			if arg, ok := args[0].(int64); ok {
+				if arg < 0 || arg > 255 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Argument to 'BitfieldLSB' must be an integer between 0 and 255.")
+				}
+				return NewLoxBitField(reverseUint8(uint8(arg))), nil
+			}
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Argument to 'BitfieldLSB' must be an integer.")
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+	})
+	nativeFunc("BitfieldStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			str := loxStr.str
+			if utf8.RuneCountInString(str) != 8 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Integer argument to 'BitfieldStr' must have exactly 8 characters.")
+			}
+			var bools [8]bool
+			for i, c := range str {
+				switch c {
+				case '0':
+					bools[i] = false
+				case '1':
+					bools[i] = true
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldStr: character at index %v must be "+
+								"equal to '0' or '1'.",
+							i,
+						),
+					)
+				}
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BitfieldStr' must be a string.")
+	})
+	nativeFunc("BitfieldStrLSB", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			str := loxStr.str
+			if utf8.RuneCountInString(str) != 8 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Integer argument to 'BitfieldStrLSB' must have exactly 8 characters.")
+			}
+			var bools [8]bool
+			for i, c := range str {
+				switch c {
+				case '0':
+					bools[7-i] = false
+				case '1':
+					bools[7-i] = true
+				default:
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"BitfieldStrLSB: character at index %v must be "+
+								"equal to '0' or '1'.",
+							i,
+						),
+					)
+				}
+			}
+			return NewLoxBitFieldBools(bools), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			"Argument to 'BitfieldStrLSB' must be a string.")
+	})
 	nativeFunc("Buffer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		buffer := EmptyLoxBufferCap(int64(len(args)))
 		for _, element := range args {

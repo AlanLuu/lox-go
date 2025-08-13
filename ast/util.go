@@ -16,3 +16,11 @@ func getArgList(callback *LoxFunction, numArgs int) list.List[any] {
 func isValidPortNum[T int | int64](portNum T) bool {
 	return portNum >= 0 && portNum <= 65535
 }
+
+func reverseUint8[T ~uint8](b T) T {
+	//https://stackoverflow.com/a/2602885
+	b = (b&0xF0)>>4 | (b&0x0F)<<4
+	b = (b&0xCC)>>2 | (b&0x33)<<2
+	b = (b&0xAA)>>1 | (b&0x55)<<1
+	return b
+}
