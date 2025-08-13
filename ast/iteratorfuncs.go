@@ -10,7 +10,6 @@ import (
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
-	"github.com/AlanLuu/lox/token"
 )
 
 func defineIteratorFields(iteratorClass *LoxClass) {
@@ -42,10 +41,6 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return fmt.Sprintf("<native Iterator class fn %v at %p>", name, &s)
 		}
 		iteratorClass.classProperties[name] = s
-	}
-	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
-		errStr := fmt.Sprintf("Argument to 'Iterator.%v' must be a %v.", name, theType)
-		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
 	defineIteratorFields(iteratorClass)
@@ -529,7 +524,8 @@ func (i *Interpreter) defineIteratorFuncs() {
 		if element, ok := args[0].(interfaces.ReverseIterable); ok {
 			return NewLoxIterator(element.ReverseIterator()), nil
 		}
-		return argMustBeType(in.callToken, "reversed", "buffer, list, or string")
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Iterator.reversed: type '%v' is not reverse-iterable.", getType(args[0])))
 	})
 	iteratorFunc("zip", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if len(args) == 0 {
