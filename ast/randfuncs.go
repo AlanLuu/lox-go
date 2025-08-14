@@ -95,7 +95,7 @@ func (i *Interpreter) defineRandFuncs() {
 		}
 	}
 
-	randStr := "randObj"
+	const randStr = "randObj"
 	randInstanceFunc("init", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args) - 1
 		switch argsLen {
@@ -115,7 +115,7 @@ func (i *Interpreter) defineRandFuncs() {
 		}
 	})
 
-	randFieldTypeErrMsg := "'Rand().rand' field is not the correct type."
+	const randFieldTypeErrMsg = "'Rand().rand' field is not the correct type."
 	randInstanceFunc("choice", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {
@@ -520,6 +520,39 @@ func (i *Interpreter) defineRandFuncs() {
 				samples.Add(element)
 			}
 			return NewLoxList(samples), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
+	randInstanceFunc("success", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			var percentage float64
+			switch arg := args[1].(type) {
+			case int64:
+				if arg < 0 || arg > 100 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Integer argument to 'Rand().success' must be from 0 to 100.")
+				}
+				percentage = float64(arg) / 100
+			case float64:
+				if arg < 0.0 || arg > 100.0 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Float argument to 'Rand().success' must be from 0.0 to 100.0.")
+				}
+				percentage = arg / 100
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'Rand().success' must be an integer or float.")
+			}
+			var randFloat float64
+			if randStruct.rand != nil {
+				randFloat = randStruct.rand.Float64()
+			} else {
+				randFloat = rand.Float64()
+			}
+			return randFloat < percentage, nil
 		default:
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
