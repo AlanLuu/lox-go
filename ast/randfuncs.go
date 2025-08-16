@@ -58,6 +58,18 @@ func (i *Interpreter) defineRandFuncs() {
 				randIndex = rand.Intn(len(arg.elements))
 			}
 			return arg.elements[randIndex], nil
+		case *LoxDeque:
+			dequeLen := arg.Length()
+			if dequeLen == 0 {
+				return emptyErr("deque")
+			}
+			var randIndex int64
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Int63n(dequeLen)
+			} else {
+				randIndex = rand.Int63n(dequeLen)
+			}
+			return arg.getIndex(randIndex), nil
 		case *LoxList:
 			if arg.elements.IsEmpty() {
 				return emptyErr("list")
@@ -69,6 +81,18 @@ func (i *Interpreter) defineRandFuncs() {
 				randIndex = rand.Intn(len(arg.elements))
 			}
 			return arg.elements[randIndex], nil
+		case *LoxQueue:
+			queueLen := arg.Length()
+			if queueLen == 0 {
+				return emptyErr("queue")
+			}
+			var randIndex int64
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Int63n(queueLen)
+			} else {
+				randIndex = rand.Int63n(queueLen)
+			}
+			return arg.getIndex(randIndex), nil
 		case *LoxRange:
 			rangeLen := arg.Length()
 			if rangeLen == 0 {
@@ -493,8 +517,12 @@ func (i *Interpreter) defineRandFuncs() {
 				switch arg := arg.(type) {
 				case *LoxBuffer:
 					return arg.elements[index]
+				case *LoxDeque:
+					return arg.getIndex(int64(index))
 				case *LoxList:
 					return arg.elements[index]
+				case *LoxQueue:
+					return arg.getIndex(int64(index))
 				case *LoxRange:
 					return arg.get(int64(index))
 				case *LoxString:

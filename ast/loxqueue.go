@@ -68,6 +68,22 @@ func (l *LoxQueue) contains(element any) bool {
 	return false
 }
 
+func (l *LoxQueue) getIndex(index int64) any {
+	if index < 0 || index >= int64(l.elements.Len()) {
+		panic("in LoxQueue.getIndex: index out of range")
+	}
+	var current int64 = 0
+	for e := l.elements.Back(); e != nil; e = e.Prev() {
+		if current == index {
+			return e.Value
+		} else if current > index {
+			break
+		}
+		current++
+	}
+	panic("in LoxQueue.getIndex: reached end of queue")
+}
+
 func (l *LoxQueue) peek() any {
 	element := l.elements.Front()
 	if element == nil {

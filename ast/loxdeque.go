@@ -72,6 +72,22 @@ func (l *LoxDeque) front() any {
 	return element.Value
 }
 
+func (l *LoxDeque) getIndex(index int64) any {
+	if index < 0 || index >= int64(l.elements.Len()) {
+		panic("in LoxDeque.getIndex: index out of range")
+	}
+	var current int64 = 0
+	for e := l.elements.Back(); e != nil; e = e.Prev() {
+		if current == index {
+			return e.Value
+		} else if current > index {
+			break
+		}
+		current++
+	}
+	panic("in LoxDeque.getIndex: reached end of deque")
+}
+
 func (l *LoxDeque) pushBack(element any) {
 	l.elements.PushBack(element)
 }
