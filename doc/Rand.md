@@ -35,6 +35,9 @@ The following methods and fields are defined in the built-in `Rand` class:
 - (instance method) `Rand().successes(numTimes, num)`, which takes in `numTimes` as an integer and `num` as an integer or float and runs `numTimes` random simulations, where each of them succeeds `num` percent of times and fails `100 - num` percent of times, returning a list of `numTimes` booleans that represent the outcome of those simulations, where `true` is success and `false` is failure
     - If `numTimes < 0`, this method throws a runtime error
     - If `num < 0 || num > 100`, this method throws a runtime error
+- (instance method) `Rand().successesPercent(numTimes, percentage)`, which takes in `numTimes` as an integer and a percentage as a float from 0.0 to 1.0 inclusive and runs `numTimes` random simulations, where each of them succeeds `percentage * 100` percent of times and fails `(1 - percentage) * 100` percent of times, returning a list of `numTimes` booleans that represent the outcome of those simulations, where `true` is success and `false` is failure
+    - If `numTimes < 0`, this method throws a runtime error
+    - If `percentage < 0.0 || percentage > 1.0`, this method throws a runtime error
 - (instance method) `Rand().successPercent(percentage)`, which takes in a percentage as a float from 0.0 to 1.0 inclusive and runs a random simulation that succeeds `percentage * 100` percent of times and fails `(1 - percentage) * 100` percent of times, returning `true` if this method succeeds and `false` otherwise
     - If `percentage < 0.0 || percentage > 1.0`, this method throws a runtime error
     - Example: `Rand().successPercent(0.60)` returns `true` 60% of the time and `false` 40% of the time

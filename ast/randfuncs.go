@@ -610,6 +610,43 @@ func (i *Interpreter) defineRandFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
 	})
+	randInstanceFunc("successesPercent", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			if _, ok := args[1].(int64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'Rand().successesPercent' must be an integer.")
+			}
+			if _, ok := args[2].(float64); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().successesPercent' must be a float.")
+			}
+			numTimes := args[1].(int64)
+			if numTimes < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'Rand().successesPercent' cannot be negative.")
+			}
+			percentage := args[2].(float64)
+			if percentage < 0.0 || percentage > 1.0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Rand().successesPercent' must be from 0.0 to 1.0.")
+			}
+			boolsList := list.NewListCap[any](numTimes)
+			if randStruct.rand != nil {
+				for i := int64(0); i < numTimes; i++ {
+					boolsList.Add(randStruct.rand.Float64() < percentage)
+				}
+			} else {
+				for i := int64(0); i < numTimes; i++ {
+					boolsList.Add(rand.Float64() < percentage)
+				}
+			}
+			return NewLoxList(boolsList), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 	randInstanceFunc("successPercent", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {
