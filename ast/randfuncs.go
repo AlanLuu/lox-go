@@ -105,6 +105,18 @@ func (i *Interpreter) defineRandFuncs() {
 				randIndex = rand.Int63n(rangeLen)
 			}
 			return arg.get(randIndex), nil
+		case *LoxRing:
+			ringLen := arg.Length()
+			if ringLen == 0 {
+				return emptyErr("ring")
+			}
+			var randIndex int64
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Int63n(ringLen)
+			} else {
+				randIndex = rand.Int63n(ringLen)
+			}
+			return arg.getIndexPositive(randIndex), nil
 		case *LoxString:
 			if len(arg.str) == 0 {
 				return emptyErr("string")
@@ -525,6 +537,8 @@ func (i *Interpreter) defineRandFuncs() {
 					return arg.getIndex(int64(index))
 				case *LoxRange:
 					return arg.get(int64(index))
+				case *LoxRing:
+					return arg.getIndexPositive(int64(index))
 				case *LoxString:
 					return NewLoxStringQuote(string([]rune(arg.str)[index]))
 				default:

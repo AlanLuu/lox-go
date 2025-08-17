@@ -4,10 +4,10 @@ None of the following methods are suitable for security or cryptographic purpose
 
 The following methods and fields are defined in the built-in `Rand` class:
 - (constructor) `Rand([seed])`, which creates a new `Rand` instance with the specified integer seed. If the seed is omitted, the returned `Rand` instance will have a random seed
-- (instance method) `Rand().choice(sequence)`, which returns a random element from `sequence`, where `sequence` is a buffer, deque, list, queue, range, or string
+- (instance method) `Rand().choice(sequence)`, which returns a random element from `sequence`, where `sequence` is a buffer, deque, list, queue, range, ring, or string
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `sequence` is empty, a runtime error is thrown
-- (instance method) `Rand().choices(sequence, numChoices)`, which returns a list of `numChoices` random elements from `sequence` with replacement, where `sequence` is a buffer, deque, list, queue, range, or string and `numChoices` is an integer
+- (instance method) `Rand().choices(sequence, numChoices)`, which returns a list of `numChoices` random elements from `sequence` with replacement, where `sequence` is a buffer, deque, list, queue, range, ring, or string and `numChoices` is an integer
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `numChoices` is negative or `sequence` is empty and `numChoices` is not `0`, a runtime error is thrown
 - (instance method) `Rand().perm(arg1, [arg2])`, which returns a list of a random permutation of all the integers from `arg1` to `arg2` inclusive. If `arg2` is omitted, a random permutation of all the integers from `0` to `arg1` exclusive is returned
@@ -26,7 +26,7 @@ The following methods and fields are defined in the built-in `Rand` class:
 - (instance method) `Rand().randRange(start, stop, [step])`, which returns a random integer from a range object with the specified start, stop, and step values
     - If `step` is omitted, the range object will have a step value of `1`
     - If the range object with the specified parameters has a length of 0, a runtime error is thrown
-- (instance method) `Rand().sample(sequence, k)`, which returns a list of `k` random elements from `sequence` without replacement, where `sequence` is a buffer, deque, list, queue, range, or string and `k` is an integer
+- (instance method) `Rand().sample(sequence, k)`, which returns a list of `k` random elements from `sequence` without replacement, where `sequence` is a buffer, deque, list, queue, range, ring, or string and `k` is an integer
     - If `sequence` is a string, the random element is a random character from the string as a new string
     - If `k` is negative or `k` is greater than the number of elements in `sequence` or `sequence` is empty and `k` is not `0`, a runtime error is thrown
 - (instance method) `Rand().success(num)`, which takes in an integer or float from 0 to 100 inclusive and runs a random simulation that succeeds `num` percent of times and fails `100 - num` percent of times, returning `true` if this method succeeds and `false` otherwise

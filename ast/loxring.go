@@ -104,6 +104,24 @@ func NewLoxRingNils(n int) *LoxRing {
 	return loxRings[0]
 }
 
+func (l *LoxRing) getIndexPositive(index int64) any {
+	if index < 0 {
+		panic("in LoxRing.getIndexPositive: index is negative")
+	}
+	var current int64 = 0
+	firstIter := true
+	for r := l.ring; firstIter || r != l.ring; r = r.Next() {
+		firstIter = false
+		if current == index {
+			return r.Value
+		} else if current > index {
+			break
+		}
+		current++
+	}
+	panic("in LoxRing.getIndexPositive: reached end of ring")
+}
+
 func (l *LoxRing) link(other_l *LoxRing) *LoxRing {
 	if l == other_l {
 		return l
