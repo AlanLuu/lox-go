@@ -47,6 +47,14 @@ func (i *Interpreter) defineRandFuncs() {
 			)
 		}
 		switch arg := arg.(type) {
+		case *LoxBitField:
+			var randIndex int64
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Int63n(arg.Length())
+			} else {
+				randIndex = rand.Int63n(arg.Length())
+			}
+			return int64(arg.getBitIndex(randIndex)), nil
 		case *LoxBuffer:
 			if arg.elements.IsEmpty() {
 				return emptyErr("buffer")
@@ -527,6 +535,8 @@ func (i *Interpreter) defineRandFuncs() {
 			}
 			getIndex := func(index int) any {
 				switch arg := arg.(type) {
+				case *LoxBitField:
+					return int64(arg.getBitIndex(int64(index)))
 				case *LoxBuffer:
 					return arg.elements[index]
 				case *LoxDeque:
