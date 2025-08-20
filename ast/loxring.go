@@ -491,6 +491,91 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 			builder.WriteRune(']')
 			return NewLoxStringQuote(builder.String()), nil
 		})
+	case "reduce":
+		return ringFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 || argsLen > 2 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if callback, ok := args[0].(*LoxFunction); ok {
+				var value any
+				switch argsLen {
+				case 1:
+					value = l.ring.Value
+				case 2:
+					value = args[1]
+				}
+
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				var index int64 = 0
+				firstIter := true
+				for r := l.ring; firstIter || r != l.ring; r = r.Next() {
+					firstIter = false
+					if !(index == 0 && argsLen == 1) {
+						argList[0] = value
+						argList[1] = r.Value
+						argList[2] = index
+
+						var valueErr error
+						value, valueErr = callback.call(i, argList)
+						if valueReturn, ok := value.(Return); ok {
+							value = valueReturn.FinalValue
+						} else if valueErr != nil {
+							return nil, valueErr
+						}
+					}
+					index++
+				}
+				return value, nil
+			}
+			return nil, loxerror.RuntimeError(name,
+				"First argument to 'ring.reduce' must be a function.")
+		})
+	case "reduceRight":
+		return ringFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 || argsLen > 2 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if callback, ok := args[0].(*LoxFunction); ok {
+				var value any
+				switch argsLen {
+				case 1:
+					value = l.ring.Prev().Value
+				case 2:
+					value = args[1]
+				}
+
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				var index int64 = 0
+				for r := l.ring.Prev(); ; r = r.Prev() {
+					if !(index == 0 && argsLen == 1) {
+						argList[0] = value
+						argList[1] = r.Value
+						argList[2] = index
+
+						var valueErr error
+						value, valueErr = callback.call(i, argList)
+						if valueReturn, ok := value.(Return); ok {
+							value = valueReturn.FinalValue
+						} else if valueErr != nil {
+							return nil, valueErr
+						}
+					}
+					if r == l.ring {
+						break
+					}
+					index++
+				}
+				return value, nil
+			}
+			return nil, loxerror.RuntimeError(name,
+				"First argument to 'ring.reduceRight' must be a function.")
+		})
 	case "setValue":
 		return ringFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			l.ring.Value = args[0]
