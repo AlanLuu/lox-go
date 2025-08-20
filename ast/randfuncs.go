@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math/big"
 	"math/rand"
 	"unicode/utf8"
 
@@ -47,6 +48,18 @@ func (i *Interpreter) defineRandFuncs() {
 			)
 		}
 		switch arg := arg.(type) {
+		case *LoxBigRange:
+			rangeLen := arg.Length()
+			if rangeLen == 0 {
+				return emptyErr("bigrange")
+			}
+			var randIndex int64
+			if randStruct.rand != nil {
+				randIndex = randStruct.rand.Int63n(rangeLen)
+			} else {
+				randIndex = rand.Int63n(rangeLen)
+			}
+			return arg.get(big.NewInt(randIndex)), nil
 		case *LoxBitField:
 			var randIndex int64
 			if randStruct.rand != nil {
@@ -535,6 +548,8 @@ func (i *Interpreter) defineRandFuncs() {
 			}
 			getIndex := func(index int) any {
 				switch arg := arg.(type) {
+				case *LoxBigRange:
+					return arg.get(big.NewInt(int64(index)))
 				case *LoxBitField:
 					return int64(arg.getBitIndex(int64(index)))
 				case *LoxBuffer:
