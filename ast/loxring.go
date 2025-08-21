@@ -287,6 +287,28 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxIterator(iterator), nil
 		})
+	case "infIterPrev":
+		return ringFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			r := l.ring.Prev()
+			iterator := InfiniteIterator{}
+			iterator.nextMethod = func() any {
+				value := r.Value
+				r = r.Prev()
+				return value
+			}
+			return NewLoxIterator(iterator), nil
+		})
+	case "infIterReversed":
+		return ringFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			r := l.ring
+			iterator := InfiniteIterator{}
+			iterator.nextMethod = func() any {
+				value := r.Value
+				r = r.Prev()
+				return value
+			}
+			return NewLoxIterator(iterator), nil
+		})
 	case "isLinked":
 		return ringFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if other_l, ok := args[0].(*LoxRing); ok {
@@ -434,6 +456,25 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		return l.next, nil
 	case "prev":
 		return l.prev, nil
+	case "prevIter":
+		return ringFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			keepGoing := true
+			r := l.ring.Prev()
+			iterator := ProtoIterator{}
+			iterator.hasNextMethod = func() bool {
+				if keepGoing && r == l.ring {
+					keepGoing = false
+					return true
+				}
+				return keepGoing
+			}
+			iterator.nextMethod = func() any {
+				value := r.Value
+				r = r.Prev()
+				return value
+			}
+			return NewLoxIterator(iterator), nil
+		})
 	case "printLines":
 		return ringFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.ring.Do(func(value any) {
