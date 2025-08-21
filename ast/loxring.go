@@ -269,6 +269,49 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "forEachPrev":
+		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				var index int64 = 0
+				for r := l.ring.Prev(); ; r = r.Prev() {
+					argList[0] = r.Value
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+					if r == l.ring {
+						break
+					}
+					index++
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
+	case "forEachReversed":
+		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				var index int64 = 0
+				firstIter := true
+				for r := l.ring; firstIter || r != l.ring; r = r.Prev() {
+					firstIter = false
+					argList[0] = r.Value
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+					index++
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
 	case "getValue":
 		return ringFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if arg, ok := args[0].(int64); ok {
