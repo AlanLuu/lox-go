@@ -660,6 +660,53 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 			return nil, loxerror.RuntimeError(name,
 				"First argument to 'ring.reduceRight' must be a function.")
 		})
+	case "reduceRightCallLen":
+		return ringFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 || argsLen > 2 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if callback, ok := args[0].(*LoxFunction); ok {
+				var value any
+				switch argsLen {
+				case 1:
+					value = l.ring.Prev().Value
+				case 2:
+					value = args[1]
+				}
+
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				lastIndex := int64(l.ring.Len() - 1)
+				index := lastIndex
+				for r := l.ring.Prev(); ; r = r.Prev() {
+					if !(index == lastIndex && argsLen == 1) {
+						argList[0] = value
+						argList[1] = r.Value
+						argList[2] = index
+
+						var valueErr error
+						value, valueErr = callback.call(i, argList)
+						if valueReturn, ok := value.(Return); ok {
+							value = valueReturn.FinalValue
+						} else if valueErr != nil {
+							return nil, valueErr
+						}
+					}
+					if r == l.ring {
+						break
+					}
+					index--
+					if index < 0 {
+						break
+					}
+				}
+				return value, nil
+			}
+			return nil, loxerror.RuntimeError(name,
+				"First argument to 'ring.reduceRightCallLen' must be a function.")
+		})
 	case "reduceRightFromCurrent":
 		return ringFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
@@ -701,6 +748,49 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name,
 				"First argument to 'ring.reduceRightFromCurrent' must be a function.")
+		})
+	case "reduceRightFromCurrentCallLen":
+		return ringFunc(-1, func(i *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			if argsLen == 0 || argsLen > 2 {
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+			}
+			if callback, ok := args[0].(*LoxFunction); ok {
+				var value any
+				switch argsLen {
+				case 1:
+					value = l.ring.Value
+				case 2:
+					value = args[1]
+				}
+
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				lastIndex := int64(l.ring.Len() - 1)
+				index := lastIndex
+				firstIter := true
+				for r := l.ring; firstIter || (r != l.ring && index >= 0); r = r.Prev() {
+					firstIter = false
+					if !(index == lastIndex && argsLen == 1) {
+						argList[0] = value
+						argList[1] = r.Value
+						argList[2] = index
+
+						var valueErr error
+						value, valueErr = callback.call(i, argList)
+						if valueReturn, ok := value.(Return); ok {
+							value = valueReturn.FinalValue
+						} else if valueErr != nil {
+							return nil, valueErr
+						}
+					}
+					index--
+				}
+				return value, nil
+			}
+			return nil, loxerror.RuntimeError(name,
+				"First argument to 'ring.reduceRightFromCurrentCallLen' must be a function.")
 		})
 	case "setValue":
 		return ringFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
