@@ -291,6 +291,31 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "forEachPrevCallLen":
+		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				index := int64(l.ring.Len() - 1)
+				for r := l.ring.Prev(); ; r = r.Prev() {
+					argList[0] = r.Value
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+					if r == l.ring {
+						break
+					}
+					index--
+					if index < 0 {
+						break
+					}
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
 	case "forEachReversed":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
@@ -307,6 +332,52 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 						return nil, resultErr
 					}
 					index++
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
+	case "forEachReversedCallLen":
+		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				index := int64(l.ring.Len() - 1)
+				firstIter := true
+				for r := l.ring; firstIter || (r != l.ring && index >= 0); r = r.Prev() {
+					firstIter = false
+					argList[0] = r.Value
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+					index--
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
+	case "forEachReversedCallLen0":
+		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 2)
+				defer argList.Clear()
+				var index int64 = 0
+				firstIter := true
+				for r := l.ring; firstIter || (r != l.ring && index > 0); r = r.Prev() {
+					argList[0] = r.Value
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultErr != nil && result == nil {
+						return nil, resultErr
+					}
+					if firstIter {
+						index = int64(l.ring.Len() - 1)
+						firstIter = false
+					} else {
+						index--
+					}
 				}
 				return nil, nil
 			}
