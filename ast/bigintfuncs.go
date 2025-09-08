@@ -57,6 +57,11 @@ func (i *Interpreter) defineBigIntFuncs() {
 			return new(big.Int).SetInt64(arg), nil
 		case float64:
 			return new(big.Int).SetInt64(int64(arg)), nil
+		case *big.Int:
+			return new(big.Int).Set(arg), nil
+		case *big.Float:
+			result, _ := arg.Int(nil)
+			return result, nil
 		case *LoxString:
 			bigInt := &big.Int{}
 			_, ok := bigInt.SetString(arg.str, 0)
@@ -66,7 +71,11 @@ func (i *Interpreter) defineBigIntFuncs() {
 			}
 			return bigInt, nil
 		default:
-			return argMustBeTypeAn(in.callToken, "new", "integer, float, or string")
+			return argMustBeTypeAn(
+				in.callToken,
+				"new",
+				"integer, float, bigint, bigfloat, or string",
+			)
 		}
 	})
 	bigIntFunc("isInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {

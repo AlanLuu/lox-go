@@ -37,6 +37,10 @@ func (i *Interpreter) defineBigFloatFuncs() {
 			return bigfloat.New(float64(arg)), nil
 		case float64:
 			return bigfloat.New(arg), nil
+		case *big.Int:
+			return new(big.Float).SetInt(arg), nil
+		case *big.Float:
+			return new(big.Float).Set(arg), nil
 		case *LoxString:
 			bigFloat := &big.Float{}
 			_, ok := bigFloat.SetString(arg.str)
@@ -46,7 +50,11 @@ func (i *Interpreter) defineBigFloatFuncs() {
 			}
 			return bigFloat, nil
 		default:
-			return argMustBeTypeAn(in.callToken, "new", "integer, float, or string")
+			return argMustBeTypeAn(
+				in.callToken,
+				"new",
+				"integer, float, bigint, bigfloat, or string",
+			)
 		}
 	})
 	bigFloatFunc("toBigInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
