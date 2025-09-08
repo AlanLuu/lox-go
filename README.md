@@ -632,6 +632,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `bigrange(stop)`, which takes in an integer or bigint and returns a bigrange object with a start value of `0n`, a stop value of `stop`, and a step value of `1n`
     - `bigrange(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers or bigints and returns a bigrange object with the specified parameters. If `step` is omitted, the resulting bigrange object will have a step value of `1n`
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
+    - `bool(arg)`, which returns `true` if the specified argument is a truthy value and `false` otherwise
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
     - `BufferZero(length)`, which returns a new buffer of the specified length, where each initial element is `0`

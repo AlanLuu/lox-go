@@ -438,6 +438,9 @@ func (i *Interpreter) defineNativeFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'BitfieldStrLSB' must be a string.")
 	})
+	nativeFunc("bool", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		return i.isTruthy(args[0]), nil
+	})
 	nativeFunc("Buffer", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		buffer := EmptyLoxBufferCap(int64(len(args)))
 		for _, element := range args {
