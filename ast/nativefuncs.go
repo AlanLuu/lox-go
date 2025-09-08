@@ -570,6 +570,38 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return args[0], nil
 	})
+	nativeFunc("float", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch arg := args[0].(type) {
+		case nil:
+			return float64(0.0), nil
+		case bool:
+			if arg {
+				return float64(1.0), nil
+			}
+			return float64(0.0), nil
+		case int64:
+			return float64(arg), nil
+		case float64:
+			return arg, nil
+		case *big.Int:
+			float, _ := arg.Float64()
+			return float, nil
+		case *big.Float:
+			float, _ := arg.Float64()
+			return float, nil
+		case *LoxString:
+			str := arg.str
+			result, resultErr := strconv.ParseFloat(str, 64)
+			if resultErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Failed to convert string '%v' to float.", str))
+			}
+			return result, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Cannot convert type '%v' to float.", getType(arg)))
+		}
+	})
 	nativeFunc("hex", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if num, ok := args[0].(int64); ok {
 			return numToBaseStr(num, "0x", 16)
@@ -623,6 +655,37 @@ func (i *Interpreter) defineNativeFuncs() {
 			return NewLoxString(userInput, '"'), nil
 		}
 		return NewLoxString(userInput, '\''), nil
+	})
+	nativeFunc("int", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch arg := args[0].(type) {
+		case nil:
+			return int64(0), nil
+		case bool:
+			if arg {
+				return int64(1), nil
+			}
+			return int64(0), nil
+		case int64:
+			return arg, nil
+		case float64:
+			return int64(arg), nil
+		case *big.Int:
+			return arg.Int64(), nil
+		case *big.Float:
+			result, _ := arg.Int64()
+			return result, nil
+		case *LoxString:
+			str := arg.str
+			result, resultErr := strconv.ParseInt(str, 10, 64)
+			if resultErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Failed to convert string '%v' to integer.", str))
+			}
+			return result, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Cannot convert type '%v' to integer.", getType(arg)))
+		}
 	})
 	nativeFunc("isinstance", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[1].(*LoxClass); !ok {
@@ -892,6 +955,18 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'sleep' must be an integer or float.")
+	})
+	nativeFunc("str", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		var str string
+		switch arg := args[0].(type) {
+		case *LoxString:
+			str = arg.str
+		case fmt.Stringer:
+			str = arg.String()
+		default:
+			str = fmt.Sprint(arg)
+		}
+		return NewLoxStringQuote(str), nil
 	})
 	nativeFunc("sum", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if element, ok := args[0].(interfaces.Iterable); ok {

@@ -50,7 +50,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
     - `NaN` literals are supported using the identifier "NaN"
 - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
-- Besides `false` and `nil`, the values `0`, `0.0`, `0n`, `0.0n`, `NaN`, `""`, `[]`, `{}`, `Set()`, and `Buffer()` are also falsy values
+- Besides `false` and `nil`, the values `0`, `0.0`, `0n`, `0.0n`, `NaN`, `""`, `[]`, `{}`, `Set()`, `Buffer()`, and any value with a length of 0 are also falsy values
 - The `&&` and `||` operators are supported for the logical AND and OR operations respectively
 - Binary, hexadecimal, and octal integer literals are supported in this implementation of Lox
     - Binary literals start with the prefix `0b`
@@ -643,9 +643,13 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If the iterable argument is a dictionary, this function returns a new dictionary that is a shallow copy of the original dictionary
     - `eval(argument)`, which evaluates the string argument as Lox code and returns the result of the final expression in the evaluated code. If the argument is not a string, it is simply returned directly
         - **Warning**: `eval` is a dangerous function to use, as it can execute arbitrary Lox code and must be used with caution
+    - `float(arg)`, which attempts to convert the specified argument into a float and returns that float if successful, otherwise a runtime error is thrown
+        - Valid arguments to `float` are the following types: nil, bool, integer, float, bigint, bigfloat, string
     - `hex(num)`, which converts the specified integer `num` into its hexadecimal representation as a string prefixed with "0x"
     - `input([prompt])`, which writes the value of `prompt` to standard output if it is provided and reads a line from standard input as a string without a trailing newline and returns that string
         - Pressing Ctrl+C will throw a keyboard interrupt runtime error, and pressing Ctrl+D will cause this function to return `nil`
+    - `int(arg)`, which attempts to convert the specified argument into an integer and returns that integer if successful, otherwise a runtime error is thrown
+        - Valid arguments to `int` are the following types: nil, bool, integer, float, bigint, bigfloat, string
     - `isinstance(element, class)`, which returns `true` if the specified element is an instance of the specified class and `false` otherwise
     - `iterator(iterable)`, which returns an iterator object from the specified iterable type and throws a runtime error if the argument is not an iterable type
         - Iterator objects have the following methods associated with them:
@@ -680,6 +684,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `SetIterable(iterable)`, which takes in an iterable and returns a set with the iterable elements as set elements. If an element from the iterable cannot be stored in a set, a runtime error is thrown
     - `sleep(seconds)`, which pauses the program for the specified number of seconds
+    - `str(arg)`, which converts the specified argument into its string representation and returns that string
     - `sum(iterable)`, which takes in an iterable and attempts to return an integer, float, bigint, or bigfloat that is the sum of all the elements from the iterable. If an element from the iterable cannot be used as an element to sum, a runtime error is thrown
     - `<unsafe> threadFunc(numThreads, callback)`, which takes in an integer `numThreads` and a callback function and spins up `numThreads` threads that execute the callback function concurrently
         - If this function is called in non-unsafe mode, a runtime error is thrown
