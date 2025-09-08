@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/AlanLuu/lox/bignum/bigfloat"
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
@@ -63,6 +64,36 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'arity' must be a function or class.")
+	})
+	nativeFunc("bfloat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch arg := args[0].(type) {
+		case nil:
+			return new(big.Float), nil
+		case bool:
+			if arg {
+				return bigfloat.New(1.0), nil
+			}
+			return new(big.Float), nil
+		case int64:
+			return bigfloat.New(float64(arg)), nil
+		case float64:
+			return bigfloat.New(arg), nil
+		case *big.Int:
+			return new(big.Float).SetInt(arg), nil
+		case *big.Float:
+			return new(big.Float).Set(arg), nil
+		case *LoxString:
+			bigFloat := &big.Float{}
+			_, ok := bigFloat.SetString(arg.str)
+			if !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Failed to convert string '%v' to bigfloat.", arg.str))
+			}
+			return bigFloat, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Cannot convert type '%v' to bigfloat.", getType(arg)))
+		}
 	})
 	nativeFunc("bigrange", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
@@ -130,6 +161,37 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			"Argument to 'bin' must be an integer.")
+	})
+	nativeFunc("bint", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch arg := args[0].(type) {
+		case nil:
+			return new(big.Int), nil
+		case bool:
+			if arg {
+				return new(big.Int).SetInt64(1), nil
+			}
+			return new(big.Int), nil
+		case int64:
+			return new(big.Int).SetInt64(arg), nil
+		case float64:
+			return new(big.Int).SetInt64(int64(arg)), nil
+		case *big.Int:
+			return new(big.Int).Set(arg), nil
+		case *big.Float:
+			result, _ := arg.Int(nil)
+			return result, nil
+		case *LoxString:
+			bigInt := &big.Int{}
+			_, ok := bigInt.SetString(arg.str, 0)
+			if !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Failed to convert string '%v' to bigint.", arg.str))
+			}
+			return bigInt, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Cannot convert type '%v' to bigint.", getType(arg)))
+		}
 	})
 	nativeFunc("Bitfield", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)

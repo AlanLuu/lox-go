@@ -629,9 +629,13 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - A few other native functions are defined:
     - `arity(callable)`, which takes in a callable, which is either a function or class, and returns an integer that represents the number of arguments the specified callable expects to receive
         - If the callable can receive a variable number of arguments, `-1` is returned
+    - `bfloat(arg)`, which attempts to convert the specified argument into a bigfloat and returns that bigfloat if successful, otherwise a runtime error is thrown
+        - Valid arguments to `bfloat` are the following types: nil, bool, integer, float, bigint, bigfloat, string
     - `bigrange(stop)`, which takes in an integer or bigint and returns a bigrange object with a start value of `0n`, a stop value of `stop`, and a step value of `1n`
     - `bigrange(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers or bigints and returns a bigrange object with the specified parameters. If `step` is omitted, the resulting bigrange object will have a step value of `1n`
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
+    - `bint(arg)`, which attempts to convert the specified argument into a bigint and returns that bigint if successful, otherwise a runtime error is thrown
+        - Valid arguments to `bint` are the following types: nil, bool, integer, float, bigint, bigfloat, string
     - `bool(arg)`, which returns `true` if the specified argument is a truthy value and `false` otherwise
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
