@@ -10,6 +10,7 @@ import (
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
+	"github.com/AlanLuu/lox/token"
 )
 
 func defineIteratorFields(iteratorClass *LoxClass) {
@@ -44,6 +45,336 @@ func (i *Interpreter) defineIteratorFuncs() {
 	}
 
 	defineIteratorFields(iteratorClass)
+	iteratorFunc("accumulate", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 2 && argsLen != 3 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.accumulate' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.accumulate' must be a function.")
+		}
+		it := args[0].(interfaces.Iterable).Iterator()
+		itWithErr, isErrIter := it.(interfaces.IteratorErr)
+		hasNext := func() (bool, error) {
+			if isErrIter {
+				return itWithErr.HasNextErr()
+			}
+			return it.HasNext(), nil
+		}
+		next := func() (any, error) {
+			if isErrIter {
+				return itWithErr.NextErr()
+			}
+			return it.Next(), nil
+		}
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 3)
+		var index int64 = 0
+		var value any
+		firstIterOuter := true
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		iterator.hasNextMethod = func() (bool, error) {
+			if argList == nil {
+				return false, nil
+			}
+			firstIter := firstIterOuter
+			firstIterOuter = false
+			if firstIter && argsLen == 3 {
+				value = args[2]
+				return true, nil
+			}
+			ok, hasNextErr := hasNext()
+			if hasNextErr != nil {
+				return false, hasNextErr
+			}
+			if !ok {
+				argList.Clear()
+				return false, nil
+			}
+			element, nextErr := next()
+			if nextErr != nil {
+				return false, nextErr
+			}
+			if firstIter {
+				value = element
+			} else {
+				argList[0] = value
+				argList[1] = element
+				argList[2] = index
+				index++
+				var valueErr error
+				value, valueErr = callback.call(i, argList)
+				if valueReturn, ok := value.(Return); ok {
+					value = valueReturn.FinalValue
+				} else if valueErr != nil {
+					return false, valueErr
+				}
+			}
+			return true, nil
+		}
+		iterator.nextMethod = func() (any, error) {
+			return value, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("accumulateAdd", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 1 && argsLen != 2 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			if argsLen == 1 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'Iterator.accumulateAdd' is not iterable.")
+			}
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.accumulateAdd' is not iterable.")
+		}
+		it := args[0].(interfaces.Iterable).Iterator()
+		itWithErr, isErrIter := it.(interfaces.IteratorErr)
+		hasNext := func() (bool, error) {
+			if isErrIter {
+				return itWithErr.HasNextErr()
+			}
+			return it.HasNext(), nil
+		}
+		next := func() (any, error) {
+			if isErrIter {
+				return itWithErr.NextErr()
+			}
+			return it.Next(), nil
+		}
+		var value any
+		firstIterOuter := true
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		iterator.hasNextMethod = func() (bool, error) {
+			firstIter := firstIterOuter
+			firstIterOuter = false
+			if firstIter && argsLen == 2 {
+				value = args[1]
+				return true, nil
+			}
+			ok, hasNextErr := hasNext()
+			if hasNextErr != nil {
+				return false, hasNextErr
+			}
+			if !ok {
+				return false, nil
+			}
+			element, nextErr := next()
+			if nextErr != nil {
+				return false, nextErr
+			}
+			if firstIter {
+				value = element
+			} else {
+				var addErr error
+				value, addErr = i.visitBinaryExpr(Binary{
+					Literal{value},
+					&token.Token{
+						TokenType: token.PLUS,
+						Lexeme:    "+",
+					},
+					Literal{element},
+				})
+				if addErr != nil {
+					return false, addErr
+				}
+			}
+			return true, nil
+		}
+		iterator.nextMethod = func() (any, error) {
+			return value, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("all", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			it := iterable.Iterator()
+			switch it := it.(type) {
+			case interfaces.IteratorErr:
+				for {
+					ok, hasNextErr := it.HasNextErr()
+					if hasNextErr != nil {
+						return nil, hasNextErr
+					}
+					if !ok {
+						break
+					}
+					result, nextErr := it.NextErr()
+					if nextErr != nil {
+						return nil, nextErr
+					}
+					if !i.isTruthy(result) {
+						return false, nil
+					}
+				}
+			default:
+				for it.HasNext() {
+					if !i.isTruthy(it.Next()) {
+						return false, nil
+					}
+				}
+			}
+			return true, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Iterator.all: type '%v' is not iterable.", getType(args[0])))
+	})
+	iteratorFunc("allFunc", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.allFunc' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.allFunc' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		defer argList.Clear()
+		var index int64 = 0
+		switch it := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			for ; ; index++ {
+				ok, hasNextErr := it.HasNextErr()
+				if hasNextErr != nil {
+					return nil, hasNextErr
+				}
+				if !ok {
+					break
+				}
+				element, nextErr := it.NextErr()
+				if nextErr != nil {
+					return nil, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+				if !i.isTruthy(result) {
+					return false, nil
+				}
+			}
+		default:
+			for ; it.HasNext(); index++ {
+				argList[0] = it.Next()
+				argList[1] = index
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+				if !i.isTruthy(result) {
+					return false, nil
+				}
+			}
+		}
+		return true, nil
+	})
+	iteratorFunc("any", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			it := iterable.Iterator()
+			switch it := it.(type) {
+			case interfaces.IteratorErr:
+				for {
+					ok, hasNextErr := it.HasNextErr()
+					if hasNextErr != nil {
+						return nil, hasNextErr
+					}
+					if !ok {
+						break
+					}
+					result, nextErr := it.NextErr()
+					if nextErr != nil {
+						return nil, nextErr
+					}
+					if i.isTruthy(result) {
+						return true, nil
+					}
+				}
+			default:
+				for it.HasNext() {
+					if i.isTruthy(it.Next()) {
+						return true, nil
+					}
+				}
+			}
+			return false, nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Iterator.any: type '%v' is not iterable.", getType(args[0])))
+	})
+	iteratorFunc("anyFunc", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.anyFunc' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.anyFunc' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		defer argList.Clear()
+		var index int64 = 0
+		switch it := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			for ; ; index++ {
+				ok, hasNextErr := it.HasNextErr()
+				if hasNextErr != nil {
+					return nil, hasNextErr
+				}
+				if !ok {
+					break
+				}
+				element, nextErr := it.NextErr()
+				if nextErr != nil {
+					return nil, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+				if i.isTruthy(result) {
+					return true, nil
+				}
+			}
+		default:
+			for ; it.HasNext(); index++ {
+				argList[0] = it.Next()
+				argList[1] = index
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return nil, resultErr
+				}
+				if i.isTruthy(result) {
+					return true, nil
+				}
+			}
+		}
+		return false, nil
+	})
 	iteratorFunc("args", -1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		index := 0
@@ -350,6 +681,222 @@ func (i *Interpreter) defineIteratorFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			fmt.Sprintf("Iterator.cycle: type '%v' is not iterable.", getType(args[0])))
 	})
+	iteratorFunc("dropuntil", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.dropuntil' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.dropuntil' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		loopStopped := false
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if loopStopped {
+					ok, hasNextErr := arg0Iterator.HasNextErr()
+					if hasNextErr != nil {
+						return false, hasNextErr
+					}
+					if !ok {
+						argList.Clear()
+						return false, nil
+					}
+					element, nextErr := arg0Iterator.NextErr()
+					if nextErr != nil {
+						return false, nextErr
+					}
+					current = element
+					return true, nil
+				}
+				for {
+					ok, hasNextErr := arg0Iterator.HasNextErr()
+					if hasNextErr != nil {
+						return false, hasNextErr
+					}
+					if !ok {
+						argList.Clear()
+						return false, nil
+					}
+					element, nextErr := arg0Iterator.NextErr()
+					if nextErr != nil {
+						return false, nextErr
+					}
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if i.isTruthy(result) {
+						loopStopped = true
+						current = element
+						return true, nil
+					}
+				}
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if loopStopped {
+					if !arg0Iterator.HasNext() {
+						argList.Clear()
+						return false, nil
+					}
+					current = arg0Iterator.Next()
+					return true, nil
+				}
+				for {
+					if !arg0Iterator.HasNext() {
+						argList.Clear()
+						return false, nil
+					}
+					element := arg0Iterator.Next()
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if i.isTruthy(result) {
+						loopStopped = true
+						current = element
+						return true, nil
+					}
+				}
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("dropwhile", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.dropwhile' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.dropwhile' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		loopStopped := false
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if loopStopped {
+					ok, hasNextErr := arg0Iterator.HasNextErr()
+					if hasNextErr != nil {
+						return false, hasNextErr
+					}
+					if !ok {
+						argList.Clear()
+						return false, nil
+					}
+					element, nextErr := arg0Iterator.NextErr()
+					if nextErr != nil {
+						return false, nextErr
+					}
+					current = element
+					return true, nil
+				}
+				for {
+					ok, hasNextErr := arg0Iterator.HasNextErr()
+					if hasNextErr != nil {
+						return false, hasNextErr
+					}
+					if !ok {
+						argList.Clear()
+						return false, nil
+					}
+					element, nextErr := arg0Iterator.NextErr()
+					if nextErr != nil {
+						return false, nextErr
+					}
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if !i.isTruthy(result) {
+						loopStopped = true
+						current = element
+						return true, nil
+					}
+				}
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if loopStopped {
+					if !arg0Iterator.HasNext() {
+						argList.Clear()
+						return false, nil
+					}
+					current = arg0Iterator.Next()
+					return true, nil
+				}
+				for {
+					if !arg0Iterator.HasNext() {
+						argList.Clear()
+						return false, nil
+					}
+					element := arg0Iterator.Next()
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if !i.isTruthy(result) {
+						loopStopped = true
+						current = element
+						return true, nil
+					}
+				}
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("enumerate", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var it interfaces.Iterator
 		var index any
@@ -421,6 +968,602 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterable), nil
 	})
+	iteratorFunc("filter", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.filter' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.filter' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				for {
+					ok, hasNextErr := arg0Iterator.HasNextErr()
+					if hasNextErr != nil {
+						return false, hasNextErr
+					}
+					if !ok {
+						argList.Clear()
+						return false, nil
+					}
+					element, nextErr := arg0Iterator.NextErr()
+					if nextErr != nil {
+						return false, nextErr
+					}
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if i.isTruthy(result) {
+						current = element
+						return true, nil
+					}
+				}
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				for {
+					if !arg0Iterator.HasNext() {
+						argList.Clear()
+						return false, nil
+					}
+					element := arg0Iterator.Next()
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if i.isTruthy(result) {
+						current = element
+						return true, nil
+					}
+				}
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIteratorTag(iterator, "filter"), nil
+	})
+	iteratorFunc("filterfalse", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.filterfalse' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.filterfalse' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				for {
+					ok, hasNextErr := arg0Iterator.HasNextErr()
+					if hasNextErr != nil {
+						return false, hasNextErr
+					}
+					if !ok {
+						argList.Clear()
+						return false, nil
+					}
+					element, nextErr := arg0Iterator.NextErr()
+					if nextErr != nil {
+						return false, nextErr
+					}
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if !i.isTruthy(result) {
+						current = element
+						return true, nil
+					}
+				}
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				for {
+					if !arg0Iterator.HasNext() {
+						argList.Clear()
+						return false, nil
+					}
+					element := arg0Iterator.Next()
+					argList[0] = element
+					argList[1] = index
+					index++
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return false, resultErr
+					}
+					if !i.isTruthy(result) {
+						current = element
+						return true, nil
+					}
+				}
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("filterfalseonly", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			var current any
+			stopped := false
+			it := iterable.Iterator()
+			iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+			switch it := it.(type) {
+			case interfaces.IteratorErr:
+				iterator.hasNextMethod = func() (bool, error) {
+					if stopped {
+						return false, nil
+					}
+					for {
+						ok, hasNextErr := it.HasNextErr()
+						if hasNextErr != nil {
+							return false, hasNextErr
+						}
+						if !ok {
+							stopped = true
+							return false, nil
+						}
+						element, nextErr := it.NextErr()
+						if nextErr != nil {
+							return false, nextErr
+						}
+						if !i.isTruthy(element) {
+							current = element
+							return true, nil
+						}
+					}
+				}
+			default:
+				iterator.hasNextMethod = func() (bool, error) {
+					if stopped {
+						return false, nil
+					}
+					for {
+						if !it.HasNext() {
+							stopped = true
+							return false, nil
+						}
+						element := it.Next()
+						if !i.isTruthy(element) {
+							current = element
+							return true, nil
+						}
+					}
+				}
+			}
+			iterator.nextMethod = func() (any, error) {
+				return current, nil
+			}
+			return NewLoxIterator(iterator), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Iterator.filterfalseonly: type '%v' is not iterable.", getType(args[0])))
+	})
+	iteratorFunc("filtertrueonly", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			var current any
+			stopped := false
+			it := iterable.Iterator()
+			iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+			switch it := it.(type) {
+			case interfaces.IteratorErr:
+				iterator.hasNextMethod = func() (bool, error) {
+					if stopped {
+						return false, nil
+					}
+					for {
+						ok, hasNextErr := it.HasNextErr()
+						if hasNextErr != nil {
+							return false, hasNextErr
+						}
+						if !ok {
+							stopped = true
+							return false, nil
+						}
+						element, nextErr := it.NextErr()
+						if nextErr != nil {
+							return false, nextErr
+						}
+						if i.isTruthy(element) {
+							current = element
+							return true, nil
+						}
+					}
+				}
+			default:
+				iterator.hasNextMethod = func() (bool, error) {
+					if stopped {
+						return false, nil
+					}
+					for {
+						if !it.HasNext() {
+							stopped = true
+							return false, nil
+						}
+						element := it.Next()
+						if i.isTruthy(element) {
+							current = element
+							return true, nil
+						}
+					}
+				}
+			}
+			iterator.nextMethod = func() (any, error) {
+				return current, nil
+			}
+			return NewLoxIterator(iterator), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Iterator.filtertrueonly: type '%v' is not iterable.", getType(args[0])))
+	})
+	iteratorFunc("getuntil", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.getuntil' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.getuntil' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				ok, hasNextErr := arg0Iterator.HasNextErr()
+				if hasNextErr != nil {
+					return false, hasNextErr
+				}
+				if !ok {
+					argList.Clear()
+					return false, nil
+				}
+				element, nextErr := arg0Iterator.NextErr()
+				if nextErr != nil {
+					return false, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if i.isTruthy(result) {
+					argList.Clear()
+					return false, nil
+				}
+				current = element
+				return true, nil
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if !arg0Iterator.HasNext() {
+					argList.Clear()
+					return false, nil
+				}
+				element := arg0Iterator.Next()
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if i.isTruthy(result) {
+					argList.Clear()
+					return false, nil
+				}
+				current = element
+				return true, nil
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("getuntillast", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.getuntillast' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.getuntillast' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				ok, hasNextErr := arg0Iterator.HasNextErr()
+				if hasNextErr != nil {
+					return false, hasNextErr
+				}
+				if !ok {
+					argList.Clear()
+					return false, nil
+				}
+				element, nextErr := arg0Iterator.NextErr()
+				if nextErr != nil {
+					return false, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if i.isTruthy(result) {
+					argList.Clear()
+				}
+				current = element
+				return true, nil
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if !arg0Iterator.HasNext() {
+					argList.Clear()
+					return false, nil
+				}
+				element := arg0Iterator.Next()
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if i.isTruthy(result) {
+					argList.Clear()
+				}
+				current = element
+				return true, nil
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("getwhile", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.getwhile' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.getwhile' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				ok, hasNextErr := arg0Iterator.HasNextErr()
+				if hasNextErr != nil {
+					return false, hasNextErr
+				}
+				if !ok {
+					argList.Clear()
+					return false, nil
+				}
+				element, nextErr := arg0Iterator.NextErr()
+				if nextErr != nil {
+					return false, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if !i.isTruthy(result) {
+					argList.Clear()
+					return false, nil
+				}
+				current = element
+				return true, nil
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if !arg0Iterator.HasNext() {
+					argList.Clear()
+					return false, nil
+				}
+				element := arg0Iterator.Next()
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if !i.isTruthy(result) {
+					argList.Clear()
+					return false, nil
+				}
+				current = element
+				return true, nil
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
+	iteratorFunc("getwhilelast", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.getwhilelast' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.getwhilelast' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		var current any
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				ok, hasNextErr := arg0Iterator.HasNextErr()
+				if hasNextErr != nil {
+					return false, hasNextErr
+				}
+				if !ok {
+					argList.Clear()
+					return false, nil
+				}
+				element, nextErr := arg0Iterator.NextErr()
+				if nextErr != nil {
+					return false, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if !i.isTruthy(result) {
+					argList.Clear()
+				}
+				current = element
+				return true, nil
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if !arg0Iterator.HasNext() {
+					argList.Clear()
+					return false, nil
+				}
+				element := arg0Iterator.Next()
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					result = resultReturn.FinalValue
+				} else if resultErr != nil {
+					return false, resultErr
+				}
+				if !i.isTruthy(result) {
+					argList.Clear()
+				}
+				current = element
+				return true, nil
+			}
+		}
+		iterator.nextMethod = func() (any, error) {
+			return current, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	iteratorFunc("infiniteArg", 1, func(_ *Interpreter, args list.List[any]) (any, error) {
 		arg := args[0]
 		iterator := InfiniteIterator{}
@@ -448,6 +1591,80 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterator), nil
 	})
+	iteratorFunc("map", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.map' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.map' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		callback := args[1].(*LoxFunction)
+		argList := getArgList(callback, 2)
+		var index int64 = 0
+		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+		switch arg0Iterator := arg0Iterator.(type) {
+		case interfaces.IteratorErr:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				ok, hasNextErr := arg0Iterator.HasNextErr()
+				if hasNextErr != nil {
+					return false, hasNextErr
+				}
+				if !ok {
+					argList.Clear()
+					return false, nil
+				}
+				return true, nil
+			}
+			iterator.nextMethod = func() (any, error) {
+				element, nextErr := arg0Iterator.NextErr()
+				if nextErr != nil {
+					return nil, nextErr
+				}
+				argList[0] = element
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					return resultReturn.FinalValue, nil
+				} else if resultErr != nil {
+					return nil, resultErr
+				} else {
+					return result, nil
+				}
+			}
+		default:
+			iterator.hasNextMethod = func() (bool, error) {
+				if argList == nil {
+					return false, nil
+				}
+				if !arg0Iterator.HasNext() {
+					argList.Clear()
+					return false, nil
+				}
+				return true, nil
+			}
+			iterator.nextMethod = func() (any, error) {
+				argList[0] = arg0Iterator.Next()
+				argList[1] = index
+				index++
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					return resultReturn.FinalValue, nil
+				} else if resultErr != nil {
+					return nil, resultErr
+				} else {
+					return result, nil
+				}
+			}
+		}
+		return NewLoxIteratorTag(iterator, "map"), nil
+	})
 	iteratorFunc("pairwise", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if iterable, ok := args[0].(interfaces.Iterable); ok {
 			it := iterable.Iterator()
@@ -474,6 +1691,159 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return nil, loxerror.RuntimeError(in.callToken,
 			fmt.Sprintf("Iterator.pairwise: type '%v' is not iterable.", getType(args[0])))
+	})
+	iteratorFunc("reduce", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 2 && argsLen != 3 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.reduce' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.reduce' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		arg0IteratorWithErr, isErrIter := arg0Iterator.(interfaces.IteratorErr)
+		callback := args[1].(*LoxFunction)
+		hasNext := func() (bool, error) {
+			if isErrIter {
+				return arg0IteratorWithErr.HasNextErr()
+			}
+			return arg0Iterator.HasNext(), nil
+		}
+		next := func() (any, error) {
+			if isErrIter {
+				return arg0IteratorWithErr.NextErr()
+			}
+			return arg0Iterator.Next(), nil
+		}
+		var value any
+		switch argsLen {
+		case 2:
+			ok, hasNextErr := hasNext()
+			if hasNextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, hasNextErr.Error())
+			}
+			if !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Cannot call 'Iterator.reduce' on empty iterable without initial value.")
+			}
+			var nextErr error
+			value, nextErr = next()
+			if nextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, nextErr.Error())
+			}
+		case 3:
+			value = args[2]
+		}
+		argList := getArgList(callback, 3)
+		defer argList.Clear()
+		for index := int64(0); ; index++ {
+			if index == 0 && argsLen == 2 {
+				continue
+			}
+			ok, hasNextErr := hasNext()
+			if hasNextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, hasNextErr.Error())
+			}
+			if !ok {
+				return value, nil
+			}
+			argList[0] = value
+			var nextErr error
+			argList[1], nextErr = next()
+			if nextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, nextErr.Error())
+			}
+			argList[2] = index
+			var valueErr error
+			value, valueErr = callback.call(i, argList)
+			if valueReturn, ok := value.(Return); ok {
+				value = valueReturn.FinalValue
+			} else if valueErr != nil {
+				return nil, valueErr
+			}
+		}
+	})
+	iteratorFunc("reduceRight", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 2 && argsLen != 3 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 2 or 3 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.reduceRight' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.reduceRight' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		arg0IteratorWithErr, isErrIter := arg0Iterator.(interfaces.IteratorErr)
+		callback := args[1].(*LoxFunction)
+		hasNext := func() (bool, error) {
+			if isErrIter {
+				return arg0IteratorWithErr.HasNextErr()
+			}
+			return arg0Iterator.HasNext(), nil
+		}
+		next := func() (any, error) {
+			if isErrIter {
+				return arg0IteratorWithErr.NextErr()
+			}
+			return arg0Iterator.Next(), nil
+		}
+		iterElements := list.NewList[any]()
+		defer iterElements.Clear()
+		for {
+			ok, hasNextErr := hasNext()
+			if hasNextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, hasNextErr.Error())
+			}
+			if !ok {
+				if len(iterElements) == 0 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Cannot call 'Iterator.reduceRight' on empty iterable without initial value.")
+				}
+				break
+			}
+			element, nextErr := next()
+			if nextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, nextErr.Error())
+			}
+			iterElements.Add(element)
+		}
+		lastIndex := int64(len(iterElements) - 1)
+		var value any
+		switch argsLen {
+		case 2:
+			value = iterElements[lastIndex]
+		case 3:
+			value = args[2]
+		}
+		argList := getArgList(callback, 3)
+		defer argList.Clear()
+		for index := lastIndex; index >= 0; index-- {
+			if index == lastIndex && argsLen == 2 {
+				continue
+			}
+			argList[0] = value
+			argList[1] = iterElements[index]
+			argList[2] = index
+			var valueErr error
+			value, valueErr = callback.call(i, argList)
+			if valueReturn, ok := value.(Return); ok {
+				value = valueReturn.FinalValue
+			} else if valueErr != nil {
+				return nil, valueErr
+			}
+		}
+		return value, nil
 	})
 	iteratorFunc("repeat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var element any

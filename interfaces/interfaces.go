@@ -13,8 +13,18 @@ type Iterator interface {
 	Next() any
 }
 
+type IteratorErr interface {
+	Iterator
+	HasNextErr() (bool, error)
+	NextErr() (any, error)
+}
+
 type Iterable interface {
 	Iterator() Iterator
+}
+
+type IterableErr interface {
+	IteratorErr() IteratorErr
 }
 
 type LazyType interface {
@@ -28,6 +38,11 @@ type Length interface {
 type ReverseIterable interface {
 	Iterable
 	ReverseIterator() Iterator
+}
+
+type ReverseIterableErr interface {
+	IterableErr
+	ReverseIteratorErr() IteratorErr
 }
 
 type Type interface {

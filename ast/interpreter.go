@@ -1826,7 +1826,17 @@ func (i *Interpreter) visitForEachStmt(stmt ForEach) (any, error) {
 
 	enteredLoop := false
 	loopInterrupted := false
-	for iterator.HasNext() {
+	iterWithErr := assertIterErr(iterator)
+	hasNext := func() (bool, error) {
+		if iterWithErr != nil {
+			return iterWithErr.HasNextErr()
+		}
+		return iterator.HasNext(), nil
+	}
+	for itHasNext, hasNextErr := hasNext(); itHasNext || hasNextErr != nil; itHasNext, hasNextErr = hasNext() {
+		if hasNextErr != nil {
+			return nil, hasNextErr
+		}
 		if loopInterrupted {
 			return nil, loxerror.RuntimeError(stmt.ForEachToken, "loop interrupted")
 		}
@@ -1849,7 +1859,15 @@ func (i *Interpreter) visitForEachStmt(stmt ForEach) (any, error) {
 			}()
 			enteredLoop = true
 		}
-		tempEnvironment.Define(stmt.VariableName.Lexeme, iterator.Next())
+		if iterWithErr != nil {
+			result, nextErr := iterWithErr.NextErr()
+			if nextErr != nil {
+				return nil, nextErr
+			}
+			tempEnvironment.Define(stmt.VariableName.Lexeme, result)
+		} else {
+			tempEnvironment.Define(stmt.VariableName.Lexeme, iterator.Next())
+		}
 		var value any
 		var evalErr error
 		if isBlock {

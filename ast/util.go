@@ -1,6 +1,22 @@
 package ast
 
-import "github.com/AlanLuu/lox/list"
+import (
+	"github.com/AlanLuu/lox/interfaces"
+	"github.com/AlanLuu/lox/list"
+)
+
+func assertIterErr(iter interfaces.Iterator) interfaces.IteratorErr {
+	return convertIface[interfaces.IteratorErr](iter)
+}
+
+func convertIface[T any](iface any) T {
+	result, ok := iface.(T)
+	if !ok {
+		var t T
+		return t
+	}
+	return result
+}
 
 func getArgList(callback *LoxFunction, numArgs int) list.List[any] {
 	argList := list.NewListLen[any](int64(numArgs))
