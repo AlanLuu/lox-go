@@ -389,6 +389,8 @@ func (p *Parser) comparison() (Expr, error) {
 func (p *Parser) consume(tokenType token.TokenType, message string) (*token.Token, error) {
 	if p.check(tokenType) {
 		return p.advance(), nil
+	} else if tokenType == token.SEMICOLON && p.isAtEnd() {
+		return p.peek(), nil
 	}
 	return nil, p.error(p.peek(), message)
 }
