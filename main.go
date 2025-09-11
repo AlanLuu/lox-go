@@ -22,6 +22,14 @@ const NEXT_LINE_PROMPT = "... "
 //go:embed loxcode/*
 var loxCodeFS embed.FS
 
+func flagsProvided() map[string]struct{} {
+	m := map[string]struct{}{}
+	flag.Visit(func(f *flag.Flag) {
+		m[f.Name] = struct{}{}
+	})
+	return m
+}
+
 func usageFunc(writer io.Writer) func() {
 	return func() {
 		usage :=
@@ -232,19 +240,23 @@ func main() {
 	util.DisableLoxCode = *disableLoxCode || *disableLoxCode2
 	util.UnsafeMode = *unsafe
 	exitCode := 0
-	if *exprCLine != "" {
-		sc := scanner.NewScanner(*exprCLine)
-		interpreter := ast.NewInterpreter()
-		runLoxCodeErr := runLoxCode(interpreter)
-		if runLoxCodeErr == nil {
-			resultError := run(sc, interpreter)
-			if resultError != nil {
-				loxerror.PrintErrorObject(resultError)
+	flagsMap := flagsProvided()
+	if _, ok := flagsMap["c"]; ok {
+		line := strings.TrimSpace(*exprCLine)
+		if line != "" {
+			sc := scanner.NewScanner(line)
+			interpreter := ast.NewInterpreter()
+			runLoxCodeErr := runLoxCode(interpreter)
+			if runLoxCodeErr == nil {
+				resultError := run(sc, interpreter)
+				if resultError != nil {
+					loxerror.PrintErrorObject(resultError)
+					exitCode = 1
+				}
+			} else {
+				loxerror.PrintErrorObject(runLoxCodeErr)
 				exitCode = 1
 			}
-		} else {
-			loxerror.PrintErrorObject(runLoxCodeErr)
-			exitCode = 1
 		}
 	} else if len(args) > 0 && args[0] != "-" {
 		possibleError := processFile(args[0])
