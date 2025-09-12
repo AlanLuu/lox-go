@@ -8,6 +8,8 @@ Usage: lox [OPTIONS] [FILE]
 OPTIONS:
 	-c <code>
 		Execute Lox code from command line argument
+    -i
+        Drop into REPL mode after running a Lox file
 	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
 	--unsafe

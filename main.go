@@ -38,6 +38,8 @@ func usageFunc(writer io.Writer) func() {
 OPTIONS:
 	-c <code>
 		Execute Lox code from command line argument
+	-i
+		Drop into REPL mode after running a Lox file
 	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
 	--unsafe
@@ -121,39 +123,37 @@ func run(sc *scanner.Scanner, interpreter *ast.Interpreter) error {
 	return nil
 }
 
-func processFile(filePath string) error {
+func processFile(filePath string) (*ast.Interpreter, error) {
 	file, openFileError := os.Open(filePath)
 	if openFileError != nil {
-		return openFileError
+		return nil, openFileError
 	}
 
 	program, readErr := io.ReadAll(file)
 	file.Close()
 	if readErr != nil {
-		return readErr
+		return nil, readErr
 	}
+
 	sc := scanner.NewScanner(string(program))
 	interpreter := ast.NewInterpreter()
 	runLoxCodeErr := runLoxCode(interpreter)
 	if runLoxCodeErr != nil {
-		return runLoxCodeErr
-	}
-	resultError := run(sc, interpreter)
-	if resultError != nil {
-		return resultError
+		return interpreter, runLoxCodeErr
 	}
 
-	return nil
+	return interpreter, run(sc, interpreter)
 }
 
-func interactiveMode() int {
+func interactiveMode(interpreter *ast.Interpreter) int {
+	util.InteractiveMode = true
+
 	l, _ := readline.NewEx(&readline.Config{
 		Prompt:          PROMPT,
 		InterruptPrompt: "^C",
 	})
 	defer l.Close()
 
-	interpreter := ast.NewInterpreter()
 	runLoxCodeErr := runLoxCode(interpreter)
 	if runLoxCodeErr != nil {
 		loxerror.PrintErrorObject(runLoxCodeErr)
@@ -223,6 +223,7 @@ func interactiveMode() int {
 func main() {
 	var (
 		exprCLine       = flag.String("c", "", "")
+		interactive     = flag.Bool("i", false, "")
 		disableLoxCode  = flag.Bool("disable-loxcode", false, "")
 		disableLoxCode2 = flag.Bool("dl", false, "")
 		unsafe          = flag.Bool("unsafe", false, "")
@@ -241,11 +242,12 @@ func main() {
 	util.UnsafeMode = *unsafe
 	exitCode := 0
 	flagsMap := flagsProvided()
+	var interpreter *ast.Interpreter
 	if _, ok := flagsMap["c"]; ok {
 		line := strings.TrimSpace(*exprCLine)
 		if line != "" {
 			sc := scanner.NewScanner(line)
-			interpreter := ast.NewInterpreter()
+			interpreter = ast.NewInterpreter()
 			runLoxCodeErr := runLoxCode(interpreter)
 			if runLoxCodeErr == nil {
 				resultError := run(sc, interpreter)
@@ -259,14 +261,22 @@ func main() {
 			}
 		}
 	} else if len(args) > 0 && args[0] != "-" {
-		possibleError := processFile(args[0])
+		var possibleError error
+		interpreter, possibleError = processFile(args[0])
 		if possibleError != nil {
 			loxerror.PrintErrorObject(possibleError)
 			exitCode = 1
 		}
 	} else {
-		util.InteractiveMode = true
-		exitCode = interactiveMode()
+		exitCode = interactiveMode(ast.NewInterpreter())
+	}
+
+	if *interactive && !util.InteractiveMode {
+		if interpreter != nil {
+			exitCode = interactiveMode(interpreter)
+		} else {
+			exitCode = interactiveMode(ast.NewInterpreter())
+		}
 	}
 
 	ast.OSExit(exitCode)
