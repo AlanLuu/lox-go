@@ -135,13 +135,13 @@ func processFile(filePath string) (*ast.Interpreter, error) {
 		return nil, readErr
 	}
 
-	sc := scanner.NewScanner(string(program))
 	interpreter := ast.NewInterpreter()
 	runLoxCodeErr := runLoxCode(interpreter)
 	if runLoxCodeErr != nil {
 		return interpreter, runLoxCodeErr
 	}
 
+	sc := scanner.NewScanner(string(program))
 	return interpreter, run(sc, interpreter)
 }
 
