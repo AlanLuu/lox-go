@@ -39,7 +39,7 @@ OPTIONS:
 	-c <code>
 		Execute Lox code from command line argument
 	-i
-		Drop into REPL mode after running a Lox file
+		Drop into REPL mode after running Lox code
 	--disable-loxcode, -dl
 		Disable execution of all Lox files that are bundled inside this interpreter executable
 	--unsafe
