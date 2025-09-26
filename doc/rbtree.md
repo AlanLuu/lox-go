@@ -1,0 +1,53 @@
+# RB tree methods
+
+The following methods are defined in the built-in `rbtree` class:
+- `rbtree class.args`
+- `rbtree class.dictInt`
+- `rbtree class.dictStr`
+- `rbtree class.int()`
+- `rbtree class.intArgs`
+- `rbtree class.iter`
+- `rbtree class.list`
+- `rbtree class.rbtree`
+- `rbtree class.str()`
+- `rbtree class.strArgs`
+
+RB trees have the following methods associated with them:
+- `rbtree.clear()`
+- `rbtree.clearRet()`
+- `rbtree.delete`
+- `rbtree.deleteForce`
+- `rbtree.deleteForceRet`
+- `rbtree.deleteOk`
+- `rbtree.deleteOkOnly`
+- `rbtree.deleteValues`
+- `rbtree.deleteValuesForce`
+- `rbtree.deleteValuesForceRet`
+- `rbtree.forEach`
+- `rbtree.forEachPrev`
+- `rbtree.forEachPrevI0`
+- `rbtree.get`
+- `rbtree.getOk`
+- `rbtree.getOkOnly`
+- `rbtree.getOrNil`
+- `rbtree.getValues`
+- `rbtree.isEmpty()`
+- `rbtree.keyExists`, which is an alias for `rbtree.getOkOnly`
+- `rbtree.keys()`
+- `rbtree.keyType()`
+- `rbtree.mapList`
+- `rbtree.mapListPrev`
+- `rbtree.mapListPrevI0`
+- `rbtree.print()`
+- `rbtree.put`
+- `rbtree.putRet`
+- `rbtree.set`, which is an alias for `rbtree.put`
+- `rbtree.setRet`, which is an alias for `rbtree.putRet`
+- `rbtree.str()`
+- `rbtree.toDict()`
+- `rbtree.toDictWithIndex()`
+- `rbtree.toList()`
+- `rbtree.toListPrev()`
+- `rbtree.toListWithIndex()`
+- `rbtree.toListWithIndexPrev()`
+- `rbtree.values()`

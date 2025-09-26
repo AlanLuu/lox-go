@@ -68,6 +68,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineOSFuncs()         //Defined in osfuncs.go
 	interpreter.defineProcessFuncs()    //Defined in processfuncs.go
 	interpreter.defineRandFuncs()       //Defined in randfuncs.go
+	interpreter.defineRBTreeFuncs()     //Defined in rbtreefuncs.go
 	interpreter.defineRegexFuncs()      //Defined in regexfuncs.go
 	interpreter.defineStringFuncs()     //Defined in stringfuncs.go
 	interpreter.defineTarFuncs()        //Defined in tarfuncs.go

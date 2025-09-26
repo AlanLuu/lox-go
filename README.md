@@ -130,6 +130,14 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each HTML token from the HTML tokenizer object as an HTML token object
         - IP address
             - For each iteration, `element` is each byte from the IP address instance as an integer
+        - Ring
+            - For each iteration, `element` is each element of the ring
+        - Bitfield
+            - For each iteration, `element` is an integer that is either `1` or `0`
+        - Dotenv
+            - For each iteration, `element` is a list with two elements, with the first element being an env key as a string and the second element being the value of that env key as a string
+        - RB tree
+            - For each iteration, `element` is each element of the RB tree
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Repeat statements are supported in this implementation of Lox, which repeatedly executes a statement for a certain number of times according to the expression
     ```js
@@ -263,6 +271,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)
 - Various methods to work with processes are defined under a built-in class called `process`, which is documented [here](./doc/process.md)
 - Various methods to work with generating cryptographically secure strings are defined under a class called `secrets`, which is documented [here](./doc/secrets.md)
+- Various methods for RB trees are defined under a built-in-class called `rbtree`, which is documented [here](./doc/rbtree.md)
 - Various methods to work with data from standard input are defined under a class called `stdin`, which is documented [here](./doc/stdin.md)
 - Various methods and fields to work with tar files are defined under a built-in class called `tar`, which is documented [here](./doc/tar.md)
 - Various methods and fields to work with UUID objects are defined under a class called `UUID`, which is documented [here](./doc/UUID.md)
