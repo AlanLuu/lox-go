@@ -16,6 +16,8 @@ OPTIONS:
 		Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
 	-h, --help
 		Print this usage message and exit
+    -v, --version
+        Print version information and exit
 ```
 
 # Installation

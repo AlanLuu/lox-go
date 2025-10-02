@@ -3,6 +3,7 @@ package util
 import (
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 
 	"github.com/mattn/go-isatty"
@@ -56,6 +57,26 @@ func FormatFloatZero(f float64) string {
 		return FormatFloat(f) + ".0"
 	}
 	return FormatFloat(f)
+}
+
+func GitHash() string {
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range buildInfo.Settings {
+			if setting.Key == "vcs.revision" {
+				return setting.Value
+			}
+		}
+	}
+	return ""
+}
+
+func GitHashShort() string {
+	const upper = 8
+	if hash := GitHash(); len(hash) > upper {
+		return hash[:upper]
+	} else {
+		return hash
+	}
 }
 
 func IntOrFloat(f float64) any {

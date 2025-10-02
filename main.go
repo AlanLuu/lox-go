@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/AlanLuu/lox/ast"
@@ -15,6 +16,8 @@ import (
 	"github.com/AlanLuu/lox/util"
 	"github.com/chzyer/readline"
 )
+
+const LOX_PROGRAM_NAME = "lox-go"
 
 const PROMPT = ">>> "
 const NEXT_LINE_PROMPT = "... "
@@ -28,6 +31,20 @@ func flagsProvided() map[string]struct{} {
 		m[f.Name] = struct{}{}
 	})
 	return m
+}
+
+func printVersion() {
+	var builder strings.Builder
+	builder.WriteString(LOX_PROGRAM_NAME)
+	if hash := util.GitHashShort(); hash != "" {
+		builder.WriteByte('-')
+		builder.WriteString(hash)
+	}
+	builder.WriteByte(' ')
+	builder.WriteByte('(')
+	builder.WriteString(runtime.Version())
+	builder.WriteByte(')')
+	fmt.Println(builder.String())
 }
 
 func usageFunc(writer io.Writer) func() {
@@ -46,6 +63,8 @@ OPTIONS:
 		Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
 	-h, --help
 		Print this usage message and exit
+	-v, --version
+		Print version information and exit
 `
 		fmt.Fprint(writer, usage)
 	}
@@ -229,11 +248,17 @@ func main() {
 		unsafe          = flag.Bool("unsafe", false, "")
 		helpFlag1       = flag.Bool("h", false, "")
 		helpFlag2       = flag.Bool("help", false, "")
+		versionFlag1    = flag.Bool("v", false, "")
+		versionflag2    = flag.Bool("version", false, "")
 	)
 	flag.Usage = usageFunc(os.Stderr)
 	flag.Parse()
 	if *helpFlag1 || *helpFlag2 {
 		usageFunc(os.Stdout)()
+		os.Exit(0)
+	}
+	if *versionFlag1 || *versionflag2 {
+		printVersion()
 		os.Exit(0)
 	}
 
