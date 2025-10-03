@@ -57,20 +57,20 @@ HTTP response objects have the following methods and fields associated with them
 - `response.url`, which is the URL of the HTTP request as a string
 
 HTTP cookie objects have the following methods and fields associated with them:
-- `cookie.domain`
-- `cookie.expires`
-- `cookie.httpOnly`
-- `cookie.maxAge`
-- `cookie.name`
-- `cookie.path`
-- `cookie.printSimpleString()`
-- `cookie.printString()`
-- `cookie.raw`
-- `cookie.rawExpires`
-- `cookie.secure`
-- `cookie.simpleString`
-- `cookie.string()`
-- `cookie.unparsed`
-- `cookie.valid()`
-- `cookie.validErr()`
-- `cookie.validThrowErr()`
+- `cookie.domain`, which is a string representing the `Domain` attribute of the cookie
+- `cookie.expires`, which is a date representing the expiration date of the cookie
+- `cookie.httpOnly`, which is a boolean that is `true` if the cookie is HTTP only and `false` otherwise
+- `cookie.maxAge`, which is an integer representing the `Max-Age` attribute of the cookie
+- `cookie.name`, which is a string representing the name of the cookie
+- `cookie.path`, which is a string representing the path of the cookie
+- `cookie.printSimpleString()`, which prints the cookie's name followed by an `=` character followed by the cookie's value
+- `cookie.printString()`, which prints the string representation of the cookie
+- `cookie.raw`, which is a string that is the raw representation of the cookie
+- `cookie.rawExpires`, which is a string that represents the raw expires value of the cookie
+- `cookie.secure`, which is a boolean that is `true` if the cookie is secure and `false` otherwise
+- `cookie.simpleString`, which is a string representing the cookie's name followed by an `=` character followed by the cookie's value
+- `cookie.string()`, which returns the string representation of the cookie
+- `cookie.unparsed`, which is a list of strings of the unparsed cookie attribute pairs
+- `cookie.valid()`, which returns `true` if the cookie is valid and `false` otherwise
+- `cookie.validErr()`, which returns an error object representing the error if the cookie is not valid
+- `cookie.validThrowErr()`, which returns `nil` if the cookie is valid and throws a runtime error otherwise
