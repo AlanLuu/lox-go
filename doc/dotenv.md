@@ -1,53 +1,98 @@
 # Dotenv methods
 
+Any method that fails will throw a runtime error with a message describing the error.
+
 The following methods are defined in the built-in `dotenv` class:
-- `dotenv.dictToEnv(envDict)`
-- `dotenv.dictToEnvBuf(envDict)`
-- `dotenv.dictToEnvFile(envDict, [file/string])`
-- `dotenv.dictToEnvFileNoNewlineEnd(envDict, [file/string])`
-- `dotenv.exec(filenames, cmd, cmdArgs, isOverload)`
-- `dotenv.load([filenames...])`
-- `dotenv.new([buffer/dict/string])`
-- `dotenv.overload([filenames...])`
-- `dotenv.parse(buffer/string)`
-- `dotenv.read([filenames...])`
+- `dotenv.dictToEnv(envDict)`, which returns a string of the parsed contents from the specified dictionary in env format
+    - The dictionary keys and values must only be strings or else a runtime error is thrown
+    - The dictionary cannot have a key that is an empty string or else a runtime error is thrown
+    - The dictionary cannot have a key that contains an `=` character or else a runtime error is thrown
+- `dotenv.dictToEnvBuf(envDict)`, which returns a buffer of the parsed contents from the specified dictionary in env format
+    - The dictionary keys and values must only be strings or else a runtime error is thrown
+    - The dictionary cannot have a key that is an empty string or else a runtime error is thrown
+    - The dictionary cannot have a key that contains an `=` character or else a runtime error is thrown
+- `dotenv.dictToEnvFile(envDict, [file/string])`, which takes in a dictionary in env format and an optional file object or string and writes the parsed contents from the specified dictionary to the specified file object or the file specified by the path string
+    - If a string is passed as the second argument and the file already exists, it is truncated
+    - The dictionary keys and values must only be strings or else a runtime error is thrown
+    - The dictionary cannot have a key that is an empty string or else a runtime error is thrown
+    - The dictionary cannot have a key that contains an `=` character or else a runtime error is thrown
+- `dotenv.dictToEnvFileNoNewlineEnd(envDict, [file/string])`, which takes in a dictionary in env format and an optional file object or string and writes the parsed contents from the specified dictionary without a newline character at the end to the specified file object or the file specified by the path string
+    - If a string is passed as the second argument and the file already exists, it is truncated
+    - The dictionary keys and values must only be strings or else a runtime error is thrown
+    - The dictionary cannot have a key that is an empty string or else a runtime error is thrown
+    - The dictionary cannot have a key that contains an `=` character or else a runtime error is thrown
+- `dotenv.exec(filenames, cmd, cmdArgs, isOverload)`, which executes the command string, `cmd`, after loading environment variables from `filenames`, which is a list of strings of paths to env files, along with the command line arguments, `cmdArgs`, which is a list of strings, and `isOverload`, which is a boolean that overrides any existing environment variables when set to `true`
+    - The `filenames` and `cmdArgs` lists must only have strings or else a runtime error is thrown
+- `dotenv.load([filenames...])`, which loads the env files specified by the file name strings into the current process
+    - All arguments must be strings or else a runtime error is thrown
+    - If no arguments are specified, this method looks for a file named `.env` in the current working directory and loads the environment variables from that file
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv.new([buffer/dict/string])`, which returns a new dotenv object from the specified buffer, dictionary, or string representation of an env file
+    - If the argument to this method is omitted, this method returns a blank dotenv object
+    - The dictionary keys and values must only be strings or else a runtime error is thrown
+    - The dictionary cannot have a key that is an empty string or else a runtime error is thrown
+    - The dictionary cannot have a key that contains an `=` character or else a runtime error is thrown
+- `dotenv.overload([filenames...])`, which loads the env files specified by the file name strings into the current process, overriding any current existing environment variables if any of them exist in the env files specified by the file name strings
+    - All arguments must be strings or else a runtime error is thrown
+    - If no arguments are specified, this method looks for a file named `.env` in the current working directory and loads the environment variables from that file
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv.parse(buffer/string)`, which takes in a string or buffer representation of an env file and returns a dictionary of the contents
+    - The string or buffer representation cannot have a key that is an empty string or else a runtime error is thrown
+    - The string or buffer representation cannot have a key that contains an `=` character or else a runtime error is thrown
+- `dotenv.read([filenames...])`, which loads the env files specified by the file name strings into a dictionary and returns that dictionary
+    - All arguments must be strings or else a runtime error is thrown
+    - If no arguments are specified, this method looks for a file named `.env` in the current working directory and loads the environment variables from that file
+    - A runtime error is thrown if something goes wrong in loading the environment variables
 
 Dotenv objects have the following methods associated with them:
-- `dotenv object.activate()`
-- `dotenv object.activated()`
-- `dotenv object.clear()`
-- `dotenv object.containsEnv(envStr)`
-- `dotenv object.copyGlobalEnv()`
-- `dotenv object.copyGlobalEnvForce()`
-- `dotenv object.copyIntoGlobalEnv()`
-- `dotenv object.copyIntoGlobalEnvForce()`
-- `dotenv object.deactivate()`
-- `dotenv object.deleteEnv(envStr)`
-- `dotenv object.deleteEnvBool(envStr)`
-- `dotenv object.envBuf()`
-- `dotenv object.envDict()`
-- `dotenv object.envList()`
-- `dotenv object.envStr()`
-- `dotenv object.exec(cmd, [cmdArgs...])`
-- `dotenv object.execList(cmd, cmdArgsList)`
-- `dotenv object.getEnv(envStr)`
-- `dotenv object.isActivated()`
-- `dotenv object.isOverload()`
-- `dotenv object.loadEnv(filename, [filenames...])`
-- `dotenv object.loadEnvBuf(envBuf)`
-- `dotenv object.loadEnvBufForce(envBuf)`
-- `dotenv object.loadEnvDict(envDict)`
-- `dotenv object.loadEnvDictForce(envDict)`
-- `dotenv object.loadEnvForce(filename, [filenames...])`
-- `dotenv object.loadEnvStr(envStr)`
-- `dotenv object.loadEnvStrForce(envStr)`
-- `dotenv object.mustGetEnv(envStr)`
-- `dotenv object.overload(bool)`
-- `dotenv object.panicOnSetEnvErr([bool])`
-- `dotenv object.printEnvStr()`
-- `dotenv object.setEnv(key, value)`
-- `dotenv object.setEnvBool(key, value)`
-- `dotenv object.setEnvForce(key, value)`
-- `dotenv object.setOverload(bool)`
-- `dotenv object.toDict()`
-- `dotenv object.toList()`
+- `dotenv object.activate()`, which activates the current dotenv object
+- `dotenv object.activated()`, which is an alias for `dotenv object.isActivated`
+- `dotenv object.clear()`, which clears all environment variables from the current dotenv object
+- `dotenv object.containsEnv(envStr)`, which returns `true` if the current dotenv object contains the specified env string key argument and `false` otherwise
+- `dotenv object.copyGlobalEnv()`, which loads all environment variables from the global environment into the current dotenv object and returns the current dotenv object
+- `dotenv object.copyGlobalEnvForce()`, which loads all environment variables from the global environment into the current dotenv object and returns the current dotenv object, overriding any existing keys in the current dotenv object with keys of the same name from the global environment if they exist
+- `dotenv object.copyIntoGlobalEnv()`, which loads all environment variables from the current dotenv object into the global environment and returns the current dotenv object
+- `dotenv object.copyIntoGlobalEnvForce()`, which loads all environment variables from the current dotenv object into the global environment and returns the current dotenv object, overriding any existing keys in the global environment with keys of the same name from the current dotenv object if they exist
+- `dotenv object.deactivate()`, which deactivates the current dotenv object
+- `dotenv object.deleteEnv(envStr)`, which deletes the specified env string key argument from the current dotenv object if it exists and returns the current dotenv object
+- `dotenv object.deleteEnvBool(envStr)`, which deletes the specified env string key argument from the current dotenv object if it exists and returns `true` if the key existed and `false` otherwise
+- `dotenv object.envBuf()`, which returns an env file representation of the current dotenv object as a buffer
+- `dotenv object.envDict()`, which is an alias for `dotenv object.toDict`
+- `dotenv object.envList()`, which is an alias for `dotenv object.toList`
+- `dotenv object.envStr()`, which returns an env file representation of the current dotenv object as a string
+- `dotenv object.exec(cmd, [cmdArgs...])`, which executes the command string, `cmd`, after loading environment variables from the current dotenv object, along with the optional command line arguments, `cmdArgs`
+    - The `cmdArgs` arguments must only be strings or else a runtime error is thrown
+- `dotenv object.execList(cmd, cmdArgsList)`, which executes the command string, `cmd`, after loading environment variables from the current dotenv object, along with the optional command line arguments, `cmdArgsList`, which is a list of strings
+    - The `cmdArgsList` list must only have strings or else a runtime error is thrown
+- `dotenv object.getEnv(envStr)`, which returns the string value of the specified env string key argument if it exists, otherwise this method returns `nil`
+- `dotenv object.isActivated()`, which returns `true` if the current dotenv object is activated and `false` otherwise
+- `dotenv object.isOverload()`, which returns `true` if the current dotenv object is set to override existing environment variables with new ones of the same key on load and set operations and `false` otherwise
+- `dotenv object.loadEnv(filename, [filenames...])`, which loads the current dotenv object with the environment variables from the env files specified by the file name string and returns the current dotenv object
+    - Additional file name strings can also be provided along with the original file name string
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvBuf(envBuf)`, which loads the current dotenv object with the contents of the env file representation as a buffer and returns the current dotenv object
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvBufForce(envBuf)`, which loads the current dotenv object with the contents of the env file representation as a buffer, overriding any current existing environment variables if any of them exist in the env file representation as a buffer, and returns the current dotenv object
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvDict(envDict)`, which loads the current dotenv object with the contents of the env file representation as a dictionary and returns the current dotenv object
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvDictForce(envDict)`, which loads the current dotenv object with the contents of the env file representation as a dictionary, overriding any current existing environment variables if any of them exist in the env file representation as a dictionary, and returns the current dotenv object
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvForce(filename, [filenames...])`, which loads the current dotenv object with the environment variables from the env files specified by the file name string, overriding any current existing environment variables if any of them exist in the env files specified by the file name strings, and returns the current dotenv object
+    - Additional file name strings can also be provided along with the original file name string
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvStr(envStr)`, which loads the current dotenv object with the contents of the env file representation as a string and returns the current dotenv object
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.loadEnvStrForce(envStr)`, which loads the current dotenv object with the contents of the env file representation as a string, overriding any current existing environment variables if any of them exist in the env file representation as a string, and returns the current dotenv object
+    - A runtime error is thrown if something goes wrong in loading the environment variables
+- `dotenv object.mustGetEnv(envStr)`, which returns the string value of the specified env string key argument if it exists, otherwise this method throws a runtime error
+- `dotenv object.overload(bool)`, which sets whether the current dotenv object is set to override existing environment variables with new ones of the same key on load and set operations to the specified boolean argument
+- `dotenv object.panicOnSetEnvErr([bool])`, which returns `true` if the current dotenv object is configured to panic upon encountering an operating system error when setting an environment variable and `false` otherwise
+    - If an argument is provided to this method, it sets whether the current dotenv object is configured to panic upon encountering an operating system error when setting an environment variable to the specified boolean argument
+- `dotenv object.printEnvStr()`, which prints the env file representation string of the current dotenv object to standard output
+- `dotenv object.setEnv(key, value)`, which sets an environment variable in the current dotenv object to the specified key and value string arguments and returns the current dotenv object
+- `dotenv object.setEnvBool(key, value)`, which sets an environment variable in the current dotenv object to the specified key and value string arguments and returns `true` if the environment variable was successfully set and `false` otherwise
+- `dotenv object.setEnvForce(key, value)`, which sets an environment variable in the current dotenv object to the specified key and value string arguments, overriding the previous environment variable with the same key name if it exists, and returns the current dotenv object
+- `dotenv object.setOverload(bool)`, which is an alias for `dotenv object.overload`
+- `dotenv object.toDict()`, which returns a dictionary of all the keys and values in the current dotenv object
+- `dotenv object.toList()`, which returns a list of lists, where each inner list contains two elements, which are the keys and values of the current dotenv object
