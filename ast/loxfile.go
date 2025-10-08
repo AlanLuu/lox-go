@@ -2,6 +2,10 @@ package ast
 
 import (
 	"bufio"
+	"crypto/md5"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"errors"
 	"fmt"
 	"io"
@@ -272,6 +276,75 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				l.stat = stat
 			}
 			return l.stat.IsDir(), nil
+		})
+	case "md5":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.md5: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'md5' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := md5.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			s := fmt.Sprintf("%x", h.Sum(nil))
+			return NewLoxString(s, '\''), nil
+		})
+	case "md5buf":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.md5buf: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'md5buf' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := md5.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			digest := h.Sum(nil)
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
+			for _, element := range digest {
+				addErr := buffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
 		})
 	case "mode":
 		binaryMode := ""
@@ -687,6 +760,351 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return l, nil
 			}
 			return argMustBeType("boolean")
+		})
+	case "sha1":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha1: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha1' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha1.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			s := fmt.Sprintf("%x", h.Sum(nil))
+			return NewLoxString(s, '\''), nil
+		})
+	case "sha1buf":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha1buf: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha1buf' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha1.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			digest := h.Sum(nil)
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
+			for _, element := range digest {
+				addErr := buffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "sha224":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha224: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha224' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha256.New224()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			s := fmt.Sprintf("%x", h.Sum(nil))
+			return NewLoxString(s, '\''), nil
+		})
+	case "sha224buf":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha224buf: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha224buf' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha256.New224()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			digest := h.Sum(nil)
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
+			for _, element := range digest {
+				addErr := buffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "sha256":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha256: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha256' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha256.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			s := fmt.Sprintf("%x", h.Sum(nil))
+			return NewLoxString(s, '\''), nil
+		})
+	case "sha256buf":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha256buf: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha256buf' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha256.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			digest := h.Sum(nil)
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
+			for _, element := range digest {
+				addErr := buffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "sha384":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha384: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha384' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha512.New384()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			s := fmt.Sprintf("%x", h.Sum(nil))
+			return NewLoxString(s, '\''), nil
+		})
+	case "sha384buf":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha384buf: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha384buf' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha512.New384()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			digest := h.Sum(nil)
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
+			for _, element := range digest {
+				addErr := buffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
+		})
+	case "sha512":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha512: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha512' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha512.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			s := fmt.Sprintf("%x", h.Sum(nil))
+			return NewLoxString(s, '\''), nil
+		})
+	case "sha512buf":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.sha512buf: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'sha512buf' for file not in read mode.")
+			}
+			var offset int64
+			{
+				var seekErr error
+				offset, seekErr = l.file.Seek(0, io.SeekCurrent)
+				if seekErr != nil {
+					return nil, loxerror.RuntimeError(name, seekErr.Error())
+				}
+			}
+			if _, seekErr := l.file.Seek(0, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			h := sha512.New()
+			if _, copyErr := io.Copy(h, l.file); copyErr != nil {
+				return nil, loxerror.RuntimeError(name, copyErr.Error())
+			}
+			if _, seekErr := l.file.Seek(offset, io.SeekStart); seekErr != nil {
+				return nil, loxerror.RuntimeError(name, seekErr.Error())
+			}
+			digest := h.Sum(nil)
+			buffer := EmptyLoxBufferCap(int64(len(digest)))
+			for _, element := range digest {
+				addErr := buffer.add(int64(element))
+				if addErr != nil {
+					return nil, loxerror.RuntimeError(name, addErr.Error())
+				}
+			}
+			return buffer, nil
 		})
 	case "size":
 		stat, statErr := l.file.Stat()

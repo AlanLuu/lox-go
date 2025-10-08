@@ -13,6 +13,8 @@ The following methods and fields are defined on file instances:
 - `file.isBinary()`, which returns `true` if the file is open in binary mode and `false` otherwise
 - `file.isClosed()`, which is a function that returns the value of `file.closed`
 - `file.isDir()`, which returns `true` if the file is a directory and `false` otherwise
+- `file.md5()`, which returns a string that is the hexadecimal representation of the file's md5 hash
+- `file.md5buf()`, which returns a buffer of the file's md5 hash
 - `file.mode`, which is a string representing the mode of the file
 - `file.name`, which is a string representing the name of the file
 - `file.read([numBytes])`, which reads the specified number of bytes from the file
@@ -47,6 +49,16 @@ The following methods and fields are defined on file instances:
     - `os.SEEK_END` or `2` – relative to the end of the file
     - A runtime error is thrown if `whence` is an invalid value or the file is in append mode when calling this method
 - `file.setBinary(bool)`, which takes in a boolean, sets the internal property of whether this file instance is open in binary mode, and returns the file instance itself
+- `file.sha1()`, which returns a string that is the hexadecimal representation of the file's sha1 hash
+- `file.sha1buf()`, which returns a buffer of the file's sha1 hash
+- `file.sha224()`, which returns a string that is the hexadecimal representation of the file's sha224 hash
+- `file.sha224buf()`, which returns a buffer of the file's sha224 hash
+- `file.sha256()`, which returns a string that is the hexadecimal representation of the file's sha256 hash
+- `file.sha256buf()`, which returns a buffer of the file's sha256 hash
+- `file.sha384()`, which returns a string that is the hexadecimal representation of the file's sha384 hash
+- `file.sha384buf()`, which returns a buffer of the file's sha384 hash
+- `file.sha512()`, which returns a string that is the hexadecimal representation of the file's sha512 hash
+- `file.sha512buf()`, which returns a buffer of the file's sha512 hash
 - `file.size`, which is the size of the file in bytes as an integer
 - `file.truncate(size)`, which changes the size of the file to `size` bytes specified as an integer
     - If the file is open in read mode (excluding read-write mode), this method throws a runtime error
