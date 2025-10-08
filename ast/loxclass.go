@@ -42,13 +42,14 @@ func (l LoxBuiltInProtoCallable) Type() string {
 
 func NewLoxClass(name string, superClass *LoxClass, canInstantiate bool) *LoxClass {
 	return &LoxClass{
-		name:            name,
-		superClass:      superClass,
-		methods:         make(map[string]*LoxFunction),
-		classProperties: make(map[string]any),
-		instanceFields:  make(map[string]any),
-		canInstantiate:  canInstantiate,
-		isBuiltin:       false,
+		name:                name,
+		superClass:          superClass,
+		methods:             make(map[string]*LoxFunction),
+		bindedStaticMethods: make(map[string]*LoxFunction),
+		classProperties:     make(map[string]any),
+		instanceFields:      make(map[string]any),
+		canInstantiate:      canInstantiate,
+		isBuiltin:           false,
 	}
 }
 
