@@ -216,6 +216,33 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch lexemeName {
+	case "byteIter":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.byteIter: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'byteIter' for file not in read mode.")
+			}
+			b := make([]byte, 1)
+			iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+			iterator.hasNextMethod = func() (bool, error) {
+				_, readErr := l.file.Read(b)
+				if readErr != nil {
+					if errors.Is(readErr, io.EOF) {
+						return false, nil
+					}
+					return false, loxerror.RuntimeError(name, readErr.Error())
+				}
+				return true, nil
+			}
+			iterator.nextMethod = func() (any, error) {
+				return int64(b[0]), nil
+			}
+			return NewLoxIterator(iterator), nil
+		})
 	case "chdir":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			err := l.file.Chdir()

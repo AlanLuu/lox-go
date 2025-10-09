@@ -1,6 +1,7 @@
 ## File methods and fields
 
 The following methods and fields are defined on file instances:
+- `file.byteIter()`, which returns an iterator that returns every byte value from the file as an integer
 - `file.chdir()`, which changes the current working directory to the current file, which must be a directory
 - `file.chmod(mode)`, which changes the mode of the file to `mode`
     - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable
