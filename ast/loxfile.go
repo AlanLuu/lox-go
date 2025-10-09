@@ -226,6 +226,10 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					"Unsupported operation 'byteIter' for file not in read mode.")
 			}
+			if !l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'byteIter' for file not in binary mode.")
+			}
 			b := make([]byte, 1)
 			iterator := ProtoIteratorErr{legacyPanicOnErr: true}
 			iterator.hasNextMethod = func() (bool, error) {
