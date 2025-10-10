@@ -247,6 +247,52 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			}
 			return NewLoxIterator(iterator), nil
 		})
+	case "charIter":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.isClosed() {
+				return nil, loxerror.RuntimeError(name,
+					"file.charIter: cannot read from a closed file.")
+			}
+			if !l.isRead() {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'charIter' for file not in read mode.")
+			}
+			if l.isBinary {
+				return nil, loxerror.RuntimeError(name,
+					"Unsupported operation 'charIter' for file in binary mode.")
+			}
+			var b [4]byte
+			var r rune
+			iterator := ProtoIteratorErr{legacyPanicOnErr: true}
+			iterator.hasNextMethod = func() (bool, error) {
+				for i := 0; i < len(b); i++ {
+					_, readErr := l.file.Read(b[i : i+1])
+					if readErr != nil {
+						if errors.Is(readErr, io.EOF) {
+							return false, nil
+						}
+						return false, loxerror.RuntimeError(name, readErr.Error())
+					}
+					if r, _ = utf8.DecodeRune(b[:i+1]); r != utf8.RuneError {
+						return true, nil
+					}
+				}
+				return false, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"Invalid character encoding found with bytes '%v'.",
+						b,
+					),
+				)
+			}
+			iterator.nextMethod = func() (any, error) {
+				if r == '\'' {
+					return NewLoxString(string(r), '"'), nil
+				}
+				return NewLoxString(string(r), '\''), nil
+			}
+			return NewLoxIterator(iterator), nil
+		})
 	case "chdir":
 		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			err := l.file.Chdir()

@@ -3,6 +3,8 @@
 The following methods and fields are defined on file instances:
 - `file.byteIter()`, which returns an iterator that returns every byte value from the file as an integer
     - The file must not be closed and must be in binary read mode, otherwise a runtime error is thrown when this method is called
+- `file.charIter()`, which returns an iterator that returns ever character from the file as a string
+    - The file must not be closed and must be in read mode (not binary read mode), otherwise a runtime error is thrown when this method is called
 - `file.chdir()`, which changes the current working directory to the current file, which must be a directory
 - `file.chmod(mode)`, which changes the mode of the file to `mode`
     - This method works on Windows, but only the read-only flag can be changed. Use mode `0400` to make the file read-only and `0600` to make it readable and writable
