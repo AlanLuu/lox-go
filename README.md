@@ -385,6 +385,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.equalsIgnoreCase(string2)`, which returns `true` if `string` equals `string2`, ignoring letter case, and `false` otherwise
         - `string.fields()`, which returns a list containing all substrings that are separated by one or more consecutive whitespace characters
             - If the string only contains whitespace characters, this method returns an empty list
+        - `string.filter(callback)`, which returns a new string containing only the characters from the original string where the callback function returns a truthy value for them
         - `string.index(string2)`, which returns an integer representing the index value of the location of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.indexFrom(string2, fromIndex)`, which returns an integer representing the index value of the location of `string2` in `string`, starting at the index `fromIndex`, which is an integer, or `-1` if `string2` is not in `string` starting at the index `fromIndex`
             - If `fromIndex <= 0`, this method returns the same value as `string.index(string2)`

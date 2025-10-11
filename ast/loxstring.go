@@ -45,6 +45,14 @@ func NewLoxString(str string, quote byte) *LoxString {
 	}
 }
 
+func NewLoxStringChar[T byte | rune](char T) *LoxString {
+	str := string(char)
+	if char == '\'' {
+		return NewLoxString(str, '"')
+	}
+	return NewLoxString(str, '\'')
+}
+
 func NewLoxStringQuote(str string) *LoxString {
 	if strings.Contains(str, "'") {
 		return NewLoxString(str, '"')
@@ -219,6 +227,30 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				fieldsList.Add(NewLoxStringQuote(field))
 			}
 			return NewLoxList(fieldsList), nil
+		})
+	case "filter":
+		return strFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var builder strings.Builder
+				for index, char := range l.str {
+					argList[0] = NewLoxStringChar(char)
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						builder.WriteRune(char)
+					}
+				}
+				return NewLoxStringQuote(builder.String()), nil
+			}
+			return argMustBeType("function")
 		})
 	case "index":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
