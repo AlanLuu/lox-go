@@ -43,6 +43,7 @@ func printVersion() {
 	builder.WriteByte(' ')
 	builder.WriteByte('(')
 	builder.WriteString(runtime.Version())
+	builder.WriteString("-" + runtime.GOOS + "-" + runtime.GOARCH)
 	builder.WriteByte(')')
 	fmt.Println(builder.String())
 }
