@@ -505,7 +505,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		return rbTreeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxStringQuote(l.keyType), nil
 		})
-	case "mapList": //TODO
+	case "mapList":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
 				argList := getArgList(callback, 3)
@@ -533,7 +533,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
-	case "mapListPrev": //TODO
+	case "mapListPrev":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
 				argList := getArgList(callback, 3)
@@ -561,7 +561,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
-	case "mapListPrevI0": //TODO
+	case "mapListPrevI0":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
 				argList := getArgList(callback, 3)
