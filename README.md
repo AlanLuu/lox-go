@@ -440,6 +440,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.contains(element)`, which returns `true` if `element` is contained in the list and `false` otherwise
         - `list.copy()`, which returns a shallow copy of the original list as a new list
         - `list.count(element)`, which returns the number of times `element` appears in the list
+        - `list.countFunc(callback)`, which returns the number of elements in the list where the callback function returns a truthy value for them
         - `list.extend(list2)`, which appends every element from `list2` to the end of the list
         - `list.filter(callback)`, which returns a new list containing only the elements from the original list where the callback function returns a truthy value for them
         - `list.find(callback)`, which returns the first element in the list where the callback function returns `true`, or `nil` if the callback returns `false` for every element in the list

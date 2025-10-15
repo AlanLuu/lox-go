@@ -284,6 +284,30 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return count, nil
 		})
+	case "countFunc":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				var count int64 = 0
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						count++
+					}
+				}
+				return count, nil
+			}
+			return argMustBeType("function")
+		})
 	case "extend":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if extendList, ok := args[0].(*LoxList); ok {
