@@ -453,6 +453,62 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterator), nil
 	})
+	iteratorFunc("count", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(interfaces.Iterable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'Iterator.count' is not iterable.")
+		}
+		if _, ok := args[1].(*LoxFunction); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'Iterator.count' must be a function.")
+		}
+		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
+		arg0IteratorWithErr, isErrIter := arg0Iterator.(interfaces.IteratorErr)
+		callback := args[1].(*LoxFunction)
+		hasNext := func() (bool, error) {
+			if isErrIter {
+				return arg0IteratorWithErr.HasNextErr()
+			}
+			return arg0Iterator.HasNext(), nil
+		}
+		next := func() (any, error) {
+			if isErrIter {
+				return arg0IteratorWithErr.NextErr()
+			}
+			return arg0Iterator.Next(), nil
+		}
+		var count int64 = 0
+		argList := getArgList(callback, 2)
+		defer argList.Clear()
+		for index := int64(0); ; index++ {
+			if count < 0 {
+				//Integer overflow, return max 64-bit signed value
+				return int64((1 << 63) - 1), nil
+			}
+			ok, hasNextErr := hasNext()
+			if hasNextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, hasNextErr.Error())
+			}
+			if !ok {
+				return count, nil
+			}
+			var nextErr error
+			argList[0], nextErr = next()
+			if nextErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, nextErr.Error())
+			}
+			argList[1] = index
+			result, resultErr := callback.call(i, argList)
+			if resultReturn, ok := result.(Return); ok {
+				result = resultReturn.FinalValue
+			} else if resultErr != nil {
+				return nil, resultErr
+			}
+			if i.isTruthy(result) {
+				count++
+			}
+		}
+	})
 	iteratorFunc("countFloat", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		var start, step any
 		argsLen := len(args)
