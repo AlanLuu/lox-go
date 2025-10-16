@@ -683,15 +683,21 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - `iterator.toList([length])`, which returns a list of elements from the iterator with the specified length as an integer. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over
         - Various utility iterator methods and fields are defined under a built-in class called `Iterator`, which is documented [here](./doc/Iterator.md)
     - `len(element)`, which returns the length of the specified element, which can be any of the following:
+        - Bigranges: the length is the number of bigints in the bigrange object based on its start, stop, and step values
+        - Bitfields: the length is the number `8`
         - Buffers: the length is the number of elements in the buffer
         - Deques: the length is the number of elements in the deque
         - Dictionaries: the length is the number of keys in the dictionary
+        - IP address instances: the length is the number of bytes in the IP address instance
         - Lists: the length is the number of elements in the list
         - Queues: the length is the number of elements in the queue
         - Ranges: the length is the number of integers in the range object based on its start, stop, and step values
+        - RB trees: the length is the number of elements in the RB tree
+        - Rings: the length is the number of elements in the ring
         - Sets: the length is the number of elements in the set
         - Strings: the length is the number of characters in the string
         - Stringbuilders: the length is the number of characters in the stringbuilder
+        - Stringreaders: the length is the number of unread bytes in the stringreader
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ListCap(capacity)`, which returns a new list of the specified capacity, which is the number of elements the list can store before having to internally resize the underlying array that stores the list elements when a new element is added
     - `ListIterable(iterable)`, which takes in an iterable and returns a list with the iterable elements as list elements
