@@ -460,6 +460,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.lastIndexFrom(element, fromIndex)`, which returns the index value of the last occurrence of the element in the list, starting at the index `fromIndex`, which is an integer, or `-1` if the element is not in the list starting at the index `fromIndex`
             - If `fromIndex >= len(list)`, this method returns the same value as `list.lastIndex(element)`
             - If `fromIndex < 0`, this method returns `-1`
+        - `list.len`, which is an alias for `list.length`
+        - `list.length`, which is the number of elements in the list as an integer
         - `list.map(callback)`, which returns a new list with the results of calling a callback function on each element of the original list
         - `list.pop([index])`, which removes and returns the element at the specified index from the list. If `index` is omitted, this method removes and returns the last element from the list
         - `list.reduce(callback, [initialValue])`, which applies a reducer callback function on every element in the list from left to right and returns a single value

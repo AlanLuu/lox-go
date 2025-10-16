@@ -515,6 +515,8 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return lastIndexOfFrom(args[0], args[1].(int64)), nil
 		})
+	case "length", "len":
+		return l.Length(), nil
 	case "map":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			if callback, ok := args[0].(*LoxFunction); ok {
