@@ -25,13 +25,15 @@ The following methods and fields are defined in the built-in `Iterator` class:
     - The value of `length` must be at least `1` or else a runtime error is thrown
 - `Iterator.chain(iterables)`, which takes a variable amount of iterables as arguments and returns an iterator that produces elements from the first iterable until there are no more elements in that iterable, then moves on to producing elements from the next iterable, until all iterables are out of elements
 - `Iterator.count(iterable, callback)`, which returns an integer that represents the number of elements from the specified iterable where the callback function returns a truthy value for them
-    - If the iterable contains more than `(1 << 63) - 1` elements, this method stops iterating over the iterable and an integer equal to `(1 << 63) - 1` is returned
+    - If the iterable contains more than `(1 << 63) - 1` elements where the callback function returns a truthy value for them, this method stops iterating over the iterable and an integer equal to `(1 << 63) - 1` is returned
 - `Iterator.countFloat(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
     - `start` can be an integer, bigint, float, or bigfloat, and `step` can be a float or bigfloat
     - If `step` is omitted, `1.0` is used as the step value
 - `Iterator.countInt(start, [step])`, which returns an iterator that returns `start`, with `start` being incremented by `step` after each iteration
     - `start` and `step` can be integers or bigints
     - If `step` is omitted, `1` is used as the step value
+- `Iterator.countTrue(iterable)`, which returns an integer that represents the number of elements from the specified iterable that are truthy values
+    - If the iterable contains more than `(1 << 63) - 1` elements that are truthy values, this method stops iterating over the iterable and an integer equal to `(1 << 63) - 1` is returned
 - `Iterator.cycle(iterable)`, which returns an iterator that produces elements from the specified iterable, saving each element from the iterable internally. When the iterable is out of elements, this iterator continues to return the saved elements over and over again
 - `Iterator.dropuntil(iterable, callback)`, which returns an iterable that starts from the first element, skips over all the elements where the callback function returns a falsy value for them, and returns every element afterwards
 - `Iterator.dropwhile(iterable, callback)`, which returns an iterable that starts from the first element, skips over all the elements where the callback function returns a truthy value for them, and returns every element afterwards
