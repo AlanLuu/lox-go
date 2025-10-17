@@ -389,6 +389,52 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "findLast":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index := int64(len(l.elements) - 1); index >= 0; index-- {
+					argList[0] = l.elements[index]
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return l.elements[index], nil
+					}
+				}
+				return nil, nil
+			}
+			return argMustBeType("function")
+		})
+	case "findLastIndex":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				for index := int64(len(l.elements) - 1); index >= 0; index-- {
+					argList[0] = l.elements[index]
+					argList[1] = index
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						result = resultReturn.FinalValue
+					} else if resultErr != nil {
+						return nil, resultErr
+					}
+					if i.isTruthy(result) {
+						return argList[1], nil
+					}
+				}
+				return int64(-1), nil
+			}
+			return argMustBeType("function")
+		})
 	case "first":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			if l.elements.IsEmpty() {

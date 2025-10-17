@@ -445,6 +445,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.filter(callback)`, which returns a new list containing only the elements from the original list where the callback function returns a truthy value for them
         - `list.find(callback)`, which returns the first element in the list where the callback function returns `true`, or `nil` if the callback returns `false` for every element in the list
         - `list.findIndex(callback)`, which returns the index of the first element in the list where the callback function returns `true`, or `-1` if the callback returns `false` for every element in the list
+        - `list.findLast(callback)`, which returns the first element in the list starting from the last element where the callback function returns `true`, or `nil` if the callback returns `false` for every element in the list
+        - `list.findLastIndex(callback)`, which returns the index of the first element in the list starting from the last element where the callback function returns `true`, or `-1` if the callback returns `false` for every element in the list
         - `list.first()`, which returns the first element in the list. If the list is empty, a runtime error is thrown
         - `list.flatten()`, which returns a new list where all elements contained within nested lists are flattened into a list without any nested lists
         - `list.forEach(callback)`, which executes the callback function for each element in the list
