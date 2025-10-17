@@ -1688,6 +1688,45 @@ func (i *Interpreter) defineIteratorFuncs() {
 		}
 		return NewLoxIterator(iterator), nil
 	})
+	iteratorFunc("length", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if iterable, ok := args[0].(interfaces.Iterable); ok {
+			it := iterable.Iterator()
+			itWithErr, isErrIter := it.(interfaces.IteratorErr)
+			hasNext := func() (bool, error) {
+				if isErrIter {
+					return itWithErr.HasNextErr()
+				}
+				return it.HasNext(), nil
+			}
+			next := func() (any, error) {
+				if isErrIter {
+					return itWithErr.NextErr()
+				}
+				return it.Next(), nil
+			}
+			var count int64 = 0
+			for {
+				if count < 0 {
+					//Integer overflow, return max 64-bit signed value
+					return int64((1 << 63) - 1), nil
+				}
+				ok, hasNextErr := hasNext()
+				if hasNextErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, hasNextErr.Error())
+				}
+				if !ok {
+					return count, nil
+				}
+				_, nextErr := next()
+				if nextErr != nil {
+					return nil, loxerror.RuntimeError(in.callToken, nextErr.Error())
+				}
+				count++
+			}
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Iterator.length: type '%v' is not iterable.", getType(args[0])))
+	})
 	iteratorFunc("map", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(interfaces.Iterable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,

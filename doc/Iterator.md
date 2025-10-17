@@ -48,6 +48,9 @@ The following methods and fields are defined in the built-in `Iterator` class:
 - `Iterator.getwhilelast(iterable, callback)`, which returns an iterator that starts from the first element, returns the elements where the callback function returns a truthy value for them, and stops returning elements once the callback function returns a falsy value, but includes the element where the callback function returned a falsy value
 - `Iterator.infiniteArg(arg)`, which returns an iterator that returns endless amounts of the specified argument
 - `Iterator.infiniteArgs(args)`, which takes in a variable amount of arguments and returns an iterator that endlessly returns those arguments in order from left to right, going back to the leftmost argument after returning the rightmost argument
+- `Iterator.length(iterable)`, which returns an integer that represents the number of elements from the specified iterable
+    - Note: to determine this value, this method will repeatedly call the `next` method of the specified iterable's iterator until the iterator has no more elements, which means that if an iterator object is passed into this function, it will be exhausted after calling this method
+    - If the iterable contains more than `(1 << 63) - 1` elements, this method stops iterating over the iterable and an integer equal to `(1 << 63) - 1` is returned
 - `Iterator.map(iterable, callback)`, which returns an iterator that returns the results of calling a callback function on each element from the specified iterable
 - `Iterator.pairwise(iterable)`, which returns an iterator that returns lists of successive overlapping pairs of elements from the specified iterable. If the specified iterable is empty or only has one element when iterated over, this method returns an empty iterator
 - `Iterator.reduce(iterable, callback, [initialValue])`, which applies a reducer callback function on every element from the specified iterable and returns a single value
