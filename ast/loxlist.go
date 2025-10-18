@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"slices"
@@ -194,6 +195,10 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 	}
 	argMustBeType := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'list.%v' must be a %v.", methodName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
+	argMustBeTypeAn := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'list.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
@@ -467,6 +472,64 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			flattenErr := flatten(l.elements)
 			if flattenErr != nil {
 				return nil, flattenErr
+			}
+			return NewLoxList(newList), nil
+		})
+	case "flattenDepth":
+		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var newList list.List[any]
+			var newListSetCap bool
+			var flatten func(elements list.List[any])
+			switch depth := args[0].(type) {
+			case int64:
+				newListSetCap = depth <= 0
+				flatten = func(elements list.List[any]) {
+					for _, element := range elements {
+						switch element := element.(type) {
+						case *LoxList:
+							if depth <= 0 {
+								newList.Add(element)
+								continue
+							}
+							depth--
+							flatten(element.elements)
+						default:
+							newList.Add(element)
+						}
+					}
+				}
+			case float64:
+				switch depth {
+				case math.Inf(1):
+					flatten = func(elements list.List[any]) {
+						for _, element := range elements {
+							switch element := element.(type) {
+							case *LoxList:
+								flatten(element.elements)
+							default:
+								newList.Add(element)
+							}
+						}
+					}
+				case math.Inf(-1):
+					newList = list.NewListCap[any](l.Length())
+					for _, element := range l.elements {
+						newList.Add(element)
+					}
+					return NewLoxList(newList), nil
+				default:
+					return argMustBeTypeAn("integer or Infinity or -Infinity")
+				}
+			default:
+				return argMustBeTypeAn("integer or Infinity or -Infinity")
+			}
+			if newListSetCap {
+				newList = list.NewListCap[any](l.Length())
+			} else {
+				newList = list.NewList[any]()
+			}
+			if flatten != nil {
+				flatten(l.elements)
 			}
 			return NewLoxList(newList), nil
 		})
