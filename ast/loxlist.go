@@ -448,6 +448,40 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return l.elements[0], nil
 		})
+	case "flatMap":
+		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(*LoxFunction); ok {
+				flatten := func(newList *list.List[any], element any) {
+					switch element := element.(type) {
+					case *LoxList:
+						for _, e := range element.elements {
+							newList.Add(e)
+						}
+					default:
+						newList.Add(element)
+					}
+				}
+				argList := getArgList(callback, 3)
+				defer argList.Clear()
+				argList[2] = l
+				newList := list.NewList[any]()
+				for index, element := range l.elements {
+					argList[0] = element
+					argList[1] = int64(index)
+					result, resultErr := callback.call(i, argList)
+					if resultReturn, ok := result.(Return); ok {
+						flatten(&newList, resultReturn.FinalValue)
+					} else if resultErr != nil {
+						newList.Clear()
+						return nil, resultErr
+					} else {
+						newList.Add(result)
+					}
+				}
+				return NewLoxList(newList), nil
+			}
+			return argMustBeType("function")
+		})
 	case "flatten":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newList := list.NewList[any]()

@@ -448,6 +448,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `list.findLast(callback)`, which returns the first element in the list starting from the last element where the callback function returns `true`, or `nil` if the callback returns `false` for every element in the list
         - `list.findLastIndex(callback)`, which returns the index of the first element in the list starting from the last element where the callback function returns `true`, or `-1` if the callback returns `false` for every element in the list
         - `list.first()`, which returns the first element in the list. If the list is empty, a runtime error is thrown
+        - `list.flatMap(callback)`, which returns a new list with the results of calling a callback function on each element of the original list followed by flattening the new list by one level
         - `list.flatten()`, which returns a new list where all elements contained within nested lists are flattened into a list without any nested lists
         - `list.flattenDepth(depth)`, which returns a new list where all elements contained within nested lists of the specified depth level are flattened into a list without any nested lists, where `depth` is an integer or `Infinity` or `-Infinity`
             - If `depth` is `Infinity`, this method does the same thing as `list.flatten` except that the existence of self-referential lists isn't checked
