@@ -310,6 +310,15 @@ func getBufferElementHexResult(source any) string {
 }
 
 func getResult(source any, originalSource any, isPrintStmt bool) string {
+	return getResultReal(source, originalSource, map[any]struct{}{}, isPrintStmt)
+}
+
+func getResultReal(
+	source any,
+	originalSource any,
+	originalSources map[any]struct{},
+	isPrintStmt bool,
+) string {
 	switch source := source.(type) {
 	case nil:
 		return "nil"
@@ -383,12 +392,14 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 			}
 		}
 	case *LoxBuffer:
+		originalSources[source] = struct{}{}
 		sourceLen := len(source.elements)
 		var bufferStr strings.Builder
 		bufferStr.WriteString("Buffer [")
 		for i, element := range source.elements {
-			if element == originalSource {
-				bufferStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk := originalSources[element]
+			if element == originalSource || originalSourcesOk {
+				bufferStr.WriteString(selfReferential(element))
 			} else {
 				bufferStr.WriteString(getBufferElementHexResult(element))
 			}
@@ -399,21 +410,32 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		bufferStr.WriteByte(']')
 		return bufferStr.String()
 	case *LoxDict:
+		originalSources[source] = struct{}{}
 		sourceLen := len(source.entries)
 		var dictStr strings.Builder
 		dictStr.WriteByte('{')
 		i := 0
 		for key, value := range source.entries {
-			if key == originalSource {
-				dictStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk := originalSources[key]
+			if key == originalSource || originalSourcesOk {
+				dictStr.WriteString(selfReferential(key))
 			} else {
-				dictStr.WriteString(getResult(key, originalSource, false))
+				dictStr.WriteString(
+					getResultReal(
+						key, originalSource, originalSources, false,
+					),
+				)
 			}
 			dictStr.WriteString(": ")
-			if value == originalSource {
-				dictStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk = originalSources[value]
+			if value == originalSource || originalSourcesOk {
+				dictStr.WriteString(selfReferential(value))
 			} else {
-				dictStr.WriteString(getResult(value, originalSource, false))
+				dictStr.WriteString(
+					getResultReal(
+						value, originalSource, originalSources, false,
+					),
+				)
 			}
 			if i < sourceLen-1 {
 				dictStr.WriteString(", ")
@@ -423,14 +445,20 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		dictStr.WriteByte('}')
 		return dictStr.String()
 	case *LoxList:
+		originalSources[source] = struct{}{}
 		sourceLen := len(source.elements)
 		var listStr strings.Builder
 		listStr.WriteByte('[')
 		for i, element := range source.elements {
-			if element == originalSource {
-				listStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk := originalSources[element]
+			if element == originalSource || originalSourcesOk {
+				listStr.WriteString(selfReferential(element))
 			} else {
-				listStr.WriteString(getResult(element, originalSource, false))
+				listStr.WriteString(
+					getResultReal(
+						element, originalSource, originalSources, false,
+					),
+				)
 			}
 			if i < sourceLen-1 {
 				listStr.WriteString(", ")
@@ -439,15 +467,21 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		listStr.WriteByte(']')
 		return listStr.String()
 	case *LoxQueue:
+		originalSources[source] = struct{}{}
 		sourceLen := source.elements.Len()
 		var queueStr strings.Builder
 		queueStr.WriteString("Queue [")
 		i := 0
 		for e := source.elements.Front(); e != nil; e = e.Next() {
-			if e.Value == originalSource {
-				queueStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk := originalSources[e.Value]
+			if e.Value == originalSource || originalSourcesOk {
+				queueStr.WriteString(selfReferential(e.Value))
 			} else {
-				queueStr.WriteString(getResult(e.Value, originalSource, false))
+				queueStr.WriteString(
+					getResultReal(
+						e.Value, originalSource, originalSources, false,
+					),
+				)
 			}
 			if i < sourceLen-1 {
 				queueStr.WriteString(", ")
@@ -457,15 +491,21 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		queueStr.WriteByte(']')
 		return queueStr.String()
 	case *LoxDeque:
+		originalSources[source] = struct{}{}
 		sourceLen := source.elements.Len()
 		var dequeStr strings.Builder
 		dequeStr.WriteString("Deque [")
 		i := 0
 		for e := source.elements.Front(); e != nil; e = e.Next() {
-			if e.Value == originalSource {
-				dequeStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk := originalSources[e.Value]
+			if e.Value == originalSource || originalSourcesOk {
+				dequeStr.WriteString(selfReferential(e.Value))
 			} else {
-				dequeStr.WriteString(getResult(e.Value, originalSource, false))
+				dequeStr.WriteString(
+					getResultReal(
+						e.Value, originalSource, originalSources, false,
+					),
+				)
 			}
 			if i < sourceLen-1 {
 				dequeStr.WriteString(", ")
@@ -478,15 +518,21 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		if len(source.elements) == 0 {
 			return "∅"
 		}
+		originalSources[source] = struct{}{}
 		sourceLen := len(source.elements)
 		var setStr strings.Builder
 		setStr.WriteByte('{')
 		i := 0
 		for element := range source.elements {
-			if element == originalSource {
-				setStr.WriteString(selfReferential(originalSource))
+			_, originalSourcesOk := originalSources[element]
+			if element == originalSource || originalSourcesOk {
+				setStr.WriteString(selfReferential(element))
 			} else {
-				setStr.WriteString(getResult(element, originalSource, false))
+				setStr.WriteString(
+					getResultReal(
+						element, originalSource, originalSources, false,
+					),
+				)
 			}
 			if i < sourceLen-1 {
 				setStr.WriteString(", ")
@@ -496,11 +542,15 @@ func getResult(source any, originalSource any, isPrintStmt bool) string {
 		setStr.WriteByte('}')
 		return setStr.String()
 	case *LoxRing:
+		originalSources[source] = struct{}{}
 		var valueStr string
-		if source.ring.Value == originalSource {
-			valueStr = selfReferential(originalSource)
+		_, originalSourcesOk := originalSources[source.ring.Value]
+		if source.ring.Value == originalSource || originalSourcesOk {
+			valueStr = selfReferential(source.ring.Value)
 		} else {
-			valueStr = getResult(source.ring.Value, originalSource, false)
+			valueStr = getResultReal(
+				source.ring.Value, originalSource, originalSources, false,
+			)
 		}
 		return fmt.Sprintf("<ring value=%v at %p>", valueStr, source)
 	default:
