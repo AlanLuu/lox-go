@@ -486,6 +486,16 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		}
 		switch element := element.(type) {
 		case *struct{ ProtoLoxCallable }:
+			originalCallMethod := element.callMethod
+			element.callMethod = func(i *Interpreter, args list.List[any]) (any, error) {
+				result, err := originalCallMethod(i, args)
+				if err != nil {
+					errMsg := err.Error()
+					errMsg = strings.ReplaceAll(errMsg, "list", "buffer")
+					err = loxerror.Error(errMsg)
+				}
+				return result, err
+			}
 			element.stringMethod = func() string {
 				return fmt.Sprintf("<native buffer fn %v at %p>", methodName, element)
 			}
