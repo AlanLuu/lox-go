@@ -58,7 +58,7 @@ The following methods and fields are defined in the built-in `Iterator` class:
     - This method uses a temporary list to store all the elements returned from the iterable
 - `Iterator.repeat(element, [count])`, which returns an iterator that returns `element` over and over again. If `count` is specified, the returned iterator will only return `element` for a total of `count` times, where `count` is an integer or bigint
 - `Iterator.reversed(reverseIterable)`, which takes in an iterable that can be reversed and returns an iterator that produces elements from the iterable in reverse order
-    - The following iterables can be reversed: buffers, lists, and strings
+    - The following iterables can be reversed: bitfields, buffers, deques, lists, rbtrees, strings, and rings
 - `Iterator.urandom`, which is an iterator that produces endless amounts of cryptographically secure bytes as integers
 - `Iterator.zeroes`, which is an iterator that produces endless amounts of the integer `0`
 - `Iterator.zip(iterables)`, which takes a variable amount of iterables as arguments and returns an iterator that produces lists containing each element from each iterable and stops when the shortest iterable is out of elements
