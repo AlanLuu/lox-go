@@ -482,6 +482,100 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
+	case "flatMapDepth":
+		return listFunc(2, func(i *Interpreter, args list.List[any]) (any, error) {
+			const (
+				DEPTH_INT = iota
+				DEPTH_POS_INF
+				DEPTH_NEG_INF
+			)
+			const errMsg = "First argument to 'list.flatMapDepth' must be an " +
+				"integer or Infinity or -Infinity."
+
+			var depth int64
+			var depthState uint8 = DEPTH_INT
+			switch arg := args[0].(type) {
+			case int64:
+				depth = arg
+			case float64:
+				switch arg {
+				case math.Inf(1):
+					depthState = DEPTH_POS_INF
+				case math.Inf(-1):
+					depthState = DEPTH_NEG_INF
+				default:
+					return nil, loxerror.RuntimeError(name, errMsg)
+				}
+			default:
+				return nil, loxerror.RuntimeError(name, errMsg)
+			}
+			if _, ok := args[1].(*LoxFunction); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'list.flatMapDepth' must be a function.")
+			}
+
+			var flatten func(newList *list.List[any], element any)
+			switch depthState {
+			case DEPTH_INT:
+				originalDepth := depth
+				var num int64
+				flatten = func(newList *list.List[any], element any) {
+					switch element := element.(type) {
+					case *LoxList:
+						if depth <= 0 {
+							newList.Add(element)
+							return
+						}
+						depth--
+						num++
+						for _, e := range element.elements {
+							flatten(newList, e)
+						}
+						num--
+						if num == 0 {
+							depth = originalDepth
+						}
+					default:
+						newList.Add(element)
+					}
+				}
+			case DEPTH_POS_INF:
+				flatten = func(newList *list.List[any], element any) {
+					switch element := element.(type) {
+					case *LoxList:
+						for _, e := range element.elements {
+							flatten(newList, e)
+						}
+					default:
+						newList.Add(element)
+					}
+				}
+			default:
+				flatten = func(newList *list.List[any], element any) {
+					newList.Add(element)
+				}
+			}
+
+			callback := args[1].(*LoxFunction)
+			argList := getArgList(callback, 3)
+			defer argList.Clear()
+			argList[2] = l
+			newList := list.NewList[any]()
+			for index, element := range l.elements {
+				argList[0] = element
+				argList[1] = int64(index)
+				result, resultErr := callback.call(i, argList)
+				if resultReturn, ok := result.(Return); ok {
+					flatten(&newList, resultReturn.FinalValue)
+				} else if resultErr != nil {
+					newList.Clear()
+					return nil, resultErr
+				} else {
+					newList.Add(result)
+				}
+			}
+			return NewLoxList(newList), nil
+		})
 	case "flatten":
 		return listFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			newList := list.NewList[any]()
