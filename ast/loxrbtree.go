@@ -5,6 +5,7 @@ package ast
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
@@ -154,6 +155,68 @@ func (l *LoxRBTree) deleteForce(key any) {
 		return
 	}
 	l.tree.Remove(key)
+}
+
+func (l *LoxRBTree) equals(other *LoxRBTree, strict bool) bool {
+	if l == other {
+		return true
+	}
+	i1 := l.tree.Iterator()
+	i2 := other.tree.Iterator()
+	i1First := i1.First()
+	i2First := i2.First()
+	if i1First != i2First {
+		return false
+	}
+	if !i1First && !i2First {
+		if strict && l.keyType != other.keyType {
+			return false
+		}
+		return true
+	}
+	firstIter := true
+	for {
+		if !firstIter {
+			i1Next := i1.Next()
+			i2Next := i2.Next()
+			if i1Next != i2Next {
+				return false
+			}
+			if !i1Next && !i2Next {
+				if strict && l.keyType != other.keyType {
+					return false
+				}
+				return true
+			}
+		}
+		var result bool
+		i1Key := i1.Key()
+		i2Key := i2.Key()
+		if i1Key == i2Key {
+			result = true
+		} else if first, ok := i1Key.(interfaces.Equatable); ok {
+			result = first.Equals(i2Key)
+		} else if second, ok := i2Key.(interfaces.Equatable); ok {
+			result = second.Equals(i1Key)
+		} else {
+			result = reflect.DeepEqual(i1Key, i2Key)
+		}
+		i1Value := i1.Value()
+		i2Value := i2.Value()
+		if i1Value == i2Value {
+			result = result && true
+		} else if first, ok := i1Value.(interfaces.Equatable); ok {
+			result = result && first.Equals(i2Value)
+		} else if second, ok := i2Value.(interfaces.Equatable); ok {
+			result = result && second.Equals(i1Value)
+		} else {
+			result = result && reflect.DeepEqual(i1Value, i2Value)
+		}
+		if !result {
+			return false
+		}
+		firstIter = false
+	}
 }
 
 func (l *LoxRBTree) forEach(f func(key, value any, index int64)) {
@@ -394,6 +457,13 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 			}
 			l.deleteValuesForce(args...)
 			return l, nil
+		})
+	case "equals":
+		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if loxRBTree, ok := args[0].(*LoxRBTree); ok {
+				return l.equals(loxRBTree, false), nil
+			}
+			return argMustBeType("rb tree")
 		})
 	case "forEach":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
@@ -651,6 +721,13 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 	case "str":
 		return rbTreeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxStringQuote(l.tree.String()), nil
+		})
+	case "strictEquals":
+		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
+			if loxRBTree, ok := args[0].(*LoxRBTree); ok {
+				return l.equals(loxRBTree, true), nil
+			}
+			return argMustBeType("rb tree")
 		})
 	case "toDict":
 		return rbTreeFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

@@ -23,6 +23,7 @@ RB trees have the following methods associated with them:
 - `rbtree.deleteValues`
 - `rbtree.deleteValuesForce`
 - `rbtree.deleteValuesForceRet`
+- `rbtree.equals`
 - `rbtree.forEach`
 - `rbtree.forEachPrev`
 - `rbtree.forEachPrevI0`
@@ -44,6 +45,7 @@ RB trees have the following methods associated with them:
 - `rbtree.set`, which is an alias for `rbtree.put`
 - `rbtree.setRet`, which is an alias for `rbtree.putRet`
 - `rbtree.str()`
+- `rbtree.strictEquals`
 - `rbtree.toDict()`
 - `rbtree.toDictWithIndex()`
 - `rbtree.toList()`
