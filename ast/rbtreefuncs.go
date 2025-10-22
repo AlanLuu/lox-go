@@ -21,6 +21,10 @@ func (i *Interpreter) defineRBTreeFuncs() {
 		}
 		rbTreeClass.classProperties[name] = s
 	}
+	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'rbtree class.%v' must be a %v.", name, theType)
+		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
 	argMustBeTypeAn := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'rbtree class.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
@@ -52,7 +56,7 @@ func (i *Interpreter) defineRBTreeFuncs() {
 			}
 			return NewLoxRBTreeMapInt(m), nil
 		}
-		return argMustBeTypeAn(in.callToken, "dictInt", "dictionary")
+		return argMustBeType(in.callToken, "dictInt", "dictionary")
 	})
 	rbTreeFunc("dictStr", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxDict, ok := args[0].(*LoxDict); ok {
@@ -73,7 +77,7 @@ func (i *Interpreter) defineRBTreeFuncs() {
 			}
 			return NewLoxRBTreeMapStr(m), nil
 		}
-		return argMustBeTypeAn(in.callToken, "dictStr", "dictionary")
+		return argMustBeType(in.callToken, "dictStr", "dictionary")
 	})
 	rbTreeFunc("int", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		return NewLoxRBTreeIntKeys(), nil
@@ -148,7 +152,7 @@ func (i *Interpreter) defineRBTreeFuncs() {
 		if loxList, ok := args[0].(*LoxList); ok {
 			return NewLoxRBTreeArgs(loxList.elements...), nil
 		}
-		return argMustBeTypeAn(in.callToken, "list", "list")
+		return argMustBeType(in.callToken, "list", "list")
 	})
 	rbTreeFunc("rbtree", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxRBTree, ok := args[0].(*LoxRBTree); ok {
