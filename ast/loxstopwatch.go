@@ -71,6 +71,9 @@ func (l *LoxStopwatch) stop() {
 func (l *LoxStopwatch) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxStopwatch:
+		if l == obj {
+			return true
+		}
 		return l.currentTime() == obj.currentTime()
 	default:
 		return false

@@ -89,6 +89,9 @@ func (l *LoxString) NewLoxString(str string) *LoxString {
 func (l *LoxString) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxString:
+		if l == obj {
+			return true
+		}
 		return l.str == obj.str
 	default:
 		return false

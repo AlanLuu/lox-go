@@ -70,6 +70,9 @@ func EmptyLoxDict() *LoxDict {
 func (l *LoxDict) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxDict:
+		if l == obj {
+			return true
+		}
 		return reflect.DeepEqual(l.entries, obj.entries)
 	default:
 		return false

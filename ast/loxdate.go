@@ -108,6 +108,9 @@ func (l *LoxDate) setYear(year int) {
 func (l *LoxDate) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxDate:
+		if l == obj {
+			return true
+		}
 		return l.date.Equal(obj.date)
 	default:
 		return false

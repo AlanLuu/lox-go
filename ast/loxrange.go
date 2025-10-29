@@ -65,6 +65,9 @@ func NewLoxRangeStartStop(start int64, stop int64) *LoxRange {
 func (l *LoxRange) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxRange:
+		if l == obj {
+			return true
+		}
 		return l.start == obj.start &&
 			l.stop == obj.stop &&
 			l.step == obj.step

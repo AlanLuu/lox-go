@@ -68,6 +68,9 @@ func NewLoxBigRangeStartStop(start *big.Int, stop *big.Int) *LoxBigRange {
 func (l *LoxBigRange) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxBigRange:
+		if l == obj {
+			return true
+		}
 		return l.start.Cmp(obj.start) == 0 &&
 			l.stop.Cmp(obj.stop) == 0 &&
 			l.step.Cmp(obj.step) == 0

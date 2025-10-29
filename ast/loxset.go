@@ -53,6 +53,9 @@ func EmptyLoxSet() *LoxSet {
 func (l *LoxSet) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxSet:
+		if l == obj {
+			return true
+		}
 		return reflect.DeepEqual(l.elements, obj.elements)
 	default:
 		return false

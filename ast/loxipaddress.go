@@ -87,6 +87,9 @@ func (l *LoxIPAddress) str() string {
 func (l *LoxIPAddress) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxIPAddress:
+		if l == obj {
+			return true
+		}
 		return l.ip.Equal(obj.ip)
 	default:
 		return false

@@ -57,6 +57,9 @@ func NewLoxUUIDV4Random() (*LoxUUID, error) {
 func (l *LoxUUID) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxUUID:
+		if l == obj {
+			return true
+		}
 		return l.uuid == obj.uuid
 	default:
 		return false

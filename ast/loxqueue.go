@@ -103,6 +103,9 @@ func (l *LoxQueue) remove() (any, error) {
 func (l *LoxQueue) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxQueue:
+		if l == obj {
+			return true
+		}
 		e1 := l.elements.Front()
 		e2 := obj.elements.Front()
 		for e1 != nil && e2 != nil {

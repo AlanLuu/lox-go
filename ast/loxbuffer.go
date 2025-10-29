@@ -51,6 +51,9 @@ func EmptyLoxBufferCapDouble(cap int64) *LoxBuffer {
 func (l *LoxBuffer) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxBuffer:
+		if l == obj {
+			return true
+		}
 		return reflect.DeepEqual(l.elements, obj.elements)
 	default:
 		return false

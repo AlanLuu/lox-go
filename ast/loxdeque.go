@@ -115,6 +115,9 @@ func (l *LoxDeque) removeFront() (any, error) {
 func (l *LoxDeque) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxDeque:
+		if l == obj {
+			return true
+		}
 		e1 := l.elements.Front()
 		e2 := obj.elements.Front()
 		for e1 != nil && e2 != nil {

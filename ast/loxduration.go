@@ -24,6 +24,9 @@ func NewLoxDuration(duration time.Duration) *LoxDuration {
 func (l *LoxDuration) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxDuration:
+		if l == obj {
+			return true
+		}
 		return l.duration == obj.duration
 	default:
 		return false

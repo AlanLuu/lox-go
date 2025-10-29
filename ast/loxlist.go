@@ -75,6 +75,9 @@ func (l *LoxList) Capacity() int64 {
 func (l *LoxList) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxList:
+		if l == obj {
+			return true
+		}
 		return reflect.DeepEqual(l.elements, obj.elements)
 	default:
 		return false
