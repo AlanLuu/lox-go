@@ -199,7 +199,10 @@ func (l *LoxTarWriter) Get(name *token.Token) (any, error) {
 				var headerMode int64
 				if !util.IsWindows() {
 					umask := syscalls.Umask(0)
+
+					//lint:ignore SA4017 dummy function on windows
 					syscalls.Umask(umask)
+
 					headerMode = int64(0666 & ^umask)
 				} else {
 					headerMode = 0644
@@ -303,7 +306,10 @@ func (l *LoxTarWriter) Get(name *token.Token) (any, error) {
 				var headerMode int64
 				if !util.IsWindows() {
 					umask := syscalls.Umask(0)
+
+					//lint:ignore SA4017 dummy function on windows
 					syscalls.Umask(umask)
+
 					headerMode = int64(0777 & ^umask)
 				} else {
 					headerMode = 0755
