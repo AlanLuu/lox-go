@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
@@ -378,6 +379,70 @@ func (l *LoxRange) index(value int64) int64 {
 		return -1
 	}
 	return (value - l.start) / l.step
+}
+
+func (l *LoxRange) Index(element any) (any, error) {
+	switch element := element.(type) {
+	case int64:
+		return l.IndexInt(element)
+	case *big.Int:
+		numInt, err := checkValidBigint(element)
+		if err != nil {
+			return nil, err
+		}
+		return l.IndexInt(numInt)
+	}
+	return nil, loxerror.Error(RangeIndexMustBeWholeNum(element))
+}
+
+func (l *LoxRange) IndexSlice(first, second any) (any, error) {
+	var firstInt, secondInt int64
+	switch first := first.(type) {
+	case nil:
+		firstInt = 0
+	case int64:
+		firstInt = first
+	case *big.Int:
+		var err error
+		firstInt, err = checkValidBigint(first)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(RangeIndexMustBeWholeNum(first))
+	}
+	switch second := second.(type) {
+	case nil:
+		secondInt = l.Length()
+	case int64:
+		secondInt = second
+	case *big.Int:
+		var err error
+		secondInt, err = checkValidBigint(second)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(RangeIndexMustBeWholeNum(second))
+	}
+	return l.IndexIntSlice(firstInt, secondInt)
+}
+
+func (l *LoxRange) IndexInt(index int64) (any, error) {
+	originalIndex := index
+	lLen := l.Length()
+	index = convertNegIndex(lLen, index)
+	if index < 0 || index >= lLen {
+		return nil, loxerror.Error(RangeIndexOutOfRange(originalIndex))
+	}
+	return l.get(index), nil
+}
+
+func (l *LoxRange) IndexIntSlice(first, second int64) (any, error) {
+	lLen := l.Length()
+	first = convertNegIndex(lLen, first)
+	second = convertSliceIndex(lLen, second)
+	return l.getRange(first, second), nil
 }
 
 func (l *LoxRange) Iterator() interfaces.Iterator {

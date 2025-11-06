@@ -404,27 +404,95 @@ func (l *LoxBigRange) index(value *big.Int) *big.Int {
 	return bigInt
 }
 
+func (l *LoxBigRange) Index(element any) (any, error) {
+	var index *big.Int
+	switch element := element.(type) {
+	case int64:
+		index = big.NewInt(element)
+	case *big.Int:
+		index = new(big.Int).Set(element)
+	default:
+		return nil, loxerror.Error(BigRangeIndexMustBeWholeNum(element))
+	}
+	return l.IndexBigInt(index)
+}
+
+func (l *LoxBigRange) IndexSlice(first, second any) (any, error) {
+	var firstInt, secondInt *big.Int
+	switch first := first.(type) {
+	case nil:
+		firstInt = big.NewInt(0)
+	case int64:
+		firstInt = big.NewInt(first)
+	case *big.Int:
+		firstInt = new(big.Int).Set(first)
+	default:
+		return nil, loxerror.Error(BigRangeIndexMustBeWholeNum(first))
+	}
+	switch second := second.(type) {
+	case nil:
+		secondInt = l.BigLength()
+	case int64:
+		secondInt = big.NewInt(second)
+	case *big.Int:
+		secondInt = new(big.Int).Set(second)
+	default:
+		return nil, loxerror.Error(BigRangeIndexMustBeWholeNum(second))
+	}
+	return l.IndexBigIntSlice(firstInt, secondInt)
+}
+
+func (l *LoxBigRange) IndexBigInt(index *big.Int) (any, error) {
+	originalIndex := new(big.Int).Set(index)
+	rangeLength := l.BigLength()
+	if index.Cmp(bigint.Zero) < 0 {
+		index.Add(index, rangeLength)
+	}
+	if index.Cmp(bigint.Zero) < 0 || index.Cmp(rangeLength) >= 0 {
+		return nil, loxerror.Error(BigRangeIndexOutOfRange(originalIndex))
+	}
+	return l.get(index), nil
+}
+
+func (l *LoxBigRange) IndexBigIntSlice(first, second *big.Int) (any, error) {
+	rangeLength := l.BigLength()
+	if first.Cmp(bigint.Zero) < 0 {
+		first.Add(first, rangeLength)
+	}
+	if second.Cmp(bigint.Zero) < 0 {
+		second.Add(second, rangeLength)
+	}
+	if second.Cmp(rangeLength) > 0 {
+		second = rangeLength
+	}
+	return l.getRange(first, second), nil
+}
+
 func (l *LoxBigRange) Iterator() interfaces.Iterator {
 	return &LoxBigRangeIterator{l, new(big.Int).Set(l.start)}
 }
 
-func (l *LoxBigRange) Length() int64 {
+func (l *LoxBigRange) BigLength() *big.Int {
 	if l.step.Cmp(bigint.Zero) > 0 && l.start.Cmp(l.stop) < 0 {
 		bigInt := new(big.Int).Set(l.stop)
 		bigInt.Sub(bigInt, l.start)
 		bigInt.Sub(bigInt, bigint.One)
 		bigInt.Div(bigInt, l.step)
 		bigInt.Add(bigInt, bigint.One)
-		return bigInt.Int64()
+		return bigInt
 	} else if l.step.Cmp(bigint.Zero) < 0 && l.stop.Cmp(l.start) < 0 {
 		bigInt := new(big.Int).Set(l.start)
 		bigInt.Sub(bigInt, l.stop)
 		bigInt.Sub(bigInt, bigint.One)
 		bigInt.Div(bigInt, new(big.Int).Neg(l.step))
 		bigInt.Add(bigInt, bigint.One)
-		return bigInt.Int64()
+		return bigInt
 	}
-	return 0
+	return big.NewInt(0)
+}
+
+func (l *LoxBigRange) Length() int64 {
+	return l.BigLength().Int64()
 }
 
 func (l *LoxBigRange) String() string {

@@ -543,6 +543,71 @@ func (l *LoxBuffer) setIndex(index int64, element any) error {
 	return nil
 }
 
+func (l *LoxBuffer) Index(element any) (any, error) {
+	result, err := l.LoxList.Index(element)
+	if err != nil {
+		errMsg := err.Error()
+		errMsg = strings.ReplaceAll(errMsg, "List", "Buffer")
+		return nil, loxerror.Error(errMsg)
+	}
+	return result, nil
+}
+
+func (l *LoxBuffer) IndexSlice(first, second any) (any, error) {
+	var firstInt, secondInt int64
+	switch first := first.(type) {
+	case nil:
+		firstInt = 0
+	case int64:
+		firstInt = first
+	case *big.Int:
+		var err error
+		firstInt, err = checkValidBigint(first)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(BufferIndexMustBeWholeNum(first))
+	}
+	switch second := second.(type) {
+	case nil:
+		secondInt = l.Length()
+	case int64:
+		secondInt = second
+	case *big.Int:
+		var err error
+		secondInt, err = checkValidBigint(second)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(BufferIndexMustBeWholeNum(second))
+	}
+	return l.IndexIntSlice(firstInt, secondInt)
+}
+
+func (l *LoxBuffer) IndexInt(index int64) (any, error) {
+	result, err := l.LoxList.IndexInt(index)
+	if err != nil {
+		errMsg := err.Error()
+		errMsg = strings.ReplaceAll(errMsg, "List", "Buffer")
+		return nil, loxerror.Error(errMsg)
+	}
+	return result, nil
+}
+
+func (l *LoxBuffer) IndexIntSlice(first, second int64) (any, error) {
+	lLen := l.Length()
+	first = max(convertNegIndex(lLen, first), 0)
+	second = convertSliceIndex(lLen, second)
+	capacity := max(second-first, 0)
+	listSlice := list.NewListCap[any](capacity)
+	for i := first; i < second; i++ {
+		listSlice.Add(l.elements[i])
+	}
+	return NewLoxBuffer(listSlice), nil
+}
+
 func (l *LoxBuffer) String() string {
 	return getResult(l, l, true)
 }

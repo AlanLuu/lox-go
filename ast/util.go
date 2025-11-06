@@ -1,12 +1,29 @@
 package ast
 
 import (
+	"fmt"
+	"math/big"
+
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
+	"github.com/AlanLuu/lox/loxerror"
 )
 
 func assertIterErr(iter interfaces.Iterator) interfaces.IteratorErr {
 	return convertIface[interfaces.IteratorErr](iter)
+}
+
+func checkValidBigint(num *big.Int) (int64, error) {
+	if !num.IsInt64() {
+		return 0, loxerror.Error(
+			fmt.Sprintf(
+				"bigint index value '%v' is out of range.",
+				bigint.String(num),
+			),
+		)
+	}
+	return num.Int64(), nil
 }
 
 func convertIface[T any](iface any) T {
@@ -16,6 +33,24 @@ func convertIface[T any](iface any) T {
 		return t
 	}
 	return result
+}
+
+func convertNegIndex(l int64, num int64) int64 {
+	if num < 0 {
+		num += l
+	}
+	return num
+}
+
+func convertPosIndex(l int64, num int64) int64 {
+	if num > l {
+		num = l
+	}
+	return num
+}
+
+func convertSliceIndex(l int64, num int64) int64 {
+	return convertPosIndex(l, convertNegIndex(l, num))
 }
 
 func getArgList(callback *LoxFunction, numArgs int) list.List[any] {

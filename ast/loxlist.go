@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math"
+	"math/big"
 	"math/rand"
 	"reflect"
 	"slices"
@@ -1135,6 +1136,75 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Lists have no property called '"+methodName+"'.")
+}
+
+func (l *LoxList) Index(element any) (any, error) {
+	switch element := element.(type) {
+	case int64:
+		return l.IndexInt(element)
+	case *big.Int:
+		numInt, err := checkValidBigint(element)
+		if err != nil {
+			return nil, err
+		}
+		return l.IndexInt(numInt)
+	}
+	return nil, loxerror.Error(ListIndexMustBeWholeNum(element))
+}
+
+func (l *LoxList) IndexSlice(first, second any) (any, error) {
+	var firstInt, secondInt int64
+	switch first := first.(type) {
+	case nil:
+		firstInt = 0
+	case int64:
+		firstInt = first
+	case *big.Int:
+		var err error
+		firstInt, err = checkValidBigint(first)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(ListIndexMustBeWholeNum(first))
+	}
+	switch second := second.(type) {
+	case nil:
+		secondInt = l.Length()
+	case int64:
+		secondInt = second
+	case *big.Int:
+		var err error
+		secondInt, err = checkValidBigint(second)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(ListIndexMustBeWholeNum(second))
+	}
+	return l.IndexIntSlice(firstInt, secondInt)
+}
+
+func (l *LoxList) IndexInt(index int64) (any, error) {
+	originalIndex := index
+	lLen := l.Length()
+	index = convertNegIndex(lLen, index)
+	if index < 0 || index >= lLen {
+		return nil, loxerror.Error(ListIndexOutOfRange(originalIndex))
+	}
+	return l.elements[index], nil
+}
+
+func (l *LoxList) IndexIntSlice(first, second int64) (any, error) {
+	lLen := l.Length()
+	first = max(convertNegIndex(lLen, first), 0)
+	second = convertSliceIndex(lLen, second)
+	capacity := max(second-first, 0)
+	listSlice := list.NewListCap[any](capacity)
+	for i := first; i < second; i++ {
+		listSlice.Add(l.elements[i])
+	}
+	return NewLoxList(listSlice), nil
 }
 
 func (l *LoxList) Iterator() interfaces.Iterator {

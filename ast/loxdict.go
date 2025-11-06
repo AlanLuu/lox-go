@@ -23,7 +23,7 @@ func CanBeDictKeyCheck(key any) (bool, string) {
 }
 
 func UnknownDictKey(key any) string {
-	formatStr := "Unknown key '%v'."
+	const formatStr = "Unknown dictionary key '%v'."
 	switch key := key.(type) {
 	case float64:
 		return fmt.Sprintf(formatStr, util.FormatFloatZero(key))
@@ -217,6 +217,14 @@ func (l *LoxDict) removeKey(key any) any {
 	}
 	delete(l.entries, keyItem)
 	return value
+}
+
+func (l *LoxDict) Index(element any) (any, error) {
+	value, ok := l.getValueByKey(element)
+	if !ok {
+		return nil, loxerror.Error(UnknownDictKey(element))
+	}
+	return value, nil
 }
 
 func (l *LoxDict) Iterator() interfaces.Iterator {

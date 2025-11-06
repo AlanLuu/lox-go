@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math"
+	"math/big"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -690,6 +691,79 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Strings have no property called '"+methodName+"'.")
+}
+
+func (l *LoxString) Index(element any) (any, error) {
+	switch element := element.(type) {
+	case int64:
+		return l.IndexInt(element)
+	case *big.Int:
+		numInt, err := checkValidBigint(element)
+		if err != nil {
+			return nil, err
+		}
+		return l.IndexInt(numInt)
+	}
+	return nil, loxerror.Error(StringIndexMustBeWholeNum(element))
+}
+
+func (l *LoxString) IndexSlice(first, second any) (any, error) {
+	var firstInt, secondInt int64
+	switch first := first.(type) {
+	case nil:
+		firstInt = 0
+	case int64:
+		firstInt = first
+	case *big.Int:
+		var err error
+		firstInt, err = checkValidBigint(first)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(StringIndexMustBeWholeNum(first))
+	}
+	switch second := second.(type) {
+	case nil:
+		secondInt = l.Length()
+	case int64:
+		secondInt = second
+	case *big.Int:
+		var err error
+		secondInt, err = checkValidBigint(second)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, loxerror.Error(StringIndexMustBeWholeNum(second))
+	}
+	return l.IndexIntSlice(firstInt, secondInt)
+}
+
+func (l *LoxString) IndexInt(index int64) (any, error) {
+	originalIndex := index
+	lLen := l.Length()
+	index = convertNegIndex(lLen, index)
+	if index < 0 || index >= lLen {
+		return nil, loxerror.Error(StringIndexOutOfRange(originalIndex))
+	}
+	str := string([]rune(l.str)[index])
+	if str == "'" {
+		return NewLoxString(str, '"'), nil
+	}
+	return NewLoxString(str, '\''), nil
+}
+
+func (l *LoxString) IndexIntSlice(first, second int64) (any, error) {
+	lLen := l.Length()
+	first = max(convertNegIndex(lLen, first), 0)
+	second = convertSliceIndex(lLen, second)
+	if first > second {
+		return EmptyLoxString(), nil
+	}
+	return NewLoxStringQuote(
+		string([]rune(l.str)[first:second]),
+	), nil
 }
 
 func (l *LoxString) Iterator() interfaces.Iterator {
