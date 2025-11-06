@@ -95,6 +95,16 @@ func (i *Interpreter) defineNativeFuncs() {
 				fmt.Sprintf("Cannot convert type '%v' to bigfloat.", getType(arg)))
 		}
 	})
+	nativeFunc("biglen", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch arg := args[0].(type) {
+		case interfaces.BigLength:
+			return arg.BigLength(), nil
+		case interfaces.Length:
+			return big.NewInt(arg.Length()), nil
+		}
+		return nil, loxerror.RuntimeError(in.callToken,
+			fmt.Sprintf("Cannot call 'biglen' on type '%v'.", getType(args[0])))
+	})
 	nativeFunc("bigrange", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		switch argsLen {

@@ -660,6 +660,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If the callable can receive a variable number of arguments, `-1` is returned
     - `bfloat(arg)`, which attempts to convert the specified argument into a bigfloat and returns that bigfloat if successful, otherwise a runtime error is thrown
         - Valid arguments to `bfloat` are the following types: nil, bool, integer, float, bigint, bigfloat, string
+    - `biglen(arg)`, which returns the length of the specified element as a bigint, where `arg` can be any type that the `len` function already accepts
     - `bigrange(stop)`, which takes in an integer or bigint and returns a bigrange object with a start value of `0n`, a stop value of `stop`, and a step value of `1n`
     - `bigrange(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers or bigints and returns a bigrange object with the specified parameters. If `step` is omitted, the resulting bigrange object will have a step value of `1n`
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
