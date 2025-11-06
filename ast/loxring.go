@@ -3,8 +3,10 @@ package ast
 import (
 	"container/ring"
 	"fmt"
+	"math/big"
 	"strings"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -102,24 +104,6 @@ func NewLoxRingNils(n int) *LoxRing {
 		loxRings[loxRingsLen-1].next = loxRings[0]
 	}
 	return loxRings[0]
-}
-
-func (l *LoxRing) getIndexPositive(index int64) any {
-	if index < 0 {
-		panic("in LoxRing.getIndexPositive: index is negative")
-	}
-	var current int64 = 0
-	firstIter := true
-	for r := l.ring; firstIter || r != l.ring; r = r.Next() {
-		firstIter = false
-		if current == index {
-			return r.Value
-		} else if current > index {
-			break
-		}
-		current++
-	}
-	panic("in LoxRing.getIndexPositive: reached end of ring")
 }
 
 func (l *LoxRing) link(other_l *LoxRing) *LoxRing {
@@ -894,6 +878,54 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		return l.ring.Value, nil
 	}
 	return nil, loxerror.RuntimeError(name, "Rings have no property called '"+methodName+"'.")
+}
+
+func (l *LoxRing) Index(element any) (any, error) {
+	switch element := element.(type) {
+	case int64:
+		return l.IndexInt(element)
+	case *big.Int:
+		return l.IndexBigInt(element)
+	}
+	return nil, loxerror.Error(IndexMustBeWholeNum("Ring", element))
+}
+
+func (l *LoxRing) IndexInt(index int64) (any, error) {
+	var current int64 = 0
+	if index < 0 {
+		for r := l.ring; ; r = r.Prev() {
+			if current == index {
+				return r.Value, nil
+			}
+			current--
+		}
+	} else {
+		for r := l.ring; ; r = r.Next() {
+			if current == index {
+				return r.Value, nil
+			}
+			current++
+		}
+	}
+}
+
+func (l *LoxRing) IndexBigInt(index *big.Int) (any, error) {
+	current := big.NewInt(0)
+	if index.Cmp(bigint.Zero) < 0 {
+		for r := l.ring; ; r = r.Prev() {
+			if current.Cmp(index) == 0 {
+				return r.Value, nil
+			}
+			current.Sub(current, bigint.One)
+		}
+	} else {
+		for r := l.ring; ; r = r.Next() {
+			if current.Cmp(index) == 0 {
+				return r.Value, nil
+			}
+			current.Add(current, bigint.One)
+		}
+	}
 }
 
 func (l *LoxRing) Iterator() interfaces.Iterator {

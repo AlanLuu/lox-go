@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	"unicode/utf8"
+	"time"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -42,116 +43,50 @@ func (i *Interpreter) defineRandFuncs() {
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 	randElement := func(randStruct LoxRand, arg any) (any, error) {
-		emptyErr := func(theType string) (any, error) {
-			return nil, loxerror.Error(
-				"Cannot get random element from empty " + theType + ".",
-			)
-		}
 		switch arg := arg.(type) {
-		case *LoxBigRange:
-			rangeLen := arg.Length()
-			if rangeLen == 0 {
-				return emptyErr("bigrange")
+		case interfaces.RandChooseBig:
+			argLen := arg.BigLength()
+			if argLen.Cmp(bigint.Zero) == 0 {
+				return nil, loxerror.Error(
+					fmt.Sprintf(
+						"Cannot get random element from empty %v.",
+						getType(arg),
+					),
+				)
+			}
+			var randIndex *big.Int
+			if randStruct.rand != nil {
+				randIndex = new(big.Int).Rand(randStruct.rand, argLen)
+			} else {
+				randIndex = new(big.Int).Rand(
+					rand.New(rand.NewSource(time.Now().UnixNano())),
+					argLen,
+				)
+			}
+			return arg.IndexBigInt(randIndex)
+		case interfaces.RandChoose:
+			argLen := arg.Length()
+			if argLen == 0 {
+				return nil, loxerror.Error(
+					fmt.Sprintf(
+						"Cannot get random element from empty %v.",
+						getType(arg),
+					),
+				)
 			}
 			var randIndex int64
 			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Int63n(rangeLen)
+				randIndex = randStruct.rand.Int63n(argLen)
 			} else {
-				randIndex = rand.Int63n(rangeLen)
+				randIndex = rand.Int63n(argLen)
 			}
-			return arg.get(big.NewInt(randIndex)), nil
-		case *LoxBitField:
-			var randIndex int64
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Int63n(arg.Length())
-			} else {
-				randIndex = rand.Int63n(arg.Length())
-			}
-			return int64(arg.getBitIndex(randIndex)), nil
-		case *LoxBuffer:
-			if arg.elements.IsEmpty() {
-				return emptyErr("buffer")
-			}
-			var randIndex int
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Intn(len(arg.elements))
-			} else {
-				randIndex = rand.Intn(len(arg.elements))
-			}
-			return arg.elements[randIndex], nil
-		case *LoxDeque:
-			dequeLen := arg.Length()
-			if dequeLen == 0 {
-				return emptyErr("deque")
-			}
-			var randIndex int64
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Int63n(dequeLen)
-			} else {
-				randIndex = rand.Int63n(dequeLen)
-			}
-			return arg.getIndex(randIndex), nil
-		case *LoxList:
-			if arg.elements.IsEmpty() {
-				return emptyErr("list")
-			}
-			var randIndex int
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Intn(len(arg.elements))
-			} else {
-				randIndex = rand.Intn(len(arg.elements))
-			}
-			return arg.elements[randIndex], nil
-		case *LoxQueue:
-			queueLen := arg.Length()
-			if queueLen == 0 {
-				return emptyErr("queue")
-			}
-			var randIndex int64
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Int63n(queueLen)
-			} else {
-				randIndex = rand.Int63n(queueLen)
-			}
-			return arg.getIndex(randIndex), nil
-		case *LoxRange:
-			rangeLen := arg.Length()
-			if rangeLen == 0 {
-				return emptyErr("range")
-			}
-			var randIndex int64
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Int63n(rangeLen)
-			} else {
-				randIndex = rand.Int63n(rangeLen)
-			}
-			return arg.get(randIndex), nil
-		case *LoxRing:
-			ringLen := arg.Length()
-			if ringLen == 0 {
-				return emptyErr("ring")
-			}
-			var randIndex int64
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Int63n(ringLen)
-			} else {
-				randIndex = rand.Int63n(ringLen)
-			}
-			return arg.getIndexPositive(randIndex), nil
-		case *LoxString:
-			if len(arg.str) == 0 {
-				return emptyErr("string")
-			}
-			var randIndex int
-			if randStruct.rand != nil {
-				randIndex = randStruct.rand.Intn(utf8.RuneCountInString(arg.str))
-			} else {
-				randIndex = rand.Intn(utf8.RuneCountInString(arg.str))
-			}
-			return NewLoxStringQuote(string([]rune(arg.str)[randIndex])), nil
+			return arg.IndexInt(randIndex)
 		default:
 			return nil, loxerror.Error(
-				fmt.Sprintf("Cannot get random element from type '%v'.", getType(arg)),
+				fmt.Sprintf(
+					"Cannot get random element from type '%v'.",
+					getType(arg),
+				),
 			)
 		}
 	}
@@ -162,17 +97,24 @@ func (i *Interpreter) defineRandFuncs() {
 		switch argsLen {
 		case 0:
 			instance := args[0].(*LoxInstance)
-			instance.fields[randStr] = LoxRand{nil}
+			instance.fields[randStr] = LoxRand{
+				rand.New(rand.NewSource(time.Now().UnixNano())),
+			}
 			return nil, nil
 		case 1:
 			if seed, ok := args[1].(int64); ok {
 				instance := args[0].(*LoxInstance)
-				instance.fields[randStr] = LoxRand{rand.New(rand.NewSource(seed))}
+				instance.fields[randStr] = LoxRand{
+					rand.New(rand.NewSource(seed)),
+				}
 				return nil, nil
 			}
 			return argMustBeTypeAn(in.callToken, "init", "integer")
 		default:
-			return nil, loxerror.RuntimeError(in.callToken, fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen),
+			)
 		}
 	})
 
@@ -536,39 +478,37 @@ func (i *Interpreter) defineRandFuncs() {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Second argument to 'Rand().sample' cannot be negative.")
 			}
-			if _, ok := args[1].(interfaces.Length); !ok {
+			var argLen int64
+			switch theArg := args[1].(type) {
+			case interfaces.RandChooseBig:
+				bigLen := theArg.BigLength()
+				if !bigLen.IsInt64() {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Length of second argument in 'Rand().sample' is too large.")
+				}
+				argLen = bigLen.Int64()
+			case interfaces.RandChoose:
+				argLen = theArg.Length()
+			default:
 				return nil, loxerror.RuntimeError(in.callToken,
 					fmt.Sprintf("Cannot get random element from type '%v'.", getType(args[1])))
 			}
-			arg := args[1].(interfaces.Length)
-			argLen := arg.Length()
 			if numSamples > argLen {
 				return nil, loxerror.RuntimeError(in.callToken,
 					"Second argument to 'Rand().sample' cannot be greater than the first argument's length.")
 			}
-			getIndex := func(index int) any {
-				switch arg := arg.(type) {
-				case *LoxBigRange:
-					return arg.get(big.NewInt(int64(index)))
-				case *LoxBitField:
-					return int64(arg.getBitIndex(int64(index)))
-				case *LoxBuffer:
-					return arg.elements[index]
-				case *LoxDeque:
-					return arg.getIndex(int64(index))
-				case *LoxList:
-					return arg.elements[index]
-				case *LoxQueue:
-					return arg.getIndex(int64(index))
-				case *LoxRange:
-					return arg.get(int64(index))
-				case *LoxRing:
-					return arg.getIndexPositive(int64(index))
-				case *LoxString:
-					return NewLoxStringQuote(string([]rune(arg.str)[index]))
+			getIndex := func(index int) (any, error) {
+				switch arg := args[1].(type) {
+				case interfaces.RandChooseBig:
+					return arg.IndexBigInt(big.NewInt(int64(index)))
+				case interfaces.RandChoose:
+					return arg.IndexInt(int64(index))
 				default:
-					return loxerror.Error(
-						fmt.Sprintf("Cannot get random element from type '%v'.", getType(arg)),
+					return nil, loxerror.Error(
+						fmt.Sprintf(
+							"Cannot get random element from type '%v'.",
+							getType(arg),
+						),
 					)
 				}
 			}
@@ -580,13 +520,10 @@ func (i *Interpreter) defineRandFuncs() {
 				randIndexes = rand.Perm(int(argLen))
 			}
 			for i := int64(0); i < numSamples; i++ {
-				element := getIndex(randIndexes[i])
-				if i == 0 {
-					switch element := element.(type) {
-					case error:
-						samples.Clear()
-						return nil, loxerror.RuntimeError(in.callToken, element.Error())
-					}
+				element, indexErr := getIndex(randIndexes[i])
+				if indexErr != nil {
+					samples.Clear()
+					return nil, loxerror.RuntimeError(in.callToken, indexErr.Error())
 				}
 				samples.Add(element)
 			}

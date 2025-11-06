@@ -68,22 +68,6 @@ func (l *LoxQueue) contains(element any) bool {
 	return false
 }
 
-func (l *LoxQueue) getIndex(index int64) any {
-	if index < 0 || index >= int64(l.elements.Len()) {
-		panic("in LoxQueue.getIndex: index out of range")
-	}
-	var current int64 = 0
-	for e := l.elements.Back(); e != nil; e = e.Prev() {
-		if current == index {
-			return e.Value
-		} else if current > index {
-			break
-		}
-		current++
-	}
-	panic("in LoxQueue.getIndex: reached end of queue")
-}
-
 func (l *LoxQueue) peek() any {
 	element := l.elements.Front()
 	if element == nil {
@@ -193,6 +177,33 @@ func (l *LoxQueue) Get(name *token.Token) (any, error) {
 		})
 	}
 	return nil, loxerror.RuntimeError(name, "Queues have no property called '"+methodName+"'.")
+}
+
+func (l *LoxQueue) IndexInt(index int64) (any, error) {
+	originalIndex := index
+	lLen := l.Length()
+	index = convertNegIndex(lLen, index)
+	if index < 0 || index >= lLen {
+		return nil, loxerror.Error(
+			fmt.Sprintf(
+				"Queue index %v out of range.",
+				originalIndex,
+			),
+		)
+	}
+	var current int64 = 0
+	for e := l.elements.Front(); e != nil; e = e.Next() {
+		if current == index {
+			return e.Value, nil
+		}
+		current++
+	}
+	return nil, loxerror.Error(
+		fmt.Sprintf(
+			"Queue index %v out of range.",
+			originalIndex,
+		),
+	)
 }
 
 func (l *LoxQueue) Iterator() interfaces.Iterator {

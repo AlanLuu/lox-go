@@ -835,6 +835,15 @@ func (l *LoxBitField) Get(name *token.Token) (any, error) {
 	return nil, loxerror.RuntimeError(name, "Bitfields have no property called '"+methodName+"'.")
 }
 
+func (l *LoxBitField) IndexInt(index int64) (any, error) {
+	if index < 0 || index > 7 {
+		return nil, loxerror.Error(
+			"Bitfield index expression must be from 0 to 7.",
+		)
+	}
+	return int64(l.getBitIndex(index)), nil
+}
+
 func (l *LoxBitField) Iterator() interfaces.Iterator {
 	return &LoxBitFieldIteratorLSB{l.field, 0}
 }
