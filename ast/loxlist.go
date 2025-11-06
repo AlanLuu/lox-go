@@ -27,7 +27,11 @@ func IndexMustBeWholeNum(theType string, index any) string {
 			indexVal = util.FormatFloat(index)
 		}
 	}
-	return fmt.Sprintf("%v index '"+format+"' must be an integer.", theType, indexVal)
+	return fmt.Sprintf(
+		"%v index '"+format+"' must be an integer or bigint.",
+		theType,
+		indexVal,
+	)
 }
 
 func ListIndexMustBeWholeNum(index any) string {

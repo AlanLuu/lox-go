@@ -76,7 +76,10 @@ func StringIndexMustBeWholeNum(index any) string {
 			indexVal = util.FormatFloat(index)
 		}
 	}
-	return fmt.Sprintf("String index '"+format+"' must be an integer.", indexVal)
+	return fmt.Sprintf(
+		"String index '"+format+"' must be an integer or bigint.",
+		indexVal,
+	)
 }
 
 func StringIndexOutOfRange(index int64) string {
