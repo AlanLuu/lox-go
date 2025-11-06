@@ -484,7 +484,7 @@ func (i *Interpreter) defineRandFuncs() {
 				bigLen := theArg.BigLength()
 				if !bigLen.IsInt64() {
 					return nil, loxerror.RuntimeError(in.callToken,
-						"Length of second argument in 'Rand().sample' is too large.")
+						"Length of first argument in 'Rand().sample' is too large.")
 				}
 				argLen = bigLen.Int64()
 			case interfaces.RandChoose:
@@ -520,6 +520,60 @@ func (i *Interpreter) defineRandFuncs() {
 				randIndexes = rand.Perm(int(argLen))
 			}
 			for i := int64(0); i < numSamples; i++ {
+				element, indexErr := getIndex(randIndexes[i])
+				if indexErr != nil {
+					samples.Clear()
+					return nil, loxerror.RuntimeError(in.callToken, indexErr.Error())
+				}
+				samples.Add(element)
+			}
+			return NewLoxList(samples), nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
+	randInstanceFunc("sampleAll", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			var argLen int64
+			switch theArg := args[1].(type) {
+			case interfaces.RandChooseBig:
+				bigLen := theArg.BigLength()
+				if !bigLen.IsInt64() {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Length of argument in 'Rand().sampleAll' is too large.")
+				}
+				argLen = bigLen.Int64()
+			case interfaces.RandChoose:
+				argLen = theArg.Length()
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("Cannot get random element from type '%v'.", getType(args[1])))
+			}
+			getIndex := func(index int) (any, error) {
+				switch arg := args[1].(type) {
+				case interfaces.RandChooseBig:
+					return arg.IndexBigInt(big.NewInt(int64(index)))
+				case interfaces.RandChoose:
+					return arg.IndexInt(int64(index))
+				default:
+					return nil, loxerror.Error(
+						fmt.Sprintf(
+							"Cannot get random element from type '%v'.",
+							getType(arg),
+						),
+					)
+				}
+			}
+			samples := list.NewListCap[any](argLen)
+			var randIndexes []int
+			if randStruct.rand != nil {
+				randIndexes = randStruct.rand.Perm(int(argLen))
+			} else {
+				randIndexes = rand.Perm(int(argLen))
+			}
+			for i := int64(0); i < argLen; i++ {
 				element, indexErr := getIndex(randIndexes[i])
 				if indexErr != nil {
 					samples.Clear()
