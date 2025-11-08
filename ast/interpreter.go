@@ -29,6 +29,7 @@ type Interpreter struct {
 	locals      map[any]int
 	blockDepth  int
 	callToken   *token.Token
+	LoxCalled   bool //Used in main.runLoxCode function
 }
 
 func NewInterpreter() *Interpreter {
@@ -37,6 +38,7 @@ func NewInterpreter() *Interpreter {
 		locals:     make(map[any]int),
 		blockDepth: 0,
 		callToken:  nil,
+		LoxCalled:  util.DisableLoxCode,
 	}
 	interpreter.environment = interpreter.globals
 	interpreter.defineBase32Funcs()     //Defined in base32funcs.go

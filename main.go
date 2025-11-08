@@ -72,9 +72,10 @@ OPTIONS:
 }
 
 func runLoxCode(interpreter *ast.Interpreter) error {
-	if util.DisableLoxCode {
+	if util.DisableLoxCode || interpreter.LoxCalled {
 		return nil
 	}
+	interpreter.LoxCalled = true
 	dirFunc := func(path string, d fs.DirEntry, _ error) error {
 		if !d.IsDir() {
 			program, err := loxCodeFS.ReadFile(path)
