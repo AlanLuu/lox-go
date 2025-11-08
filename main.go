@@ -36,9 +36,14 @@ func flagsProvided() map[string]struct{} {
 func printVersion() {
 	var builder strings.Builder
 	builder.WriteString(LOX_PROGRAM_NAME)
-	if hash := util.GitHashShort(); hash != "" {
+	if hash, modified := util.GitInfoShort(); hash != "" {
 		builder.WriteByte('-')
 		builder.WriteString(hash)
+		if modified {
+			builder.WriteString(" (modified)")
+		}
+	} else {
+		builder.WriteString(" (no git hash)")
 	}
 	builder.WriteByte(' ')
 	builder.WriteByte('(')

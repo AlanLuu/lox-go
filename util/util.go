@@ -59,24 +59,33 @@ func FormatFloatZero(f float64) string {
 	return FormatFloat(f)
 }
 
-func GitHash() string {
+func GitInfo() (hash string, modified bool) {
 	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		foundHash := false
+		foundModified := false
 		for _, setting := range buildInfo.Settings {
-			if setting.Key == "vcs.revision" {
-				return setting.Value
+			switch setting.Key {
+			case "vcs.revision":
+				foundHash = true
+				hash = setting.Value
+			case "vcs.modified":
+				foundModified = true
+				modified = setting.Value != "false"
+			}
+			if foundHash && foundModified {
+				return
 			}
 		}
 	}
-	return ""
+	return
 }
 
-func GitHashShort() string {
+func GitInfoShort() (hash string, modified bool) {
 	const upper = 8
-	if hash := GitHash(); len(hash) > upper {
-		return hash[:upper]
-	} else {
-		return hash
+	if hash, modified = GitInfo(); len(hash) > upper {
+		hash = hash[:upper]
 	}
+	return
 }
 
 func IntOrFloat(f float64) any {
