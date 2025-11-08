@@ -282,6 +282,32 @@ func (sc *Scanner) handleString(quote rune) error {
 	return nil
 }
 
+func (sc *Scanner) handleMultiLineComment() error {
+	unclosedCommentErr := func() error {
+		return loxerror.GiveError(sc.lineNum, "", "Unclosed multi-line comment")
+	}
+	foundStar := false
+	for cond := true; cond; sc.advance() {
+		if sc.isAtEnd() {
+			return unclosedCommentErr()
+		}
+		switch sc.peek() {
+		case '\n':
+			sc.lineNum++
+		case '*':
+			foundStar = true
+			continue
+		case '/':
+			if foundStar {
+				cond = false
+			}
+			continue
+		}
+		foundStar = false
+	}
+	return nil
+}
+
 func (sc *Scanner) isAtEnd() bool {
 	return sc.currentIndex >= sc.sourceLen
 }
@@ -438,6 +464,11 @@ func (sc *Scanner) scanToken() error {
 		if sc.match('/') { //handle "//" (comment)
 			for sc.peek() != '\n' && !sc.isAtEnd() {
 				sc.currentIndex++
+			}
+		} else if sc.match('*') { //handle "/*" (multi-line comment)
+			multiLineCommentErr := sc.handleMultiLineComment()
+			if multiLineCommentErr != nil {
+				return multiLineCommentErr
 			}
 		} else {
 			addToken(token.SLASH)
