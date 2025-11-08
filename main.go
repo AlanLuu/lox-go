@@ -167,19 +167,26 @@ func processFile(filePath string) (*ast.Interpreter, error) {
 
 func interactiveMode(interpreter *ast.Interpreter) int {
 	util.InteractiveMode = true
-
-	l, _ := readline.NewEx(&readline.Config{
-		Prompt:          PROMPT,
-		InterruptPrompt: "^C",
-	})
-	defer l.Close()
-
 	runLoxCodeErr := runLoxCode(interpreter)
 	if runLoxCodeErr != nil {
 		loxerror.PrintErrorObject(runLoxCodeErr)
 		return 1
 	}
 	if util.StdinFromTerminal() {
+		l, readlineErr := readline.NewEx(&readline.Config{
+			Prompt:          PROMPT,
+			InterruptPrompt: "^C",
+		})
+		if readlineErr != nil {
+			//Should never happen
+			fmt.Fprintf(
+				os.Stderr,
+				"Failed to launch REPL due to following error: %v\n",
+				readlineErr.Error(),
+			)
+			return 1
+		}
+		defer l.Close()
 		numSpacesIndent := 2
 	outer:
 		for {

@@ -700,10 +700,22 @@ func (i *Interpreter) defineNativeFuncs() {
 		fd := os.Stdin.Fd()
 		if isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd) {
 			if inputReadline == nil {
-				inputReadline, _ = readline.NewEx(&readline.Config{
+				var readlineErr error
+				inputReadline, readlineErr = readline.NewEx(&readline.Config{
 					Prompt:          getResult(prompt, prompt, true),
 					InterruptPrompt: "^C",
 				})
+				if readlineErr != nil {
+					//Should never happen
+					inputReadline = nil
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"input function failed: %v",
+							readlineErr.Error(),
+						),
+					)
+				}
 			} else {
 				inputReadline.SetPrompt(getResult(prompt, prompt, true))
 			}
