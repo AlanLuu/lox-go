@@ -96,6 +96,11 @@ func runLoxCode(interpreter *ast.Interpreter) error {
 			sc := scanner.NewScanner(string(program))
 			scanErr := sc.ScanTokens()
 			if scanErr != nil {
+				fmt.Fprintf(
+					os.Stderr,
+					"Scanner error in Lox file '%v'.\n",
+					path,
+				)
 				return scanErr
 			}
 
@@ -103,17 +108,32 @@ func runLoxCode(interpreter *ast.Interpreter) error {
 			exprList, parseErr := parser.Parse()
 			defer exprList.Clear()
 			if parseErr != nil {
+				fmt.Fprintf(
+					os.Stderr,
+					"Parser error in Lox file '%v'.\n",
+					path,
+				)
 				return parseErr
 			}
 
 			resolver := ast.NewResolver(interpreter)
 			resolverErr := resolver.Resolve(exprList)
 			if resolverErr != nil {
+				fmt.Fprintf(
+					os.Stderr,
+					"Resolver error in Lox file '%v'.\n",
+					path,
+				)
 				return resolverErr
 			}
 
 			valueErr := interpreter.Interpret(exprList, true)
 			if valueErr != nil {
+				fmt.Fprintf(
+					os.Stderr,
+					"Interpreter error in Lox file '%v'.\n",
+					path,
+				)
 				return valueErr
 			}
 		}
