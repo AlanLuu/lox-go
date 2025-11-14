@@ -55,8 +55,7 @@ func printVersion() {
 
 func usageFunc(writer io.Writer) func() {
 	return func() {
-		usage :=
-			`Usage: lox [OPTIONS] [FILE]
+		const usage = `Usage: lox [OPTIONS] [FILE]
 
 OPTIONS:
 	-c <code>
