@@ -1689,6 +1689,59 @@ func (i *Interpreter) defineOSFuncs() {
 		fdList[0], fdList[1] = int64(fd[0]), int64(fd[1])
 		return NewLoxList(fdList), nil
 	})
+	osFunc("process", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen == 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Expected at least 1 argument but got 0.")
+		}
+		var strArgs []string
+		for i, arg := range args {
+			switch arg := arg.(type) {
+			case *LoxString:
+				if i == 0 {
+					strArgs = make([]string, 0, argsLen)
+				}
+				strArgs = append(strArgs, arg.str)
+			default:
+				strArgs = nil
+				return nil, loxerror.RuntimeError(
+					in.callToken,
+					fmt.Sprintf(
+						"Argument #%v in 'os.process' must be a string.",
+						i+1,
+					),
+				)
+			}
+		}
+		firstStr := strArgs[0]
+		if firstStr == "" {
+			return int64(0), nil
+		}
+		fullPath, pathErr := exec.LookPath(firstStr)
+		if pathErr != nil {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf(
+					"os.process: %v: command not found",
+					firstStr,
+				),
+			)
+		}
+		strArgs[0] = fullPath
+		cmd := exec.Command(strArgs[0], strArgs[1:]...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				return int64(exitErr.ExitCode()), nil
+			} else {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+		}
+		return int64(0), nil
+	})
 	osFunc("read", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
