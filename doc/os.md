@@ -192,6 +192,9 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.pipefd()`, which creates a pipe and returns a list containing two integers that are file descriptors to that pipe, where `list[0]` refers to the read end and `list[1]` refers to the write end
 - `os.process(command, [args...])`, which runs the specified command string with the specified optional argument strings as a separate process and returns the exit code of the command as an integer
     - The `PATH` environment variable is used when searching for the command to execute
+- `os.processList(command, [args])`, which runs the specified command string with the specified optional list of argument strings as a separate process and returns the exit code of the command as an integer
+    - The optional list argument can be empty, which is the same as omitting the list argument itself
+    - The `PATH` environment variable is used when searching for the command to execute
 - `os.read(fd, numBytes)`, which reads at most `numBytes` bytes from the specified integer file descriptor into a buffer and returns that buffer
 - `os.readFile(name)`, which reads in the contents of the file with the specified file name string and returns a string with the file contents
 - `os.readFileBin(name)`, which reads in the contents of the file with the specified file name string and returns a buffer with the file contents

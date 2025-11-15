@@ -1742,6 +1742,66 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return int64(0), nil
 	})
+	osFunc("processList", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		if argsLen != 1 && argsLen != 2 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
+		}
+		if _, ok := args[0].(*LoxString); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'os.processList' must be a string.")
+		}
+		var strArgs []string
+		if argsLen == 2 {
+			if _, ok := args[1].(*LoxList); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'os.processList' must be a list.")
+			}
+			cmdArgsList := args[1].(*LoxList).elements
+			for i, arg := range cmdArgsList {
+				switch arg := arg.(type) {
+				case *LoxString:
+					if i == 0 {
+						strArgs = make([]string, 0, argsLen)
+					}
+					strArgs = append(strArgs, arg.str)
+				default:
+					strArgs = nil
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"List element at index %v in 'os.processList' must be a string.",
+							i,
+						),
+					)
+				}
+			}
+		}
+		cmdStr := args[0].(*LoxString).str
+		fullPath, pathErr := exec.LookPath(cmdStr)
+		if pathErr != nil {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf(
+					"os.processList: %v: command not found",
+					cmdStr,
+				),
+			)
+		}
+		cmd := exec.Command(fullPath, strArgs...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				return int64(exitErr.ExitCode()), nil
+			} else {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+		}
+		return int64(0), nil
+	})
 	osFunc("read", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
