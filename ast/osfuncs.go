@@ -2,6 +2,7 @@ package ast
 
 import (
 	crand "crypto/rand"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -1932,6 +1934,80 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return nil, nil
+	})
+	osFunc("rmrf", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			remove := func(path string) {
+				if err := os.Remove(path); err != nil {
+					fmt.Fprintln(os.Stderr, err.Error())
+				}
+			}
+			isWindows := util.IsWindows()
+			var dotRegex *regexp.Regexp
+			if isWindows {
+				dotRegex = regexp.MustCompile(`^[.][\/\\]*$`)
+			} else {
+				dotRegex = regexp.MustCompile(`^[.][\/]*$`)
+			}
+			dirs := list.NewList[string]()
+			deletedEmptyDir := false
+			dirFunc := func(path string, d fs.DirEntry, err error) error {
+				if isWindows {
+					path = strings.ReplaceAll(path, "/", "\\")
+				}
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err.Error())
+				}
+				if !dirs.IsEmpty() {
+					if last := dirs.Peek(); !strings.HasPrefix(path, last) {
+						remove(last)
+						dirs.Pop()
+					}
+				}
+				if d == nil || dotRegex.MatchString(path) {
+					return nil
+				}
+				if d.IsDir() {
+					if err := os.Remove(path); err != nil {
+						var errCode syscall.Errno
+						if isWindows {
+							//Windows error code 145 is ERROR_DIR_NOT_EMPTY
+							errCode = 145
+						} else {
+							errCode = syscall.ENOTEMPTY
+						}
+						var pathErr *os.PathError
+						if errors.As(err, &pathErr) && pathErr.Err == errCode {
+							dirs.Add(path)
+						} else {
+							fmt.Fprintln(os.Stderr, err.Error())
+						}
+					} else {
+						deletedEmptyDir = true
+					}
+				} else {
+					remove(path)
+				}
+				if deletedEmptyDir {
+					deletedEmptyDir = false
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if err := filepath.WalkDir(loxStr.str, dirFunc); err != nil {
+				fmt.Fprintf(
+					os.Stderr,
+					"os.rmrf: %v\n",
+					err.Error(),
+				)
+			}
+			for i := len(dirs) - 1; i >= 0; i-- {
+				remove(dirs[i])
+			}
+			dirs.Clear()
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "rmrf", "string")
 	})
 	osClass.classProperties["SEEK_SET"] = int64(0)
 	osClass.classProperties["SEEK_CUR"] = int64(1)

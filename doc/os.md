@@ -205,6 +205,8 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.removeAll(path)`, which removes the file or directory at the specified path string
     - If the directory is not empty, all files and directories inside it are removed recursively
 - `os.rename(oldPath, newPath)`, which renames the file at `oldPath` to the name specified by `newPath`, which are both strings. If a file at `newPath` already exists and is not a directory, it is replaced with the file at `oldPath`
+- `os.rmrf(path)`, which removes the file or directory at the specified path string and simply prints any error encountered when doing so instead of throwing it
+    - If the directory is not empty, all files and directories inside it are removed recursively
 - `os.SEEK_SET`, `os.SEEK_CUR`, and `os.SEEK_END`, which are all integer values representing the seek mode for the `file.seek` method
 - `os.setegid(egid)`, which sets the effective group ID of the current process to the specified effective group ID, which is an integer
     - This method does not work on Windows and throws an error if called on there
