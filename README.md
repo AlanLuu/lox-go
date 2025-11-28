@@ -266,6 +266,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
 - Various methods to work with CSV files are defined under a built-in class called `csv`, which is documented [here](./doc/csv.md)
 - Various methods to work with dotenv functionality are defined under a built-in class called `dotenv`, which is documented [here](./doc/dotenv.md)
+- Various methods and fields to work with file paths are defined under a built-in class called `filepath`, which is documented [here](./doc/filepath.md)
 - Various methods and fields to work with gzip files are defined under a built-in class called `gzip`, which is documented [here](./doc/gzip.md)
 - Various methods and fields to work with logging are defined under a built-in class called `log`, which is documented [here](./doc/log.md)
 - Various methods and fields to work with network requests are defined under a built-in class called `net`, which is documented [here](./doc/net.md)

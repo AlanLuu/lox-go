@@ -53,6 +53,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineDateFuncs()       //Defined in datefuncs.go
 	interpreter.defineDotenvFuncs()     //Defined in dotenvfuncs.go
 	interpreter.defineDurationFuncs()   //Defined in durationfuncs.go
+	interpreter.defineFilepathFuncs()   //Defined in filepathfuncs.go
 	interpreter.defineFloatFuncs()      //Defined in floatfuncs.go
 	interpreter.defineFmtFuncs()        //Defined in fmtfuncs.go
 	interpreter.defineGzipFuncs()       //Defined in gzipfuncs.go

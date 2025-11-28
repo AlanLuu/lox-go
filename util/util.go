@@ -107,6 +107,13 @@ func IsLinuxOrAndroid() bool {
 	return IsLinux() || IsAndroid()
 }
 
+func IsPathSep(r rune) bool {
+	if IsWindows() {
+		return r == '\\' || r == '/'
+	}
+	return r == os.PathSeparator
+}
+
 func IsWindows() bool {
 	return runtime.GOOS == "windows"
 }
