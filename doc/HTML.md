@@ -46,3 +46,52 @@ HTML token objects have the following fields associated with them:
 HTML attribute objects have the following fields associated with them:
 - `HTML attribute.key`, which is the key associated with the current attribute as a string
 - `HTML attribute.value`, which is the value associated with the current attribute as a string
+
+HTML node objects have the following methods and fields associated with them:
+- `HTML node.ancestors()`
+- `HTML node.ancestorsIter()`
+- `HTML node.attributes`
+- `HTML node.children()`
+- `HTML node.childrenIter()`
+- `HTML node.commentNodesByContent(contentStr)`
+- `HTML node.commentNodesByContentIter(contentStr)`
+- `HTML node.data`
+- `HTML node.descendents()`
+- `HTML node.descendentsIter()`
+- `HTML node.dfsIter()`, which is an alias for `HTML node.descendentsIter`
+- `HTML node.firstChild`
+- `HTML node.fc`, which is an alias for `HTML node.firstChild`
+- `HTML node.isRootNode`
+- `HTML node.lastChild`
+- `HTML node.lc`, which is an alias for `HTML node.lastChild`
+- `HTML node.nextSibling`
+- `HTML node.ns`, which is an alias for `HTML node.nextSibling`
+- `HTML node.nodesByType(typeInt)`
+- `HTML node.nodesByTypeIter(typeInt)`
+- `HTML node.nodesByTypeStr(typeStr)`
+- `HTML node.nodesByTypeStrIter(typeStr)`
+- `HTML node.parent`
+- `HTML node.p`, which is an alias for `HTML node.parent`
+- `HTML node.prevSibling`
+- `HTML node.ps`, which is an alias for `HTML node.prevSibling`
+- `HTML node.render()`
+- `HTML node.renderToBuf()`
+- `HTML node.renderToFile(file)`
+- `HTML node.tag`
+- `HTML node.tagNodesByAttrKey(keyStr)`
+- `HTML node.tagNodesByAttrKeyIter(keyStr)`
+- `HTML node.tagNodesByAttrKeysAll(attrKeyStrs...)`
+- `HTML node.tagNodesByAttrKeysAny(attrKeyStrs...)`
+- `HTML node.tagNodesByAttrKeysNotAll(attrKeyStrs...)`
+- `HTML node.tagNodesByAttrKeysNotAny(attrKeyStrs...)`
+- `HTML node.tagNodesByAttrKeyVal(keyStr, valueStr)`
+- `HTML node.tagNodesByAttrKeyValIter(keyStr, valueStr)`
+- `HTML node.tagNodesByName(nameStr)`
+- `HTML node.tagNodesByNameIter(nameStr)`
+- `HTML node.tagNodesNoAttrs()`
+- `HTML node.textNodes()`
+- `HTML node.textNodesByContent(contentStr)`
+- `HTML node.textNodesByContentIter(contentStr)`
+- `HTML node.textNodesIter()`
+- `HTML node.type`
+- `HTML node.typeStr`
