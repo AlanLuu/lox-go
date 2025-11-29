@@ -1193,6 +1193,18 @@ func (l *LoxFile) Get(name *token.Token) (any, error) {
 			l.stat = stat
 		}
 		return l.stat.Size(), nil
+	case "stat":
+		return fileFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			stat, statErr := l.file.Stat()
+			if statErr != nil {
+				if l.stat == nil {
+					return nil, loxerror.RuntimeError(name, statErr.Error())
+				}
+			} else {
+				l.stat = stat
+			}
+			return NewLoxFileInfoPathFileInfo(l.name, l.stat), nil
+		})
 	case "truncate":
 		return fileFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if size, ok := args[0].(int64); ok {

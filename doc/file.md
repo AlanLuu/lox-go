@@ -64,6 +64,7 @@ The following methods and fields are defined on file instances:
 - `file.sha512()`, which returns a string that is the hexadecimal representation of the file's sha512 hash
 - `file.sha512buf()`, which returns a buffer of the file's sha512 hash
 - `file.size`, which is the size of the file in bytes as an integer
+- `file.stat()`, which returns a file info object that describes the current file
 - `file.truncate(size)`, which changes the size of the file to `size` bytes specified as an integer
     - If the file is open in read mode (excluding read-write mode), this method throws a runtime error
     - If `size` is less than the file size in bytes, the extra data is lost
