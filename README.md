@@ -278,6 +278,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods for RB trees are defined under a built-in-class called `rbtree`, which is documented [here](./doc/rbtree.md)
 - Various methods to work with data from standard input are defined under a class called `stdin`, which is documented [here](./doc/stdin.md)
 - Various methods and fields to work with tar files are defined under a built-in class called `tar`, which is documented [here](./doc/tar.md)
+- If unsafe mode is enabled, various methods to work with unsafe functionality are defined under a built-in class called `unsafe`, which is documented [here](./doc/unsafe.md)
 - Various methods and fields to work with UUID objects are defined under a class called `UUID`, which is documented [here](./doc/UUID.md)
 - Various methods to work with opening web browsers are defined under a built-in class called `webbrowser`, which is documented [here](./doc/webbrowser.md)
 - Various methods and fields to work with Windows-specific functionality are defined under a built-in class called `windows`, which is documented [here](./doc/windows.md)
