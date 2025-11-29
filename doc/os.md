@@ -167,6 +167,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.link(target, linkName)`, which creates a hard link to `target` with the name `linkName`, which are both strings
 - `os.listdir([path])`, which returns a list of names of all directories and files in the specified path as strings. If `path` is omitted, the current working directory is used as the path
+- `os.lstat(path)`, which returns a file info object that describes the file specified by the path string, which is documented [here](./fileinfo.md)
+    - If `path` refers to a symbolic link, the returned file info object describes the symbolic link itself
 - `os.mkdir(name)`, which creates a new directory with the specified name in the current working directory
 - `os.mkdirp(path)`, which creates a new directory with the specified path name along with any necessary parent directories
 - `os.mkfifo(name)`, which creates a FIFO (named pipe) with the specified name in the current working directory
@@ -177,7 +179,7 @@ The following methods and fields are defined in the built-in `os` class:
     - Any temporary files created using this method must be manually deleted, which can be done with the following method call: `os.remove(tempFile.name)`, where `tempFile` is the variable that refers to the temporary file's file object
 - `os.name`, which is a string that specifies the operating system that the program is running on
 - `os.numCPU()`, which returns the number of logical CPUs on the current machine as an integer
-- `os.open(name, mode)`, which opens a file specified by a path name with the mode specified by the mode string. This method returns a file object if successful, which itself is documented [here](./doc/file.md)
+- `os.open(name, mode)`, which opens a file specified by a path name with the mode specified by the mode string. This method returns a file object if successful, which itself is documented [here](./file.md)
     - The following file modes are available:
         - `"r"`, which opens a file for reading and throws a runtime error if the file doesn't exist
         - `"w"`, which opens a file for writing, creating the file if it doesn't exist and truncating the file if it already exists
@@ -233,6 +235,8 @@ The following methods and fields are defined in the built-in `os` class:
     - This method does not work on Windows and throws an error if called on there
 - `os.setuid(uid)`, which sets the user ID of the current process to the specified user ID, which is an integer
     - This method does not work on Windows and throws an error if called on there
+- `os.stat(path)`, which returns a file info object that describes the file specified by the path string, which is documented [here](./fileinfo.md)
+    - If `path` refers to a symbolic link, this method follows that symbolic link to the actual file
 - `os.stderr`, which is a file object that allows for writing text to the standard error stream
 - `os.stdin`, which is a file object that allows for reading text from the standard input stream
 - `os.stdout`, which is a file object that allows for writing text to the standard output stream

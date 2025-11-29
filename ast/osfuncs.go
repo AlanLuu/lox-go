@@ -1525,6 +1525,17 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		return NewLoxList(dirList), nil
 	})
+	osFunc("lstat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			str := loxStr.str
+			stat, statErr := os.Lstat(str)
+			if statErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+			}
+			return NewLoxFileInfoPathFileInfo(str, stat), nil
+		}
+		return argMustBeTypeAn(in.callToken, "lstat", "string")
+	})
 	osFunc("mkdir", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			err := os.Mkdir(loxStr.str, 0777)
@@ -2174,6 +2185,17 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, nil
 		}
 		return argMustBeTypeAn(in.callToken, "setuid", "integer")
+	})
+	osFunc("stat", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			str := loxStr.str
+			stat, statErr := os.Stat(str)
+			if statErr != nil {
+				return nil, loxerror.RuntimeError(in.callToken, statErr.Error())
+			}
+			return NewLoxFileInfoPathFileInfo(str, stat), nil
+		}
+		return argMustBeTypeAn(in.callToken, "stat", "string")
 	})
 	osClass.classProperties["stderr"] = stdStream(os.Stderr, filemode.WRITE, false)
 	osClass.classProperties["stdin"] = stdStream(os.Stdin, filemode.READ, false)
