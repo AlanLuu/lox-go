@@ -5,6 +5,7 @@ import "math/big"
 var (
 	Zero       = big.NewInt(0)
 	One        = big.NewInt(1)
+	Two        = big.NewInt(2)
 	TwoFiveSix = big.NewInt(256)
 )
 

@@ -35,6 +35,7 @@ The following methods are defined in the built-in `crypto` class:
 - `crypto.fernet([key])`, which returns a new fernet object from the specified key argument, which must be a buffer of length 32 or a string in base64 or hexadecimal format. If `key` is omitted, a random key is generated and used as the key in the returned fernet object
     - This method throws a runtime error if the specified key is a buffer and its length is not 32
     - This method throws a runtime error if the specified key is a string and is in an invalid format
+- `crypto.flip()`, which simulates flipping a fair coin using a cryptographically secure random number generator and returns `true` if the coin landed on heads and `false` if the coin landed on tails
 - `crypto.hmac(function, key)`, which takes in a function that returns a hash object and a buffer or string as the key and returns a hash object that computes the HMAC of data that is passed into it
     - Example: `crypto.hmac(crypto.sha256, os.urandom(32))` returns an HMAC-SHA256 hash object with a random 32-byte key as the HMAC key
     - The specified function argument must return a hash object or else a runtime error is thrown

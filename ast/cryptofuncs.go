@@ -13,6 +13,7 @@ import (
 	"hash"
 	"math/big"
 
+	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
@@ -338,6 +339,13 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		return fernet, nil
+	})
+	cryptoFunc("flip", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+		randInt, err := crand.Int(crand.Reader, bigint.Two)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return randInt.Int64() == 0, nil
 	})
 	cryptoFunc("hmac", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		argZeroErrMsg := "First argument to 'crypto.hmac' must be a function."
