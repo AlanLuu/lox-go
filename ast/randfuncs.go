@@ -160,6 +160,21 @@ func (i *Interpreter) defineRandFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
 		}
 	})
+	randInstanceFunc("flip", 0, func(in *Interpreter, args list.List[any]) (any, error) {
+		instance := args[0].(*LoxInstance)
+		switch randStruct := instance.fields[randStr].(type) {
+		case LoxRand:
+			var randInt int
+			if randStruct.rand != nil {
+				randInt = randStruct.rand.Intn(2)
+			} else {
+				randInt = rand.Intn(2)
+			}
+			return randInt == 0, nil
+		default:
+			return nil, loxerror.RuntimeError(in.callToken, randFieldTypeErrMsg)
+		}
+	})
 	randInstanceFunc("perm", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		instance := args[0].(*LoxInstance)
 		switch randStruct := instance.fields[randStr].(type) {
