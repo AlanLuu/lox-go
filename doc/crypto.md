@@ -46,6 +46,7 @@ The following methods are defined in the built-in `crypto` class:
 - `crypto.prime(numBits)`, which returns a bigint that has a very high chance to be a random prime number of the specified number of bits, which is an integer
     - This method throws a runtime error if `numBits < 2`
 - `crypto.randomUUID()`, which returns a randomly generated v4 UUID as a string
+- `crypto.randUUID()`, which is an alias for `crypto.randomUUID`
 - `crypto.rsa(bitSize)`, which returns an RSA kaypair object with a random private key of the specified bit size integer and the public key corresponding to that private key
 - `crypto.rsapriv(privKey)`, which takes in an RSA private key as a buffer or base64 string and returns an RSA keypair object with the specified private key and the public key corresponding to that private key
     - The private key can be in PKCS1 or PKCS8 form

@@ -466,13 +466,15 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "prime", "integer")
 	})
-	cryptoFunc("randomUUID", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
-		randUUID, err := uuid.NewRandom()
-		if err != nil {
-			return nil, loxerror.RuntimeError(in.callToken, err.Error())
-		}
-		return NewLoxString(randUUID.String(), '\''), nil
-	})
+	for _, s := range []string{"randomUUID", "randUUID"} {
+		cryptoFunc(s, 0, func(in *Interpreter, _ list.List[any]) (any, error) {
+			randUUID, err := uuid.NewRandom()
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return NewLoxString(randUUID.String(), '\''), nil
+		})
+	}
 	cryptoFunc("rsa", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if bitSize, ok := args[0].(int64); ok {
 			keyPair, err := NewLoxRSA(int(bitSize))
