@@ -466,6 +466,31 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "prime", "integer")
 	})
+	cryptoFunc("randBigInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		const errMsg = "argument to 'crypto.randBigInt' cannot be 0 or less."
+		var max *big.Int
+		switch arg := args[0].(type) {
+		case int64:
+			if arg <= 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Integer "+errMsg)
+			}
+			max = big.NewInt(arg)
+		case *big.Int:
+			if arg.Cmp(bigint.Zero) <= 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Bigint "+errMsg)
+			}
+			max = new(big.Int).Set(arg)
+		default:
+			return argMustBeTypeAn(in.callToken, "randBigInt", "integer or bigint")
+		}
+		result, err := crand.Int(crand.Reader, max)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return result, nil
+	})
 	for _, s := range []string{"randomUUID", "randUUID"} {
 		cryptoFunc(s, 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 			randUUID, err := uuid.NewRandom()
