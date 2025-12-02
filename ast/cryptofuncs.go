@@ -467,7 +467,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 		return argMustBeTypeAn(in.callToken, "prime", "integer")
 	})
 	cryptoFunc("randBigInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
-		const errMsg = "argument to 'crypto.randBigInt' cannot be 0 or less."
+		const errMsg = "argument to 'crypto.randBigInt' cannot be 0 or negative."
 		var max *big.Int
 		switch arg := args[0].(type) {
 		case int64:
@@ -503,7 +503,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'crypto.randBigInts' must be an integer.")
 		}
-		const errMsg = "argument to 'crypto.randBigInts' cannot be 0 or less."
+		const errMsg = "argument to 'crypto.randBigInts' cannot be 0 or negative."
 		var max *big.Int
 		switch arg := args[0].(type) {
 		case int64:
@@ -534,6 +534,20 @@ func (i *Interpreter) defineCryptoFuncs() {
 			nums.Add(result)
 		}
 		return NewLoxList(nums), nil
+	})
+	cryptoFunc("randInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if max, ok := args[0].(int64); ok {
+			if max <= 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'crypto.randInt' cannot be 0 or negative.")
+			}
+			result, err := crand.Int(crand.Reader, big.NewInt(max))
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return result.Int64(), nil
+		}
+		return argMustBeTypeAn(in.callToken, "randInt", "integer")
 	})
 	for _, s := range []string{"randomUUID", "randUUID"} {
 		cryptoFunc(s, 0, func(in *Interpreter, _ list.List[any]) (any, error) {
