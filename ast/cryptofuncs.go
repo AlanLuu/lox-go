@@ -491,6 +491,50 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return result, nil
 	})
+	cryptoFunc("randBigInts", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch args[0].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.randBigInts' must be an integer or bigint.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigInts' must be an integer.")
+		}
+		const errMsg = "argument to 'crypto.randBigInts' cannot be 0 or less."
+		var max *big.Int
+		switch arg := args[0].(type) {
+		case int64:
+			if arg <= 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First integer "+errMsg)
+			}
+			max = big.NewInt(arg)
+		case *big.Int:
+			if arg.Cmp(bigint.Zero) <= 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First bigint "+errMsg)
+			}
+			max = new(big.Int).Set(arg)
+		}
+		times := args[1].(int64)
+		if times < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigInts' cannot be negative.")
+		}
+		nums := list.NewListCap[any](times)
+		for i := int64(0); i < times; i++ {
+			result, err := crand.Int(crand.Reader, max)
+			if err != nil {
+				nums.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			nums.Add(result)
+		}
+		return NewLoxList(nums), nil
+	})
 	for _, s := range []string{"randomUUID", "randUUID"} {
 		cryptoFunc(s, 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 			randUUID, err := uuid.NewRandom()

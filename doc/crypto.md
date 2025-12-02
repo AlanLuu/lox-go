@@ -47,6 +47,8 @@ The following methods are defined in the built-in `crypto` class:
     - This method throws a runtime error if `numBits < 2`
 - `crypto.randBigInt(max)`, which returns a random bigint in the range `[0, max)` using a cryptographically secure random number generator, where `max` is an integer or bigint
     - If `max <= 0`, a runtime error is thrown
+- `crypto.randBigInts(max, k)`, which returns a list of `k` random bigints in the range `[0, max)` using a cryptographically secure random number generator, where `max` is an integer or bigint and `k` is an integer
+    - If `max <= 0` or `k < 0`, a runtime error is thrown
 - `crypto.randomUUID()`, which returns a randomly generated v4 UUID as a string
 - `crypto.randUUID()`, which is an alias for `crypto.randomUUID`
 - `crypto.rsa(bitSize)`, which returns an RSA kaypair object with a random private key of the specified bit size integer and the public key corresponding to that private key
