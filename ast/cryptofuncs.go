@@ -882,6 +882,39 @@ func (i *Interpreter) defineCryptoFuncs() {
 		hexDigest := fmt.Sprintf("%x", hashObj.Sum(nil))
 		return NewLoxString(hexDigest, '\''), nil
 	})
+	cryptoFunc("text", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var srcLen int64 = 26
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+		case 1:
+			if arg, ok := args[0].(int64); ok {
+				if arg < 0 {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Argument to 'crypto.text' cannot be negative.")
+				}
+				if arg == 0 {
+					return EmptyLoxString(), nil
+				}
+				srcLen = arg
+			} else {
+				return argMustBeTypeAn(in.callToken, "text", "integer")
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+		}
+		src := make([]byte, srcLen)
+		_, err := crand.Read(src)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		const base32alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+		for i := range src {
+			src[i] = base32alphabet[src[i]%32]
+		}
+		return NewLoxString(string(src), '\''), nil
+	})
 
 	i.globals.Define(className, cryptoClass)
 }

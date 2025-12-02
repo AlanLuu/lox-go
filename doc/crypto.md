@@ -73,6 +73,8 @@ The following methods are defined in the built-in `crypto` class:
 - `crypto.sha384sum(data)`, which returns a string that is the hexadecimal representation of the SHA-384 hash of the specified data, which is either a buffer or string
 - `crypto.sha512([data])`, which returns a hash object that computes the SHA-512 hash of data that is passed into it. If the `data` parameter is specified, which must be a buffer or string, the hash object is initialized with the specified data passed into it
 - `crypto.sha512sum(data)`, which returns a string that is the hexadecimal representation of the SHA-512 hash of the specified data, which is either a buffer or string
+- `crypto.text([length])`, which returns a randomly generated string with a length of `26` or the integer length argument if specified, using a cryptographically secure random number generator with characters from the standard base32 alphabet
+    - If the length argument is specified and is negative, a runtime error is thrown
 
 AES-CBC objects have the following methods associated with them:
 - `aes-cbc.b64()`, which is an alias for `aes-cbc.base64`
