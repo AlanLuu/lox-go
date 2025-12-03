@@ -2437,8 +2437,26 @@ func (i *Interpreter) defineOSFuncs() {
 			}
 			return buffer, nil
 		}
-		return nil, loxerror.RuntimeError(in.callToken,
-			"Argument to 'os.urandom' must be an integer.")
+		return argMustBeTypeAn(in.callToken, "urandom", "integer")
+	})
+	osFunc("urandomList", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if numBytes, ok := args[0].(int64); ok {
+			if numBytes < 0 {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Argument to 'os.urandomList' cannot be negative.")
+			}
+			resultsList := list.NewListCap[any](numBytes)
+			for i := int64(0); i < numBytes; i++ {
+				numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
+				if numErr != nil {
+					resultsList.Clear()
+					return nil, loxerror.RuntimeError(in.callToken, numErr.Error())
+				}
+				resultsList.Add(numBig.Int64())
+			}
+			return NewLoxList(resultsList), nil
+		}
+		return argMustBeTypeAn(in.callToken, "urandomList", "integer")
 	})
 	osFunc("userCacheDir", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		cacheDir, err := os.UserCacheDir()

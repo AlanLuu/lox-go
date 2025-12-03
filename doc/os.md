@@ -284,6 +284,8 @@ The following methods and fields are defined in the built-in `os` class:
 - `os.unsetenv(key)`, which unsets the environment variable `key`, which is a string
 - `os.urandom(size)`, which returns a buffer of `size` random bytes that are cryptographically secure, where `size` is an integer
     - If `size` is negative, a runtime error is thrown
+- `os.urandomList(size)`, which returns a list of `size` random bytes that are cryptographically secure, where `size` is an integer
+    - If `size` is negative, a runtime error is thrown
 - `os.userCacheDir()`, which returns the path of the directory to be used for storing user-specific cached data as a string
 - `os.userConfigDir()`, which returns the path of the directory to be used for storing user-specific configuration data as a string
 - `os.userHomeDir()`, which returns the path of the user's home directory as a string
