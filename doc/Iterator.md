@@ -64,3 +64,14 @@ The following methods and fields are defined in the built-in `Iterator` class:
 - `Iterator.zip(iterables)`, which takes a variable amount of iterables as arguments and returns an iterator that produces lists containing each element from each iterable and stops when the shortest iterable is out of elements
     - If 1 iterable is passed, the resulting iterator produces lists of 1 element
     - If no arguments are passed, this method returns an empty iterator
+
+Iterator objects have the following methods associated with them:
+- `iterator.hasNext()`, which returns `true` if there are more elements to be iterated over and `false` otherwise
+- `iterator.isEmptyType()`, which returns `true` if the iterator is an empty iterator type that is always empty by default, which is typically returned in certain circumstances by native functions that return iterators, and `false` otherwise
+- `iterator.next()`, which returns the next element in the iterator
+    - If the iterator has no more elements, calling this method will throw a runtime error with the error message `"StopIteration"`
+- `iterator.tag()`, which returns the iterator object's tag string or an empty string if untagged
+- `iterator.tagIs(tagStr)`, which returns `true` if the iterator object has the specified tag string and `false` otherwise
+- `iterator.take(length)`, which returns a list of elements with the specified integer length from the iterator
+    - If an error is encountered when obtaining an iterator element, this method simply prints details of the error to standard error and skips adding that element to the final list without throwing that error
+- `iterator.toList([length])`, which returns a list of elements with the specified integer length from the iterator. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over

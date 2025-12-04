@@ -690,13 +690,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Valid arguments to `int` are the following types: nil, bool, integer, float, bigint, bigfloat, string
     - `isinstance(element, class)`, which returns `true` if the specified element is an instance of the specified class and `false` otherwise
     - `iterator(iterable)`, which returns an iterator object from the specified iterable type and throws a runtime error if the argument is not an iterable type
-        - Iterator objects have the following methods associated with them:
-            - `iterator.hasNext()`, which returns `true` if there are more elements to be iterated over and `false` otherwise
-            - `iterator.isEmptyType()`, which returns `true` if the iterator is an empty iterator type that is always empty by default, which is typically returned in certain circumstances by native functions that return iterators, and `false` otherwise
-            - `iterator.next()`, which returns the next element in the iterator
-                - If the iterator has no more elements, calling this method will throw a runtime error with the error message `"StopIteration"`
-            - `iterator.toList([length])`, which returns a list of elements from the iterator with the specified length as an integer. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over
         - Various utility iterator methods and fields are defined under a built-in class called `Iterator`, which is documented [here](./doc/Iterator.md)
+        - Iterator objects are documented [here](./doc/Iterator.md)
     - `len(element)`, which returns the length of the specified element, which can be any of the following:
         - Bigranges: the length is the number of bigints in the bigrange object based on its start, stop, and step values
         - Bitfields: the length is the number `8`

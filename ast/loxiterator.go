@@ -219,6 +219,51 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "take":
+		return iteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if length, ok := args[0].(int64); ok {
+				if length < 0 {
+					return nil, loxerror.RuntimeError(name,
+						"Argument to 'iterator.take' cannot be negative.")
+				}
+				newList := list.NewListCap[any](length)
+				if iterWithErr := l.assertIterErr(); iterWithErr != nil {
+					for i := int64(0); i < length; i++ {
+						ok, hasNextErr := iterWithErr.HasNextErr()
+						if hasNextErr != nil {
+							fmt.Fprintf(
+								os.Stderr,
+								"iterator.take error: %v\n",
+								formatErr(hasNextErr),
+							)
+							continue
+						}
+						if !ok {
+							break
+						}
+						result, nextErr := iterWithErr.NextErr()
+						if nextErr != nil {
+							fmt.Fprintf(
+								os.Stderr,
+								"iterator.take error: %v\n",
+								formatErr(nextErr),
+							)
+							continue
+						}
+						newList.Add(result)
+					}
+				} else {
+					for i := int64(0); i < length; i++ {
+						if !l.HasNext() {
+							break
+						}
+						newList.Add(l.Next())
+					}
+				}
+				return NewLoxList(newList), nil
+			}
+			return argMustBeTypeAn("integer")
+		})
 	case "toList":
 		return iteratorFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			argsLen := len(args)
@@ -238,7 +283,7 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 						result, nextErr := iterWithErr.NextErr()
 						if nextErr != nil {
 							return nil, loxerror.RuntimeError(name,
-								"iterator.hasNext error: "+formatErr(nextErr))
+								"iterator.toList error: "+formatErr(nextErr))
 						}
 						newList.Add(result)
 					}
@@ -268,7 +313,7 @@ func (l *LoxIterator) Get(name *token.Token) (any, error) {
 							result, nextErr := iterWithErr.NextErr()
 							if nextErr != nil {
 								return nil, loxerror.RuntimeError(name,
-									"iterator.hasNext error: "+formatErr(nextErr))
+									"iterator.toList error: "+formatErr(nextErr))
 							}
 							newList.Add(result)
 						}
