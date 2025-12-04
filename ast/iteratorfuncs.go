@@ -14,13 +14,13 @@ import (
 )
 
 func defineIteratorFields(iteratorClass *LoxClass) {
-	urandom := InfiniteIterator{}
-	urandom.nextMethod = func() any {
+	urandom := InfiniteIteratorErr{legacyPanicOnErr: true}
+	urandom.nextMethod = func() (any, error) {
 		numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
 		if numErr != nil {
-			panic(numErr)
+			return nil, numErr
 		}
-		return numBig.Int64()
+		return numBig.Int64(), nil
 	}
 	iteratorClass.classProperties["urandom"] = NewLoxIterator(urandom)
 

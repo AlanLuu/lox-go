@@ -72,6 +72,34 @@ func (l InfiniteIterator) Next() any {
 	return l.nextMethod()
 }
 
+type InfiniteIteratorErr struct {
+	nextMethod       func() (any, error)
+	legacyPanicOnErr bool
+}
+
+func (l InfiniteIteratorErr) HasNext() bool {
+	return true
+}
+
+func (l InfiniteIteratorErr) HasNextErr() (bool, error) {
+	return true, nil
+}
+
+func (l InfiniteIteratorErr) Next() any {
+	result, err := l.nextMethod()
+	if err != nil {
+		if l.legacyPanicOnErr {
+			panic(err)
+		}
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+	return result
+}
+
+func (l InfiniteIteratorErr) NextErr() (any, error) {
+	return l.nextMethod()
+}
+
 type EmptyIterator struct{}
 
 func (l EmptyIterator) HasNext() bool {
