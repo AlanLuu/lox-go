@@ -942,13 +942,13 @@ func (i *Interpreter) defineNativeFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'repeatFunc' must be an integer.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'repeatFunc' must be a function.")
 		}
 		times := args[0].(int64)
 		if times > 0 {
-			callback := args[1].(*LoxFunction)
+			callback := args[1].(LoxCallable)
 			argList := getArgList(callback, 0)
 			defer argList.Clear()
 			for i := int64(0); i < times; i++ {
@@ -1075,7 +1075,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'threadFunc' must be an integer.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'threadFunc' must be a function.")
 		}
@@ -1091,7 +1091,7 @@ func (i *Interpreter) defineNativeFuncs() {
 			}
 			errorChan := make(chan errStruct, times)
 			callbackChan := make(chan struct{}, times)
-			callback := args[1].(*LoxFunction)
+			callback := args[1].(LoxCallable)
 			for i := int64(0); i < times; i++ {
 				go func(num int64) {
 					argList := getArgList(callback, 1)
@@ -1135,10 +1135,10 @@ func (i *Interpreter) defineNativeFuncs() {
 				"Expected at least 2 arguments but got 1.")
 		}
 		numCallbacks := int64(argsLen) - 1
-		callbacks := list.NewListCap[*LoxFunction](numCallbacks)
+		callbacks := list.NewListCap[LoxCallable](numCallbacks)
 		for i := 1; i < argsLen; i++ {
 			switch arg := args[i].(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				callbacks.Add(arg)
 			default:
 				callbacks.Clear()

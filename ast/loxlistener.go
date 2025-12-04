@@ -71,7 +71,7 @@ func (l *LoxListener) Get(name *token.Token) (any, error) {
 		})
 	case "acceptFunc":
 		return listenerFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				if !util.UnsafeMode {
 					return nil, loxerror.RuntimeError(name,
 						"Cannot call 'listener.acceptFunc' in non-unsafe mode.")

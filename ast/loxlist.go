@@ -212,7 +212,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 	switch methodName {
 	case "all":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -235,7 +235,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "any":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -299,7 +299,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "countFunc":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -333,7 +333,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "filter":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -358,7 +358,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "find":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -381,7 +381,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "findIndex":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -404,7 +404,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "findLast":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -427,7 +427,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "findLastIndex":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -458,7 +458,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "flatMap":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				flatten := func(newList *list.List[any], element any) {
 					switch element := element.(type) {
 					case *LoxList:
@@ -517,7 +517,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			default:
 				return nil, loxerror.RuntimeError(name, errMsg)
 			}
-			if _, ok := args[1].(*LoxFunction); !ok {
+			if _, ok := args[1].(LoxCallable); !ok {
 				return nil, loxerror.RuntimeError(name,
 					"Second argument to 'list.flatMapDepth' must be a function.")
 			}
@@ -564,7 +564,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 				}
 			}
 
-			callback := args[1].(*LoxFunction)
+			callback := args[1].(LoxCallable)
 			argList := getArgList(callback, 3)
 			defer argList.Clear()
 			argList[2] = l
@@ -671,7 +671,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "forEach":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -764,7 +764,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		return l.Length(), nil
 	case "map":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -819,7 +819,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			if argsLen == 0 || argsLen > 2 {
 				return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				var value any
 				switch argsLen {
 				case 1:
@@ -860,7 +860,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			if argsLen == 0 || argsLen > 2 {
 				return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				elementsLen := len(l.elements)
 				var value any
 				switch argsLen {
@@ -972,7 +972,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "sort":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				errorChan := make(chan error, 1)
@@ -1020,7 +1020,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 		})
 	case "sorted":
 		return listFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				sortedList := list.NewListCap[any](int64(len(l.elements)))
 				for _, element := range l.elements {
 					sortedList.Add(element)

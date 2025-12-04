@@ -67,12 +67,12 @@ func (i *Interpreter) defineDurationFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Duration.loop' must be a duration.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Duration.loop' must be a function.")
 		}
 		loxDuration := args[0].(*LoxDuration)
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		stopCallback := false
 		callbackChan := make(chan struct{}, 1)
 		errorChan := make(chan error, 1)

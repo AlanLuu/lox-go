@@ -53,7 +53,7 @@ func convertSliceIndex(l int64, num int64) int64 {
 	return convertPosIndex(l, convertNegIndex(l, num))
 }
 
-func getArgList(callback *LoxFunction, numArgs int) list.List[any] {
+func getArgList(callback LoxCallable, numArgs int) list.List[any] {
 	argList := list.NewListLen[any](int64(numArgs))
 	callbackArity := callback.arity()
 	if callbackArity > numArgs {

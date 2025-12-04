@@ -237,7 +237,7 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		})
 	case "filter":
 		return strFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l

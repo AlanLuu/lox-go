@@ -195,7 +195,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "filter":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				elements := list.NewList[any]()
@@ -223,7 +223,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "forEach":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				errorChan := make(chan error, 1)
@@ -255,7 +255,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "forEachPrev":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				var index int64 = 0
@@ -277,7 +277,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "forEachPrevCallLen":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				index := int64(l.ring.Len() - 1)
@@ -302,7 +302,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "forEachReversed":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				var index int64 = 0
@@ -323,7 +323,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "forEachReversedCallLen":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				index := int64(l.ring.Len() - 1)
@@ -344,7 +344,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "forEachReversedCallLen0":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				var index int64 = 0
@@ -493,7 +493,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "map":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				elements := list.NewList[any]()
@@ -520,7 +520,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 		})
 	case "mapInPlace":
 		return ringFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 2)
 				defer argList.Clear()
 				var index int64 = 0
@@ -637,7 +637,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				var value any
 				switch argsLen {
 				case 1:
@@ -679,7 +679,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				var value any
 				switch argsLen {
 				case 1:
@@ -722,7 +722,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				var value any
 				switch argsLen {
 				case 1:
@@ -769,7 +769,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				var value any
 				switch argsLen {
 				case 1:
@@ -811,7 +811,7 @@ func (l *LoxRing) Get(name *token.Token) (any, error) {
 				return nil, loxerror.RuntimeError(name,
 					fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				var value any
 				switch argsLen {
 				case 1:

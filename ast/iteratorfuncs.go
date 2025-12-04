@@ -55,7 +55,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.accumulate' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.accumulate' must be a function.")
 		}
@@ -73,7 +73,7 @@ func (i *Interpreter) defineIteratorFuncs() {
 			}
 			return it.Next(), nil
 		}
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 3)
 		var index int64 = 0
 		var value any
@@ -233,12 +233,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.allFunc' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.allFunc' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		defer argList.Clear()
 		var index int64 = 0
@@ -323,12 +323,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.anyFunc' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.anyFunc' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		defer argList.Clear()
 		var index int64 = 0
@@ -458,13 +458,13 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.count' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.count' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
 		arg0IteratorWithErr, isErrIter := arg0Iterator.(interfaces.IteratorErr)
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		hasNext := func() (bool, error) {
 			if isErrIter {
 				return arg0IteratorWithErr.HasNextErr()
@@ -783,12 +783,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.dropuntil' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.dropuntil' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		loopStopped := false
 		var index int64 = 0
@@ -891,12 +891,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.dropwhile' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.dropwhile' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		loopStopped := false
 		var index int64 = 0
@@ -1070,12 +1070,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.filter' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.filter' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		var current any
@@ -1151,12 +1151,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.filterfalse' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.filterfalse' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		var current any
@@ -1346,12 +1346,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.getuntil' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.getuntil' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		var current any
@@ -1427,12 +1427,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.getuntillast' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.getuntillast' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		var current any
@@ -1506,12 +1506,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.getwhile' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.getwhile' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		var current any
@@ -1587,12 +1587,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.getwhilelast' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.getwhilelast' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		var current any
@@ -1732,12 +1732,12 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.map' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.map' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		var index int64 = 0
 		iterator := ProtoIteratorErr{legacyPanicOnErr: true}
@@ -1838,13 +1838,13 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.reduce' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.reduce' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
 		arg0IteratorWithErr, isErrIter := arg0Iterator.(interfaces.IteratorErr)
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		hasNext := func() (bool, error) {
 			if isErrIter {
 				return arg0IteratorWithErr.HasNextErr()
@@ -1915,13 +1915,13 @@ func (i *Interpreter) defineIteratorFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Iterator.reduceRight' is not iterable.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Iterator.reduceRight' must be a function.")
 		}
 		arg0Iterator := args[0].(interfaces.Iterable).Iterator()
 		arg0IteratorWithErr, isErrIter := arg0Iterator.(interfaces.IteratorErr)
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		hasNext := func() (bool, error) {
 			if isErrIter {
 				return arg0IteratorWithErr.HasNextErr()

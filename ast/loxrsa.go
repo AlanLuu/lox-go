@@ -255,7 +255,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -367,7 +367,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -555,7 +555,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -659,7 +659,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -962,7 +962,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			callable := args[0].(LoxCallable)
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -1059,7 +1059,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			callable := args[0].(LoxCallable)
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -1157,7 +1157,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			callable := args[0].(LoxCallable)
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -1259,7 +1259,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			callable := args[0].(LoxCallable)
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -1481,7 +1481,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			callable := args[0].(LoxCallable)
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {
@@ -1594,7 +1594,7 @@ func (l *LoxRSA) Get(name *token.Token) (any, error) {
 			callable := args[0].(LoxCallable)
 			var result any
 			switch callable := callable.(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				argList := getArgList(callable, 0)
 				callResult, resultErr := callable.call(i, argList)
 				if callresultReturn, ok := callResult.(Return); ok {

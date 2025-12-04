@@ -31,7 +31,7 @@ func (i *Interpreter) defineUnsafeFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'unsafe.threadFunc' must be an integer.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'unsafe.threadFunc' must be a function.")
 		}
@@ -43,7 +43,7 @@ func (i *Interpreter) defineUnsafeFuncs() {
 			}
 			errorChan := make(chan errStruct, times)
 			callbackChan := make(chan struct{}, times)
-			callback := args[1].(*LoxFunction)
+			callback := args[1].(LoxCallable)
 			for i := int64(0); i < times; i++ {
 				go func(num int64) {
 					argList := getArgList(callback, 1)
@@ -87,10 +87,10 @@ func (i *Interpreter) defineUnsafeFuncs() {
 				"Expected at least 2 arguments but got 1.")
 		}
 		numCallbacks := int64(argsLen) - 1
-		callbacks := list.NewListCap[*LoxFunction](numCallbacks)
+		callbacks := list.NewListCap[LoxCallable](numCallbacks)
 		for i := 1; i < argsLen; i++ {
 			switch arg := args[i].(type) {
-			case *LoxFunction:
+			case LoxCallable:
 				callbacks.Add(arg)
 			default:
 				callbacks.Clear()

@@ -265,12 +265,12 @@ func (i *Interpreter) defineFilepathFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'filepath.walk' must be a string.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'filepath.walk' must be a function.")
 		}
 		pathArg := args[0].(*LoxString).str
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 3)
 		defer argList.Clear()
 		var index int64 = 0
@@ -305,12 +305,12 @@ func (i *Interpreter) defineFilepathFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'filepath.walkFileInfo' must be a string.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'filepath.walkFileInfo' must be a function.")
 		}
 		pathArg := args[0].(*LoxString).str
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		argList := getArgList(callback, 2)
 		defer argList.Clear()
 		var index int64 = 0

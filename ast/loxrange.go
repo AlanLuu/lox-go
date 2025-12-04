@@ -105,7 +105,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 	switch methodName {
 	case "all":
 		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -131,7 +131,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		})
 	case "any":
 		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -164,7 +164,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		})
 	case "filter":
 		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -193,7 +193,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		})
 	case "forEach":
 		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -221,7 +221,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 		})
 	case "map":
 		return rangeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				argList[2] = l
@@ -252,7 +252,7 @@ func (l *LoxRange) Get(name *token.Token) (any, error) {
 			if argsLen == 0 || argsLen > 2 {
 				return nil, loxerror.RuntimeError(name, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				it := l.Iterator()
 				var index int64 = 0
 				var value any

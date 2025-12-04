@@ -165,12 +165,12 @@ func (i *Interpreter) defineDateFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"First argument to 'Date.loopUntil' must be a date.")
 		}
-		if _, ok := args[1].(*LoxFunction); !ok {
+		if _, ok := args[1].(LoxCallable); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
 				"Second argument to 'Date.loopUntil' must be a function.")
 		}
 		loxDate := args[0].(*LoxDate)
-		callback := args[1].(*LoxFunction)
+		callback := args[1].(LoxCallable)
 		stopCallback := false
 		callbackChan := make(chan struct{}, 1)
 		errorChan := make(chan error, 1)

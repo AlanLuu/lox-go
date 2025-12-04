@@ -247,7 +247,7 @@ func (l *LoxDate) Get(name *token.Token) (any, error) {
 		})
 	case "loopUntil":
 		return dateFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				stopCallback := false
 				callbackChan := make(chan struct{}, 1)
 				errorChan := make(chan error, 1)

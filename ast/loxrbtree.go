@@ -467,7 +467,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		})
 	case "forEach":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				return nil, l.forEachErr(func(key, value any, index int64) error {
@@ -485,7 +485,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		})
 	case "forEachPrev":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				return nil, l.forEachPrevErr(func(key, value any, index int64) error {
@@ -503,7 +503,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		})
 	case "forEachPrevI0":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				return nil, l.forEachPrevErrI0(func(key, value any, index int64) error {
@@ -577,7 +577,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		})
 	case "mapList":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				newList := list.NewListCap[any](l.Length())
@@ -605,7 +605,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		})
 	case "mapListPrev":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				newList := list.NewListCap[any](l.Length())
@@ -633,7 +633,7 @@ func (l *LoxRBTree) Get(name *token.Token) (any, error) {
 		})
 	case "mapListPrevI0":
 		return rbTreeFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
-			if callback, ok := args[0].(*LoxFunction); ok {
+			if callback, ok := args[0].(LoxCallable); ok {
 				argList := getArgList(callback, 3)
 				defer argList.Clear()
 				newList := list.NewListCap[any](l.Length())
