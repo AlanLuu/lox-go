@@ -113,10 +113,6 @@ func (l *LoxIPAddress) Get(name *token.Token) (any, error) {
 		}
 		return s, nil
 	}
-	argMustBeType := func(theType string) (any, error) {
-		errStr := fmt.Sprintf("Argument to 'ip address.%v' must be a %v.", methodName, theType)
-		return nil, loxerror.RuntimeError(name, errStr)
-	}
 	argMustBeTypeAn := func(theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'ip address.%v' must be an %v.", methodName, theType)
 		return nil, loxerror.RuntimeError(name, errStr)
@@ -162,7 +158,7 @@ func (l *LoxIPAddress) Get(name *token.Token) (any, error) {
 				}
 				return int64(l.ip[arg-1]), nil
 			}
-			return argMustBeType("integer")
+			return argMustBeTypeAn("integer")
 		})
 	case "getIndex":
 		return ipFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -182,7 +178,7 @@ func (l *LoxIPAddress) Get(name *token.Token) (any, error) {
 				}
 				return int64(l.ip[arg]), nil
 			}
-			return argMustBeType("integer")
+			return argMustBeTypeAn("integer")
 		})
 	case "getSliceBuf":
 		return ipFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
