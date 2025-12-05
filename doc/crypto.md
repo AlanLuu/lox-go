@@ -51,6 +51,8 @@ The following methods are defined in the built-in `crypto` class:
     - If `max <= 0` or `k < 0`, a runtime error is thrown
 - `crypto.randInt(max)`, which returns a random integer in the range `[0, max)` using a cryptographically secure random number generator, where `max` is an integer
     - If `max <= 0`, a runtime error is thrown
+- `crypto.randIntFrom(min, max)`, which returns a random integer in the range `[min, max]` using a cryptographically secure random number generator, where `min` and `max` are integers
+    - If `max < min` or `(max - min + 1) <= 0`, a runtime error is thrown
 - `crypto.randInts(max, k)`, which returns a list of `k` random integers in the range `[0, max)` using a cryptographically secure random number generator, where `max` and `k` are both integers
     - If `max <= 0` or `k < 0`, a runtime error is thrown
 - `crypto.randomUUID()`, which returns a randomly generated v4 UUID as a string

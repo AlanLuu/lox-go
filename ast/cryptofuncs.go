@@ -549,6 +549,38 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return argMustBeTypeAn(in.callToken, "randInt", "integer")
 	})
+	cryptoFunc("randIntFrom", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.randIntFrom' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randIntFrom' must be an integer.")
+		}
+		min := args[0].(int64)
+		max := args[1].(int64)
+		if max < min {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randIntFrom' cannot be less than first argument.")
+		}
+		x := max - min + 1
+		if x <= 0 {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf(
+					"Failed to call 'crypto.randIntFrom' with integers '%v' and '%v'.",
+					min,
+					max,
+				),
+			)
+		}
+		result, err := crand.Int(crand.Reader, big.NewInt(x))
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return result.Int64() + min, nil
+	})
 	cryptoFunc("randInts", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		if _, ok := args[0].(int64); !ok {
 			return nil, loxerror.RuntimeError(in.callToken,
