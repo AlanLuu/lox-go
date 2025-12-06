@@ -391,7 +391,7 @@ func (i *Interpreter) defineRandFuncs() {
 					return nil, loxerror.RuntimeError(in.callToken, "Argument to 'Rand().randInt' cannot be 0 or negative.")
 				}
 				if randStruct.rand != nil {
-					return randStruct.rand.Int63n(max + 1), nil
+					return randStruct.rand.Int63n(max), nil
 				}
 				return rand.Int63n(max), nil
 			case 2:
@@ -406,10 +406,21 @@ func (i *Interpreter) defineRandFuncs() {
 				if max < min {
 					return nil, loxerror.RuntimeError(in.callToken, "Second argument to 'Rand().randInt' cannot be less than first argument.")
 				}
-				if randStruct.rand != nil {
-					return randStruct.rand.Int63n(max-min+1) + min, nil
+				x := max - min + 1
+				if x <= 0 {
+					return nil, loxerror.RuntimeError(
+						in.callToken,
+						fmt.Sprintf(
+							"Failed to call 'Rand().randInt' with integers '%v' and '%v'.",
+							min,
+							max,
+						),
+					)
 				}
-				return rand.Int63n(max-min+1) + min, nil
+				if randStruct.rand != nil {
+					return randStruct.rand.Int63n(x) + min, nil
+				}
+				return rand.Int63n(x) + min, nil
 			default:
 				return nil, loxerror.RuntimeError(in.callToken, fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 			}
