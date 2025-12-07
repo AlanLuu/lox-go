@@ -576,6 +576,63 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return NewLoxList(nums), nil
 	})
+	cryptoFunc("randBigIntsFrom", 3, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch args[0].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.randBigIntsFrom' must be an integer or bigint.")
+		}
+		switch args[1].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigIntsFrom' must be an integer or bigint.")
+		}
+		if _, ok := args[2].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'crypto.randBigIntsFrom' must be an integer.")
+		}
+		var min *big.Int
+		switch arg := args[0].(type) {
+		case int64:
+			min = big.NewInt(arg)
+		case *big.Int:
+			min = new(big.Int).Set(arg)
+		}
+		var max *big.Int
+		switch arg := args[1].(type) {
+		case int64:
+			max = big.NewInt(arg)
+		case *big.Int:
+			max = new(big.Int).Set(arg)
+		}
+		if max.Cmp(min) < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigIntsFrom' cannot be less than first argument.")
+		}
+		times := args[2].(int64)
+		if times < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Third argument to 'crypto.randBigIntsFrom' cannot be negative.")
+		}
+		if times > 0 {
+			max.Sub(max, min)
+			max.Add(max, bigint.One)
+		}
+		nums := list.NewListCap[any](times)
+		for i := int64(0); i < times; i++ {
+			result, err := crand.Int(crand.Reader, max)
+			if err != nil {
+				nums.Clear()
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			nums.Add(result.Add(result, min))
+		}
+		return NewLoxList(nums), nil
+	})
 	cryptoFunc("randInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if max, ok := args[0].(int64); ok {
 			if max <= 0 {
