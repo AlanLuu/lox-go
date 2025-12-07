@@ -491,6 +491,47 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return result, nil
 	})
+	cryptoFunc("randBigIntFrom", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch args[0].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.randBigIntFrom' must be an integer or bigint.")
+		}
+		switch args[1].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigIntFrom' must be an integer or bigint.")
+		}
+		var min *big.Int
+		switch arg := args[0].(type) {
+		case int64:
+			min = big.NewInt(arg)
+		case *big.Int:
+			min = new(big.Int).Set(arg)
+		}
+		var max *big.Int
+		switch arg := args[1].(type) {
+		case int64:
+			max = big.NewInt(arg)
+		case *big.Int:
+			max = new(big.Int).Set(arg)
+		}
+		if max.Cmp(min) < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigIntFrom' cannot be less than first argument.")
+		}
+		max.Sub(max, min)
+		max.Add(max, bigint.One)
+		result, err := crand.Int(crand.Reader, max)
+		if err != nil {
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
+		}
+		return result.Add(result, min), nil
+	})
 	cryptoFunc("randBigInts", 2, func(in *Interpreter, args list.List[any]) (any, error) {
 		switch args[0].(type) {
 		case int64:

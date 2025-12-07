@@ -47,6 +47,8 @@ The following methods are defined in the built-in `crypto` class:
     - This method throws a runtime error if `numBits < 2`
 - `crypto.randBigInt(max)`, which returns a random bigint in the range `[0, max)` using a cryptographically secure random number generator, where `max` is an integer or bigint
     - If `max <= 0`, a runtime error is thrown
+- `crypto.randBigIntFrom(min, max)`, which returns a random bigint in the range `[min, max]` using a cryptographically secure random number generator, where `min` and `max` are integers or bigints
+    - If `max < min`, a runtime error is thrown
 - `crypto.randBigInts(max, k)`, which returns a list of `k` random bigints in the range `[0, max)` using a cryptographically secure random number generator, where `max` is an integer or bigint and `k` is an integer
     - If `max <= 0` or `k < 0`, a runtime error is thrown
 - `crypto.randInt(max)`, which returns a random integer in the range `[0, max)` using a cryptographically secure random number generator, where `max` is an integer
