@@ -633,6 +633,51 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return NewLoxList(nums), nil
 	})
+	cryptoFunc("randBigIntsIter", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		switch args[0].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.randBigIntsIter' must be an integer or bigint.")
+		}
+		switch args[1].(type) {
+		case int64:
+		case *big.Int:
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigIntsIter' must be an integer or bigint.")
+		}
+		var min *big.Int
+		switch arg := args[0].(type) {
+		case int64:
+			min = big.NewInt(arg)
+		case *big.Int:
+			min = new(big.Int).Set(arg)
+		}
+		var max *big.Int
+		switch arg := args[1].(type) {
+		case int64:
+			max = big.NewInt(arg)
+		case *big.Int:
+			max = new(big.Int).Set(arg)
+		}
+		if max.Cmp(min) < 0 {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randBigIntsIter' cannot be less than first argument.")
+		}
+		max.Sub(max, min)
+		max.Add(max, bigint.One)
+		iterator := InfiniteIteratorErr{legacyPanicOnErr: true}
+		iterator.nextMethod = func() (any, error) {
+			result, err := crand.Int(crand.Reader, max)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return result.Add(result, min), nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	cryptoFunc("randInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if max, ok := args[0].(int64); ok {
 			if max <= 0 {
