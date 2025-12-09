@@ -758,6 +758,43 @@ func (i *Interpreter) defineCryptoFuncs() {
 		}
 		return NewLoxList(nums), nil
 	})
+	cryptoFunc("randIntsIter", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'crypto.randIntsIter' must be an integer.")
+		}
+		if _, ok := args[1].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randIntsIter' must be an integer.")
+		}
+		min := args[0].(int64)
+		max := args[1].(int64)
+		if max < min {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'crypto.randIntsIter' cannot be less than first argument.")
+		}
+		x := max - min + 1
+		if x <= 0 {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf(
+					"Failed to call 'crypto.randIntsIter' with integers '%v' and '%v'.",
+					min,
+					max,
+				),
+			)
+		}
+		xBig := big.NewInt(x)
+		iterator := InfiniteIteratorErr{legacyPanicOnErr: true}
+		iterator.nextMethod = func() (any, error) {
+			result, err := crand.Int(crand.Reader, xBig)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return result.Int64() + min, nil
+		}
+		return NewLoxIterator(iterator), nil
+	})
 	for _, s := range []string{"randomUUID", "randUUID"} {
 		cryptoFunc(s, 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 			randUUID, err := uuid.NewRandom()
