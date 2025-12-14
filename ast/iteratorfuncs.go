@@ -24,11 +24,31 @@ func defineIteratorFields(iteratorClass *LoxClass) {
 	}
 	iteratorClass.classProperties["urandom"] = NewLoxIterator(urandom)
 
+	urandomBig := InfiniteIteratorErr{legacyPanicOnErr: true}
+	urandomBig.nextMethod = func() (any, error) {
+		numBig, numErr := crand.Int(crand.Reader, bigint.TwoFiveSix)
+		if numErr != nil {
+			return nil, numErr
+		}
+		return numBig, nil
+	}
+	iteratorClass.classProperties["urandomBig"] = NewLoxIterator(urandomBig)
+
 	zeroes := InfiniteIterator{}
 	zeroes.nextMethod = func() any {
 		return int64(0)
 	}
-	iteratorClass.classProperties["zeroes"] = NewLoxIterator(zeroes)
+	zeroesIter := NewLoxIterator(zeroes)
+	iteratorClass.classProperties["zeroes"] = zeroesIter
+	iteratorClass.classProperties["zero"] = zeroesIter
+
+	zeroesBig := InfiniteIterator{}
+	zeroesBig.nextMethod = func() any {
+		return big.NewInt(0)
+	}
+	zeroesBigIter := NewLoxIterator(zeroesBig)
+	iteratorClass.classProperties["zeroesBig"] = zeroesBigIter
+	iteratorClass.classProperties["zeroBig"] = zeroesBigIter
 }
 
 func (i *Interpreter) defineIteratorFuncs() {
