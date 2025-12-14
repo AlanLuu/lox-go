@@ -82,17 +82,17 @@ Iterator objects have the following methods associated with them:
 - `iterator.toList([length])`, which returns a list of elements with the specified integer length from the iterator. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over
 
 Custom iterators have the following methods and fields associated with them:
-- `custom iterator.errWhenHasNextNil`
-- `custom iterator.errWhenNextNil`
-- `custom iterator.hasNext`
-- `custom iterator.hasNextArgs`
-- `custom iterator.iter`
-- `custom iterator.next`
-- `custom iterator.nextArgs`
-- `custom iterator.setErrWhenHasNextNil(bool)`
-- `custom iterator.setErrWhenNextNil(bool)`
-- `custom iterator.setHasNext(func)`
-- `custom iterator.setHasNextArgs(argsList)`
-- `custom iterator.setNext(func)`
-- `custom iterator.setNextArgs(argsList)`
-- `custom iterator.setNoErr(bool)`
+- `custom iterator.errWhenHasNextNil`, which is `true` if the current custom iterator is set to throw an error when its `hasNext` function is `nil` and `false` otherwise. By default, this value is `true`
+- `custom iterator.errWhenNextNil`, which is `true` if the current custom iterator is set to throw an error when its `next` function is `nil` and `false` otherwise. By default, this value is `true`
+- `custom iterator.hasNext`, which is the current custom iterator's `hasNext` function
+- `custom iterator.hasNextArgs`, which is a list holding the arguments that are passed into the current custom iterator's `hasNext` function
+- `custom iterator.iter`, which is an iterator object for the current custom iterator
+- `custom iterator.next`, which is the current custom iterator's `next` function
+- `custom iterator.nextArgs`, which is a list holding the arguments that are passed into the current custom iterator's `next` function
+- `custom iterator.setErrWhenHasNextNil(bool)`, which sets the value of the current custom iterator's `errWhenHasNextNil` field to the specified boolean and returns the current custom iterator itself
+- `custom iterator.setErrWhenNextNil(bool)`, which sets the value of the current custom iterator's `errWhenNextNil` field to the specified boolean and returns the current custom iterator itself
+- `custom iterator.setHasNext(func)`, which sets the current custom iterator's `hasNext` function to the specified function and returns the current custom iterator itself
+- `custom iterator.setHasNextArgs(argsList)`, which sets the current custom iterator's `hasNextArgs` list to the specified list and returns the current custom iterator itself
+- `custom iterator.setNext(func)`, which sets the current custom iterator's `next` function to the specified function and returns the current custom iterator itself
+- `custom iterator.setNextArgs(argsList)`, which sets the current custom iterator's `nextArgs` list to the specified list and returns the current custom iterator itself
+- `custom iterator.setNoErr([bool])`, which sets the value of the current custom iterator's `errWhenHasNextNil` and `errWhenNextNil` fields to the specified boolean and returns the current custom iterator itself. If the boolean is omitted, both of those fields are set to `false`
