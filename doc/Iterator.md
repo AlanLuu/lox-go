@@ -34,6 +34,7 @@ The following methods and fields are defined in the built-in `Iterator` class:
     - If `step` is omitted, `1` is used as the step value
 - `Iterator.countTrue(iterable)`, which returns an integer that represents the number of elements from the specified iterable that are truthy values
     - If the iterable contains more than `(1 << 63) - 1` elements that are truthy values, this method stops iterating over the iterable and an integer equal to `(1 << 63) - 1` is returned
+- `Iterator.custom([hasNextFunc, nextFunc, hasNextArgs, nextArgs])`, which returns a custom iterator object that is iterable and uses `hasNextFunc` and `nextFunc`, which are functions, as the `hasNext` and `next` results respectively, with `hasNextArgs` and `nextArgs`, which are lists, as the arguments to `hasNextFunc` and `nextFunc` respectively
 - `Iterator.cycle(iterable)`, which returns an iterator that produces elements from the specified iterable, saving each element from the iterable internally. When the iterable is out of elements, this iterator continues to return the saved elements over and over again
 - `Iterator.dropuntil(iterable, callback)`, which returns an iterable that starts from the first element, skips over all the elements where the callback function returns a falsy value for them, and returns every element afterwards
 - `Iterator.dropwhile(iterable, callback)`, which returns an iterable that starts from the first element, skips over all the elements where the callback function returns a truthy value for them, and returns every element afterwards
@@ -75,3 +76,19 @@ Iterator objects have the following methods associated with them:
 - `iterator.take(length)`, which returns a list of elements with the specified integer length from the iterator
     - If an error is encountered when obtaining an iterator element, this method simply prints details of the error to standard error and skips adding that element to the final list without throwing that error
 - `iterator.toList([length])`, which returns a list of elements with the specified integer length from the iterator. If `length` is omitted, the resulting list is obtained by repeatedly calling this iterator's `next` method until there are no more elements to be iterated over
+
+Custom iterators have the following methods and fields associated with them:
+- `custom iterator.errWhenHasNextNil`
+- `custom iterator.errWhenNextNil`
+- `custom iterator.hasNext`
+- `custom iterator.hasNextArgs`
+- `custom iterator.iter`
+- `custom iterator.next`
+- `custom iterator.nextArgs`
+- `custom iterator.setErrWhenHasNextNil(bool)`
+- `custom iterator.setErrWhenNextNil(bool)`
+- `custom iterator.setHasNext(func)`
+- `custom iterator.setHasNextArgs(argsList)`
+- `custom iterator.setNext(func)`
+- `custom iterator.setNextArgs(argsList)`
+- `custom iterator.setNoErr(bool)`

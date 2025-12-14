@@ -110,6 +110,287 @@ func (l EmptyIterator) Next() any {
 	return nil
 }
 
+type LoxCustomIterator struct {
+	in                *Interpreter
+	callToken         *token.Token
+	hasNext           LoxCallable
+	next              LoxCallable
+	hasNextArgs       *LoxList
+	nextArgs          *LoxList
+	iter              *LoxIterator
+	errWhenHasNextNil bool
+	errWhenNextNil    bool
+	legacyPanicOnErr  bool
+	properties        map[string]any
+}
+
+func NewLoxCustomIterator(
+	in *Interpreter,
+	hasNext LoxCallable,
+	next LoxCallable,
+	hasNextArgs *LoxList,
+	nextArgs *LoxList,
+) *LoxCustomIterator {
+	if in == nil {
+		panic("in NewLoxCustomIterator: interpreter is nil")
+	}
+	if hasNextArgs == nil {
+		hasNextArgs = EmptyLoxList()
+	}
+	if nextArgs == nil {
+		nextArgs = EmptyLoxList()
+	}
+	return &LoxCustomIterator{
+		in:                in,
+		callToken:         in.callToken,
+		hasNext:           hasNext,
+		next:              next,
+		hasNextArgs:       hasNextArgs,
+		nextArgs:          nextArgs,
+		iter:              nil,
+		errWhenHasNextNil: true,
+		errWhenNextNil:    true,
+		legacyPanicOnErr:  true,
+		properties:        make(map[string]any),
+	}
+}
+
+func NewLoxCustomIteratorEmpty(in *Interpreter) *LoxCustomIterator {
+	return NewLoxCustomIterator(in, nil, nil, nil, nil)
+}
+
+func (l *LoxCustomIterator) Get(name *token.Token) (any, error) {
+	lexemeName := name.Lexeme
+	if field, ok := l.properties[lexemeName]; ok {
+		return field, nil
+	}
+	customIteratorFunc := func(arity int, method func(*Interpreter, list.List[any]) (any, error)) (*struct{ ProtoLoxCallable }, error) {
+		s := &struct{ ProtoLoxCallable }{}
+		s.arityMethod = func() int { return arity }
+		s.callMethod = method
+		s.stringMethod = func() string {
+			return fmt.Sprintf("<native custom iterator fn %v at %p>", lexemeName, s)
+		}
+		if _, ok := l.properties[lexemeName]; !ok {
+			l.properties[lexemeName] = s
+		}
+		return s, nil
+	}
+	argMustBeType := func(theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'custom iterator.%v' must be a %v.", lexemeName, theType)
+		return nil, loxerror.RuntimeError(name, errStr)
+	}
+	switch lexemeName {
+	case "errWhenHasNextNil":
+		return l.errWhenHasNextNil, nil
+	case "errWhenNextNil":
+		return l.errWhenNextNil, nil
+	case "hasNext":
+		if l.hasNext == nil {
+			return nil, nil
+		}
+		return l.hasNext, nil
+	case "hasNextArgs":
+		if l.hasNextArgs == nil {
+			return nil, nil
+		}
+		return l.hasNextArgs, nil
+	case "iter":
+		if l.iter == nil {
+			l.iter = NewLoxIterator(l)
+		}
+		return l.iter, nil
+	case "next":
+		if l.next == nil {
+			return nil, nil
+		}
+		return l.next, nil
+	case "nextArgs":
+		if l.nextArgs == nil {
+			return nil, nil
+		}
+		return l.nextArgs, nil
+	case "setErrWhenHasNextNil":
+		return customIteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if errWhenHasNextNil, ok := args[0].(bool); ok {
+				l.errWhenHasNextNil = errWhenHasNextNil
+				return l, nil
+			}
+			return argMustBeType("boolean")
+		})
+	case "setErrWhenNextNil":
+		return customIteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if errWhenNextNil, ok := args[0].(bool); ok {
+				l.errWhenNextNil = errWhenNextNil
+				return l, nil
+			}
+			return argMustBeType("boolean")
+		})
+	case "setHasNext":
+		return customIteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(LoxCallable); ok {
+				l.hasNext = callback
+				return l, nil
+			}
+			return argMustBeType("function")
+		})
+	case "setHasNextArgs":
+		return customIteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if hasNextArgs, ok := args[0].(*LoxList); ok {
+				l.hasNextArgs = hasNextArgs
+				return l, nil
+			}
+			return argMustBeType("list")
+		})
+	case "setNext":
+		return customIteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if callback, ok := args[0].(LoxCallable); ok {
+				l.next = callback
+				return l, nil
+			}
+			return argMustBeType("function")
+		})
+	case "setNextArgs":
+		return customIteratorFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if nextArgs, ok := args[0].(*LoxList); ok {
+				l.nextArgs = nextArgs
+				return l, nil
+			}
+			return argMustBeType("list")
+		})
+	case "setNoErr":
+		return customIteratorFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			argsLen := len(args)
+			switch argsLen {
+			case 0:
+				l.errWhenHasNextNil = false
+				l.errWhenNextNil = false
+			case 1:
+				if b, ok := args[0].(bool); ok {
+					l.errWhenHasNextNil = !b
+					l.errWhenNextNil = !b
+				} else {
+					return argMustBeType("boolean")
+				}
+			default:
+				return nil, loxerror.RuntimeError(name,
+					fmt.Sprintf("Expected 0 or 1 arguments but got %v.", argsLen))
+			}
+			return l, nil
+		})
+	}
+	return nil, loxerror.RuntimeError(name, "Custom iterators have no property called '"+lexemeName+"'.")
+}
+
+func (l *LoxCustomIterator) HasNext() bool {
+	result, err := l.HasNextErr()
+	if err != nil {
+		if l.legacyPanicOnErr {
+			panic(err)
+		}
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+	return result
+}
+
+func (l *LoxCustomIterator) HasNextErr() (bool, error) {
+	if l.hasNext == nil {
+		if !l.errWhenHasNextNil {
+			return false, nil
+		}
+		const errStr = "Cannot iterate over custom iterator: hasNext is nil"
+		if l.callToken == nil {
+			return false, loxerror.Error(errStr)
+		}
+		return false, loxerror.RuntimeError(l.callToken, errStr)
+	}
+	if l.next == nil && l.errWhenNextNil {
+		const errStr = "Cannot iterate over custom iterator: next is nil"
+		if l.callToken == nil {
+			return false, loxerror.Error(errStr)
+		}
+		return false, loxerror.RuntimeError(l.callToken, errStr)
+	}
+	numArgs := len(l.hasNextArgs.elements)
+	callbackArity := l.hasNext.arity()
+	if callbackArity > numArgs {
+		n := callbackArity - numArgs
+		defer func() {
+			newLen := len(l.hasNextArgs.elements)
+			l.hasNextArgs.elements = l.hasNextArgs.elements[:newLen-n]
+		}()
+		for i := 0; i < n; i++ {
+			l.hasNextArgs.elements.Add(nil)
+		}
+	}
+	result, resultErr := l.hasNext.call(l.in, l.hasNextArgs.elements)
+	if resultReturn, ok := result.(Return); ok {
+		result = resultReturn.FinalValue
+	} else if resultErr != nil {
+		return false, resultErr
+	}
+	return l.in.isTruthy(result), nil
+}
+
+func (l *LoxCustomIterator) Next() any {
+	result, err := l.NextErr()
+	if err != nil {
+		if l.legacyPanicOnErr {
+			panic(err)
+		}
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+	return result
+}
+
+func (l *LoxCustomIterator) NextErr() (any, error) {
+	if l.next == nil {
+		if !l.errWhenNextNil {
+			return nil, nil
+		}
+		const errStr = "Cannot iterate over custom iterator: next is nil"
+		if l.callToken == nil {
+			return nil, loxerror.Error(errStr)
+		}
+		return nil, loxerror.RuntimeError(l.callToken, errStr)
+	}
+	numArgs := len(l.nextArgs.elements)
+	callbackArity := l.next.arity()
+	if callbackArity > numArgs {
+		n := callbackArity - numArgs
+		defer func() {
+			newLen := len(l.nextArgs.elements)
+			l.nextArgs.elements = l.nextArgs.elements[:newLen-n]
+		}()
+		for i := 0; i < n; i++ {
+			l.nextArgs.elements.Add(nil)
+		}
+	}
+	result, resultErr := l.next.call(l.in, l.nextArgs.elements)
+	if resultReturn, ok := result.(Return); ok {
+		result = resultReturn.FinalValue
+	} else if resultErr != nil {
+		return nil, resultErr
+	}
+	return result, nil
+}
+
+func (l *LoxCustomIterator) Iterator() interfaces.Iterator {
+	return l
+}
+
+func (l *LoxCustomIterator) IteratorErr() interfaces.IteratorErr {
+	return l
+}
+
+func (l *LoxCustomIterator) String() string {
+	return fmt.Sprintf("<custom iterator at %p>", l)
+}
+
+func (l *LoxCustomIterator) Type() string {
+	return "custom iterator"
+}
+
 type LoxIterator struct {
 	iterator interfaces.Iterator
 	tag      string

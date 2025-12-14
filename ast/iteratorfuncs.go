@@ -745,6 +745,56 @@ func (i *Interpreter) defineIteratorFuncs() {
 		return nil, loxerror.RuntimeError(in.callToken,
 			fmt.Sprintf("Iterator.countTrue: type '%v' is not iterable.", getType(args[0])))
 	})
+	iteratorFunc("custom", -1, func(in *Interpreter, args list.List[any]) (any, error) {
+		argsLen := len(args)
+		switch argsLen {
+		case 0:
+			return NewLoxCustomIteratorEmpty(in), nil
+		case 1, 2, 3, 4:
+			if _, ok := args[0].(LoxCallable); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"First argument to 'Iterator.custom' must be a function.")
+			}
+			if argsLen == 1 {
+				hasNext := args[0].(LoxCallable)
+				return NewLoxCustomIterator(in, hasNext, nil, nil, nil), nil
+			}
+			if _, ok := args[1].(LoxCallable); !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"Second argument to 'Iterator.custom' must be a function.")
+			}
+			hasNext := args[0].(LoxCallable)
+			next := args[1].(LoxCallable)
+			switch argsLen {
+			case 2:
+				return NewLoxCustomIterator(in, hasNext, next, nil, nil), nil
+			case 3, 4:
+				if _, ok := args[2].(*LoxList); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Third argument to 'Iterator.custom' must be a list.")
+				}
+				if argsLen == 3 {
+					hasNextArgs := args[2].(*LoxList)
+					return NewLoxCustomIterator(in, hasNext, next,
+						hasNextArgs, nil), nil
+				}
+				if _, ok := args[3].(*LoxList); !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"Fourth argument to 'Iterator.custom' must be a list.")
+				}
+				hasNextArgs := args[2].(*LoxList)
+				nextArgs := args[3].(*LoxList)
+				return NewLoxCustomIterator(in, hasNext, next,
+					hasNextArgs, nextArgs), nil
+			}
+		default:
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf("Expected 0, 1, 2, 3, or 4 arguments but got %v.", argsLen))
+		}
+
+		//unreachable
+		return nil, nil
+	})
 	iteratorFunc("cycle", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if iterable, ok := args[0].(interfaces.Iterable); ok {
 			elements := list.NewList[any]()
