@@ -943,7 +943,7 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	}, nil
 }
 
-func (p *Parser) importStatement() (Stmt, error) {
+func (p *Parser) includeStatement() (Stmt, error) {
 	importToken := p.previous()
 	importFile, importFileErr := p.expression()
 	if importFileErr != nil {
@@ -969,7 +969,7 @@ func (p *Parser) importStatement() (Stmt, error) {
 	if semiColonErr != nil {
 		return nil, semiColonErr
 	}
-	return Import{importFile, importNamespace, importToken}, nil
+	return Include{importFile, importNamespace, importToken}, nil
 }
 
 func (p *Parser) isAtEnd() bool {
@@ -1209,8 +1209,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.forEachStatement()
 	case p.match(token.IF):
 		return p.ifStatement()
-	case p.match(token.IMPORT):
-		return p.importStatement()
+	case p.match(token.INCLUDE):
+		return p.includeStatement()
 	case p.match(token.LOOP):
 		return p.loopStatement()
 	case p.match(token.PRINT):

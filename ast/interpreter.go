@@ -128,8 +128,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitGetExpr(expr)
 	case If:
 		return i.visitIfStmt(expr)
-	case Import:
-		return i.visitImportStmt(expr)
+	case Include:
+		return i.visitIncludeStmt(expr)
 	case Index:
 		return i.visitIndexExpr(expr)
 	case List:
@@ -2002,7 +2002,7 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 	return nil, nil
 }
 
-func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
+func (i *Interpreter) visitIncludeStmt(stmt Include) (any, error) {
 	importFileObj, importFileErr := i.evaluate(stmt.ImportFile)
 	if importFileErr != nil {
 		return nil, importFileErr
@@ -2010,19 +2010,29 @@ func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
 
 	if _, ok := importFileObj.(*LoxString); !ok {
 		return nil, loxerror.RuntimeError(stmt.ImportToken,
-			"Import file must be a string.")
+			"Include file must be a string.")
 	}
 
 	importFilePath := importFileObj.(*LoxString).str
 	importFile, openFileError := os.Open(importFilePath)
 	if openFileError != nil {
-		return nil, loxerror.RuntimeError(stmt.ImportToken,
-			fmt.Sprintf("Could not find file '%v'.", importFilePath))
+		if errors.Is(openFileError, os.ErrNotExist) {
+			return nil, loxerror.RuntimeError(stmt.ImportToken,
+				fmt.Sprintf("Could not find include file '%v'.", importFilePath))
+		}
+		return nil, loxerror.RuntimeError(
+			stmt.ImportToken,
+			fmt.Sprintf(
+				"Error when opening include file '%v': %v",
+				importFilePath,
+				openFileError.Error(),
+			),
+		)
 	}
 
 	importErr := func(e error) (any, error) {
 		return nil, loxerror.RuntimeError(stmt.ImportToken,
-			fmt.Sprintf("Error when importing file '%v':\n%v",
+			fmt.Sprintf("Error when including file '%v':\n%v",
 				importFilePath, e.Error()))
 	}
 

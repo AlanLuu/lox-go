@@ -67,6 +67,7 @@ const (
 	FUN
 	IF
 	IMPORT
+	INCLUDE
 	INFINITY
 	LOOP
 	NAN
@@ -154,6 +155,7 @@ var tokenArr = [...]string{
 	"FUN",
 	"IF",
 	"IMPORT",
+	"INCLUDE",
 	"INFINITY",
 	"LOOP",
 	"NAN",

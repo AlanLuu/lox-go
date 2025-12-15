@@ -138,8 +138,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitExpressionStmt(stmt)
 	case If:
 		return r.visitIfStmt(stmt)
-	case Import:
-		return r.visitImportStmt(stmt)
+	case Include:
+		return r.visitIncludeStmt(stmt)
 	case Loop:
 		return r.visitLoopStmt(stmt)
 	case Print:
@@ -393,7 +393,7 @@ func (r *Resolver) visitGroupingExpr(expr Grouping) error {
 	return r.resolveExpr(expr.Expression)
 }
 
-func (r *Resolver) visitImportStmt(stmt Import) error {
+func (r *Resolver) visitIncludeStmt(stmt Include) error {
 	return r.resolveExpr(stmt.ImportFile)
 }
 
