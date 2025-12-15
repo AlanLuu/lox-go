@@ -92,7 +92,11 @@ Custom iterators have the following methods and fields associated with them:
 - `custom iterator.setErrWhenHasNextNil(bool)`, which sets the value of the current custom iterator's `errWhenHasNextNil` field to the specified boolean and returns the current custom iterator itself
 - `custom iterator.setErrWhenNextNil(bool)`, which sets the value of the current custom iterator's `errWhenNextNil` field to the specified boolean and returns the current custom iterator itself
 - `custom iterator.setHasNext(func)`, which sets the current custom iterator's `hasNext` function to the specified function and returns the current custom iterator itself
+    - After this method is successfully called, the current iterator object's `hasNext` function refers to the exact same function as the specified function argument
 - `custom iterator.setHasNextArgs(argsList)`, which sets the current custom iterator's `hasNextArgs` list to the specified list and returns the current custom iterator itself
+    - After this method is successfully called, the current iterator object's `hasNextArgs` list refers to the exact same list as the specified list argument, meaning any mutations to `argsList` will be reflected in the current iterator object's `hasNextArgs` list
 - `custom iterator.setNext(func)`, which sets the current custom iterator's `next` function to the specified function and returns the current custom iterator itself
+    - After this method is successfully called, the current iterator object's `next` function refers to the exact same function as the specified function argument
 - `custom iterator.setNextArgs(argsList)`, which sets the current custom iterator's `nextArgs` list to the specified list and returns the current custom iterator itself
+    - After this method is successfully called, the current iterator object's `nextArgs` list refers to the exact same list as the specified list argument, meaning any mutations to `argsList` will be reflected in the current iterator object's `nextArgs` list
 - `custom iterator.setNoErr([bool])`, which sets the value of the current custom iterator's `errWhenHasNextNil` and `errWhenNextNil` fields to the specified boolean and returns the current custom iterator itself. If the boolean is omitted, both of those fields are set to `false`
