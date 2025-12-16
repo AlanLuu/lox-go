@@ -466,7 +466,7 @@ func (sc *Scanner) scanToken() error {
 			for sc.peek() != '\n' && !sc.isAtEnd() {
 				sc.currentIndex++
 			}
-		} else if sc.match('*') { //handle "/*" (multi-line comment)
+		} else if sc.match('*') { //handle "/* */" (multi-line comment)
 			multiLineCommentErr := sc.handleMultiLineComment()
 			if multiLineCommentErr != nil {
 				return multiLineCommentErr
