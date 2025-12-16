@@ -138,6 +138,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitExpressionStmt(stmt)
 	case If:
 		return r.visitIfStmt(stmt)
+	case Import:
+		return nil
 	case Include:
 		return r.visitIncludeStmt(stmt)
 	case Loop:

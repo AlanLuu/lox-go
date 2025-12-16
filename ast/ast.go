@@ -114,6 +114,12 @@ type If struct {
 	ElseBranch Stmt
 }
 
+type Import struct {
+	Name        string
+	AsName      string
+	ImportToken *token.Token
+}
+
 type Include struct {
 	ImportFile      Expr
 	ImportNamespace string

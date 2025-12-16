@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"io"
@@ -128,6 +129,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitGetExpr(expr)
 	case If:
 		return i.visitIfStmt(expr)
+	case Import:
+		return i.visitImportStmt(expr)
 	case Include:
 		return i.visitIncludeStmt(expr)
 	case Index:
@@ -2002,6 +2005,77 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 	return nil, nil
 }
 
+//go:embed import/*
+var importFS embed.FS
+
+func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
+	const dir = "import"
+	const ext = "lox"
+	importFileName := stmt.Name
+
+	importErr := func(e error) (any, error) {
+		return nil, loxerror.RuntimeError(stmt.ImportToken,
+			fmt.Sprintf("Error when importing '%v':\n%v",
+				importFileName, e.Error()))
+	}
+
+	importProgram, readErr := importFS.ReadFile(
+		dir + "/" + importFileName + "." + ext,
+	)
+	if readErr != nil {
+		if errors.Is(readErr, os.ErrNotExist) {
+			return nil, loxerror.RuntimeError(stmt.ImportToken,
+				fmt.Sprintf("Could not find module '%v'.", importFileName))
+		}
+		return importErr(readErr)
+	}
+
+	importSc := scanner.NewScanner(string(importProgram))
+	scanErr := importSc.ScanTokens()
+	if scanErr != nil {
+		return importErr(scanErr)
+	}
+
+	importParser := NewParser(importSc.Tokens)
+	exprList, parseErr := importParser.Parse()
+	defer exprList.Clear()
+	if parseErr != nil {
+		return importErr(parseErr)
+	}
+
+	previous := i.environment
+	defer func() {
+		i.environment = previous
+	}()
+	i.environment = env.NewEnvironment()
+
+	importResolver := NewResolver(i)
+	resolverErr := importResolver.Resolve(exprList)
+	if resolverErr != nil {
+		return importErr(resolverErr)
+	}
+
+	valueErr := i.Interpret(exprList, false)
+	if valueErr != nil {
+		return importErr(valueErr)
+	}
+
+	var nameSpaceClassName string
+	if len(stmt.AsName) > 0 {
+		nameSpaceClassName = stmt.AsName
+	} else {
+		nameSpaceClassName = importFileName
+	}
+	nameSpaceClass := NewLoxClass(nameSpaceClassName, nil, false)
+	values := i.environment.Values()
+	for name, value := range values {
+		nameSpaceClass.classProperties[name] = value
+	}
+	i.globals.Define(nameSpaceClassName, nameSpaceClass)
+
+	return nil, nil
+}
+
 func (i *Interpreter) visitIncludeStmt(stmt Include) (any, error) {
 	importFileObj, importFileErr := i.evaluate(stmt.ImportFile)
 	if importFileErr != nil {
@@ -2084,7 +2158,7 @@ func (i *Interpreter) visitIncludeStmt(stmt Include) (any, error) {
 		i.globals.Define(stmt.ImportNamespace, nameSpaceClass)
 	}
 
-	return true, nil
+	return nil, nil
 }
 
 func (i *Interpreter) visitIndexExpr(expr Index) (any, error) {

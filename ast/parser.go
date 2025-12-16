@@ -943,6 +943,41 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	}, nil
 }
 
+func (p *Parser) importStatement() (Stmt, error) {
+	importToken := p.previous()
+	identifier, identifierErr := p.consume(token.IDENTIFIER,
+		"Expected identifier name.")
+	if identifierErr != nil {
+		return nil, identifierErr
+	}
+	name := identifier.Lexeme
+	expectedErrMsg := "Expected ';' or 'as' after identifier."
+	asName := ""
+	if p.match(token.IDENTIFIER) {
+		asKeyword := p.previous()
+		if asKeyword.Lexeme == "as" {
+			asIdentifier, asIdentifierErr := p.consume(token.IDENTIFIER,
+				"Expected identifier name after 'as'.")
+			if asIdentifierErr != nil {
+				return nil, asIdentifierErr
+			}
+			asName = asIdentifier.Lexeme
+			expectedErrMsg = "Expected ';' after identifier."
+		} else {
+			return nil, p.error(asKeyword, expectedErrMsg)
+		}
+	}
+	_, semiColonErr := p.consume(token.SEMICOLON, expectedErrMsg)
+	if semiColonErr != nil {
+		return nil, semiColonErr
+	}
+	return Import{
+		Name:        name,
+		AsName:      asName,
+		ImportToken: importToken,
+	}, nil
+}
+
 func (p *Parser) includeStatement() (Stmt, error) {
 	importToken := p.previous()
 	importFile, importFileErr := p.expression()
@@ -1209,6 +1244,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.forEachStatement()
 	case p.match(token.IF):
 		return p.ifStatement()
+	case p.match(token.IMPORT):
+		return p.importStatement()
 	case p.match(token.INCLUDE):
 		return p.includeStatement()
 	case p.match(token.LOOP):
