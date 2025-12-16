@@ -649,9 +649,20 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     print a == b; //Prints "true"
     print a == c; //Prints "false"
     ```
-- The ability to include other Lox files is supported in this implementation of Lox
+- The ability to import built-in Lox files as modules is supported in this implementation of Lox
     - Syntax:
         ```js
+        import module_name;
+        import module_name as alias;
+        ```
+    - The specified module file is executed and all variable, function, and class declarations declared globally in the module file are brought into a class of the same name of the module name that is defined in the global environment of the current file
+        - If an alias is specified, the globally-defined class will be defined with the alias name instead of the module name
+    - If the specified module file doesn't exist or if the file exists but an error occurred while it was being executed, a runtime error is thrown
+    - Lox module files are located in the directory `ast/include`
+        - Example: `import hello;` will search for a file called `hello.lox` in that directory, execute it, and all variable, function, and class declarations declared globally in that file are brought into a class of the same name of the module name that is defined in the global environment of the current file
+- The ability to include other Lox files is supported in this implementation of Lox
+    - Syntax:
+        ```php
         include "file-name";
         include "file-name" as alias;
         ```
