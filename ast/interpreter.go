@@ -69,6 +69,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineNativeFuncs()     //Defined in nativefuncs.go
 	interpreter.defineNetFuncs()        //Defined in netfuncs.go
 	interpreter.defineOSFuncs()         //Defined in osfuncs.go
+	interpreter.definePriQueueFuncs()   //Defined in priqueuefuncs.go
 	interpreter.defineProcessFuncs()    //Defined in processfuncs.go
 	interpreter.defineRandFuncs()       //Defined in randfuncs.go
 	interpreter.defineRBTreeFuncs()     //Defined in rbtreefuncs.go

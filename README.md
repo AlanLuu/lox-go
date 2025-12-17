@@ -141,6 +141,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is a list with two elements, with the first element being an env key as a string and the second element being the value of that env key as a string
         - RB tree
             - For each iteration, `element` is each element of the RB tree
+        - Priority queue
+            - For each iteration, `element` is a list with two elements, with the first element being an element from the priority queue and the second element being that element's priority value as an integer
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Repeat statements are supported in this implementation of Lox, which repeatedly executes a statement for a certain number of times according to the expression
     ```js
@@ -270,6 +272,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods and fields to work with gzip files are defined under a built-in class called `gzip`, which is documented [here](./doc/gzip.md)
 - Various methods and fields to work with logging are defined under a built-in class called `log`, which is documented [here](./doc/log.md)
 - Various methods and fields to work with network requests are defined under a built-in class called `net`, which is documented [here](./doc/net.md)
+- Various methods for priority queues are defined under a built-in class called `pqueue`, which is documented [here](./doc/pqueue.md)
 - Various methods to work with regular expressions are defined under a built-in class called `regex`, which is documented [here](./doc/regex.md)
 - Various methods and fields to work with dates are defined under a built-in class called `Date`, which is documented [here](./doc/Date.md)
 - Various methods and fields to work with durations are defined under a built-in class called `Duration`, which is documented [here](./doc/Duration.md)
