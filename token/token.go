@@ -54,9 +54,11 @@ const (
 	AND
 	ASSERT
 	BREAK
+	CASE
 	CATCH
 	CLASS
 	CONTINUE
+	DEFAULT
 	DO
 	ELSE
 	ENUM
@@ -81,6 +83,7 @@ const (
 	RETURN
 	STATIC
 	SUPER
+	SWITCH
 	THIS
 	THROW
 	TRUE
@@ -142,9 +145,11 @@ var tokenArr = [...]string{
 	"AND",
 	"ASSERT",
 	"BREAK",
+	"CASE",
 	"CATCH",
 	"CLASS",
 	"CONTINUE",
+	"DEFAULT",
 	"DO",
 	"ELSE",
 	"ENUM",
@@ -169,6 +174,7 @@ var tokenArr = [...]string{
 	"RETURN",
 	"STATIC",
 	"SUPER",
+	"SWITCH",
 	"THIS",
 	"THROW",
 	"TRUE",

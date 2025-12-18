@@ -11,13 +11,14 @@ import (
 )
 
 type Parser struct {
-	tokens    list.List[*token.Token]
-	current   int
-	loopDepth int
+	tokens      list.List[*token.Token]
+	current     int
+	loopDepth   int64
+	switchDepth int64
 }
 
 func NewParser(tokens list.List[*token.Token]) *Parser {
-	return &Parser{tokens, 0, 0}
+	return &Parser{tokens, 0, 0, 0}
 }
 
 func (p *Parser) advance() *token.Token {
@@ -195,7 +196,7 @@ func (p *Parser) block() (list.List[Stmt], error) {
 
 func (p *Parser) breakStatement() (Stmt, error) {
 	breakToken := p.previous()
-	if p.loopDepth <= 0 {
+	if p.loopDepth <= 0 && p.switchDepth <= 0 {
 		return nil, p.error(breakToken, "Illegal break statement.")
 	}
 	_, consumeErr := p.consume(token.SEMICOLON, "Expected ';' after 'break'.")
@@ -1264,6 +1265,8 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		return p.returnStatement()
 	case p.match(token.SEMICOLON):
 		return nil, nil
+	case p.match(token.SWITCH):
+		return p.switchStatement()
 	case p.match(token.THROW):
 		return p.throwStatement()
 	case p.match(token.TRY):
@@ -1281,6 +1284,91 @@ func (p *Parser) statement(alwaysBlock bool) (Stmt, error) {
 		p.current--
 	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) caseStmts() (list.List[Stmt], error) {
+	stmts := list.NewList[Stmt]()
+	for !p.isAtEnd() {
+		if p.check(token.CASE) || p.check(token.DEFAULT) || p.check(token.RIGHT_BRACE) {
+			break
+		}
+		stmt, stmtErr := p.declaration()
+		if stmtErr != nil {
+			return nil, stmtErr
+		}
+		stmts.Add(stmt)
+	}
+	return stmts, nil
+}
+
+func (p *Parser) switchStatement() (Stmt, error) {
+	p.switchDepth++
+	defer func() {
+		p.switchDepth--
+	}()
+	_, leftParenErr := p.consume(token.LEFT_PAREN, "Expected '(' after 'switch'.")
+	if leftParenErr != nil {
+		return nil, leftParenErr
+	}
+	expression, expressionErr := p.expression()
+	if expressionErr != nil {
+		return nil, expressionErr
+	}
+	_, rightParenErr := p.consume(token.RIGHT_PAREN, "Expected ')' after switch expression.")
+	if rightParenErr != nil {
+		return nil, rightParenErr
+	}
+	_, leftBracketErr := p.consume(token.LEFT_BRACE, "Expected '{' after 'switch'.")
+	if leftBracketErr != nil {
+		return nil, leftBracketErr
+	}
+	cases := list.NewList[Case]()
+	var defStmts list.List[Stmt]
+	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		switch {
+		case p.match(token.CASE):
+			caseExpr, caseExprErr := p.expression()
+			if caseExprErr != nil {
+				return nil, caseExprErr
+			}
+			_, colonErr := p.consume(token.COLON, "Expected ':' after case value.")
+			if colonErr != nil {
+				return nil, colonErr
+			}
+			stmts, stmtsErr := p.caseStmts()
+			if stmtsErr != nil {
+				return nil, stmtsErr
+			}
+			cases.Add(Case{caseExpr, stmts})
+		case p.match(token.DEFAULT):
+			if defStmts != nil {
+				return nil, p.error(
+					p.previous(),
+					"More than one default clause in switch statement.",
+				)
+			}
+			_, colonErr := p.consume(token.COLON, "Expected ':' after 'default'.")
+			if colonErr != nil {
+				return nil, colonErr
+			}
+			var defStmtErr error
+			defStmts, defStmtErr = p.caseStmts()
+			if defStmtErr != nil {
+				return nil, defStmtErr
+			}
+		default:
+			return nil, p.error(p.peek(), "Expected 'case' or 'default'.")
+		}
+	}
+	_, rightBracketErr := p.consume(token.RIGHT_BRACE, "Expected '}' after 'switch'.")
+	if rightBracketErr != nil {
+		return nil, rightBracketErr
+	}
+	return Switch{
+		Expr:    expression,
+		Cases:   cases,
+		Default: defStmts,
+	}, nil
 }
 
 func (p *Parser) synchronize() {

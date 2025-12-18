@@ -28,7 +28,7 @@ type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
 	locals      map[any]int
-	blockDepth  int
+	blockDepth  int64
 	callToken   *token.Token
 	LoxCalled   bool //Used in main.runLoxCode function
 }
@@ -154,6 +154,8 @@ func (i *Interpreter) evaluate(expr any) (any, error) {
 		return i.visitStringExpr(expr)
 	case Super:
 		return i.visitSuperExpr(expr)
+	case Switch:
+		return i.visitSwitchStmt(expr)
 	case Ternary:
 		return i.visitTernaryExpr(expr)
 	case This:
@@ -233,7 +235,7 @@ func (i *Interpreter) Interpret(statements list.List[Stmt], makeHandler bool) er
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Repeat, Loop, Call:
+				case While, For, ForEach, DoWhile, Repeat, Loop, Switch, Call:
 					continue
 				}
 			}
@@ -258,7 +260,7 @@ func (i *Interpreter) InterpretReturnLast(statements list.List[Stmt]) (any, erro
 		if evalErr != nil {
 			if value != nil {
 				switch statement.(type) {
-				case While, For, ForEach, DoWhile, Repeat, Loop, Call:
+				case While, For, ForEach, DoWhile, Repeat, Loop, Switch, Call:
 					continue
 				}
 			}
@@ -1653,7 +1655,12 @@ func (i *Interpreter) visitDoWhileStmt(stmt DoWhile) (any, error) {
 		value, evalErr := i.evaluate(stmt.Body)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break, Return:
+			case Break:
+				if !value.Used {
+					value.Used = true
+					return value, evalErr
+				}
+			case Return:
 				return value, evalErr
 			case Continue:
 			default:
@@ -1683,6 +1690,13 @@ func (i *Interpreter) executeBlock(statements list.List[Stmt], environment *env.
 			if value != nil {
 				switch statement.(type) {
 				case While, For, ForEach, DoWhile, Repeat, Loop:
+					if _, ok := value.(Return); !ok {
+						continue
+					}
+				case Switch:
+					if _, ok := value.(Continue); ok {
+						return value, evalErr
+					}
 					if _, ok := value.(Return); !ok {
 						continue
 					}
@@ -1797,7 +1811,12 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
 				switch value := value.(type) {
-				case Break, Return:
+				case Break:
+					if !value.Used {
+						value.Used = true
+						return value, evalErr
+					}
+				case Return:
 					return value, evalErr
 				case Continue:
 				default:
@@ -1839,7 +1858,12 @@ func (i *Interpreter) visitForStmt(stmt For) (any, error) {
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
 				switch value := value.(type) {
-				case Break, Return:
+				case Break:
+					if !value.Used {
+						value.Used = true
+						return value, evalErr
+					}
+				case Return:
 					return value, evalErr
 				case Continue:
 				default:
@@ -1934,7 +1958,12 @@ func (i *Interpreter) visitForEachStmt(stmt ForEach) (any, error) {
 		}
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break, Return:
+			case Break:
+				if !value.Used {
+					value.Used = true
+					return value, evalErr
+				}
+			case Return:
 				return value, evalErr
 			case Continue:
 			default:
@@ -2292,7 +2321,12 @@ func (i *Interpreter) visitLoopStmt(stmt Loop) (any, error) {
 		value, evalErr := i.visitBlockStmt(loopBlock)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break, Return:
+			case Break:
+				if !value.Used {
+					value.Used = true
+					return value, evalErr
+				}
+			case Return:
 				return value, evalErr
 			case Continue:
 			default:
@@ -2377,7 +2411,12 @@ func (i *Interpreter) visitRepeatStmt(stmt Repeat) (any, error) {
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
 				switch value := value.(type) {
-				case Break, Return:
+				case Break:
+					if !value.Used {
+						value.Used = true
+						return value, evalErr
+					}
+				case Return:
 					return value, evalErr
 				case Continue:
 				default:
@@ -2412,7 +2451,12 @@ func (i *Interpreter) visitRepeatStmt(stmt Repeat) (any, error) {
 			value, evalErr := i.evaluate(stmt.Body)
 			if evalErr != nil {
 				switch value := value.(type) {
-				case Break, Return:
+				case Break:
+					if !value.Used {
+						value.Used = true
+						return value, evalErr
+					}
+				case Return:
 					return value, evalErr
 				case Continue:
 				default:
@@ -2599,6 +2643,78 @@ func (i *Interpreter) visitSuperExpr(expr Super) (any, error) {
 		}
 	}
 	return nil, loxerror.RuntimeError(expr.Method, "Undefined property '"+expr.Method.Lexeme+"'.")
+}
+
+func (i *Interpreter) visitSwitchStmt(stmt Switch) (any, error) {
+	previous := i.environment
+	i.environment = env.NewEnvironmentEnclosing(previous)
+	defer func() {
+		i.environment = previous
+	}()
+	switchExpr, switchExprErr := i.evaluate(stmt.Expr)
+	if switchExprErr != nil {
+		return nil, switchExprErr
+	}
+	tokenNode := &token.Token{
+		TokenType: token.EQUAL_EQUAL,
+		Lexeme:    "==",
+	}
+	isEqual := func(caseExpr any) bool {
+		result, _ := i.visitBinaryExpr(Binary{
+			Literal{switchExpr},
+			tokenNode,
+			Literal{caseExpr},
+		})
+		return result.(bool)
+	}
+	matched := false
+	for _, c := range stmt.Cases {
+		if !matched {
+			caseExpr, caseExprErr := i.evaluate(c.Expr)
+			if caseExprErr != nil {
+				return nil, caseExprErr
+			}
+			if !isEqual(caseExpr) {
+				continue
+			}
+			matched = true
+		}
+		for _, s := range c.Statements {
+			value, evalErr := i.evaluate(s)
+			if evalErr != nil {
+				switch value := value.(type) {
+				case Break:
+					if !value.Used {
+						value.Used = true
+						return value, evalErr
+					}
+				case Continue, Return:
+					return value, evalErr
+				default:
+					return nil, evalErr
+				}
+			}
+		}
+	}
+	if !matched && stmt.Default != nil {
+		for _, s := range stmt.Default {
+			value, evalErr := i.evaluate(s)
+			if evalErr != nil {
+				switch value := value.(type) {
+				case Break:
+					if !value.Used {
+						value.Used = true
+						return value, evalErr
+					}
+				case Continue, Return:
+					return value, evalErr
+				default:
+					return nil, evalErr
+				}
+			}
+		}
+	}
+	return nil, nil
 }
 
 func (i *Interpreter) visitTernaryExpr(expr Ternary) (any, error) {
@@ -2809,7 +2925,12 @@ func (i *Interpreter) visitWhileStmt(stmt While) (any, error) {
 		value, evalErr := i.evaluate(stmt.Body)
 		if evalErr != nil {
 			switch value := value.(type) {
-			case Break, Return:
+			case Break:
+				if !value.Used {
+					value.Used = true
+					return value, evalErr
+				}
+			case Return:
 				return value, evalErr
 			case Continue:
 			default:

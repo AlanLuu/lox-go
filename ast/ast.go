@@ -29,7 +29,9 @@ type Binary struct {
 	Right    Expr
 }
 
-type Break struct{}
+type Break struct {
+	Used bool
+}
 
 type Block struct {
 	Statements list.List[Stmt]
@@ -39,6 +41,11 @@ type Call struct {
 	Callee    Expr
 	Paren     *token.Token
 	Arguments list.List[Expr]
+}
+
+type Case struct {
+	Expr       Expr
+	Statements list.List[Stmt]
 }
 
 type Class struct {
@@ -194,6 +201,12 @@ type String struct {
 type Super struct {
 	Keyword *token.Token
 	Method  *token.Token
+}
+
+type Switch struct {
+	Expr    Expr
+	Cases   list.List[Case]
+	Default list.List[Stmt]
 }
 
 type Ternary struct {

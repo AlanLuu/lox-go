@@ -150,6 +150,8 @@ func (r *Resolver) resolveStmt(stmt Stmt) error {
 		return r.visitRepeatStmt(stmt)
 	case Return:
 		return r.visitReturnStmt(stmt)
+	case Switch:
+		return r.visitSwitchStmt(stmt)
 	case Throw:
 		return r.visitThrowStmt(stmt)
 	case TryCatchFinally:
@@ -472,6 +474,34 @@ func (r *Resolver) visitReturnStmt(stmt Return) error {
 			return loxerror.RuntimeError(stmt.Keyword, "Can't return a value from an initializer.")
 		}
 		return r.resolveExpr(stmt.Value)
+	}
+	return nil
+}
+
+func (r *Resolver) visitSwitchStmt(stmt Switch) error {
+	r.beginScope()
+	defer r.endScope()
+	resolveErr := r.resolveExpr(stmt.Expr)
+	if resolveErr != nil {
+		return resolveErr
+	}
+	for _, c := range stmt.Cases {
+		resolveErr = r.resolveExpr(c.Expr)
+		if resolveErr != nil {
+			return resolveErr
+		}
+		for _, s := range c.Statements {
+			resolveErr = r.resolveStmt(s)
+			if resolveErr != nil {
+				return resolveErr
+			}
+		}
+	}
+	for _, s := range stmt.Default {
+		resolveErr = r.resolveStmt(s)
+		if resolveErr != nil {
+			return resolveErr
+		}
 	}
 	return nil
 }

@@ -173,6 +173,23 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         }
         print "here"; //This line is reached
         ```
+- Switch statements are supported in this implementation of Lox
+    ```js
+    var x = 2;
+    //Prints 2, then 3
+    switch (x) {
+        case 1:
+            print 1;
+        case 2:
+            print 2;
+        case 3:
+            print 3;
+            break;
+        default:
+            print "default";
+    }
+    ```
+    - Switch statements fall through by default and have their own local scope
 - Try-catch-finally statements are supported in this implementation of Lox
     ```js
     try {
