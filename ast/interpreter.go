@@ -28,6 +28,7 @@ type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
 	locals      map[any]int
+	impClass    map[string]func() *LoxClass
 	blockDepth  int64
 	callToken   *token.Token
 	LoxCalled   bool //Used in main.runLoxCode function
@@ -37,6 +38,7 @@ func NewInterpreter() *Interpreter {
 	interpreter := &Interpreter{
 		globals:    env.NewEnvironment(),
 		locals:     make(map[any]int),
+		impClass:   make(map[string]func() *LoxClass),
 		blockDepth: 0,
 		callToken:  nil,
 		LoxCalled:  util.DisableLoxCode,
@@ -81,6 +83,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineWebBrowserFuncs() //Defined in webbrowserfuncs.go
 	interpreter.defineWindowsFuncs()    //Defined in windowsfuncs_windows.go
 	interpreter.defineZipFuncs()        //Defined in zipfuncs.go
+	interpreter.impClass["misc"] = defineMiscFuncs
 	return interpreter
 }
 
@@ -2039,9 +2042,19 @@ func (i *Interpreter) visitIfStmt(stmt If) (any, error) {
 var importFS embed.FS
 
 func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
+	importFileName := stmt.Name
+
+	if f, ok := i.impClass[importFileName]; ok {
+		if len(stmt.AsName) > 0 {
+			i.globals.Define(stmt.AsName, f())
+		} else {
+			i.globals.Define(importFileName, f())
+		}
+		return nil, nil
+	}
+
 	const dir = "import"
 	const ext = "lox"
-	importFileName := stmt.Name
 
 	importErr := func(e error) (any, error) {
 		return nil, loxerror.RuntimeError(stmt.ImportToken,
