@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math/big"
+	"math/rand"
 
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
@@ -22,11 +23,84 @@ func defineMiscFuncs() *LoxClass {
 		}
 		miscClass.classProperties[name] = s
 	}
+	argMustBeType := func(callToken *token.Token, name string, theType string) (any, error) {
+		errStr := fmt.Sprintf("Argument to 'misc.%v' must be a %v.", name, theType)
+		return nil, loxerror.RuntimeError(callToken, errStr)
+	}
 	argMustBeTypeAn := func(callToken *token.Token, name string, theType string) (any, error) {
 		errStr := fmt.Sprintf("Argument to 'misc.%v' must be an %v.", name, theType)
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
+	miscFunc("bogosort", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxList, ok := args[0].(*LoxList); ok {
+			l := loxList.elements
+			lLen := len(l)
+			tokenNode := &token.Token{
+				TokenType: token.GREATER,
+				Lexeme:    ">",
+			}
+			isSorted := func(l list.List[any]) bool {
+				for i := 0; i < lLen-1; i++ {
+					result, _ := in.visitBinaryExpr(Binary{
+						Literal{l[i]},
+						tokenNode,
+						Literal{l[i+1]},
+					})
+					switch result := result.(type) {
+					case bool:
+						if result {
+							return false
+						}
+					}
+				}
+				return true
+			}
+			for !isSorted(l) {
+				rand.Shuffle(lLen, func(a int, b int) {
+					l[a], l[b] = l[b], l[a]
+				})
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "bogosort", "list")
+	})
+	miscFunc("bogosorted", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxList, ok := args[0].(*LoxList); ok {
+			lLen := len(loxList.elements)
+			l := list.NewListCap[any](int64(lLen))
+			for _, element := range loxList.elements {
+				l.Add(element)
+			}
+			tokenNode := &token.Token{
+				TokenType: token.GREATER,
+				Lexeme:    ">",
+			}
+			isSorted := func(l list.List[any]) bool {
+				for i := 0; i < lLen-1; i++ {
+					result, _ := in.visitBinaryExpr(Binary{
+						Literal{l[i]},
+						tokenNode,
+						Literal{l[i+1]},
+					})
+					switch result := result.(type) {
+					case bool:
+						if result {
+							return false
+						}
+					}
+				}
+				return true
+			}
+			for !isSorted(l) {
+				rand.Shuffle(lLen, func(a int, b int) {
+					l[a], l[b] = l[b], l[a]
+				})
+			}
+			return NewLoxList(l), nil
+		}
+		return argMustBeType(in.callToken, "bogosorted", "list")
+	})
 	miscFunc("hello", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		fmt.Println("Hello world!")
 		return nil, nil
