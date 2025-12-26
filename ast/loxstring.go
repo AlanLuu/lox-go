@@ -377,6 +377,10 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return nil, loxerror.RuntimeError(name, "First argument to 'string.padStart' must be an integer.")
 		})
+	case "quote":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			return NewLoxStringQuote(strconv.Quote(l.str)), nil
+		})
 	case "replace":
 		return strFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if firstStr, firstStrOk := args[0].(*LoxString); firstStrOk {
@@ -657,6 +661,27 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				}
 			}
 			return newSet, nil
+		})
+	case "unquote":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			lStr := l.str
+			arr := []rune(lStr)
+			arrLen := len(arr)
+			if arrLen > 0 {
+				if arr[0] == '`' && arr[arrLen-1] == '`' {
+					return l, nil
+				}
+				if arr[0] == '\'' && arr[arrLen-1] == '\'' {
+					arr[0] = '"'
+					arr[arrLen-1] = '"'
+					lStr = string(arr)
+				}
+			}
+			s, err := strconv.Unquote(lStr)
+			if err != nil {
+				return l, nil
+			}
+			return NewLoxStringQuote(s), nil
 		})
 	case "upper":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

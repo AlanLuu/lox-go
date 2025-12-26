@@ -422,6 +422,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.lstrip([chars])`, which returns a new string with all leading characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading whitespace, newlines, and tabs removed
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
         - `string.padStart(length, padStr)`, which pads the contents of `padStr` to the beginning of `string` until the new string is of length `length`
+        - `string.quote()`, which returns a new string with double quotes at the beginning and end of the string
         - `string.replace(oldStr, newStr)`, which returns a new string where all occurrences of `oldStr` in the original string are replaced with `newStr`
         - `string.reversed()`, which returns a new string that is the original string in reversed order
         - `string.reversedWords([delimiter])`, which returns a new string where each word from the original string is in backwards order, where each word is taken to be each string in a list of strings after splitting the original string by the specified delimiter string. If `delimiter` is omitted, the delimiter is a string with a single space
@@ -441,6 +442,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.toList()`, which converts `string` into a list with each character in the string as the list elements and returns that list
         - `string.toNum([base])`, which attempts to convert `string` into an integer or float and returns that value if successful and `NaN` otherwise. If `base` is specified, then this method will attempt to convert `string` that is represented as the specified base into an integer or float and returns that value if the conversion was successful and `NaN` otherwise
         - `string.toSet()`, which converts `string` into a set with each unique character in the string as the set elements and returns that set
+        - `string.unquote()`, which returns a new string with the ending single or double matching quote pair removed from the string if there is one, otherwise this method returns the original string
         - `string.upper()`, which returns a new string with all uppercase letters
         - `string.zfill(length)`, which returns a new string where the character `'0'` is padded to the left until the new string is of length `length`. If a leading `'+'` or `'-'` sign is part of the original string, the `'0'` padding is inserted after the leading sign instead of before
 - Lists are supported in this implementation of Lox
