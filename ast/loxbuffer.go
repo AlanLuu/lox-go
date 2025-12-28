@@ -48,6 +48,25 @@ func EmptyLoxBufferCapDouble(cap int64) *LoxBuffer {
 	return NewLoxBuffer(list.NewListCapDouble[any](cap))
 }
 
+func toByteSlice(l *LoxBuffer) []byte {
+	b := make([]byte, 0, len(l.elements))
+	for _, element := range l.elements {
+		b = append(b, byte(element.(int64)))
+	}
+	return b
+}
+
+func toLoxBuffer(b []byte) (*LoxBuffer, error) {
+	buffer := EmptyLoxBufferCap(int64(len(b)))
+	for _, value := range b {
+		addErr := buffer.add(int64(value))
+		if addErr != nil {
+			return nil, addErr
+		}
+	}
+	return buffer, nil
+}
+
 func (l *LoxBuffer) Equals(obj any) bool {
 	switch obj := obj.(type) {
 	case *LoxBuffer:
@@ -126,6 +145,9 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		}
 		return buffer, nil
 	}
+	byteSlice := func() []byte {
+		return toByteSlice(l)
+	}
 	switch methodName {
 	case "append":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
@@ -135,6 +157,42 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 			}
 			l.elements.Add(args[0])
 			return nil, nil
+		})
+	case "appendChar":
+		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				if loxStr.Length() == 1 {
+					origLen := len(l.elements)
+					runes := []rune(loxStr.str)
+					bytes := utf8.AppendRune(byteSlice(), runes[0])
+					if len(bytes) > origLen {
+						for _, b := range bytes[origLen:] {
+							i64 := int64(b)
+							rangeErr := bufferElementRangeCheck(i64)
+							if rangeErr != nil {
+								return nil, loxerror.RuntimeError(name, rangeErr.Error())
+							}
+							l.elements.Add(i64)
+						}
+					}
+					return nil, nil
+				}
+			}
+			return argMustBeType("single character")
+		})
+	case "appendCharNew":
+		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				if loxStr.Length() == 1 {
+					runes := []rune(loxStr.str)
+					buffer, err := toLoxBuffer(utf8.AppendRune(byteSlice(), runes[0]))
+					if err != nil {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+					return buffer, nil
+				}
+			}
+			return argMustBeType("single character")
 		})
 	case "extend":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
