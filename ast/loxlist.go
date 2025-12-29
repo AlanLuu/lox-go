@@ -256,7 +256,7 @@ func (l *LoxList) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("function")
 		})
-	case "append":
+	case "append", "add":
 		return listFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			l.elements.Add(args[0])
 			return nil, nil

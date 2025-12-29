@@ -149,7 +149,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 		return toByteSlice(l)
 	}
 	switch methodName {
-	case "append":
+	case "append", "add":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			rangeErr := bufferElementRangeCheck(args[0])
 			if rangeErr != nil {
@@ -158,7 +158,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 			l.elements.Add(args[0])
 			return nil, nil
 		})
-	case "appendChar":
+	case "appendChar", "addChar":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				if loxStr.Length() == 1 {
@@ -180,7 +180,7 @@ func (l *LoxBuffer) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("single character")
 		})
-	case "appendCharNew":
+	case "appendCharNew", "addCharNew":
 		return bufferFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				if loxStr.Length() == 1 {

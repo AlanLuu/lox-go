@@ -458,6 +458,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Concatenate two lists together into a new list: `list + list2`
     - Get a new list with all elements from the original list repeated `n` times, where `n` is an integer: `list * n`
     - Besides these operations, lists also have some methods associated with them:
+        - `list.add(element)`, which is an alias for `list.append`
         - `list.all(callback)`, which returns `true` if the callback function returns `true` for all elements in the list and `false` otherwise
         - `list.any(callback)` which returns `true` if the callback function returns `true` for any element in the list and `false` otherwise
         - `list.append(element)`, which appends an element to the end of the list
@@ -530,6 +531,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Buffers share the same methods as lists, except that the usual element restrictions are in place in terms of adding and setting elements, and any shared methods that normally return lists return buffers instead
         - Notably, the `map` method on buffers throws a runtime error if its callback function ever returns a value that is not an integer or is an integer less than 0 or greater than 255
     - Besides the methods shared with lists, buffers also have the following methods associated with them:
+        - `buffer.addChar(c)`, which is an alias for `buffer.appendChar`
+        - `buffer.addCharNew(c)`, which is an alias for `buffer.appendCharNew`
         - `buffer.appendChar(c)`, which appends the byte or bytes representation of the specified single Unicode character string argument to the buffer
         - `buffer.appendCharNew(c)`, which returns a new buffer of the original buffer's contents with the byte or bytes representation of the single Unicode character string argument appended at the end of that new buffer
         - `buffer.memfrob([num])`, which applies the XOR operation to each buffer element with the number 42, changing the original buffer as a result. If an integer `num` is specified, only `num` buffer elements starting with the first element are changed
