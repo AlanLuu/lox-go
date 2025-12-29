@@ -24,11 +24,42 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
+type impClassStruct struct {
+	f     func() *LoxClass
+	cache *LoxClass
+}
+
+type impClass map[string]*impClassStruct
+
+func (i impClass) get(s string) (*LoxClass, bool) {
+	result, ok := i[s]
+	if !ok {
+		return nil, false
+	}
+	if result.cache == nil && result.f != nil {
+		result.cache = result.f()
+	}
+	return result.cache, true
+}
+
+func (i impClass) setNoOverwrite(s string, l *LoxClass) {
+	if _, ok := i[s]; !ok {
+		i[s] = &impClassStruct{cache: l}
+	}
+}
+
+var importClasses impClass
+
+func init() {
+	importClasses = impClass{
+		"misc": {f: defineMiscFuncs},
+	}
+}
+
 type Interpreter struct {
 	environment *env.Environment
 	globals     *env.Environment
 	locals      map[any]int
-	impClass    map[string]func() *LoxClass
 	blockDepth  int64
 	callToken   *token.Token
 	LoxCalled   bool //Used in main.runLoxCode function
@@ -38,7 +69,6 @@ func NewInterpreter() *Interpreter {
 	interpreter := &Interpreter{
 		globals:    env.NewEnvironment(),
 		locals:     make(map[any]int),
-		impClass:   make(map[string]func() *LoxClass),
 		blockDepth: 0,
 		callToken:  nil,
 		LoxCalled:  util.DisableLoxCode,
@@ -83,7 +113,6 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineWebBrowserFuncs() //Defined in webbrowserfuncs.go
 	interpreter.defineWindowsFuncs()    //Defined in windowsfuncs_windows.go
 	interpreter.defineZipFuncs()        //Defined in zipfuncs.go
-	interpreter.impClass["misc"] = defineMiscFuncs
 	return interpreter
 }
 
@@ -2044,11 +2073,11 @@ var importFS embed.FS
 func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
 	importFileName := stmt.Name
 
-	if f, ok := i.impClass[importFileName]; ok {
+	if loxClass, ok := importClasses.get(importFileName); ok {
 		if len(stmt.AsName) > 0 {
-			i.globals.Define(stmt.AsName, f())
+			i.globals.Define(stmt.AsName, loxClass)
 		} else {
-			i.globals.Define(importFileName, f())
+			i.globals.Define(importFileName, loxClass)
 		}
 		return nil, nil
 	}
@@ -2115,6 +2144,7 @@ func (i *Interpreter) visitImportStmt(stmt Import) (any, error) {
 		nameSpaceClass.classProperties[name] = value
 	}
 	i.globals.Define(nameSpaceClassName, nameSpaceClass)
+	importClasses.setNoOverwrite(importFileName, nameSpaceClass)
 
 	return nil, nil
 }
