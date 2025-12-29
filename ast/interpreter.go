@@ -2545,6 +2545,7 @@ func (i *Interpreter) visitSetExpr(expr Set) (any, error) {
 	if class, ok := obj.(*LoxClass); ok {
 		return evaluateAndSet(func(value any) {
 			class.classProperties[expr.Name.Lexeme] = value
+			delete(class.bindedStaticMethods, expr.Name.Lexeme)
 		})
 	}
 	return nil, loxerror.RuntimeError(expr.Name, "Only classes and instances have properties that can be set.")
