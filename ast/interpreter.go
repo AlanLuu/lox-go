@@ -349,6 +349,16 @@ func getBufferElementHexResult(source any) string {
 	}
 }
 
+var getResultEscapeChars = map[rune]string{
+	'\a': "\\a",
+	'\n': "\\n",
+	'\r': "\\r",
+	'\t': "\\t",
+	'\b': "\\b",
+	'\f': "\\f",
+	'\v': "\\v",
+}
+
 func getResult(source any, originalSource any, isPrintStmt bool) string {
 	return getResultReal(source, originalSource, map[any]struct{}{}, isPrintStmt)
 }
@@ -388,19 +398,10 @@ func getResultReal(
 			sourceStr := source.str
 			_, originalIsString := originalSource.(*LoxString)
 			if !originalIsString || !isPrintStmt {
-				escapeChars := map[rune]string{
-					'\a': "\\a",
-					'\n': "\\n",
-					'\r': "\\r",
-					'\t': "\\t",
-					'\b': "\\b",
-					'\f': "\\f",
-					'\v': "\\v",
-				}
 				sourceQuoteRune := rune(source.quote)
 				var builder strings.Builder
 				for _, c := range source.str {
-					if escapeString, ok := escapeChars[c]; ok {
+					if escapeString, ok := getResultEscapeChars[c]; ok {
 						builder.WriteString(escapeString)
 					} else {
 						if c == sourceQuoteRune {
@@ -425,10 +426,27 @@ func getResultReal(
 				return fmt.Sprintf("%c%c", source.quote, source.quote)
 			}
 		} else {
+			sourceStr := source.str
+			_, originalIsLoxStringStr := originalSource.(LoxStringStr)
+			if !originalIsLoxStringStr || !isPrintStmt {
+				sourceQuoteRune := rune(source.quote)
+				var builder strings.Builder
+				for _, c := range source.str {
+					if escapeString, ok := getResultEscapeChars[c]; ok {
+						builder.WriteString(escapeString)
+					} else {
+						if c == sourceQuoteRune {
+							builder.WriteRune('\\')
+						}
+						builder.WriteRune(c)
+					}
+				}
+				sourceStr = builder.String()
+			}
 			if isPrintStmt {
-				return fmt.Sprint(source.str)
+				return fmt.Sprint(sourceStr)
 			} else {
-				return fmt.Sprintf("%c%v%c", source.quote, source.str, source.quote)
+				return fmt.Sprintf("%c%v%c", source.quote, sourceStr, source.quote)
 			}
 		}
 	case *LoxBuffer:
