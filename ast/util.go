@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/interfaces"
@@ -62,6 +63,13 @@ func getArgList(callback LoxCallable, numArgs int) list.List[any] {
 		}
 	}
 	return argList
+}
+
+func getStrQuote[T byte | rune](str string) T {
+	if strings.Contains(str, "'") {
+		return '"'
+	}
+	return '\''
 }
 
 func isValidPortNum[T int | int64](portNum T) bool {

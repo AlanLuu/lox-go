@@ -109,6 +109,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineStringFuncs()     //Defined in stringfuncs.go
 	interpreter.defineTarFuncs()        //Defined in tarfuncs.go
 	interpreter.defineUnsafeFuncs()     //Defined in unsafefuncs.go
+	interpreter.defineURLFuncs()        //Defined in urlfuncs.go
 	interpreter.defineUUIDFuncs()       //Defined in uuidfuncs.go
 	interpreter.defineWebBrowserFuncs() //Defined in webbrowserfuncs.go
 	interpreter.defineWindowsFuncs()    //Defined in windowsfuncs_windows.go
@@ -386,6 +387,44 @@ func getResultReal(
 			return fmt.Sprintf("%.1f", source)
 		default:
 			return util.FormatFloat(source)
+		}
+	case string:
+		getStrQuoteByte := getStrQuote[byte]
+		if len(source) == 0 {
+			if isPrintStmt {
+				return ""
+			} else {
+				quote := getStrQuoteByte(source)
+				return fmt.Sprintf("%c%c", quote, quote)
+			}
+		} else {
+			sourceStr := source
+			var quote byte = 0
+			_, originalIsString := originalSource.(string)
+			if !originalIsString || !isPrintStmt {
+				quote = getStrQuoteByte(source)
+				sourceQuoteRune := rune(quote)
+				var builder strings.Builder
+				for _, c := range source {
+					if escapeString, ok := getResultEscapeChars[c]; ok {
+						builder.WriteString(escapeString)
+					} else {
+						if c == sourceQuoteRune {
+							builder.WriteRune('\\')
+						}
+						builder.WriteRune(c)
+					}
+				}
+				sourceStr = builder.String()
+			}
+			if isPrintStmt {
+				return fmt.Sprint(sourceStr)
+			} else {
+				if quote == 0 {
+					quote = getStrQuoteByte(source)
+				}
+				return fmt.Sprintf("%c%v%c", quote, sourceStr, quote)
+			}
 		}
 	case *LoxString:
 		if len(source.str) == 0 {

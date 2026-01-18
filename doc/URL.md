@@ -1,0 +1,72 @@
+# URL methods and fields
+
+The following methods are defined in the built-in `URL` class:
+- `URL.dictQuery`
+- `URL.joinPath`
+- `URL.parse`
+- `URL.parseURI`
+- `URL.pathEscape`
+- `URL.pathUnescape`
+- `URL.query`
+- `URL.queryDict`
+- `URL.queryEscape`
+- `URL.queryUnescape`
+
+URL objects have the following methods and fields associated with them:
+- `URL object.clearUserPass()`
+- `URL object.escapedFragment`
+- `URL object.escapedPath`
+- `URL object.forceQuery(forceQuery)`
+- `URL object.fragment`
+- `URL object.host`
+- `URL object.hostname`
+- `URL object.isAbs()`
+- `URL object.joinPath(paths...)`
+- `URL object.omitHost(omitHost)`
+- `URL object.opaque`
+- `URL object.parse(ref)`
+- `URL object.path`
+- `URL object.port`
+- `URL object.query()`
+- `URL object.queryDict()`
+- `URL object.rawFragment`
+- `URL object.rawPath`
+- `URL object.rawQuery`
+- `URL object.redacted`
+- `URL object.requestURI`
+- `URL object.scheme`
+- `URL object.setUser(userStr)`
+- `URL object.setUserPass(userStr, passStr)`
+- `URL object.str`
+- `URL object.userInfoPass`
+- `URL object.userInfoStr`
+- `URL object.userInfoUser`
+
+URL values objects have the following methods associated with them:
+- `URL values object.add(key, value)`
+- `URL values object.addArgs(key, values...)`
+- `URL values object.addList(key, valuesList)`
+- `URL values object.clear()`
+- `URL values object.contains(key)`, which is an alias for `URL values object.has`
+- `URL values object.del(key)`
+- `URL values object.delFunc(key, callback)`
+- `URL values object.delKeepSet(callback)`
+- `URL values object.delKeepSetMap(callback)`
+- `URL values object.encoded()`
+- `URL values object.filter(callback)`
+- `URL values object.forEach(callback)`
+- `URL values object.forEachList(callback)`
+- `URL values object.getList(key)`
+- `URL values object.has(key)`
+- `URL values object.isEmpty()`
+- `URL values object.iterList()`
+- `URL values object.map(callback)`
+- `URL values object.numValues()`
+- `URL values object.set(key, value)`
+- `URL values object.setArgs(key, values...)`
+- `URL values object.setFunc(callback)`
+- `URL values object.setKeyToEmptyList(key)`
+- `URL values object.setList(key, valuesList)`
+- `URL values object.str()`, which is an alias for `URL values object.encoded`
+- `URL values object.toDict()`
+- `URL values object.toDictList()`

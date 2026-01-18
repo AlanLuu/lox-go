@@ -16,7 +16,7 @@ import (
 	"github.com/AlanLuu/lox/util"
 )
 
-func IndexMustBeWholeNum(theType string, index any) string {
+func IndexMustBe(theType string, index any, mustBe string) string {
 	indexVal := index
 	format := "%v"
 	switch index := index.(type) {
@@ -28,10 +28,15 @@ func IndexMustBeWholeNum(theType string, index any) string {
 		}
 	}
 	return fmt.Sprintf(
-		"%v index '"+format+"' must be an integer or bigint.",
+		"%v index '"+format+"' must be %v.",
 		theType,
 		indexVal,
+		mustBe,
 	)
+}
+
+func IndexMustBeWholeNum(theType string, index any) string {
+	return IndexMustBe(theType, index, "an integer or bigint")
 }
 
 func ListIndexMustBeWholeNum(index any) string {

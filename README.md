@@ -143,6 +143,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - For each iteration, `element` is each element of the RB tree
         - Priority queue
             - For each iteration, `element` is a list with two elements, with the first element being an element from the priority queue and the second element being that element's priority value as an integer
+        - URL values
+            - For each iteration, `element` is a list with two elements, with the first element being a key as a string and the second element being the first value associated with that key as a string
     - Note: when iterating over dictionaries or sets using a foreach loop, the iteration order is random since dictionaries and sets are unordered
 - Repeat statements are supported in this implementation of Lox, which repeatedly executes a statement for a certain number of times according to the expression
     ```js
@@ -280,6 +282,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various bigint and bigfloat mathematical methods are defined under a built-in class called `bigmath`, which is documented [here](./doc/bigmath.md)
 - Various methods and fields to work with HTML are defined under a built-in class called `HTML`, which is documented [here](./doc/HTML.md)
 - Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
+- Various methods and fields to work with URL strings are defined under a built-in-class called `URL`, which id documented [here](./doc/URL.md)
 - Various methods and fields to work with operating system functionality are defined under a built-in class called `os`, which is documented [here](./doc/os.md)
 - Various methods to work with HTTP requests are defined under a built-in class called `http`, which is documented [here](./doc/http.md)
 - Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
@@ -746,6 +749,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - Strings: the length is the number of characters in the string
         - Stringbuilders: the length is the number of characters in the stringbuilder
         - Stringreaders: the length is the number of unread bytes in the stringreader
+        - URL values objects: the length is the number of keys in the URL values object
     - `List(length)`, which returns a new list of the specified length, where each initial element is `nil`
     - `ListCap(capacity)`, which returns a new list of the specified capacity, which is the number of elements the list can store before having to internally resize the underlying array that stores the list elements when a new element is added
     - `ListIterable(iterable)`, which takes in an iterable and returns a list with the iterable elements as list elements
