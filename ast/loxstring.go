@@ -295,6 +295,51 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return len(l.str) == 0, nil
 		})
+	case "join":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if iterable, ok := args[0].(interfaces.Iterable); ok {
+				iterator := iterable.Iterator()
+				iteratorWithErr, isErrIter := iterator.(interfaces.IteratorErr)
+				hasNext := func() (bool, error) {
+					if isErrIter {
+						return iteratorWithErr.HasNextErr()
+					}
+					return iterator.HasNext(), nil
+				}
+				next := func() (any, error) {
+					if isErrIter {
+						return iteratorWithErr.NextErr()
+					}
+					return iterator.Next(), nil
+				}
+				ok, hasNextErr := hasNext()
+				if hasNextErr != nil {
+					return nil, loxerror.RuntimeError(name, hasNextErr.Error())
+				}
+				if !ok {
+					return EmptyLoxString(), nil
+				}
+				var builder strings.Builder
+				for {
+					value, nextErr := next()
+					if nextErr != nil {
+						return nil, loxerror.RuntimeError(name, nextErr.Error())
+					}
+					builder.WriteString(getResult(value, value, true))
+					ok, hasNextErr = hasNext()
+					if hasNextErr != nil {
+						return nil, loxerror.RuntimeError(name, hasNextErr.Error())
+					}
+					if !ok {
+						break
+					}
+					builder.WriteString(l.str)
+				}
+				return NewLoxStringQuote(builder.String()), nil
+			}
+			return nil, loxerror.RuntimeError(name,
+				"Argument to 'string.join' is not iterable.")
+		})
 	case "lastIndex":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

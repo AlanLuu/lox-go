@@ -417,6 +417,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - If `fromIndex <= 0`, this method returns the same value as `string.index(string2)`
             - If `fromIndex > len(string)`, this method returns `-1`
         - `string.isEmpty()`, which returns `true` if the length of the string is 0 and `false` otherwise
+        - `string.join(iterable)`, which returns a string that is the concatenation of the string representations of the elements from the specified iterable, where the separator between the string representations of those elements is the original string
         - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
         - `string.lastIndexFrom(string2, fromIndex)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, starting at the index `fromIndex`, which is an integer, or `-1` if `string2` is not in `string` starting at the index `fromIndex`
             - If `fromIndex >= len(string)`, this method returns the same value as `string.lastIndex(string2)`
