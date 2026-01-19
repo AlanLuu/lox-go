@@ -435,6 +435,54 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return int64(-1), nil
 		})
+	case "ljust":
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var width int64
+			var fillStr string = " "
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				if arg, ok := args[0].(int64); ok {
+					width = arg
+				} else {
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'string.ljust' must be an integer.")
+				}
+				if argsLen == 2 {
+					const errStr = "Second argument to 'string.ljust' must be a single character."
+					if arg, ok := args[1].(*LoxString); ok {
+						if arg.Length() != 1 {
+							return nil, loxerror.RuntimeError(name, errStr)
+						}
+						fillStr = arg.str
+					} else {
+						return nil, loxerror.RuntimeError(name, errStr)
+					}
+				}
+			default:
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"Expected 1 or 2 arguments but got %v.",
+						argsLen,
+					),
+				)
+			}
+			sLen := l.Length()
+			if width <= sLen {
+				return l, nil
+			}
+			var builder strings.Builder
+			builder.WriteString(l.str)
+			for sLen < width {
+				builder.WriteString(fillStr)
+				sLen++
+				if sLen < 0 {
+					break
+				}
+			}
+			return NewLoxStringQuote(builder.String()), nil
+		})
 	case "lower":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return NewLoxString(strings.ToLower(l.str), l.quote), nil
@@ -528,6 +576,53 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 				}
 			}
 			return NewLoxStringQuote(builder.String()), nil
+		})
+	case "rjust":
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var width int64
+			var fillStr string = " "
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				if arg, ok := args[0].(int64); ok {
+					width = arg
+				} else {
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'string.rjust' must be an integer.")
+				}
+				if argsLen == 2 {
+					const errStr = "Second argument to 'string.rjust' must be a single character."
+					if arg, ok := args[1].(*LoxString); ok {
+						if arg.Length() != 1 {
+							return nil, loxerror.RuntimeError(name, errStr)
+						}
+						fillStr = arg.str
+					} else {
+						return nil, loxerror.RuntimeError(name, errStr)
+					}
+				}
+			default:
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"Expected 1 or 2 arguments but got %v.",
+						argsLen,
+					),
+				)
+			}
+			sLen := l.Length()
+			if width <= sLen {
+				return l, nil
+			}
+			s := l.str
+			for sLen < width {
+				s = fillStr + s
+				sLen++
+				if sLen < 0 {
+					break
+				}
+			}
+			return NewLoxStringQuote(s), nil
 		})
 	case "rot13":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {

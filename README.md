@@ -425,6 +425,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.lastIndexFrom(string2, fromIndex)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, starting at the index `fromIndex`, which is an integer, or `-1` if `string2` is not in `string` starting at the index `fromIndex`
             - If `fromIndex >= len(string)`, this method returns the same value as `string.lastIndex(string2)`
             - If `fromIndex < 0`, this method returns `-1`
+        - `string.ljust(length, [fillChar])`, which returns a new string where the original string is padded with `fillChar` on the right, causing a left justification of the original string, until the new string is of the specified integer length, where `fillChar` is a string that contains a single Unicode character (if unspecified, a single space character is used as the padding character)
+            - If `length <= len(string)`, this method returns the original string
         - `string.lower()`, which returns a new string with all lowercase letters
         - `string.lstrip([chars])`, which returns a new string with all leading characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading whitespace, newlines, and tabs removed
         - `string.padEnd(length, padStr)`, which pads the contents of `padStr` to the end of `string` until the new string is of length `length`
@@ -434,6 +436,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.reversed()`, which returns a new string that is the original string in reversed order
         - `string.reversedWords([delimiter])`, which returns a new string where each word from the original string is in backwards order, where each word is taken to be each string in a list of strings after splitting the original string by the specified delimiter string. If `delimiter` is omitted, the delimiter is a string with a single space
             - Example: `"hello world".reversedWords() == "world hello"`
+        - `string.rjust(length, [fillChar])`, which returns a new string where the original string is padded with `fillChar` on the left, causing a right justification of the original string, until the new string is of the specified integer length, where `fillChar` is a string that contains a single Unicode character (if unspecified, a single space character is used as the padding character)
+            - If `length <= len(string)`, this method returns the original string
         - `string.rot13()`, which returns a new string that is the ROT13 encoding of the original string
         - `string.rot18()`, which returns a new string that is the ROT18 encoding of the original string
             - ROT18 is a variation of ROT13 that combines ROT13 with ROT5, which shifts numerical digits by a factor of 5
