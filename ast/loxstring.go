@@ -191,6 +191,59 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			newStr := strings.ToUpper(string(runes[0])) + strings.ToLower(string(runes[1:]))
 			return NewLoxString(newStr, l.quote), nil
 		})
+	case "center":
+		return strFunc(-1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			var width int64
+			var fillStr string = " "
+			argsLen := len(args)
+			switch argsLen {
+			case 1, 2:
+				if arg, ok := args[0].(int64); ok {
+					width = arg
+				} else {
+					return nil, loxerror.RuntimeError(name,
+						"First argument to 'string.center' must be an integer.")
+				}
+				if argsLen == 2 {
+					const errStr = "Second argument to 'string.center' must be a single character."
+					if arg, ok := args[1].(*LoxString); ok {
+						if arg.Length() != 1 {
+							return nil, loxerror.RuntimeError(name, errStr)
+						}
+						fillStr = arg.str
+					} else {
+						return nil, loxerror.RuntimeError(name, errStr)
+					}
+				}
+			default:
+				return nil, loxerror.RuntimeError(
+					name,
+					fmt.Sprintf(
+						"Expected 1 or 2 arguments but got %v.",
+						argsLen,
+					),
+				)
+			}
+			sLen := l.Length()
+			if width <= sLen {
+				return l, nil
+			}
+			s := l.str
+			b := sLen%2 == 0
+			for sLen < width {
+				if b {
+					s = fillStr + s
+				} else {
+					s += fillStr
+				}
+				sLen++
+				if sLen < 0 {
+					break
+				}
+				b = !b
+			}
+			return NewLoxStringQuote(s), nil
+		})
 	case "compare":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

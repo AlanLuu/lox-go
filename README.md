@@ -403,6 +403,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Besides these features, strings also have some methods associated with them:
         - `string.caesar(shift)`, which returns a new string that is the original string encoded by a caesar cipher of the specified shift amount, which is an integer
         - `string.capitalize()`, which returns a new string with the first character from the original string capitalized if possible and the rest of the characters in lowercase if possible
+        - `string.center(length, [fillChar])`, which returns a new string where the original string is padded with `fillChar` on the left and right until the new string is of the specified integer length, where `fillChar` is a string that contains a single Unicode character (if unspecified, a single space character is used as the padding character)
+            - If `length <= len(string)`, this method returns the original string
+            - Padding begins on the left if the original string has an even length, otherwise padding begins on the right
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.count(string2)`, which returns an integer representing the number of times `string2` appears in `string` in a non-overlapping manner
