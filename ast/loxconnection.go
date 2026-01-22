@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -13,10 +14,11 @@ import (
 )
 
 type LoxConnection struct {
-	conn       net.Conn
-	lineReader *bufio.Reader
-	isClosed   bool
-	methods    map[string]*struct{ ProtoLoxCallable }
+	conn             net.Conn
+	lineReader       *bufio.Reader
+	isClosed         bool
+	errOnReadTimeout bool
+	methods          map[string]*struct{ ProtoLoxCallable }
 }
 
 func NewLoxConnection(conn net.Conn) *LoxConnection {
@@ -24,10 +26,11 @@ func NewLoxConnection(conn net.Conn) *LoxConnection {
 		panic("in NewLoxConnection: conn is nil")
 	}
 	return &LoxConnection{
-		conn:       conn,
-		lineReader: nil,
-		isClosed:   false,
-		methods:    make(map[string]*struct{ ProtoLoxCallable }),
+		conn:             conn,
+		lineReader:       nil,
+		isClosed:         false,
+		errOnReadTimeout: true,
+		methods:          make(map[string]*struct{ ProtoLoxCallable }),
 	}
 }
 
@@ -46,6 +49,14 @@ func (l *LoxConnection) initLineReader() {
 	if l.lineReader == nil {
 		l.lineReader = bufio.NewReader(l.conn)
 	}
+}
+
+func (l *LoxConnection) shouldReturnTimeoutErr(err error, b bool) bool {
+	return err != nil && (b || !errors.Is(err, os.ErrDeadlineExceeded))
+}
+
+func (l *LoxConnection) shouldReturnReadTimeoutErr(err error) bool {
+	return l.shouldReturnTimeoutErr(err, l.errOnReadTimeout)
 }
 
 func (l *LoxConnection) Get(name *token.Token) (any, error) {
@@ -83,6 +94,14 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 			l.close()
 			return nil, nil
 		})
+	case "errOnReadTimeout":
+		return connFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if errOnReadTimeout, ok := args[0].(bool); ok {
+				l.errOnReadTimeout = errOnReadTimeout
+				return nil, nil
+			}
+			return argMustBeType("boolean")
+		})
 	case "isClosed":
 		return connFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return l.isClosed, nil
@@ -106,7 +125,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 	case "readBuffer":
 		return connFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			bytes, err := io.ReadAll(l.conn)
-			if err != nil {
+			if l.shouldReturnReadTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			buffer := EmptyLoxBufferCap(int64(len(bytes)))
@@ -122,7 +141,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 		return connFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.initLineReader()
 			bytes, err := l.lineReader.ReadBytes('\n')
-			if err != nil {
+			if l.shouldReturnReadTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			buffer := EmptyLoxBufferCap(int64(len(bytes)))
@@ -142,7 +161,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 			iterator := ProtoIterator{}
 			iterator.hasNextMethod = func() bool {
 				bytes, err = l.lineReader.ReadBytes('\n')
-				return err == nil
+				return l.shouldReturnReadTimeoutErr(err)
 			}
 			iterator.nextMethod = func() any {
 				buffer := EmptyLoxBufferCap(int64(len(bytes)))
@@ -156,7 +175,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 	case "readString":
 		return connFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			bytes, err := io.ReadAll(l.conn)
-			if err != nil {
+			if l.shouldReturnReadTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			return NewLoxStringQuote(string(bytes)), nil
@@ -165,7 +184,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 		return connFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			l.initLineReader()
 			str, err := l.lineReader.ReadString('\n')
-			if err != nil {
+			if l.shouldReturnReadTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			return NewLoxStringQuote(str), nil
@@ -178,7 +197,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 			iterator := ProtoIterator{}
 			iterator.hasNextMethod = func() bool {
 				str, err = l.lineReader.ReadString('\n')
-				return err == nil
+				return l.shouldReturnReadTimeoutErr(err)
 			}
 			iterator.nextMethod = func() any {
 				return NewLoxStringQuote(str)
@@ -198,7 +217,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 				return argMustBeType("file or string")
 			}
 			bytes, err := io.ReadAll(l.conn)
-			if err != nil {
+			if l.shouldReturnReadTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			switch arg := args[0].(type) {
@@ -229,7 +248,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 			}
 			l.initLineReader()
 			bytes, err := l.lineReader.ReadBytes('\n')
-			if err != nil {
+			if l.shouldReturnReadTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			switch arg := args[0].(type) {

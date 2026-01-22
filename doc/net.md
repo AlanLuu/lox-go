@@ -164,6 +164,7 @@ IP address instances have the following methods associated with them:
 Connection objects have the following methods associated with them:
 - `connection.close()`
 - `connection.closeForce()`
+- `connection.errOnReadTimeout(bool)`
 - `connection.isClosed()`
 - `connection.localAddrNetwork()`
 - `connection.localAddrString()`
