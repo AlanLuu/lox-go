@@ -14,11 +14,12 @@ import (
 )
 
 type LoxConnection struct {
-	conn             net.Conn
-	lineReader       *bufio.Reader
-	isClosed         bool
-	errOnReadTimeout bool
-	methods          map[string]*struct{ ProtoLoxCallable }
+	conn              net.Conn
+	lineReader        *bufio.Reader
+	isClosed          bool
+	errOnReadTimeout  bool
+	errOnWriteTimeout bool
+	methods           map[string]*struct{ ProtoLoxCallable }
 }
 
 func NewLoxConnection(conn net.Conn) *LoxConnection {
@@ -26,11 +27,12 @@ func NewLoxConnection(conn net.Conn) *LoxConnection {
 		panic("in NewLoxConnection: conn is nil")
 	}
 	return &LoxConnection{
-		conn:             conn,
-		lineReader:       nil,
-		isClosed:         false,
-		errOnReadTimeout: true,
-		methods:          make(map[string]*struct{ ProtoLoxCallable }),
+		conn:              conn,
+		lineReader:        nil,
+		isClosed:          false,
+		errOnReadTimeout:  true,
+		errOnWriteTimeout: true,
+		methods:           make(map[string]*struct{ ProtoLoxCallable }),
 	}
 }
 
@@ -57,6 +59,10 @@ func (l *LoxConnection) shouldReturnTimeoutErr(err error, b bool) bool {
 
 func (l *LoxConnection) shouldReturnReadTimeoutErr(err error) bool {
 	return l.shouldReturnTimeoutErr(err, l.errOnReadTimeout)
+}
+
+func (l *LoxConnection) shouldReturnWriteTimeoutErr(err error) bool {
+	return l.shouldReturnTimeoutErr(err, l.errOnWriteTimeout)
 }
 
 func (l *LoxConnection) Get(name *token.Token) (any, error) {
@@ -98,6 +104,14 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 		return connFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if errOnReadTimeout, ok := args[0].(bool); ok {
 				l.errOnReadTimeout = errOnReadTimeout
+				return nil, nil
+			}
+			return argMustBeType("boolean")
+		})
+	case "errOnWriteTimeout":
+		return connFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if errOnWriteTimeout, ok := args[0].(bool); ok {
+				l.errOnWriteTimeout = errOnWriteTimeout
 				return nil, nil
 			}
 			return argMustBeType("boolean")
@@ -344,7 +358,7 @@ func (l *LoxConnection) Get(name *token.Token) (any, error) {
 				return argMustBeType("buffer, file, or string")
 			}
 			numBytes, err := l.conn.Write(bytes)
-			if err != nil {
+			if l.shouldReturnWriteTimeoutErr(err) {
 				return nil, loxerror.RuntimeError(name, err.Error())
 			}
 			return int64(numBytes), nil

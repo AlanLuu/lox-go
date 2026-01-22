@@ -165,6 +165,7 @@ Connection objects have the following methods associated with them:
 - `connection.close()`
 - `connection.closeForce()`
 - `connection.errOnReadTimeout(bool)`
+- `connection.errOnWriteTimeout(bool)`
 - `connection.isClosed()`
 - `connection.localAddrNetwork()`
 - `connection.localAddrString()`
