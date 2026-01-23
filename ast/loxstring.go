@@ -344,9 +344,111 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return int64(result) + fromIndex, nil
 		})
+	case "isAlnum", "isalnum":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsLetter(c) && !unicode.IsDigit(c) && !unicode.IsNumber(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isAlpha", "isalpha":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsLetter(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isAscii", "isascii":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			for _, c := range l.str {
+				if c > unicode.MaxASCII {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isDigit", "isdigit":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsDigit(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
 	case "isEmpty":
 		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 			return len(l.str) == 0, nil
+		})
+	case "isLower", "islower":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsLower(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isNumeric", "isnumeric":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsNumber(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isPrintable", "isprintable":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			for _, c := range l.str {
+				if !unicode.IsPrint(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isSpace", "isspace":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsSpace(c) {
+					return false, nil
+				}
+			}
+			return true, nil
+		})
+	case "isUpper", "isupper":
+		return strFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.str == "" {
+				return false, nil
+			}
+			for _, c := range l.str {
+				if !unicode.IsUpper(c) {
+					return false, nil
+				}
+			}
+			return true, nil
 		})
 	case "join":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
