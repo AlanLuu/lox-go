@@ -265,6 +265,33 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "cut":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				before, after, _ := strings.Cut(l.str, loxStr.str)
+				pair := list.NewListCap[any](2)
+				pair.Add(NewLoxStringQuote(before))
+				pair.Add(NewLoxStringQuote(after))
+				return NewLoxList(pair), nil
+			}
+			return argMustBeType("string")
+		})
+	case "cutPrefix":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				s, _ := strings.CutPrefix(l.str, loxStr.str)
+				return NewLoxStringQuote(s), nil
+			}
+			return argMustBeType("string")
+		})
+	case "cutSuffix":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				s, _ := strings.CutSuffix(l.str, loxStr.str)
+				return NewLoxStringQuote(s), nil
+			}
+			return argMustBeType("string")
+		})
 	case "endsWith":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {

@@ -410,6 +410,10 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
         - `string.count(string2)`, which returns an integer representing the number of times `string2` appears in `string` in a non-overlapping manner
             - If `string2` is an empty string, this method returns 1 plus the number of Unicode characters in `string`
+        - `string.cut(separator)`, which returns a list of two strings where the first string is the text before the specified separator string in the original string and the second string is the text after the specified separator string in the original string
+            - If the separator is not in the original string, the returned list's string elements are a copy of the original string and an empty string
+        - `string.cutPrefix(prefix)`, which returns a new string where the prefix from the original string specified by the prefix string is removed if the prefix exists, otherwise a copy of the original string is returned
+        - `string.cutSuffix(suffix)`, which returns a new string where the suffix from the original string specified by the suffix string is removed if the suffix exists, otherwise a copy of the original string is returned
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
         - `string.equalsIgnoreCase(string2)`, which returns `true` if `string` equals `string2`, ignoring letter case, and `false` otherwise
         - `string.fields()`, which returns a list containing all substrings that are separated by one or more consecutive whitespace characters
@@ -419,26 +423,26 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.indexFrom(string2, fromIndex)`, which returns an integer representing the index value of the location of `string2` in `string`, starting at the index `fromIndex`, which is an integer, or `-1` if `string2` is not in `string` starting at the index `fromIndex`
             - If `fromIndex <= 0`, this method returns the same value as `string.index(string2)`
             - If `fromIndex > len(string)`, this method returns `-1`
-        - `string.isAlnum()`, which returns `true` if all characters in the specified string are alphanumeric and `false` otherwise
+        - `string.isAlnum()`, which returns `true` if all characters in the string are alphanumeric and `false` otherwise
             - Alias: `string.isalnum`
-        - `string.isAlpha()`, which returns `true` if all characters in the specified string are letters according to Unicode and `false` otherwise
+        - `string.isAlpha()`, which returns `true` if all characters in the string are letters according to Unicode and `false` otherwise
             - Alias: `string.isalpha`
-        - `string.isAscii()`, which returns `true` if all characters in the specified string are ASCII and `false` otherwise
+        - `string.isAscii()`, which returns `true` if all characters in the string are ASCII and `false` otherwise
             - Alias: `string.isascii`
             - This method returns `true` for an empty string
-        - `string.isDigit()`, which returns `true` if all characters in the specified string are digits and `false` otherwise
+        - `string.isDigit()`, which returns `true` if all characters in the string are digits and `false` otherwise
             - Alias: `string.isdigit`
         - `string.isEmpty()`, which returns `true` if the length of the string is 0 and `false` otherwise
-        - `string.isLower()`, which returns `true` if all characters in the specified string are lowercase letters and `false` otherwise
+        - `string.isLower()`, which returns `true` if all characters in the string are lowercase letters and `false` otherwise
             - Alias: `string.islower`
-        - `string.isNumeric()`, which returns `true` if all characters in the specified string are numeric characters and `false` otherwise
+        - `string.isNumeric()`, which returns `true` if all characters in the string are numeric characters and `false` otherwise
             - Alias: `string.isnumeric`
-        - `string.isPrintable()`, which returns `true` if all characters in the specified string are printable characters and `false` otherwise
+        - `string.isPrintable()`, which returns `true` if all characters in the string are printable characters and `false` otherwise
             - Alias: `string.isprintable`
             - This method returns `true` for an empty string
-        - `string.isSpace()`, which returns `true` if all characters in the specified string are whitespace characters and `false` otherwise
+        - `string.isSpace()`, which returns `true` if all characters in the string are whitespace characters and `false` otherwise
             - Alias: `string.isspace`
-        - `string.isUpper()`, which returns `true` if all characters in the specified string are uppercase letters and `false` otherwise
+        - `string.isUpper()`, which returns `true` if all characters in the string are uppercase letters and `false` otherwise
             - Alias: `string.isupper`
         - `string.join(iterable)`, which returns a string that is the concatenation of the string representations of the elements from the specified iterable, where the separator between the string representations of those elements is the original string
         - `string.lastIndex(string2)`, which returns an integer representing the index value of the last occurrence of `string2` in `string`, or `-1` if `string2` is not in `string`
