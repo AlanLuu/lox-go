@@ -367,7 +367,7 @@ func (i *Interpreter) defineCryptoFuncs() {
 		callable := args[0].(LoxCallable)
 		var result any
 		switch callable := callable.(type) {
-		case LoxCallable:
+		case *LoxFunction:
 			argList := getArgList(callable, 0)
 			callResult, resultErr := callable.call(i, argList)
 			if callresultReturn, ok := callResult.(Return); ok {
