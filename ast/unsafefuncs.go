@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -37,38 +38,27 @@ func (i *Interpreter) defineUnsafeFuncs() {
 		}
 		times := args[0].(int64)
 		if times > 0 {
-			type errStruct struct {
-				err error
-				num int64
-			}
-			errorChan := make(chan errStruct, times)
-			callbackChan := make(chan struct{}, times)
 			callback := args[1].(LoxCallable)
+			var wg sync.WaitGroup
 			for i := int64(0); i < times; i++ {
+				wg.Add(1)
 				go func(num int64) {
+					defer wg.Done()
 					argList := getArgList(callback, 1)
 					argList[0] = num
 					result, resultErr := callback.call(in, argList)
 					if resultErr != nil && result == nil {
-						errorChan <- errStruct{resultErr, num}
-					} else {
-						callbackChan <- struct{}{}
+						fmt.Fprintf(
+							os.Stderr,
+							"Runtime error in thread #%v: %v\n",
+							num,
+							strings.ReplaceAll(resultErr.Error(), "\n", " "),
+						)
 					}
 					argList.Clear()
 				}(i + 1)
 			}
-			for i := int64(0); i < times; i++ {
-				select {
-				case errStruct := <-errorChan:
-					fmt.Fprintf(
-						os.Stderr,
-						"Runtime error in thread #%v: %v\n",
-						errStruct.num,
-						strings.ReplaceAll(errStruct.err.Error(), "\n", " "),
-					)
-				case <-callbackChan:
-				}
-			}
+			wg.Wait()
 		}
 		return nil, nil
 	})
@@ -105,42 +95,27 @@ func (i *Interpreter) defineUnsafeFuncs() {
 		}
 		times := args[0].(int64)
 		if times > 0 {
-			type errStruct struct {
-				err error
-				num int64
-			}
-			numThreads := times * numCallbacks
-			errorChan := make(chan errStruct, numThreads)
-			callbackChan := make(chan struct{}, numThreads)
-			threadNum := int64(1)
+			callback := args[1].(LoxCallable)
+			var wg sync.WaitGroup
 			for i := int64(0); i < times; i++ {
-				for _, callback := range callbacks {
-					go func(num int64) {
-						argList := getArgList(callback, 1)
-						argList[0] = num
-						result, resultErr := callback.call(in, argList)
-						if resultErr != nil && result == nil {
-							errorChan <- errStruct{resultErr, num}
-						} else {
-							callbackChan <- struct{}{}
-						}
-						argList.Clear()
-					}(threadNum)
-					threadNum++
-				}
+				wg.Add(1)
+				go func(num int64) {
+					defer wg.Done()
+					argList := getArgList(callback, 1)
+					argList[0] = num
+					result, resultErr := callback.call(in, argList)
+					if resultErr != nil && result == nil {
+						fmt.Fprintf(
+							os.Stderr,
+							"Runtime error in thread #%v: %v\n",
+							num,
+							strings.ReplaceAll(resultErr.Error(), "\n", " "),
+						)
+					}
+					argList.Clear()
+				}(i + 1)
 			}
-			for i := int64(0); i < numThreads; i++ {
-				select {
-				case errStruct := <-errorChan:
-					fmt.Fprintf(
-						os.Stderr,
-						"Runtime error in thread #%v: %v\n",
-						errStruct.num,
-						strings.ReplaceAll(errStruct.err.Error(), "\n", " "),
-					)
-				case <-callbackChan:
-				}
-			}
+			wg.Wait()
 		}
 		callbacks.Clear()
 		return nil, nil
