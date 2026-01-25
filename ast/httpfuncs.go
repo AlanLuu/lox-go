@@ -819,7 +819,6 @@ func (i *Interpreter) defineHTTPFuncs() {
 		case <-serveChan:
 		}
 
-		serveMux.RemoveHandler("/")
 		if serveErr != nil {
 			return nil, loxerror.RuntimeError(in.callToken, serveErr.Error())
 		}
