@@ -93,6 +93,12 @@ func LoxHTTPSendRequest(req *http.Request) (*LoxHTTPResponse, error) {
 	})
 }
 
+func LoxHTTPSendRequestClient(client *http.Client, req *http.Request) (*LoxHTTPResponse, error) {
+	return LoxHTTPResHelper(req.URL.String(), func() (*http.Response, error) {
+		return client.Do(req)
+	})
+}
+
 func (l *LoxHTTPResponse) close() {
 	if !l.isClosed {
 		l.res.Body.Close()

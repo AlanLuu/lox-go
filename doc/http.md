@@ -24,6 +24,7 @@ The following methods are defined in the built-in `http` class:
 - `http.postText(url, text, [headers])`, which sends an HTTP POST request to the specified URL along with the body text specified as a string and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body text is sent with a `Content-Type` of `text/plain` if it is nonempty
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.req([url])`, which returns a new http request object with the specified URL string or URL object, or an empty URL if `url` is omitted
 - `http.request(method, url, body, [headers])`, which sends an HTTP request with the specified method string to the specified URL along with the body parameter. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body parameter can be one of the following types:
         - Buffer, which is sent with a `Content-Type` of `application/octet-stream` if it is nonempty
@@ -41,6 +42,40 @@ The following methods are defined in the built-in `http` class:
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.serve([path], port)`, which starts an HTTP server that serves all files and directories in the specified directory path on the specified port number. If the path is omitted, the current working directory's path is used as the path to serve
     - On success, this method blocks until it is interrupted using Ctrl+C, in which case the server is shut down and a runtime error is thrown
+
+HTTP request objects have the following methods associated with them:
+- `request.body(buffer/dict/string/urlvalues)`
+- `request.bodyClear()`
+- `request.contentLength(length)`
+- `request.contentType(type)`
+- `request.cookieClear()`
+- `request.cookieJar()`
+- `request.cookieKV(key, value)`
+- `request.form(buffer/dict/string/urlvalues)`
+- `request.formData(buffer/dict/string/urlvalues)`
+- `request.headerAdd(key, value)`
+- `request.headerClear()`
+- `request.headerDel(key)`
+- `request.headerSet(key, value)`
+- `request.json(buffer/dict/string/urlvalues)`
+- `request.method(methodStr)`
+- `request.methodCONNECT()`
+- `request.methodDELETE()`
+- `request.methodGET()`
+- `request.methodHEAD()`
+- `request.methodOPTIONS()`
+- `request.methodPATCH()`
+- `request.methodPOST()`
+- `request.methodPUT()`
+- `request.methodTRACE()`
+- `request.redirects(numRedirects)`
+- `request.send()`
+- `request.sendRet()`
+- `request.sendThreads(numThreads)`
+- `request.timeout(duration)`
+- `request.timeoutClear()`
+- `request.url(string/url)`
+- `request.userAgent(userAgentStr)`
 
 HTTP response objects have the following methods and fields associated with them:
 - `response.close()`, which closes the underlying response content stream, preventing access to `response.raw` and `response.text` if any of them haven't been accessed before from the caller before closing the response
