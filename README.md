@@ -469,6 +469,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.rstrip([chars])`, which returns a new string with all trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all trailing whitespace, newlines, and tabs removed
         - `string.shuffled()`, which returns a new string that is a shuffled version of the original string
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
+        - `string.splitAfter(delimiter)`, which returns a list containing all substrings that are after each instance of `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace, newlines, and tabs removed
         - `string.swapcase()`, which returns a new string with all lowercase characters converted to uppercase and vice-versa

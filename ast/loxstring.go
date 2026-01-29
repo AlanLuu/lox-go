@@ -833,6 +833,18 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "splitAfter":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				splitSlice := strings.SplitAfter(l.str, loxStr.str)
+				loxList := list.NewListCap[any](int64(len(splitSlice)))
+				for _, str := range splitSlice {
+					loxList.Add(NewLoxStringQuote(str))
+				}
+				return NewLoxList(loxList), nil
+			}
+			return argMustBeType("string")
+		})
 	case "startsWith":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
