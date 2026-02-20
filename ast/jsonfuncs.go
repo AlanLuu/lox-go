@@ -95,7 +95,6 @@ func (i *Interpreter) defineJSONFuncs() {
 						switch c {
 						case '\'':
 							useDoubleQuote = true
-							fallthrough
 						case '"', '\\':
 							finalStrBuilder.WriteRune('\\')
 						}
