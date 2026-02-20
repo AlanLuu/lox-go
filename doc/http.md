@@ -5,6 +5,7 @@ Any method that fails will throw a runtime error with a message describing the e
 The following methods are defined in the built-in `http` class:
 - `http.get(url, [headers])`, which sends an HTTP GET request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.handler(callback)`, which returns an HTTP handler object from the specified callback function
 - `http.head(url, [headers])`, which sends an HTTP HEAD request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.post(url, [headers])`, which sends an HTTP POST request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
@@ -24,7 +25,7 @@ The following methods are defined in the built-in `http` class:
 - `http.postText(url, text, [headers])`, which sends an HTTP POST request to the specified URL along with the body text specified as a string and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body text is sent with a `Content-Type` of `text/plain` if it is nonempty
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
-- `http.req([url])`, which returns a new http request object with the specified URL string or URL object, or an empty URL if `url` is omitted
+- `http.req([url])`, which returns an HTTP request object with the specified URL string or URL object, or an empty URL if `url` is omitted
 - `http.request(method, url, body, [headers])`, which sends an HTTP request with the specified method string to the specified URL along with the body parameter. If the headers dictionary is specified, all headers in the dictionary are sent with the request
     - The body parameter can be one of the following types:
         - Buffer, which is sent with a `Content-Type` of `application/octet-stream` if it is nonempty
@@ -42,6 +43,8 @@ The following methods are defined in the built-in `http` class:
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.serve([path], port)`, which starts an HTTP server that serves all files and directories in the specified directory path on the specified port number. If the path is omitted, the current working directory's path is used as the path to serve
     - On success, this method blocks until it is interrupted using Ctrl+C, in which case the server is shut down and a runtime error is thrown
+- `http.srvTest(handler/callback)`, which returns an HTTP test server instance from the specified HTTP handler object or callback function
+- `http.srvTestUnstarted(handler/callback)`, which returns an unstarted HTTP test server instance from the specified HTTP handler object or callback function
 
 HTTP request objects have the following methods associated with them:
 - `request.body(buffer/dict/string/urlvalues)`
@@ -109,3 +112,23 @@ HTTP cookie objects have the following methods and fields associated with them:
 - `cookie.valid()`, which returns `true` if the cookie is valid and `false` otherwise
 - `cookie.validErr()`, which returns an error object representing the error if the cookie is not valid
 - `cookie.validThrowErr()`, which returns `nil` if the cookie is valid and throws a runtime error otherwise
+
+HTTP handler objects have the following methods associated with them:
+- `http handler.delAllIgnoredEndPaths()`
+- `http handler.delIgnoredEndPath(path)`
+- `http handler.hasIgnoredEndPath(path)`
+- `http handler.ignoredEndPaths()`
+- `http handler.ignoredEndPathsList()`
+- `http handler.ignoreEndPath(path)`
+- `http handler.ignoreFaviconPath()`
+- `http handler.logging(loggingEnabled)`
+- `http handler.wouldIgnorePath(path)`
+
+HTTP test servers have the following methods and fields associated with them:
+- `http test server.close()`
+- `http test server.isClosed()`
+- `http test server.isStarted()`
+- `http test server.start()`
+- `http test server.url`
+- `http test server.wait()`
+- `http test server.waitForever()`

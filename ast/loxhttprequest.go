@@ -333,7 +333,7 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 			return l, nil
 		})
 	case "json":
-		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+		return requestFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			switch arg := args[0].(type) {
 			case *LoxBuffer:
 				b := make([]byte, 0, len(arg.elements))
@@ -342,11 +342,14 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 				}
 				l.setBodyToReader(bytes.NewReader(b))
 			case *LoxDict:
-				formStr, err := formDictToStr(arg, methodName)
+				jsonStr, err, test := jsonDictToStr(i, arg)
 				if err != nil {
-					return nil, loxerror.RuntimeError(name, err.Error())
+					if test {
+						return nil, loxerror.RuntimeError(name, err.Error())
+					}
+					return nil, err
 				}
-				l.setBodyToReader(strings.NewReader(formStr))
+				l.setBodyToReader(strings.NewReader(jsonStr))
 			case *LoxString:
 				l.setBodyToReader(strings.NewReader(arg.str))
 			case *LoxURLValues:

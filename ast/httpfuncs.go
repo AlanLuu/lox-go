@@ -144,6 +144,12 @@ func (i *Interpreter) defineHTTPFuncs() {
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
 	})
+	httpFunc("handler", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if callable, ok := args[0].(LoxCallable); ok {
+			return NewLoxHTTPHandler(in, callable), nil
+		}
+		return argMustBeType(in.callToken, "handler", "function")
+	})
 	httpFunc("head", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		switch argsLen {
@@ -823,6 +829,50 @@ func (i *Interpreter) defineHTTPFuncs() {
 			return nil, loxerror.RuntimeError(in.callToken, serveErr.Error())
 		}
 		return nil, nil
+	})
+	httpFunc("srvTest", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var srv *LoxHTTPTestServer
+		var err error
+		switch arg := args[0].(type) {
+		case http.Handler:
+			srv, err = NewLoxHTTPTestServerStarted(arg)
+		case LoxCallable:
+			srv, err = NewLoxHTTPTestServerStarted(NewLoxHTTPHandler(in, arg))
+		default:
+			return argMustBeType(in.callToken, "srvTest", "function or http handler")
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf(
+					"http.srvTest: %v",
+					err.Error(),
+				),
+			)
+		}
+		return srv, nil
+	})
+	httpFunc("srvTestUnstarted", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		var srv *LoxHTTPTestServer
+		var err error
+		switch arg := args[0].(type) {
+		case http.Handler:
+			srv, err = NewLoxHTTPTestServerUnstarted(arg)
+		case LoxCallable:
+			srv, err = NewLoxHTTPTestServerUnstarted(NewLoxHTTPHandler(in, arg))
+		default:
+			return argMustBeType(in.callToken, "srvTestUnstarted", "function or http handler")
+		}
+		if err != nil {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				fmt.Sprintf(
+					"http.srvTestUnstarted: %v",
+					err.Error(),
+				),
+			)
+		}
+		return srv, nil
 	})
 
 	i.globals.Define(className, httpClass)
