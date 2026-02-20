@@ -196,7 +196,7 @@ func (i *Interpreter) defineJSONFuncs() {
 					finalStrBuilder.WriteString(escapeChar)
 				} else {
 					switch c {
-					case '"', '\'', '\\':
+					case '"', '\\':
 						finalStrBuilder.WriteRune('\\')
 					}
 					finalStrBuilder.WriteRune(c)
@@ -217,6 +217,11 @@ func (i *Interpreter) defineJSONFuncs() {
 			switch source := source.(type) {
 			case nil:
 				return processString("null", doubleQuotes), nil
+			case bool:
+				if source {
+					return processString("true", doubleQuotes), nil
+				}
+				return processString("false", doubleQuotes), nil
 			case int64:
 				return processString(fmt.Sprint(source), doubleQuotes), nil
 			case float64:
@@ -292,7 +297,7 @@ func (i *Interpreter) defineJSONFuncs() {
 		}
 
 		arg := args[0]
-		jsonString, jsonStringErr := getJSONString(arg, arg, arg == nil)
+		jsonString, jsonStringErr := getJSONString(arg, arg, false)
 		if jsonStringErr != nil {
 			return nil, jsonStringErr
 		}
