@@ -1,6 +1,6 @@
 module github.com/AlanLuu/lox
 
-go 1.22.2
+go 1.25.7
 
 require (
 	filippo.io/age v1.2.1

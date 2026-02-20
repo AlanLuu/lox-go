@@ -1,5 +1,5 @@
 # lox-go
-A Golang implementation of the Lox language from the book [Crafting Interpreters](https://craftinginterpreters.com/) with my own features
+A Go implementation of the Lox language from the book [Crafting Interpreters](https://craftinginterpreters.com/) with my own features
 
 # Usage
 ```
@@ -21,6 +21,8 @@ OPTIONS:
 ```
 
 # Installation
+(Starting Go version was 1.22.2, now requires Go 1.25.7+)
+
 First, [install Go](https://go.dev/doc/install) if it's not installed already. Then run the following commands to build this interpreter:
 ```
 git clone https://github.com/AlanLuu/lox-go.git
@@ -51,9 +53,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If `a` or `b` are floats, they are converted into integers before the bitwise operation
         - Unlike in C, the precedence of the bitwise operators is higher than the precedence of the comparison operators, so `a & b == value` is equivalent to `(a & b) == value`
     - The ternary operator `a ? b : c`, which evaluates to `b` if `a` is a truthy value and `c` otherwise
-- Division by 0 results in `Infinity`, which uses Golang's `math.Inf()` under the hood
+- Division by 0 results in `Infinity`, which uses Go's `math.Inf()` under the hood
     - `Infinity` literals are supported using the identifier "Infinity"
-- Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Golang's `math.NaN()` under the hood
+- Performing a binary operation that isn't supported between two types results in `NaN`, which stands for "not-a-number", using Go's `math.NaN()` under the hood
     - `NaN` literals are supported using the identifier "NaN"
 - Booleans and `nil` are treated as integers when performing arithmetic operations on them, with `true` and `false` being treated as `1` and `0` respectively, and `nil` being treated as `0`
 - Besides `false` and `nil`, the values `0`, `0.0`, `0n`, `0.0n`, `NaN`, `""`, `[]`, `{}`, `Set()`, `Buffer()`, and any value with a length of 0 are also falsy values
