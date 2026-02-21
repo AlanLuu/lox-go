@@ -8,6 +8,8 @@ The following methods are defined in the built-in `http` class:
 - `http.handler(callback)`, which returns an HTTP handler object from the specified callback function
 - `http.head(url, [headers])`, which sends an HTTP HEAD request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
+- `http.parseCookie(headerStr)`, which parses a Cookie header string and returns a list of HTTP cookie objects from that string
+- `http.parseSetCookie(headerStr)`, which parses a Set-Cookie header string and returns an HTTP cookie object from that string
 - `http.post(url, [headers])`, which sends an HTTP POST request to the specified URL along with any HTTP headers in the headers dictionary if specified and returns an HTTP response object
     - The headers dictionary must be empty or only contain strings or else a runtime error is thrown
 - `http.postBin(url, data, [headers])`, which sends an HTTP POST request to the specified URL along with the binary data specified as a buffer and returns an HTTP response object. If the headers dictionary is specified, all headers in the dictionary are sent with the request

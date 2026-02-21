@@ -195,6 +195,30 @@ func (i *Interpreter) defineHTTPFuncs() {
 				fmt.Sprintf("Expected 1 or 2 arguments but got %v.", argsLen))
 		}
 	})
+	httpFunc("parseCookie", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			cookies, err := http.ParseCookie(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			cookiesList := list.NewListCap[any](int64(len(cookies)))
+			for _, cookie := range cookies {
+				cookiesList.Add(NewLoxHTTPCookie(cookie))
+			}
+			return NewLoxList(cookiesList), nil
+		}
+		return argMustBeType(in.callToken, "parseCookie", "string")
+	})
+	httpFunc("parseSetCookie", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			cookie, err := http.ParseSetCookie(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return NewLoxHTTPCookie(cookie), nil
+		}
+		return argMustBeType(in.callToken, "parseSetCookie", "string")
+	})
 	httpFunc("post", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		argsLen := len(args)
 		switch argsLen {
