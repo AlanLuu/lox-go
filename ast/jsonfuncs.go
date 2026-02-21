@@ -30,6 +30,96 @@ func (i *Interpreter) defineJSONFuncs() {
 		return nil, loxerror.RuntimeError(callToken, errStr)
 	}
 
+	jsonFunc("marshal", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		selfReferentialErr := func(originalSource any) (any, error) {
+			return nil, loxerror.RuntimeError(in.callToken,
+				fmt.Sprintf(
+					"JSON.marshal: cannot marshal self-referential %v.",
+					getType(originalSource),
+				),
+			)
+		}
+		var jsonObj any
+		var processArg func(any, any) (any, error)
+		processArg = func(
+			arg any,
+			originalArg any,
+		) (any, error) {
+			switch arg := arg.(type) {
+			case nil, bool, int64, float64:
+				return arg, nil
+			case *LoxString:
+				return arg.str, nil
+			case LoxStringStr:
+				return arg.str, nil
+			case *LoxDict:
+				jsonMap := map[string]any{}
+				for key, value := range arg.entries {
+					if key == originalArg || value == originalArg {
+						jsonMap = nil
+						return selfReferentialErr(originalArg)
+					}
+					var resultKey string
+					resultKeyAny, err := processArg(key, originalArg)
+					if err != nil {
+						jsonMap = nil
+						return nil, err
+					}
+					switch result := resultKeyAny.(type) {
+					case nil:
+						resultKey = "null"
+					case string:
+						resultKey = result
+					case fmt.Stringer:
+						resultKey = result.String()
+					default:
+						resultKey = fmt.Sprint(result)
+					}
+					var resultValue any
+					resultValue, err = processArg(value, originalArg)
+					if err != nil {
+						jsonMap = nil
+						return nil, err
+					}
+					jsonMap[resultKey] = resultValue
+				}
+				return jsonMap, nil
+			case *LoxList:
+				jsonList := make([]any, 0, len(arg.elements))
+				for _, element := range arg.elements {
+					if element == originalArg {
+						jsonList = nil
+						return selfReferentialErr(originalArg)
+					}
+					result, err := processArg(element, originalArg)
+					if err != nil {
+						jsonList = nil
+						return nil, err
+					}
+					jsonList = append(jsonList, result)
+				}
+				return jsonList, nil
+			default:
+				return nil, loxerror.RuntimeError(in.callToken,
+					fmt.Sprintf("JSON.marshal: type '%v' cannot be serialized as JSON.",
+						getType(arg)))
+			}
+		}
+		arg := args[0]
+		var processErr error
+		jsonObj, processErr = processArg(arg, arg)
+		if processErr != nil {
+			return nil, processErr
+		}
+		jsonBytes, jsonErr := json.Marshal(jsonObj)
+		if jsonErr != nil {
+			return nil, loxerror.RuntimeError(
+				in.callToken,
+				"JSON.marshal: "+jsonErr.Error(),
+			)
+		}
+		return NewLoxStringQuote(string(jsonBytes)), nil
+	})
 	jsonFunc("parse", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if jsonLoxStr, ok := args[0].(*LoxString); ok {
 			jsonStr := strings.TrimSpace(jsonLoxStr.str)
@@ -301,6 +391,12 @@ func (i *Interpreter) defineJSONFuncs() {
 			return nil, jsonStringErr
 		}
 		return NewLoxString(jsonString, '\''), nil
+	})
+	jsonFunc("valid", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			return json.Valid([]byte(loxStr.str)), nil
+		}
+		return argMustBeType(in.callToken, "valid", "string")
 	})
 
 	i.globals.Define(className, jsonClass)
