@@ -1637,7 +1637,7 @@ func (i *Interpreter) defineOSFuncs() {
 		}
 		path := args[0].(*LoxString).str
 		mode := args[1].(*LoxString).str
-		loxFile, loxFileErr := NewLoxFileModeStr(path, mode)
+		loxFile, loxFileErr := NewLoxFileModeStr(path, mode, nil)
 		if loxFileErr != nil {
 			return nil, loxerror.RuntimeError(in.callToken, loxFileErr.Error())
 		}
@@ -2019,6 +2019,16 @@ func (i *Interpreter) defineOSFuncs() {
 			return nil, nil
 		}
 		return argMustBeType(in.callToken, "rmrf", "string")
+	})
+	osFunc("root", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			dirRoot, err := os.OpenRoot(loxStr.str)
+			if err != nil {
+				return nil, loxerror.RuntimeError(in.callToken, err.Error())
+			}
+			return NewLoxDirRoot(dirRoot), nil
+		}
+		return argMustBeType(in.callToken, "root", "string")
 	})
 	osClass.classProperties["SEEK_SET"] = int64(0)
 	osClass.classProperties["SEEK_CUR"] = int64(1)

@@ -20,7 +20,7 @@ func NewLoxLazyFile(path string, mode filemode.FileMode, isBinary bool) *LoxLazy
 
 func (l *LoxLazyFile) LazyTypeEval() error {
 	if l.LoxFile == nil {
-		file, err := filemode.Open(l.path, l.mode)
+		file, err := filemode.Open(l.path, l.mode, nil)
 		if err != nil {
 			return err
 		}

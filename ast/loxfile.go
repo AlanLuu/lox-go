@@ -67,7 +67,11 @@ type LoxFile struct {
 	properties map[string]any
 }
 
-func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
+func NewLoxFileModeStr(
+	path string,
+	modeStr string,
+	root *os.Root,
+) (*LoxFile, error) {
 	unknownMode := func() error {
 		if len(modeStr) == 0 {
 			return loxerror.Error("File mode cannot be blank.")
@@ -77,7 +81,7 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 	switch len(modeStr) {
 	case 1:
 		if fileMode, ok := filemode.Modes[modeStr[0]]; ok {
-			file, fileErr := filemode.Open(path, fileMode)
+			file, fileErr := filemode.Open(path, fileMode, root)
 			if fileErr != nil {
 				return nil, fileErr
 			}
@@ -126,7 +130,7 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 			return nil, unknownMode()
 		}
 
-		file, fileErr := filemode.Open(path, fileMode)
+		file, fileErr := filemode.Open(path, fileMode, root)
 		if fileErr != nil {
 			return nil, fileErr
 		}
@@ -144,7 +148,7 @@ func NewLoxFileModeStr(path string, modeStr string) (*LoxFile, error) {
 			strings.Contains(modeStr, "b") {
 
 			fileMode := filemode.READ_WRITE
-			file, fileErr := filemode.Open(path, fileMode)
+			file, fileErr := filemode.Open(path, fileMode, root)
 			if fileErr != nil {
 				return nil, fileErr
 			}

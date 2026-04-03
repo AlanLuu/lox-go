@@ -282,6 +282,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     ```
 - Various mathematical methods and constants are defined under a built-in class called `Math`, which is documented [here](./doc/Math.md)
 - Various bigint and bigfloat mathematical methods are defined under a built-in class called `bigmath`, which is documented [here](./doc/bigmath.md)
+- Various methods to work with dir roots are documented [here](./doc/dirroot.md)
 - Various methods and fields to work with HTML are defined under a built-in class called `HTML`, which is documented [here](./doc/HTML.md)
 - Various methods to work with JSON strings are defined under a built-in class called `JSON`, which is documented [here](./doc/JSON.md)
 - Various methods and fields to work with URL strings are defined under a built-in-class called `URL`, which id documented [here](./doc/URL.md)
