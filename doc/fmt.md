@@ -1,0 +1,63 @@
+# fmt class methods
+
+The following methods are defined in the built-in `fmt` class:
+
+- `fmt.append(buffer, args...)`
+- `fmt.appendf(buffer, formatStr, args...)`
+- `fmt.appendfRet(buffer, formatStr, args...)`
+- `fmt.appendfln(buffer, formatStr, args...)`
+- `fmt.appendflnRet(buffer, formatStr, args...)`
+- `fmt.appendln(buffer, args...)`
+- `fmt.appendlnRet(buffer, args...)`
+- `fmt.error(args...)`
+- `fmt.errorf(formatStr, args...)`
+- `fmt.errorfln(formatStr, args...)`
+- `fmt.errorln(args...)`
+- `fmt.fprint(file, args...)`
+- `fmt.fprintCheckErr(file, args...)`
+- `fmt.fprintf(file, formatStr, args...)`
+- `fmt.fprintfCheckErr(file, formatStr, args...)`
+- `fmt.fprintfln(file, formatStr, args...)`
+- `fmt.fprintflnCheckErr(file, formatStr, args...)`
+- `fmt.fprintln(file, args...)`
+- `fmt.fprintlnCheckErr(file, args...)`
+- `fmt.print(args...)`
+- `fmt.printCheckErr(args...)`
+- `fmt.printf(formatStr, args...)`
+- `fmt.printfCheckErr(formatStr, args...)`
+- `fmt.printfln(formatStr, args...)`
+- `fmt.printflnCheckErr(formatStr, args...)`
+- `fmt.println(args...)`
+- `fmt.printlnCheckErr(args...)`
+- `fmt.scanBool(numBools)`
+- `fmt.scanBuf(numBytes)`
+- `fmt.scanFloat(numFloats)`
+- `fmt.scanInt(numInts)`
+- `fmt.scanStr(numStrs)`
+- `fmt.scanf(formatStr)`
+- `fmt.scanfBool(formatStr)`
+- `fmt.scanfBuf(formatStr)`
+- `fmt.scanfBufVerbs(formatStr)`
+- `fmt.scanfFloat(formatStr)`
+- `fmt.scanfInt(formatStr)`
+- `fmt.scanfStr(formatStr)`
+- `fmt.scanfln(formatStr)`
+- `fmt.scanflnBool(formatStr)`
+- `fmt.scanflnBuf(formatStr)`
+- `fmt.scanflnBufVerbs(formatStr)`
+- `fmt.scanflnFloat(formatStr)`
+- `fmt.scanflnInt(formatStr)`
+- `fmt.scanflnStr(formatStr)`
+- `fmt.scanlnBool(numBools)`
+- `fmt.scanlnBuf(numBytes)`
+- `fmt.scanlnFloat(numFloats)`
+- `fmt.scanlnInt(numInts)`
+- `fmt.scanlnStr(numStrs)`
+- `fmt.sprint(args...)`
+- `fmt.sprintBuf(args...)`
+- `fmt.sprintf(formatStr, args...)`
+- `fmt.sprintfBuf(formatStr, args...)`
+- `fmt.sprintfln(formatStr, args...)`
+- `fmt.sprintflnBuf(formatStr, args...)`
+- `fmt.sprintln(args...)`
+- `fmt.sprintlnBuf(args...)`
