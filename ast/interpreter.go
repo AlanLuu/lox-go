@@ -2623,92 +2623,84 @@ func (i *Interpreter) visitSetObjectExpr(expr SetObject) (any, error) {
 		index, ok = node.(Index)
 	}
 
-	variable, variableErr := i.evaluate(node)
-	if variableErr != nil {
-		return nil, variableErr
+	base, baseErr := i.evaluate(node)
+	if baseErr != nil {
+		return nil, baseErr
 	}
-	assignErrMsg := "Can only assign to buffer, dictionary, and list indexes."
-	switch variable := variable.(type) {
-	case *LoxBuffer:
-		value, valueErr := i.evaluate(expr.Value)
-		if valueErr != nil {
-			return nil, valueErr
-		}
-		if len(indexes) > 1 {
-			return nil, loxerror.RuntimeError(expr.Name, BufferNestedElementErrMsg)
-		}
-		index := indexes[len(indexes)-1]
-		switch index := index.(type) {
-		case int64:
-			bufferSetErr := variable.setIndex(index, value)
-			if bufferSetErr != nil {
-				return nil, loxerror.RuntimeError(expr.Name, bufferSetErr.Error())
+
+	const assignErrMsg = "Can only assign to buffer, dictionary, and list indexes."
+	switch base.(type) {
+	case *LoxBuffer, *LoxDict, *LoxList:
+	default:
+		return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
+	}
+
+	value, valueErr := i.evaluate(expr.Value)
+	if valueErr != nil {
+		return nil, valueErr
+	}
+
+	//Indexes were collected outermost-first, so iterate from the end
+	//(outermost key/index) down to 0 (the final assignment target)
+	current := base
+	for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
+		index := indexes[loopIndex]
+		isFinal := loopIndex == 0
+
+		switch container := current.(type) {
+		case *LoxBuffer:
+			//Buffers only support a single level of indexed assignment
+			if !isFinal {
+				return nil, loxerror.RuntimeError(expr.Name,
+					BufferNestedElementErrMsg)
+			}
+			idx, ok := index.(int64)
+			if !ok {
+				return nil, loxerror.RuntimeError(expr.Name,
+					BufferIndexMustBeWholeNum(index))
+			}
+			if err := container.setIndex(idx, value); err != nil {
+				return nil, loxerror.RuntimeError(expr.Name, err.Error())
 			}
 			return value, nil
-		default:
-			return nil, loxerror.RuntimeError(expr.Name, BufferIndexMustBeWholeNum(index))
-		}
-	case *LoxDict:
-		value, valueErr := i.evaluate(expr.Value)
-		if valueErr != nil {
-			return nil, valueErr
-		}
-		for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
-			index := indexes[loopIndex]
-			if loopIndex > 0 {
-				var ok bool
-				var keyValue any
-				keyValue, ok = variable.getValueByKey(index)
-				if !ok {
-					return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
-				}
-				variable, ok = keyValue.(*LoxDict)
-				if !ok {
-					return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
-				}
-			} else {
+		case *LoxDict:
+			if isFinal {
 				canBeKey, keyErr := CanBeDictKeyCheck(index)
 				if !canBeKey {
 					return nil, loxerror.RuntimeError(expr.Name, keyErr)
 				}
-				variable.setKeyValue(index, value)
+				container.setKeyValue(index, value)
+				return value, nil
 			}
-		}
-		return value, nil
-	case *LoxList:
-		value, valueErr := i.evaluate(expr.Value)
-		if valueErr != nil {
-			return nil, valueErr
-		}
-		for loopIndex := len(indexes) - 1; loopIndex >= 0; loopIndex-- {
-			index := indexes[loopIndex]
-			switch index := index.(type) {
-			case int64:
-				originalIndex := index
-				if index < 0 {
-					index += int64(len(variable.elements))
-				}
-				if loopIndex > 0 {
-					if index < 0 || index >= int64(len(variable.elements)) {
-						return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(originalIndex))
-					}
-					var ok bool
-					variable, ok = variable.elements[index].(*LoxList)
-					if !ok {
-						return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
-					}
-				} else {
-					if index < 0 || index >= int64(len(variable.elements)) {
-						return nil, loxerror.RuntimeError(expr.Name, ListIndexOutOfRange(originalIndex))
-					}
-					variable.elements[index] = value
-				}
-			default:
-				return nil, loxerror.RuntimeError(expr.Name, ListIndexMustBeWholeNum(index))
+			keyValue, ok := container.getValueByKey(index)
+			if !ok {
+				return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
 			}
+			current = keyValue
+		case *LoxList:
+			idx, ok := index.(int64)
+			if !ok {
+				return nil, loxerror.RuntimeError(expr.Name,
+					ListIndexMustBeWholeNum(index))
+			}
+			originalIdx := idx
+			if idx < 0 {
+				idx += int64(len(container.elements))
+			}
+			if idx < 0 || idx >= int64(len(container.elements)) {
+				return nil, loxerror.RuntimeError(expr.Name,
+					ListIndexOutOfRange(originalIdx))
+			}
+			if isFinal {
+				container.elements[idx] = value
+				return value, nil
+			}
+			current = container.elements[idx]
+		default:
+			return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
 		}
-		return value, nil
 	}
+
 	return nil, loxerror.RuntimeError(expr.Name, assignErrMsg)
 }
 
