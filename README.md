@@ -288,6 +288,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
 - Various methods and fields to work with URL strings are defined under a built-in-class called `URL`, which id documented [here](./doc/URL.md)
 - Various methods and fields to work with operating system functionality are defined under a built-in class called `os`, which is documented [here](./doc/os.md)
 - Various methods to work with HTTP requests are defined under a built-in class called `http`, which is documented [here](./doc/http.md)
+- Various methods and fields to work with buffered I/O functionality are defined under a built-in class called `bufio`, which is documented [here](./doc/bufio.md)
 - Various methods to work with cryptographic functionality are defined under a built-in class called `crypto`, which is documented [here](./doc/crypto.md)
 - Various methods to work with CSV files are defined under a built-in class called `csv`, which is documented [here](./doc/csv.md)
 - Various methods to work with dotenv functionality are defined under a built-in class called `dotenv`, which is documented [here](./doc/dotenv.md)
