@@ -1,0 +1,40 @@
+# String replacer methods
+
+String replacer objects have the following methods associated with them:
+- `stringreplacer.addPair(str1, str2)`
+- `stringreplacer.addPairBool(str1, str2)`
+- `stringreplacer.clearAllPairs()`, which is an alias for `stringreplacer.deleteAllPairs`
+- `stringreplacer.clearAllPairsBool()`, which is an alias for `stringreplacer.deleteAllPairsBool`
+- `stringreplacer.deleteAllPairs()`
+- `stringreplacer.deleteAllPairsBool()`
+- `stringreplacer.deletePair(str1, str2)`
+- `stringreplacer.deletePairBool(str1, str2)`
+- `stringreplacer.deletePairByInt(num)`
+- `stringreplacer.deletePairByIntBool(num)`
+- `stringreplacer.deletePairByStr(str)`
+- `stringreplacer.deletePairByStrBool(str)`
+- `stringreplacer.deletePairsByValues(strs...)`
+- `stringreplacer.deletePairsByValuesBool(strs...)`
+- `stringreplacer.deletePairsByValuesList(list)`
+- `stringreplacer.deletePairsByValuesListBool(list)`
+- `stringreplacer.getPairByInt(num)`
+- `stringreplacer.getPairByIntOrNil(num)`
+- `stringreplacer.getPairByStr(str)`
+- `stringreplacer.getPairByStrOrNil(str)`
+- `stringreplacer.getStrAtIndex(num)`
+- `stringreplacer.getStrAtIndexOrNil(num)`
+- `stringreplacer.getStrByStr(str)`
+- `stringreplacer.getStrByStrOrNil(str)`
+- `stringreplacer.isEmpty()`
+- `stringreplacer.listIter()`
+- `stringreplacer.numPairs()`
+- `stringreplacer.pairs()`, which is an alias for `stringreplacer.pairsList`
+- `stringreplacer.pairsDict()`
+- `stringreplacer.pairsIter()`, which is an alias for `stringreplacer.pairsListIter`
+- `stringreplacer.pairsList()`
+- `stringreplacer.pairsListIter()`
+- `stringreplacer.printPairs()`
+- `stringreplacer.replace(str)`
+- `stringreplacer.setPair(num, num/str, str)`
+- `stringreplacer.setPairBool(num, num/str, str)`
+- `stringreplacer.writeTo(file/bufwriter/stringbuilder/connection, str)`
