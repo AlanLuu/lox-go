@@ -9,6 +9,11 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
+const (
+	TERMUX_BASE = "/data/data/com.termux"
+	TERMUX_ROOT = TERMUX_BASE + "/files"
+)
+
 var (
 	DisableLoxCode  = false
 	InteractiveMode = false
@@ -114,8 +119,25 @@ func IsPathSep(r rune) bool {
 	return r == os.PathSeparator
 }
 
+func IsTermux() bool {
+	if !IsAndroid() {
+		return false
+	}
+	_, ok := LookPaths(TERMUX_BASE)
+	return ok
+}
+
 func IsWindows() bool {
 	return runtime.GOOS == "windows"
+}
+
+func LookPaths(paths ...string) (string, bool) {
+	for _, path := range paths {
+		if _, err := os.Stat(path); err == nil {
+			return path, true
+		}
+	}
+	return "", false
 }
 
 func StdinFromTerminal() bool {

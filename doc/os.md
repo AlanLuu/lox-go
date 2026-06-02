@@ -296,8 +296,10 @@ The following methods and fields are defined in the built-in `os` class:
     - On Windows, this method always returns the full username
 - `os.wait()`, which waits for a child process to complete and returns a list containing the pid of the completed child process as an integer and a wait status object with various methods that are used to obtain information regarding the completed child process, which are documented [here](./waitstatus.md)
     - This method does not work on Windows and throws an error if called on there
-- `os.whoami()`, which invokes the `whoami` executable located at `C:\Windows\System32\whoami.exe` on Windows and `/bin/whoami` on Unix and returns a string that contains the standard output of that executable with all trailing newline characters and spaces removed
-    - If the initial `whoami` executable is not found, this method searches the `PATH` environment variable for an executable called `whoami` and executes that instead
+- `os.whoami()`, which invokes the `whoami` executable and returns a string that contains the standard output of that executable with all trailing newline characters and spaces removed
+    - This method looks for the following absolute paths:
+        - Windows: `%SystemRoot%\System32\whoami.exe`, `%SystemDrive%\Windows\System32\whoami.exe`
+        - Unix: `/usr/bin/whoami`, `/bin/whoami`, `/data/data/com.termux/files/usr/bin/whoami` (on Termux only)
 - `os.write(fd, buffer)`, which writes the contents of the specified buffer to the specified integer file descriptor and returns the number of bytes written as an integer
 - `os.writeFile(path, string)`, which writes the contents of the specified string to the file specified by the path string
     - If the file already exists, it is truncated

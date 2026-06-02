@@ -2521,22 +2521,44 @@ func (i *Interpreter) defineOSFuncs() {
 	osFunc("whoami", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		var cmd *exec.Cmd
 		if util.IsWindows() {
-			cmd = exec.Command("C:\\Windows\\System32\\whoami.exe")
+			if path := os.Getenv("SystemRoot"); path != "" {
+				path = filepath.Join(path, "System32", "whoami.exe")
+				cmd = exec.Command(path)
+			} else if path := os.Getenv("SystemDrive"); path != "" {
+				path = filepath.Join(path, "Windows", "System32", "whoami.exe")
+				cmd = exec.Command(path)
+			} else {
+				//Fall back to default path - should never happen
+				cmd = exec.Command("C:\\Windows\\System32\\whoami.exe")
+			}
 		} else {
-			cmd = exec.Command("/bin/whoami")
+			const (
+				usrBinWhoami = "/usr/bin/whoami"
+				binWhoami    = "/bin/whoami"
+			)
+			var path string
+			var ok bool
+			if util.IsTermux() {
+				path, ok = util.LookPaths(
+					util.TERMUX_ROOT+usrBinWhoami,
+					usrBinWhoami,
+					binWhoami,
+				)
+			} else {
+				path, ok = util.LookPaths(
+					usrBinWhoami,
+					binWhoami,
+				)
+			}
+			if !ok {
+				return nil, loxerror.RuntimeError(in.callToken,
+					"os.whoami: failed to find 'whoami' executable.")
+			}
+			cmd = exec.Command(path)
 		}
 		whoamiBytes, err := cmd.Output()
 		if err != nil {
-			whoamiPath, pathErr := exec.LookPath("whoami")
-			if pathErr != nil {
-				return nil, loxerror.RuntimeError(in.callToken,
-					"os.whoami: whoami command not found in PATH.")
-			}
-			cmd = exec.Command(whoamiPath)
-			whoamiBytes, err = cmd.Output()
-			if err != nil {
-				return nil, loxerror.RuntimeError(in.callToken, err.Error())
-			}
+			return nil, loxerror.RuntimeError(in.callToken, err.Error())
 		}
 		whoami := strings.TrimRightFunc(string(whoamiBytes), unicode.IsSpace)
 		return NewLoxStringQuote(whoami), nil
