@@ -2289,9 +2289,41 @@ func (i *Interpreter) defineOSFuncs() {
 		if loxStr, ok := args[0].(*LoxString); ok {
 			var cmd *exec.Cmd
 			if util.IsWindows() {
-				cmd = exec.Command("cmd", "/c", loxStr.str)
+				if path := os.Getenv("COMSPEC"); path != "" {
+					cmd = exec.Command(path, "/c", loxStr.str)
+				} else if path := os.Getenv("SystemRoot"); path != "" {
+					path = filepath.Join(path, "System32", "cmd.exe")
+					cmd = exec.Command(path, "/c", loxStr.str)
+				} else if path := os.Getenv("SystemDrive"); path != "" {
+					path = filepath.Join(path, "Windows", "System32", "cmd.exe")
+					cmd = exec.Command(path, "/c", loxStr.str)
+				} else {
+					cmd = exec.Command("cmd", "/c", loxStr.str)
+				}
 			} else {
-				cmd = exec.Command("sh", "-c", loxStr.str)
+				const (
+					binSh    = "/bin/sh"
+					usrBinSh = "/usr/bin/sh"
+				)
+				var path string
+				var ok bool
+				if util.IsTermux() {
+					path, ok = util.LookPaths(
+						util.TERMUX_ROOT+usrBinSh,
+						binSh,
+						usrBinSh,
+					)
+				} else {
+					path, ok = util.LookPaths(
+						binSh,
+						usrBinSh,
+					)
+				}
+				if !ok {
+					return nil, loxerror.RuntimeError(in.callToken,
+						"os.system: failed to find 'sh' executable.")
+				}
+				cmd = exec.Command(path, "-c", loxStr.str)
 			}
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
