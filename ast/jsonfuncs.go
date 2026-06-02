@@ -31,19 +31,20 @@ func (i *Interpreter) defineJSONFuncs() {
 	}
 
 	jsonFunc("marshal", 1, func(in *Interpreter, args list.List[any]) (any, error) {
-		selfReferentialErr := func(originalSource any) (any, error) {
+		selfReferentialErr := func(source any) (any, error) {
 			return nil, loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf(
 					"JSON.marshal: cannot marshal self-referential %v.",
-					getType(originalSource),
+					getType(source),
 				),
 			)
 		}
 		var jsonObj any
-		var processArg func(any, any) (any, error)
+		var processArg func(any, any, map[any]struct{}) (any, error)
 		processArg = func(
 			arg any,
 			originalArg any,
+			visited map[any]struct{},
 		) (any, error) {
 			switch arg := arg.(type) {
 			case nil, bool, int64, float64:
@@ -53,14 +54,21 @@ func (i *Interpreter) defineJSONFuncs() {
 			case LoxStringStr:
 				return arg.str, nil
 			case *LoxDict:
+				visited[arg] = struct{}{}
 				jsonMap := map[string]any{}
 				for key, value := range arg.entries {
-					if key == originalArg || value == originalArg {
+					_, keyVisited := visited[key]
+					if key == originalArg || keyVisited {
 						jsonMap = nil
-						return selfReferentialErr(originalArg)
+						return selfReferentialErr(key)
+					}
+					_, valueVisited := visited[value]
+					if value == originalArg || valueVisited {
+						jsonMap = nil
+						return selfReferentialErr(value)
 					}
 					var resultKey string
-					resultKeyAny, err := processArg(key, originalArg)
+					resultKeyAny, err := processArg(key, originalArg, visited)
 					if err != nil {
 						jsonMap = nil
 						return nil, err
@@ -76,7 +84,7 @@ func (i *Interpreter) defineJSONFuncs() {
 						resultKey = fmt.Sprint(result)
 					}
 					var resultValue any
-					resultValue, err = processArg(value, originalArg)
+					resultValue, err = processArg(value, originalArg, visited)
 					if err != nil {
 						jsonMap = nil
 						return nil, err
@@ -85,13 +93,15 @@ func (i *Interpreter) defineJSONFuncs() {
 				}
 				return jsonMap, nil
 			case *LoxList:
+				visited[arg] = struct{}{}
 				jsonList := make([]any, 0, len(arg.elements))
 				for _, element := range arg.elements {
-					if element == originalArg {
+					_, elementVisited := visited[element]
+					if element == originalArg || elementVisited {
 						jsonList = nil
-						return selfReferentialErr(originalArg)
+						return selfReferentialErr(element)
 					}
-					result, err := processArg(element, originalArg)
+					result, err := processArg(element, originalArg, visited)
 					if err != nil {
 						jsonList = nil
 						return nil, err
@@ -107,7 +117,7 @@ func (i *Interpreter) defineJSONFuncs() {
 		}
 		arg := args[0]
 		var processErr error
-		jsonObj, processErr = processArg(arg, arg)
+		jsonObj, processErr = processArg(arg, arg, map[any]struct{}{})
 		if processErr != nil {
 			return nil, processErr
 		}
@@ -270,11 +280,11 @@ func (i *Interpreter) defineJSONFuncs() {
 			'\f': "\\\\f",
 			'\v': "\\\\v",
 		}
-		selfReferentialErr := func(originalSource any) (string, error) {
+		selfReferentialErr := func(source any) (string, error) {
 			return "", loxerror.RuntimeError(in.callToken,
 				fmt.Sprintf(
-					"Cannot stringify self-referential %v.",
-					getType(originalSource),
+					"JSON.stringify: cannot stringify self-referential %v.",
+					getType(source),
 				),
 			)
 		}
@@ -297,10 +307,11 @@ func (i *Interpreter) defineJSONFuncs() {
 			}
 			return finalStr
 		}
-		var getJSONString func(any, any, bool) (string, error)
+		var getJSONString func(any, any, map[any]struct{}, bool) (string, error)
 		getJSONString = func(
 			source any,
 			originalSource any,
+			visited map[any]struct{},
 			doubleQuotes bool,
 		) (string, error) {
 			switch source := source.(type) {
@@ -327,30 +338,31 @@ func (i *Interpreter) defineJSONFuncs() {
 			case LoxStringStr:
 				return processString(source.str, true), nil
 			case *LoxDict:
+				visited[source] = struct{}{}
 				sourceLen := len(source.entries)
 				var dictStr strings.Builder
 				dictStr.WriteByte('{')
 				i := 0
 				for key, value := range source.entries {
-					if key == originalSource {
-						return selfReferentialErr(originalSource)
-					} else {
-						result, err := getJSONString(key, originalSource, true)
-						if err != nil {
-							return "", err
-						}
-						dictStr.WriteString(result)
+					_, keyVisited := visited[key]
+					if key == originalSource || keyVisited {
+						return selfReferentialErr(key)
 					}
+					result, err := getJSONString(key, originalSource, visited, true)
+					if err != nil {
+						return "", err
+					}
+					dictStr.WriteString(result)
 					dictStr.WriteString(": ")
-					if value == originalSource {
-						return selfReferentialErr(originalSource)
-					} else {
-						result, err := getJSONString(value, originalSource, false)
-						if err != nil {
-							return "", err
-						}
-						dictStr.WriteString(result)
+					_, valueVisited := visited[value]
+					if value == originalSource || valueVisited {
+						return selfReferentialErr(value)
 					}
+					result, err = getJSONString(value, originalSource, visited, false)
+					if err != nil {
+						return "", err
+					}
+					dictStr.WriteString(result)
 					if i < sourceLen-1 {
 						dictStr.WriteString(", ")
 					}
@@ -359,19 +371,20 @@ func (i *Interpreter) defineJSONFuncs() {
 				dictStr.WriteByte('}')
 				return dictStr.String(), nil
 			case *LoxList:
+				visited[source] = struct{}{}
 				sourceLen := len(source.elements)
 				var listStr strings.Builder
 				listStr.WriteByte('[')
 				for i, element := range source.elements {
-					if element == originalSource {
-						return selfReferentialErr(originalSource)
-					} else {
-						result, err := getJSONString(element, originalSource, doubleQuotes)
-						if err != nil {
-							return "", err
-						}
-						listStr.WriteString(result)
+					_, elementVisited := visited[element]
+					if element == originalSource || elementVisited {
+						return selfReferentialErr(element)
 					}
+					result, err := getJSONString(element, originalSource, visited, doubleQuotes)
+					if err != nil {
+						return "", err
+					}
+					listStr.WriteString(result)
 					if i < sourceLen-1 {
 						listStr.WriteString(", ")
 					}
@@ -386,7 +399,7 @@ func (i *Interpreter) defineJSONFuncs() {
 		}
 
 		arg := args[0]
-		jsonString, jsonStringErr := getJSONString(arg, arg, false)
+		jsonString, jsonStringErr := getJSONString(arg, arg, map[any]struct{}{}, false)
 		if jsonStringErr != nil {
 			return nil, jsonStringErr
 		}
