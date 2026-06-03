@@ -120,7 +120,7 @@ func IsPathSep(r rune) bool {
 }
 
 func IsTermux() bool {
-	if !IsAndroid() {
+	if !IsAndroid() || os.Getenv("TERMUX_VERSION") == "" {
 		return false
 	}
 	_, ok := LookPaths(TERMUX_BASE)
