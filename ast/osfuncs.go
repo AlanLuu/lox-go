@@ -2307,12 +2307,20 @@ func (i *Interpreter) defineOSFuncs() {
 				)
 				var path string
 				var ok bool
-				if util.IsTermux() {
-					path, ok = util.LookPaths(
-						util.TERMUX_ROOT+usrBinSh,
-						binSh,
-						usrBinSh,
-					)
+				if util.IsAndroid() {
+					const systemBinSh = "/system/bin/sh"
+					if util.IsTermux() {
+						path, ok = util.LookPaths(
+							util.TERMUX_ROOT+usrBinSh,
+							binSh,
+							systemBinSh,
+						)
+					} else {
+						path, ok = util.LookPaths(
+							binSh,
+							systemBinSh,
+						)
+					}
 				} else {
 					path, ok = util.LookPaths(
 						binSh,
@@ -2570,12 +2578,20 @@ func (i *Interpreter) defineOSFuncs() {
 			)
 			var path string
 			var ok bool
-			if util.IsTermux() {
-				path, ok = util.LookPaths(
-					util.TERMUX_ROOT+usrBinWhoami,
-					usrBinWhoami,
-					binWhoami,
-				)
+			if util.IsAndroid() {
+				const systemBinWhoami = "/system/bin/whoami"
+				if util.IsTermux() {
+					path, ok = util.LookPaths(
+						util.TERMUX_ROOT+usrBinWhoami,
+						binWhoami,
+						systemBinWhoami,
+					)
+				} else {
+					path, ok = util.LookPaths(
+						binWhoami,
+						systemBinWhoami,
+					)
+				}
 			} else {
 				path, ok = util.LookPaths(
 					usrBinWhoami,
