@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"unicode"
 
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
@@ -104,6 +105,60 @@ func defineMiscFuncs() *LoxClass {
 	miscFunc("hello", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
 		fmt.Println("Hello world!")
 		return nil, nil
+	})
+	miscFunc("luhn", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			var digits string
+			switch str := loxStr.str; len(str) {
+			case 16:
+				for _, c := range str {
+					if !unicode.IsDigit(c) {
+						return false, nil
+					}
+				}
+				digits = str
+			case 19:
+				var sep rune
+				count := 0
+				for _, c := range str {
+					if count == 4 {
+						if sep == 0 {
+							switch c {
+							case ' ', '-':
+								sep = c
+							default:
+								return false, nil
+							}
+						}
+						if c != sep {
+							return false, nil
+						}
+						count = 0
+					} else if !unicode.IsDigit(c) {
+						return false, nil
+					} else {
+						digits += string(c)
+						count++
+					}
+				}
+			default:
+				return false, nil
+			}
+			sum, alt := 0, 0
+			for i := len(digits) - 1; i >= 0; i-- {
+				n := int(digits[i] - '0')
+				if alt == 1 {
+					n *= 2
+					if n > 9 {
+						n = (n % 10) + 1
+					}
+				}
+				sum += n
+				alt ^= 1
+			}
+			return sum%10 == 0, nil
+		}
+		return argMustBeType(in.callToken, "luhn", "string")
 	})
 	miscFunc("multable", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if depth, ok := args[0].(int64); ok {
