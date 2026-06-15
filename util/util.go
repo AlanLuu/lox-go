@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	DisableLoxCode  = false
+	DisableLoxCode  = true
 	InteractiveMode = false
 	UnsafeMode      = false
 )

@@ -10,8 +10,8 @@ OPTIONS:
 		Execute Lox code from command line argument
     -i
         Drop into REPL mode after running Lox code
-	--disable-loxcode, -dl
-		Disable execution of all Lox files that are bundled inside this interpreter executable
+	--enable-loxcode, -el
+		Enable execution of all Lox files that are bundled inside this interpreter executable in the loxcode directory
 	--unsafe
 		Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
 	-h, --help
@@ -341,7 +341,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `lox.globals()`, which returns a dictionary containing all global variable names as string keys and their values as dictionary values
     - `lox.locals()`, which returns a dictionary containing all local variable names as string keys and their values as dictionary values
         - If this method is called in global scope, an empty dictionary is returned
-    - `lox.ranloxcode`, which is a boolean that is `true` if the `--disable-loxcode` flag was passed and `false` otherwise
+    - `lox.ranloxcode`, which is a boolean that is `true` if the `--enable-loxcode` flag was passed and `false` otherwise
     - `lox.unsafe`, which is a boolean that is `true` if unsafe mode is enabled for this interpreter and `false` otherwise
 - Various methods and fields to work with integers are defined under a built-in class called `Integer`, where the following methods and fields are defined:
     - `Integer.MAX`, which is the maximum value that an integer can store
@@ -823,7 +823,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - Assignment expressions still require semicolons when typed into the REPL as standalone expressions, like `x = 0;`, `object.property = value;`, and `list[index] = value;`
 
 # Running Lox code on interpreter startup
-- Lox files can be included in the `loxcode` directory, which will cause them to be embedded in the final interpreter executable and executed every time the interpreter starts
+- Lox files can be included in the `loxcode` directory, which will cause them to be embedded in the final interpreter executable and executed every time the interpreter starts with the `--enable-loxcode` flag enabled
     - If a file from this directory cannot be opened due to an error, it is skipped and a warning message is printed to standard error
     - If a parser or runtime error occurs when executing a file from this directory, the interpreter immediately exits with a status code of 1
     - If a file from this directory is altered, the interpreter must be rebuilt to include the altered file

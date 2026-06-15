@@ -62,8 +62,8 @@ OPTIONS:
 		Execute Lox code from command line argument
 	-i
 		Drop into REPL mode after running Lox code
-	--disable-loxcode, -dl
-		Disable execution of all Lox files that are bundled inside this interpreter executable
+	--enable-loxcode, -el
+		Enable execution of all Lox files that are bundled inside this interpreter executable in the loxcode directory
 	--unsafe
 		Enable unsafe mode, allowing access to functions that can potentially crash this interpreter
 	-h, --help
@@ -274,15 +274,15 @@ func interactiveMode(interpreter *ast.Interpreter) int {
 
 func main() {
 	var (
-		exprCLine       = flag.String("c", "", "")
-		interactive     = flag.Bool("i", false, "")
-		disableLoxCode  = flag.Bool("disable-loxcode", false, "")
-		disableLoxCode2 = flag.Bool("dl", false, "")
-		unsafe          = flag.Bool("unsafe", false, "")
-		helpFlag1       = flag.Bool("h", false, "")
-		helpFlag2       = flag.Bool("help", false, "")
-		versionFlag1    = flag.Bool("v", false, "")
-		versionflag2    = flag.Bool("version", false, "")
+		exprCLine      = flag.String("c", "", "")
+		interactive    = flag.Bool("i", false, "")
+		enableLoxCode  = flag.Bool("enable-loxcode", false, "")
+		enableLoxCode2 = flag.Bool("el", false, "")
+		unsafe         = flag.Bool("unsafe", false, "")
+		helpFlag1      = flag.Bool("h", false, "")
+		helpFlag2      = flag.Bool("help", false, "")
+		versionFlag1   = flag.Bool("v", false, "")
+		versionflag2   = flag.Bool("version", false, "")
 	)
 	flag.Usage = usageFunc(os.Stderr)
 	flag.Parse()
@@ -296,7 +296,9 @@ func main() {
 	}
 
 	args := flag.Args()
-	util.DisableLoxCode = *disableLoxCode || *disableLoxCode2
+	if *enableLoxCode || *enableLoxCode2 {
+		util.DisableLoxCode = false
+	}
 	util.UnsafeMode = *unsafe
 	exitCode := 0
 	flagsMap := flagsProvided()
