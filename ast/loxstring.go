@@ -258,6 +258,16 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 			}
 			return argMustBeType("string")
 		})
+	case "containsIgnoreCase":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return strings.Contains(
+					strings.ToLower(l.str),
+					strings.ToLower(loxStr.str),
+				), nil
+			}
+			return argMustBeType("string")
+		})
 	case "count":
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
@@ -296,6 +306,16 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				return strings.HasSuffix(l.str, loxStr.str), nil
+			}
+			return argMustBeType("string")
+		})
+	case "endsWithIgnoreCase":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return strings.HasSuffix(
+					strings.ToLower(l.str),
+					strings.ToLower(loxStr.str),
+				), nil
 			}
 			return argMustBeType("string")
 		})
@@ -849,6 +869,16 @@ func (l *LoxString) Get(name *token.Token) (any, error) {
 		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if loxStr, ok := args[0].(*LoxString); ok {
 				return strings.HasPrefix(l.str, loxStr.str), nil
+			}
+			return argMustBeType("string")
+		})
+	case "startsWithIgnoreCase":
+		return strFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				return strings.HasPrefix(
+					strings.ToLower(l.str),
+					strings.ToLower(loxStr.str),
+				), nil
 			}
 			return argMustBeType("string")
 		})

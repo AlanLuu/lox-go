@@ -415,6 +415,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
             - Padding begins on the left if the original string has an even length, otherwise padding begins on the right
         - `string.compare(string2)`, which lexicographically compares `string` and `string2` and returns `0` if `string == string2`, `-1` if `string < string2`, and `1` if `string > string2`
         - `string.contains(substr)`, which returns `true` if `substr` is contained within `string` and `false` otherwise
+        - `string.containsIgnoreCase(substr)`, which returns `true` if `substr` is contained within `string`, ignoring letter case, and `false` otherwise
         - `string.count(string2)`, which returns an integer representing the number of times `string2` appears in `string` in a non-overlapping manner
             - If `string2` is an empty string, this method returns 1 plus the number of Unicode characters in `string`
         - `string.cut(separator)`, which returns a list of two strings where the first string is the text before the specified separator string in the original string and the second string is the text after the specified separator string in the original string
@@ -422,6 +423,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.cutPrefix(prefix)`, which returns a new string where the prefix from the original string specified by the prefix string is removed if the prefix exists, otherwise a copy of the original string is returned
         - `string.cutSuffix(suffix)`, which returns a new string where the suffix from the original string specified by the suffix string is removed if the suffix exists, otherwise a copy of the original string is returned
         - `string.endsWith(suffix)`, which returns `true` if `string` ends with `suffix` and `false` otherwise
+        - `string.endsWithIgnoreCase(suffix)`, which returns `true` if `string` ends with `suffix`, ignoring letter case, and `false` otherwise
         - `string.equalsIgnoreCase(string2)`, which returns `true` if `string` equals `string2`, ignoring letter case, and `false` otherwise
         - `string.fields()`, which returns a list containing all substrings that are separated by one or more consecutive whitespace characters
             - If the string only contains whitespace characters, this method returns an empty list
@@ -478,6 +480,7 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.split(delimiter)`, which returns a list containing all substrings that are separated by `delimiter`
         - `string.splitAfter(delimiter)`, which returns a list containing all substrings that are after each instance of `delimiter`
         - `string.startsWith(prefix)`, which returns `true` if `string` begins with `prefix` and `false` otherwise
+        - `string.startsWithIgnoreCase(prefix)`, which returns `true` if `string` begins with `prefix`, ignoring letter case, and `false` otherwise
         - `string.strip([chars])`, which returns a new string with all leading and trailing characters from `chars` removed. If `chars` is omitted, this method returns a new string with all leading and trailing whitespace, newlines, and tabs removed
         - `string.swapcase()`, which returns a new string with all lowercase characters converted to uppercase and vice-versa
         - `string.title()`, which returns a new string where each word starts with a capital letter if possible and the remaining characters in each word are in lowercase if possible
