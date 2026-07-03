@@ -46,6 +46,9 @@ func (i *Interpreter) defineClassCalledLox() {
 		}
 		return nil, nil
 	})
+	classCalledLoxFunc("globalDNS", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return NewLoxStringQuote(util.CustomGlobalDNS), nil
+	})
 	classCalledLoxFunc("globals", 0, func(in *Interpreter, _ list.List[any]) (any, error) {
 		dict := EmptyLoxDict()
 		for key, value := range in.globals.Values() {
@@ -61,6 +64,9 @@ func (i *Interpreter) defineClassCalledLox() {
 			}
 		}
 		return dict, nil
+	})
+	classCalledLoxFunc("usingGlobalDNS", 0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+		return util.UsingCustomGlobalDNS(), nil
 	})
 	classCalledLox.classProperties["ranloxcode"] = !util.DisableLoxCode
 	classCalledLox.classProperties["unsafe"] = util.UnsafeMode

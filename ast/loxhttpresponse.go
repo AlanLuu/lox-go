@@ -11,6 +11,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 type LoxHTTPResponse struct {
@@ -94,6 +95,9 @@ func LoxHTTPSendRequest(req *http.Request) (*LoxHTTPResponse, error) {
 }
 
 func LoxHTTPSendRequestClient(client *http.Client, req *http.Request) (*LoxHTTPResponse, error) {
+	if client.Transport == nil {
+		util.InitCustomGlobalDNSClientIfSet(client)
+	}
 	return LoxHTTPResHelper(req.URL.String(), func() (*http.Response, error) {
 		return client.Do(req)
 	})

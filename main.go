@@ -62,6 +62,8 @@ OPTIONS:
 		Execute Lox code from command line argument
 	-i
 		Drop into REPL mode after running Lox code
+	--dns <ip>
+		Specify DNS IP to use in all HTTP requests in the form "host[:port]", where port defaults to 53 if unspecified
 	--enable-loxcode, -el
 		Enable execution of all Lox files that are bundled inside this interpreter executable in the loxcode directory
 	--unsafe
@@ -276,6 +278,7 @@ func main() {
 	var (
 		exprCLine      = flag.String("c", "", "")
 		interactive    = flag.Bool("i", false, "")
+		dnsFlag        = flag.String("dns", "", "")
 		enableLoxCode  = flag.Bool("enable-loxcode", false, "")
 		enableLoxCode2 = flag.Bool("el", false, "")
 		unsafe         = flag.Bool("unsafe", false, "")
@@ -299,6 +302,7 @@ func main() {
 	if *enableLoxCode || *enableLoxCode2 {
 		util.DisableLoxCode = false
 	}
+	util.InitCustomGlobalDNSDefaultClientIfSet(*dnsFlag)
 	util.UnsafeMode = *unsafe
 	exitCode := 0
 	flagsMap := flagsProvided()
