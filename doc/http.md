@@ -56,6 +56,7 @@ HTTP request objects have the following methods associated with them:
 - `request.cookieClear()`
 - `request.cookieJar()`
 - `request.cookieKV(key, value)`
+- `request.dns(dnsStr)`
 - `request.form(buffer/dict/string/urlvalues)`
 - `request.formData(buffer/dict/string/urlvalues)`
 - `request.headerAdd(key, value)`

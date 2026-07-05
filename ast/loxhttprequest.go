@@ -14,6 +14,7 @@ import (
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
 	"github.com/AlanLuu/lox/token"
+	"github.com/AlanLuu/lox/util"
 )
 
 func formDictToStr(dict *LoxDict, name string) (string, error) {
@@ -236,6 +237,18 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 				Value: value,
 			})
 			return l, nil
+		})
+	case "dns":
+		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				if str := loxStr.str; str == "" {
+					l.client.Transport = nil
+				} else {
+					util.InitDNSClient(l.client, str)
+				}
+				return l, nil
+			}
+			return argMustBeType("string")
 		})
 	case "form":
 		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
