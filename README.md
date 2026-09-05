@@ -810,6 +810,8 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `range(start, stop, [step])`, which takes in `start`, `stop`, and `step` as integers and returns a range object with the specified parameters. If `step` is omitted, the resulting range object will have a step value of `1`
     - `repeatFunc(integer, callback)`, which takes in an integer and callback function and repeatedly invokes the callback function for the specified integer number of times
         - If the specified integer argument is negative, it is the same as specifying `0` as the integer argument
+    - `repeatFuncNoErr(integer, callback)`, which takes in an integer and callback function and repeatedly invokes the callback function for the specified integer number of times, without stopping even if a callback function throws an error
+        - If the specified integer argument is negative, it is the same as specifying `0` as the integer argument
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `SetIterable(iterable)`, which takes in an iterable and returns a set with the iterable elements as set elements. If an element from the iterable cannot be stored in a set, a runtime error is thrown
     - `sleep(seconds)`, which pauses the program for the specified number of seconds

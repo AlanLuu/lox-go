@@ -961,6 +961,34 @@ func (i *Interpreter) defineNativeFuncs() {
 		}
 		return nil, nil
 	})
+	nativeFunc("repeatFuncNoErr", 2, func(in *Interpreter, args list.List[any]) (any, error) {
+		if _, ok := args[0].(int64); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"First argument to 'repeatFuncNoErr' must be an integer.")
+		}
+		if _, ok := args[1].(LoxCallable); !ok {
+			return nil, loxerror.RuntimeError(in.callToken,
+				"Second argument to 'repeatFuncNoErr' must be a function.")
+		}
+		times := args[0].(int64)
+		if times > 0 {
+			callback := args[1].(LoxCallable)
+			argList := getArgList(callback, 0)
+			defer argList.Clear()
+			for i := int64(0); i < times; i++ {
+				result, resultErr := callback.call(in, argList)
+				if resultErr != nil && result == nil {
+					fmt.Fprintf(
+						os.Stderr,
+						"Runtime error in loop #%v: %v\n",
+						i+1,
+						strings.ReplaceAll(resultErr.Error(), "\n", " "),
+					)
+				}
+			}
+		}
+		return nil, nil
+	})
 	nativeFunc("Ring", -1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if len(args) == 0 {
 			return nil, loxerror.RuntimeError(in.callToken,
