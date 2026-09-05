@@ -79,6 +79,7 @@ func NewInterpreter() *Interpreter {
 	interpreter.defineBigFloatFuncs()   //Defined in bigfloatfuncs.go
 	interpreter.defineBigIntFuncs()     //Defined in bigintfuncs.go
 	interpreter.defineBigMathFuncs()    //Defined in bigmathfuncs.go
+	interpreter.defineBitFuncs()        //Defined in bitfuncs.go
 	interpreter.defineBufioFuncs()      //Defined in bufiofuncs.go
 	interpreter.defineClassCalledLox()  //Defined in classcalledlox.go
 	interpreter.defineCryptoFuncs()     //Defined in cryptofuncs.go
