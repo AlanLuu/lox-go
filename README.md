@@ -758,6 +758,20 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
     - `bin(num)`, which converts the specified integer `num` into its binary representation as a string prefixed with "0b"
     - `bint(arg)`, which attempts to convert the specified argument into a bigint and returns that bigint if successful, otherwise a runtime error is thrown
         - Valid arguments to `bint` are the following types: nil, bool, integer, float, bigint, bigfloat, string
+    - `Bitfield([num])`, which returns a new empty bitfield object, or if `num` is specified, a bitfield object with the specified integer number
+        - If `num` is specified, it must be from 0 to 255, or else a runtime error is thrown
+    - `BitfieldArgs(num1, num2, ..., num8)`, which returns a new bitfield object from the arguments, which can either be a bool or an integer equal to 0 or 1
+    - `BitfieldBuf(buffer)`, which returns a new bitfield object from the specified buffer argument, which must have a length of 8 and every buffer element must be equal to 0 or 1
+    - `BitfieldBufLSB(buffer)`, which returns a new bitfield object in least-significant-bit form from the specified buffer argument, which must have a length of 8 and every buffer element must be equal to 0 or 1
+    - `BitfieldIterable(iterable)`, which returns a new bitfield object from the specified iterable argument
+        - The iterable argument will be invoked up to eight times or until it runs out of elements, whichever comes first, and starting from the most significant bit, the bitfield elements are set to either 1 or 0 according to whether the next elements from the iterable are truthy or falsy respectively
+    - `BitfieldIterableLSB(iterable)`, which returns a new bitfield object in least-significant-bit form from the specified iterable argument
+        - The iterable argument will be invoked up to eight times or until it runs out of elements, whichever comes first, and starting from the least significant bit, the bitfield elements are set to either 1 or 0 according to whether the next elements from the iterable are truthy or falsy respectively
+    - `BitfieldList(list)`, which returns a new bitfield object from the specified list argument, which must have a length of 8 and every list element must be equal to 0 or 1
+    - `BitfieldListLSB(list)`, which returns a new bitfield object in least-significant-bit form from the specified list argument, which must have a length of 8 and every list element must be equal to 0 or 1
+    - `BitfieldLSB([num])`, which returns a new empty bitfield object, or if `num` is specified, a bitfield object in least-significant-bit form with the specified integer number
+    - `BitfieldStr(str)`, which returns a new bitfield object from the specified string argument, which must have a length of 8 and every string character must be equal to the characters `'0'` or `'1'`
+    - `BitfieldStrLSB(str)`, which returns a new bitfield object in least-significant-bit form from the specified string argument, which must have a length of 8 and every string character must be equal to the characters `'0'` or `'1'`
     - `bool(arg)`, which returns `true` if the specified argument is a truthy value and `false` otherwise
     - `Buffer(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a buffer with the arguments as buffer elements. If an argument is not an integer or is an integer less than 0 or greater than 255, a runtime error is thrown
     - `BufferCap(capacity)`, which returns a new buffer of the specified capacity, which is the number of elements the buffer can store before having to internally resize the underlying array that stores the buffer elements when a new element is added
