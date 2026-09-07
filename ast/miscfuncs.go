@@ -368,6 +368,37 @@ func defineMiscFuncs() *LoxClass {
 		}
 		return argMustBeTypeAn(in.callToken, "roman", "integer")
 	})
+	miscFunc("romanInt", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			s := []rune(loxStr.str)
+			romanMap := map[rune]int64{
+				'I': 1,
+				'V': 5,
+				'X': 10,
+				'L': 50,
+				'C': 100,
+				'D': 500,
+				'M': 1000,
+			}
+			var total int64 = 0
+			length := len(s)
+			for i := 0; i < length; i++ {
+				curr := romanMap[unicode.ToUpper(s[i])]
+				if i+1 < length {
+					next := romanMap[unicode.ToUpper(s[i+1])]
+					if curr < next {
+						total -= curr
+					} else {
+						total += curr
+					}
+				} else {
+					total += curr
+				}
+			}
+			return total, nil
+		}
+		return argMustBeType(in.callToken, "romanInt", "string")
+	})
 
 	return miscClass
 }
