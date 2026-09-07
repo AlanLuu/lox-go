@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"strings"
 	"unicode"
 
 	"github.com/AlanLuu/lox/bignum/bigint"
@@ -325,6 +326,47 @@ func defineMiscFuncs() *LoxClass {
 			fmt.Println()
 		}
 		return nil, nil
+	})
+	miscFunc("roman", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if numArg, ok := args[0].(int64); ok {
+			num := int(numArg)
+			type pair struct {
+				value  int
+				symbol string
+			}
+			romanMap := []pair{
+				{1000, "M"},
+				{900, "CM"},
+				{500, "D"},
+				{400, "CD"},
+				{100, "C"},
+				{90, "XC"},
+				{50, "L"},
+				{40, "XL"},
+				{10, "X"},
+				{9, "IX"},
+				{5, "V"},
+				{4, "IV"},
+				{1, "I"},
+			}
+			var builder strings.Builder
+			if num < 0 {
+				num = -num
+				builder.WriteByte('-')
+			}
+			for _, p := range romanMap {
+				if num == 0 {
+					break
+				}
+				count := num / p.value
+				num %= p.value
+				if count > 0 {
+					builder.WriteString(strings.Repeat(p.symbol, count))
+				}
+			}
+			return NewLoxString(builder.String(), '\''), nil
+		}
+		return argMustBeTypeAn(in.callToken, "roman", "integer")
 	})
 
 	return miscClass
