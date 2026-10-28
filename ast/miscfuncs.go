@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/AlanLuu/lox/bf"
 	"github.com/AlanLuu/lox/bignum/bigint"
 	"github.com/AlanLuu/lox/list"
 	"github.com/AlanLuu/lox/loxerror"
@@ -116,6 +117,39 @@ func defineMiscFuncs() *LoxClass {
 			fmt.Println()
 		}
 		return nil, nil
+	})
+	miscFunc("bf", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			if err := bf.Execute(loxStr.str, nil); err != nil {
+				errStr := err.Error()
+				if len(errStr) >= 3 && errStr[:3] == "bf:" {
+					errStr = className + "." + errStr
+				}
+				return nil, loxerror.RuntimeError(in.callToken, errStr)
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "bf", "string")
+	})
+	miscFunc("bfNoOpts", 1, func(in *Interpreter, args list.List[any]) (any, error) {
+		if loxStr, ok := args[0].(*LoxString); ok {
+			opts := bf.Defopts()
+			opts.NoOptimizations = true
+			if err := bf.Execute(loxStr.str, opts); err != nil {
+				errStr := err.Error()
+				if len(errStr) >= 3 && errStr[:3] == "bf:" {
+					errStr = strings.Replace(
+						errStr,
+						"bf:",
+						className+".bfNoOpts:",
+						1,
+					)
+				}
+				return nil, loxerror.RuntimeError(in.callToken, errStr)
+			}
+			return nil, nil
+		}
+		return argMustBeType(in.callToken, "bfNoOpts", "string")
 	})
 	miscFunc("bogosort", 1, func(in *Interpreter, args list.List[any]) (any, error) {
 		if loxList, ok := args[0].(*LoxList); ok {
