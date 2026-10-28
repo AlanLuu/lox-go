@@ -423,7 +423,9 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - `string.containsIgnoreCase(substr)`, which returns `true` if `substr` is contained within `string`, ignoring letter case, and `false` otherwise
         - `string.count(string2)`, which returns an integer representing the number of times `string2` appears in `string` in a non-overlapping manner
             - If `string2` is an empty string, this method returns 1 plus the number of Unicode characters in `string`
-        - `string.cut(separator)`, which returns a list of two strings where the first string is the text before the specified separator string in the original string and the second string is the text after the specified separator string in the original string
+        - `string.cut(separator)`, which returns a list of two strings where the first string is the text before the first specified separator string in the original string and the second string is the text after the first specified separator string in the original string
+            - If the separator is not in the original string, the returned list's string elements are a copy of the original string and an empty string
+        - `string.cutLast(separator)`, which returns a list of two strings where the first string is the text before the last specified separator string in the original string and the second string is the text after the last specified separator string in the original string
             - If the separator is not in the original string, the returned list's string elements are a copy of the original string and an empty string
         - `string.cutPrefix(prefix)`, which returns a new string where the prefix from the original string specified by the prefix string is removed if the prefix exists, otherwise a copy of the original string is returned
         - `string.cutSuffix(suffix)`, which returns a new string where the suffix from the original string specified by the suffix string is removed if the suffix exists, otherwise a copy of the original string is returned
