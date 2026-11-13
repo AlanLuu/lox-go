@@ -23,7 +23,7 @@ OPTIONS:
 ```
 
 # Installation
-(Starting Go version was 1.22.2, now requires Go 1.25.7+)
+(Starting Go version was 1.22.2, now requires Go 1.27.3+)
 
 First, [install Go](https://go.dev/doc/install) if it's not installed already. Then run the following commands to build this interpreter:
 ```
