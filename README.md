@@ -828,6 +828,17 @@ This will create an executable binary called `lox` on Linux/macOS and `lox.exe` 
         - If the specified integer argument is negative, it is the same as specifying `0` as the integer argument
     - `repeatFuncNoErr(integer, callback)`, which takes in an integer and callback function and repeatedly invokes the callback function for the specified integer number of times, without stopping even if a callback function throws an error
         - If the specified integer argument is negative, it is the same as specifying `0` as the integer argument
+    - `Ring(element1, element2, ..., elementN)`, which takes in one or more arguments and returns a ring containing those elements in order
+        - If no arguments are provided, a runtime error is thrown
+        - Ring methods and fields are documented [here](./doc/Ring.md)
+    - `RingIterable(iterable)`, which takes in an iterable and returns a ring containing its elements in iteration order
+        - The iterable must produce at least one element, or else a runtime error is thrown
+        - If the argument is not iterable, a runtime error is thrown
+    - `RingList(list)`, which returns a ring containing the elements of the specified list in order
+        - The list must not be empty, or else a runtime error is thrown
+        - If the argument is not a list, a runtime error is thrown
+    - `RingNil(length)`, which returns a ring of the specified length with each initial element set to `nil`
+        - `length` must be an integer greater than `0`, or else a runtime error is thrown
     - `Set(element1, element2, ..., elementN)`, which takes in a variable number of arguments and returns a set with the arguments as set elements with all duplicate elements removed. If an argument cannot be stored in a set, a runtime error is thrown
     - `SetIterable(iterable)`, which takes in an iterable and returns a set with the iterable elements as set elements. If an element from the iterable cannot be stored in a set, a runtime error is thrown
     - `sleep(seconds)`, which pauses the program for the specified number of seconds
