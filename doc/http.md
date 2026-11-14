@@ -49,6 +49,8 @@ The following methods are defined in the built-in `http` class:
 - `http.srvTestUnstarted(handler/callback)`, which returns an unstarted HTTP test server instance from the specified HTTP handler object or callback function
 
 HTTP request objects have the following methods associated with them:
+- `request.basicAuth(username, password)`, which sets the request's HTTP Basic Authentication header
+- `request.bearerAuth(token)`, which sets the Authorization header to use Bearer authentication
 - `request.body(buffer/dict/string/urlvalues)`
 - `request.bodyClear()`
 - `request.contentLength(length)`
@@ -63,6 +65,7 @@ HTTP request objects have the following methods associated with them:
 - `request.headerClear()`
 - `request.headerDel(key)`
 - `request.headerSet(key, value)`
+- `request.host(host)`, which sets the request's Host header
 - `request.json(buffer/dict/string/urlvalues)`
 - `request.method(methodStr)`
 - `request.methodCONNECT()`
@@ -74,7 +77,13 @@ HTTP request objects have the following methods associated with them:
 - `request.methodPOST()`
 - `request.methodPUT()`
 - `request.methodTRACE()`
+- `request.query(urlValues)`, which replaces the request URL's query string with the specified URL values object
+- `request.queryAdd(key, value)`, which appends a value for the specified query key
+- `request.queryClear()`, which removes all query parameters
+- `request.queryDel(key)`, which removes all values for the specified query key
+- `request.querySet(key, value)`, which replaces all values for the specified query key
 - `request.redirects(numRedirects)`
+- `request.referer(url)`, which sets the request's Referer header
 - `request.send()`
 - `request.sendRet()`
 - `request.sendThreads(numThreads)`

@@ -165,6 +165,30 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 		return nil, loxerror.RuntimeError(name, errStr)
 	}
 	switch methodName {
+	case "basicAuth":
+		return requestFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'http request.basicAuth' must be a string.")
+			}
+			if _, ok := args[1].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'http request.basicAuth' must be a string.")
+			}
+			l.request.SetBasicAuth(
+				args[0].(*LoxString).str,
+				args[1].(*LoxString).str,
+			)
+			return l, nil
+		})
+	case "bearerAuth":
+		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				l.header().Set("Authorization", "Bearer "+loxStr.str)
+				return l, nil
+			}
+			return argMustBeType("string")
+		})
 	case "body":
 		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			switch arg := args[0].(type) {
@@ -345,6 +369,14 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 			)
 			return l, nil
 		})
+	case "host":
+		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				l.request.Host = loxStr.str
+				return l, nil
+			}
+			return argMustBeType("string")
+		})
 	case "json":
 		return requestFunc(1, func(i *Interpreter, args list.List[any]) (any, error) {
 			switch arg := args[0].(type) {
@@ -426,6 +458,84 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 			l.setMethod("TRACE")
 			return l, nil
 		})
+	case "query":
+		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if query, ok := args[0].(*LoxURLValues); ok {
+				if l.request.URL == nil {
+					return nil, loxerror.RuntimeError(name,
+						"Cannot set query values because the HTTP request URL is not set.")
+				}
+				l.request.URL.RawQuery = query.values.Encode()
+				return l, nil
+			}
+			return argMustBeType("url values object")
+		})
+	case "queryAdd":
+		return requestFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'http request.queryAdd' must be a string.")
+			}
+			if _, ok := args[1].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'http request.queryAdd' must be a string.")
+			}
+			if l.request.URL == nil {
+				return nil, loxerror.RuntimeError(name,
+					"Cannot add query values because the HTTP request URL is not set.")
+			}
+			key := args[0].(*LoxString).str
+			value := args[1].(*LoxString).str
+			values := l.request.URL.Query()
+			values.Add(key, value)
+			l.request.URL.RawQuery = values.Encode()
+			return l, nil
+		})
+	case "queryClear":
+		return requestFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
+			if l.request.URL == nil {
+				return nil, loxerror.RuntimeError(name,
+					"Cannot clear query values because the HTTP request URL is not set.")
+			}
+			l.request.URL.RawQuery = ""
+			l.request.URL.ForceQuery = false
+			return l, nil
+		})
+	case "queryDel":
+		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				if l.request.URL == nil {
+					return nil, loxerror.RuntimeError(name,
+						"Cannot delete query values because the HTTP request URL is not set.")
+				}
+				values := l.request.URL.Query()
+				values.Del(loxStr.str)
+				l.request.URL.RawQuery = values.Encode()
+				return l, nil
+			}
+			return argMustBeType("string")
+		})
+	case "querySet":
+		return requestFunc(2, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if _, ok := args[0].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"First argument to 'http request.querySet' must be a string.")
+			}
+			if _, ok := args[1].(*LoxString); !ok {
+				return nil, loxerror.RuntimeError(name,
+					"Second argument to 'http request.querySet' must be a string.")
+			}
+			if l.request.URL == nil {
+				return nil, loxerror.RuntimeError(name,
+					"Cannot set query values because the HTTP request URL is not set.")
+			}
+			key := args[0].(*LoxString).str
+			value := args[1].(*LoxString).str
+			values := l.request.URL.Query()
+			values.Set(key, value)
+			l.request.URL.RawQuery = values.Encode()
+			return l, nil
+		})
 	case "redirects":
 		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
 			if numRedirects, ok := args[0].(int64); ok {
@@ -437,6 +547,14 @@ func (l *LoxHTTPRequest) Get(name *token.Token) (any, error) {
 				return l, nil
 			}
 			return argMustBeTypeAn("integer")
+		})
+	case "referer":
+		return requestFunc(1, func(_ *Interpreter, args list.List[any]) (any, error) {
+			if loxStr, ok := args[0].(*LoxString); ok {
+				l.header().Set("Referer", loxStr.str)
+				return l, nil
+			}
+			return argMustBeType("string")
 		})
 	case "send":
 		return requestFunc(0, func(_ *Interpreter, _ list.List[any]) (any, error) {
